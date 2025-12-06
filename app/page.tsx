@@ -1,65 +1,183 @@
-import Image from "next/image";
+import Link from "next/link";
+import { HeroAnimation } from "@/components/hero-animation";
+import { 
+  PiggyBank, 
+  Zap, 
+  Target, 
+  Rocket, 
+  Users, 
+  Shield, 
+  BarChart3, 
+  GraduationCap, 
+  Sparkles 
+} from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <img src="/logo.png" alt="Okleevo" className="h-10 w-auto" />
+            </Link>
+            <div className="hidden md:flex items-center gap-8">
+              <Link href="#home" className="text-gray-700 hover:text-primary-600 transition-colors">
+                Home
+              </Link>
+              <Link href="#benefits" className="text-gray-700 hover:text-primary-600 transition-colors">
+                Benefits
+              </Link>
+              <Link href="/pricing" className="text-gray-700 hover:text-primary-600 transition-colors">
+                Pricing
+              </Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link 
+                href="/access" 
+                className="px-4 py-2 text-gray-700 hover:text-primary-600 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link 
+                href="/onboarding" 
+                className="px-6 py-2.5 rounded-full text-white font-medium hover:shadow-lg transition-all hover-lift"
+                style={{ backgroundColor: '#fc6813' }}
+              >
+                Get Started
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
+        <HeroAnimation />
+      </section>
+
+      {/* Benefits Section */}
+      <section id="benefits" className="py-20 px-6 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Why SMEs Choose Okleevo
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Stop paying for multiple subscriptions. Get everything you need in one powerful platform designed specifically for UK small businesses.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: PiggyBank,
+                title: "Save Money",
+                description: "Replace 5-10 separate tools with one affordable subscription. Save up to £500/month on software costs.",
+                color: "from-emerald-400 to-emerald-600"
+              },
+              {
+                icon: Zap,
+                title: "Save Time",
+                description: "No more switching between apps. Everything in one place means faster workflows and less frustration.",
+                color: "from-blue-400 to-blue-600"
+              },
+              {
+                icon: Target,
+                title: "Stay Organized",
+                description: "All your business data in one unified system. No more scattered information across multiple platforms.",
+                color: "from-purple-400 to-purple-600"
+              },
+              {
+                icon: Rocket,
+                title: "Scale Easily",
+                description: "Start with what you need, activate more modules as you grow. No complex migrations or new tools to learn.",
+                color: "from-orange-400 to-orange-600"
+              },
+              {
+                icon: Users,
+                title: "Better Collaboration",
+                description: "Your whole team works from the same platform. Share data, tasks, and insights seamlessly.",
+                color: "from-pink-400 to-pink-600"
+              },
+              {
+                icon: Shield,
+                title: "UK-Based & Secure",
+                description: "GDPR compliant, UK data centers, and enterprise-grade security. Your business data stays protected.",
+                color: "from-indigo-400 to-indigo-600"
+              },
+              {
+                icon: BarChart3,
+                title: "Real-Time Insights",
+                description: "Unified dashboard shows your entire business at a glance. Make informed decisions faster.",
+                color: "from-teal-400 to-teal-600"
+              },
+              {
+                icon: GraduationCap,
+                title: "Easy to Use",
+                description: "Intuitive interface designed for busy business owners. Get started in minutes, not weeks.",
+                color: "from-amber-400 to-amber-600"
+              },
+              {
+                icon: Sparkles,
+                title: "AI-Powered",
+                description: "Built-in AI tools for content creation, note-taking, and automation. Work smarter, not harder.",
+                color: "from-rose-400 to-rose-600"
+              },
+            ].map((benefit, index) => (
+              <div
+                key={index}
+                className="group p-8 rounded-2xl bg-white border border-gray-200 hover:border-primary-300 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${benefit.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
+                  <benefit.icon className="w-8 h-8 text-white" strokeWidth={2} />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                  {benefit.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {benefit.description}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-16">
+            <Link
+              href="/onboarding"
+              className="inline-block px-10 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              style={{ backgroundColor: '#fc6813' }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              Start Your Free Trial Today
+            </Link>
+            <p className="mt-4 text-gray-600">
+              No credit card required • 14-day free trial • Cancel anytime
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-6 bg-gray-900 text-gray-300">
+        <div className="max-w-7xl mx-auto text-center">
+          <Link href="/" className="flex items-center justify-center gap-2 mb-4">
+            <img src="/logo.png" alt="Okleevo" className="h-10 w-auto" />
+          </Link>
+          <p className="text-gray-400 mb-6">
+            The all-in-one business platform designed specifically for UK SMEs
+          </p>
+          <div className="flex justify-center gap-6 text-sm">
+            <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="#" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="#" className="hover:text-white transition-colors">Support</Link>
+          </div>
+          <p className="mt-6 text-sm text-gray-500">
+            © 2024 Okleevo. All rights reserved.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </footer>
     </div>
   );
 }

@@ -1,0 +1,597 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// User & Authentication
+// =============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  phone         String?
+  emailVerified Boolean   @default(false)
+  role          UserRole  @default(OWNER)
+  status        UserStatus @default(ACTIVE)
+  
+  // Business Info
+  businessId    String
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  
+  // Relations
+  invoices      Invoice[]
+  contacts      Contact[]
+  tasks         Task[]
+  notes         Note[]
+  expenses      Expense[]
+  tickets       Ticket[]
+  
+  @@index([email])
+  @@index([businessId])
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// =============================================================================
+// Business
+// =============================================================================
+
+model Business {
+  id              String   @id @default(cuid())
+  name            String
+  industry        String
+  size            String
+  address         String?
+  city            String?
+  postcode        String?
+  country         String   @default("UK")
+  
+  // Subscription
+  subscriptionId  String?  @unique
+  subscription    Subscription?
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  users           User[]
+  invoices        Invoice[]
+  contacts        Contact[]
+  tasks           Task[]
+  notes           Note[]
+  expenses        Expense[]
+  inventory       InventoryItem[]
+  employees       Employee[]
+  suppliers       Supplier[]
+  campaigns       Campaign[]
+  tickets         Ticket[]
+  
+  @@index([name])
+}
+
+// =============================================================================
+// Subscription & Billing
+// =============================================================================
+
+model Subscription {
+  id                String   @id @default(cuid())
+  businessId        String   @unique
+  business          Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  stripeCustomerId      String?  @unique
+  stripeSubscriptionId  String?  @unique
+  stripePriceId         String?
+  
+  status            SubscriptionStatus @default(TRIAL)
+  plan              String   @default("all-in-one")
+  amount            Int      @default(1999) // in pence
+  currency          String   @default("gbp")
+  
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean  @default(false)
+  trialEnd           DateTime?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+// =============================================================================
+// Invoicing Module
+// =============================================================================
+
+model Invoice {
+  id            String   @id @default(cuid())
+  number        String   @unique
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  clientName    String
+  clientEmail   String?
+  clientAddress String?
+  
+  amount        Float
+  currency      String   @default("GBP")
+  status        InvoiceStatus @default(DRAFT)
+  
+  items         Json     // Array of invoice items
+  notes         String?
+  
+  dueDate       DateTime
+  paidAt        DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
+  @@index([number])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PENDING
+  PAID
+  OVERDUE
+  CANCELED
+}
+
+// =============================================================================
+// CRM Module
+// =============================================================================
+
+model Contact {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  name          String
+  email         String
+  phone         String?
+  company       String?
+  position      String?
+  address       String?
+  
+  status        ContactStatus @default(LEAD)
+  source        String?
+  tags          String[]
+  notes         String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+}
+
+enum ContactStatus {
+  LEAD
+  ACTIVE
+  INACTIVE
+  CUSTOMER
+}
+
+// =============================================================================
+// Tasks Module
+// =============================================================================
+
+model Task {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  title         String
+  description   String?
+  status        TaskStatus @default(TODO)
+  priority      TaskPriority @default(MEDIUM)
+  
+  dueDate       DateTime?
+  completedAt   DateTime?
+  
+  assignee      String?
+  tags          String[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// =============================================================================
+// AI Notes Module
+// =============================================================================
+
+model Note {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  title         String
+  content       String   @db.Text
+  tags          String[]
+  
+  isAiGenerated Boolean  @default(false)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([userId])
+}
+
+// =============================================================================
+// Expense Tracker Module
+// =============================================================================
+
+model Expense {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  description   String
+  amount        Float
+  currency      String   @default("GBP")
+  category      String
+  
+  receipt       String?  // URL to receipt image
+  date          DateTime
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([userId])
+  @@index([category])
+  @@index([date])
+}
+
+// =============================================================================
+// Inventory Module
+// =============================================================================
+
+model InventoryItem {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  name          String
+  sku           String   @unique
+  description   String?
+  
+  quantity      Int      @default(0)
+  minQuantity   Int      @default(0)
+  
+  price         Float?
+  cost          Float?
+  
+  category      String?
+  location      String?
+  
+  status        InventoryStatus @default(IN_STOCK)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([sku])
+  @@index([status])
+}
+
+enum InventoryStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+}
+
+// =============================================================================
+// HR Records Module
+// =============================================================================
+
+model Employee {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  firstName     String
+  lastName      String
+  email         String
+  phone         String?
+  
+  position      String
+  department    String
+  
+  startDate     DateTime
+  endDate       DateTime?
+  
+  salary        Float?
+  status        EmployeeStatus @default(ACTIVE)
+  
+  address       String?
+  emergencyContact String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([email])
+  @@index([status])
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+// =============================================================================
+// Supplier Tracker Module
+// =============================================================================
+
+model Supplier {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  name          String
+  contactName   String?
+  email         String
+  phone         String?
+  address       String?
+  
+  category      String?
+  rating        Int?     @default(0)
+  
+  status        SupplierStatus @default(ACTIVE)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([email])
+  @@index([status])
+}
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// =============================================================================
+// Campaigns Module
+// =============================================================================
+
+model Campaign {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  name          String
+  subject       String?
+  content       String?  @db.Text
+  
+  status        CampaignStatus @default(DRAFT)
+  
+  sentCount     Int      @default(0)
+  openedCount   Int      @default(0)
+  clickedCount  Int      @default(0)
+  
+  scheduledAt   DateTime?
+  sentAt        DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([status])
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  COMPLETED
+}
+
+// =============================================================================
+// Helpdesk Module
+// =============================================================================
+
+model Ticket {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  
+  subject       String
+  description   String   @db.Text
+  
+  status        TicketStatus @default(OPEN)
+  priority      TicketPriority @default(MEDIUM)
+  
+  customerName  String
+  customerEmail String
+  
+  assignedTo    String?
+  
+  resolvedAt    DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// =============================================================================
+// Appointments/Booking Module
+// =============================================================================
+
+model Appointment {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  
+  title         String
+  description   String?
+  
+  clientName    String
+  clientEmail   String
+  clientPhone   String?
+  
+  startTime     DateTime
+  endTime       DateTime
+  
+  status        AppointmentStatus @default(PENDING)
+  location      String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([status])
+  @@index([startTime])
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+  COMPLETED
+}
+
+// =============================================================================
+// Compliance Reminders Module
+// =============================================================================
+
+model ComplianceItem {
+  id            String   @id @default(cuid())
+  
+  businessId    String
+  
+  title         String
+  description   String?
+  
+  dueDate       DateTime
+  completedAt   DateTime?
+  
+  status        ComplianceStatus @default(PENDING)
+  category      String
+  
+  reminderSent  Boolean  @default(false)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([businessId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+enum ComplianceStatus {
+  PENDING
+  COMPLETED
+  OVERDUE
+}
