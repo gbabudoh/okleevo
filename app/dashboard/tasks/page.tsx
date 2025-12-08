@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Plus, Search, Calendar, User, Tag, Clock, AlertCircle, CheckCircle, Circle, MoreVertical, Edit, Trash2, X, Flag, TrendingUp, ListTodo, Target } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Task {
   id: string;
@@ -27,7 +28,9 @@ export default function TasksPage() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [newTask, setNewTask] = useState({
     title: '',
@@ -77,10 +80,9 @@ export default function TasksPage() {
     }
   };
 
-  const handleDeleteTask = (id: string) => {
-    if (confirm('Are you sure you want to delete this task?')) {
-      setTasks(tasks.filter(t => t.id !== id));
-    }
+  const handleDeleteTask = (task: Task) => {
+    setDeletingTask(task);
+    setShowDeleteModal(true);
   };
 
   const handleStatusChange = (taskId: string, newStatus: Task['status']) => {
@@ -98,10 +100,10 @@ export default function TasksPage() {
                 <ListTodo className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent leading-tight pb-1">
                   Task Management
                 </h1>
-                <p className="text-gray-600 mt-1 text-lg">Organize and track your work efficiently</p>
+                <p className="text-gray-600 mt-2 text-lg">Organize and track your work efficiently</p>
               </div>
             </div>
           </div>
@@ -220,7 +222,7 @@ export default function TasksPage() {
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteTask(task.id);
+                            handleDeleteTask(task);
                           }}
                           className="p-1.5 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
                         >
@@ -481,6 +483,25 @@ export default function TasksPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingTask && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingTask(null);
+          }}
+          onConfirm={() => {
+            setTasks(tasks.filter(t => t.id !== deletingTask.id));
+            alert('✓ Task deleted successfully!');
+          }}
+          title="Delete Task"
+          itemName={deletingTask.title}
+          itemDetails={`Priority: ${deletingTask.priority} | Due: ${deletingTask.dueDate}`}
+          warningMessage="This will permanently remove this task and all its data."
+        />
       )}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Plus, Mail, TrendingUp, Eye, Send, Users, MousePointer, DollarSign, BarChart3, Calendar, Target, Zap, HelpCircle, X, Edit, Trash2, Copy, Download, Filter, Search, CheckCircle, Clock, AlertCircle, TrendingDown, Percent, Award, Info } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Campaign {
   id: string;
@@ -96,8 +97,10 @@ export default function CampaignsPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [editCampaign, setEditCampaign] = useState<Campaign | null>(null);
+  const [deletingCampaign, setDeletingCampaign] = useState<Campaign | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -134,10 +137,9 @@ export default function CampaignsPage() {
     }
   };
 
-  const handleDeleteCampaign = (id: string) => {
-    if (confirm('Are you sure you want to delete this campaign?')) {
-      setCampaigns(campaigns.filter(c => c.id !== id));
-    }
+  const handleDeleteCampaign = (campaign: Campaign) => {
+    setDeletingCampaign(campaign);
+    setShowDeleteModal(true);
   };
 
   return (
@@ -151,10 +153,10 @@ export default function CampaignsPage() {
                 <Mail className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent leading-tight pb-1">
                   Email Marketing Campaigns
                 </h1>
-                <p className="text-gray-600 mt-1 text-lg">Create, manage, and track your marketing campaigns</p>
+                <p className="text-gray-600 mt-2 text-lg">Create, manage, and track your marketing campaigns</p>
               </div>
             </div>
           </div>
@@ -302,7 +304,8 @@ export default function CampaignsPage() {
                       <Edit className="w-5 h-5 text-white" />
                     </button>
                     <button 
-                      onClick={() => handleDeleteCampaign(campaign.id)}
+                      type="button"
+                      onClick={() => handleDeleteCampaign(campaign)}
                       className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all backdrop-blur-sm cursor-pointer shadow-md hover:scale-105"
                       title="Delete"
                     >
@@ -826,6 +829,25 @@ export default function CampaignsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingCampaign && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingCampaign(null);
+          }}
+          onConfirm={() => {
+            setCampaigns(campaigns.filter(c => c.id !== deletingCampaign.id));
+            alert('✓ Campaign deleted successfully!');
+          }}
+          title="Delete Campaign"
+          itemName={deletingCampaign.name}
+          itemDetails={`${deletingCampaign.sent} sent - ${deletingCampaign.status}`}
+          warningMessage="This will permanently remove this campaign and all its analytics data."
+        />
       )}
     </div>
   );

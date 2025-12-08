@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Receipt,
@@ -37,6 +38,17 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const pathname = usePathname();
+
+  // Scroll to top on route change
+  useEffect(() => {
+    // Scroll both window and main content area to top
+    window.scrollTo(0, 0);
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.scrollTo(0, 0);
+    }
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -76,6 +88,12 @@ export default function DashboardLayout({
                 <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Finance</p>
                 <Link href="/dashboard/invoicing" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
                   <Receipt className="w-5 h-5" /> Invoicing
+                </Link>
+                <Link href="/dashboard/accounting" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
+                  <Calculator className="w-5 h-5" /> Accounting
+                </Link>
+                <Link href="/dashboard/taxation" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
+                  <FileText className="w-5 h-5" /> Taxation
                 </Link>
                 <Link href="/dashboard/cashflow" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
                   <TrendingUp className="w-5 h-5" /> Cashflow
@@ -162,7 +180,7 @@ export default function DashboardLayout({
       </aside>
       
       {/* Main Content */}
-      <div className="ml-64">
+      <div className="ml-64 h-screen overflow-y-auto" id="main-content">
         {/* Header */}
         <header className="sticky top-0 z-30 bg-white border-b border-gray-200">
           <div className="px-6 py-4 flex items-center justify-between">

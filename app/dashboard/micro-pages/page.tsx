@@ -10,6 +10,7 @@ import {
   MessageSquare, ShoppingCart, Calendar, Mail, Phone, MapPin,
   Grid, List, ChevronRight, X, Check, Sparkles, Target, Award
 } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface MicroPage {
   id: string;
@@ -193,6 +194,14 @@ export default function MicroPagesPage() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingPage, setEditingPage] = useState<MicroPage | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingPage, setDeletingPage] = useState<MicroPage | null>(null);
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [copyingPage, setCopyingPage] = useState<MicroPage | null>(null);
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  const [analyticsPage, setAnalyticsPage] = useState<MicroPage | null>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsPage, setSettingsPage] = useState<MicroPage | null>(null);
 
   const filteredPages = pages.filter(page => {
     const matchesSearch = page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -462,8 +471,8 @@ export default function MicroPagesPage() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigator.clipboard.writeText(page.url);
-                              alert('URL copied!');
+                              setCopyingPage(page);
+                              setShowCopyModal(true);
                               setActiveDropdown(null);
                             }}
                             className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2"
@@ -474,8 +483,22 @@ export default function MicroPagesPage() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              alert(`Duplicating: ${page.title}`);
+                              const newPage: MicroPage = {
+                                ...page,
+                                id: `${Date.now()}`,
+                                title: `${page.title} (Copy)`,
+                                slug: `${page.slug}-copy`,
+                                url: `${page.url}-copy`,
+                                status: 'draft',
+                                views: 0,
+                                conversions: 0,
+                                conversionRate: 0,
+                                createdDate: new Date(),
+                                lastModified: new Date()
+                              };
+                              setPages([...pages, newPage]);
                               setActiveDropdown(null);
+                              alert('✓ Page duplicated successfully!');
                             }}
                             className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2"
                           >
@@ -485,7 +508,8 @@ export default function MicroPagesPage() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              alert(`Viewing analytics for: ${page.title}`);
+                              setAnalyticsPage(page);
+                              setShowAnalyticsModal(true);
                               setActiveDropdown(null);
                             }}
                             className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2"
@@ -496,7 +520,8 @@ export default function MicroPagesPage() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              alert(`Opening settings for: ${page.title}`);
+                              setSettingsPage(page);
+                              setShowSettingsModal(true);
                               setActiveDropdown(null);
                             }}
                             className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
@@ -506,14 +531,14 @@ export default function MicroPagesPage() {
                           </button>
                           <div className="border-t border-gray-200 my-1"></div>
                           <button 
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (confirm(`Delete "${page.title}"?`)) {
-                                alert('Page deleted');
-                              }
+                              setDeletingPage(page);
+                              setShowDeleteModal(true);
                               setActiveDropdown(null);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4 text-red-600" />
                             Delete
@@ -633,8 +658,8 @@ export default function MicroPagesPage() {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    navigator.clipboard.writeText(page.url);
-                                    alert('URL copied!');
+                                    setCopyingPage(page);
+                                    setShowCopyModal(true);
                                     setActiveDropdown(null);
                                   }}
                                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2"
@@ -645,8 +670,22 @@ export default function MicroPagesPage() {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    alert(`Duplicating: ${page.title}`);
+                                    const newPage: MicroPage = {
+                                      ...page,
+                                      id: `${Date.now()}`,
+                                      title: `${page.title} (Copy)`,
+                                      slug: `${page.slug}-copy`,
+                                      url: `${page.url}-copy`,
+                                      status: 'draft',
+                                      views: 0,
+                                      conversions: 0,
+                                      conversionRate: 0,
+                                      createdDate: new Date(),
+                                      lastModified: new Date()
+                                    };
+                                    setPages([...pages, newPage]);
                                     setActiveDropdown(null);
+                                    alert('✓ Page duplicated successfully!');
                                   }}
                                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2"
                                 >
@@ -656,7 +695,8 @@ export default function MicroPagesPage() {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    alert(`Viewing analytics for: ${page.title}`);
+                                    setAnalyticsPage(page);
+                                    setShowAnalyticsModal(true);
                                     setActiveDropdown(null);
                                   }}
                                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2"
@@ -664,16 +704,28 @@ export default function MicroPagesPage() {
                                   <BarChart3 className="w-4 h-4 text-orange-600" />
                                   Analytics
                                 </button>
-                                <div className="border-t border-gray-200 my-1"></div>
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (confirm(`Delete "${page.title}"?`)) {
-                                      alert('Page deleted');
-                                    }
+                                    setSettingsPage(page);
+                                    setShowSettingsModal(true);
                                     setActiveDropdown(null);
                                   }}
-                                  className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <Settings className="w-4 h-4 text-gray-600" />
+                                  Settings
+                                </button>
+                                <div className="border-t border-gray-200 my-1"></div>
+                                <button 
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeletingPage(page);
+                                    setShowDeleteModal(true);
+                                    setActiveDropdown(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
                                 >
                                   <Trash2 className="w-4 h-4 text-red-600" />
                                   Delete
@@ -1165,6 +1217,390 @@ export default function MicroPagesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Copy URL Modal */}
+      {showCopyModal && copyingPage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl">
+            <div className="bg-gradient-to-r from-blue-500 to-cyan-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
+                  <Copy className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Copy Page URL</h2>
+                  <p className="text-blue-100 text-sm mt-0.5">{copyingPage.title}</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowCopyModal(false);
+                  setCopyingPage(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              {/* Page Info */}
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-lg">
+                    <Globe className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">{copyingPage.title}</p>
+                    <p className="text-sm text-gray-600">{copyingPage.slug}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* URL Display */}
+              <div className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
+                <p className="text-xs font-semibold text-gray-700 mb-2">Page URL:</p>
+                <div className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-300">
+                  <Link className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <p className="text-sm text-gray-900 truncate flex-1">{copyingPage.url}</p>
+                </div>
+              </div>
+
+              {/* Copy Options */}
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(copyingPage.url);
+                    alert('✓ URL copied to clipboard!');
+                    setShowCopyModal(false);
+                    setCopyingPage(null);
+                  }}
+                  className="w-full px-5 py-4 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl hover:shadow-xl transition-all flex items-center gap-3 font-semibold"
+                >
+                  <Copy className="w-6 h-6" />
+                  <div className="text-left">
+                    <p className="font-bold">Copy URL</p>
+                    <p className="text-xs text-blue-100">Copy to clipboard</p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const shareText = `Check out this page: ${copyingPage.title}\n${copyingPage.url}`;
+                    navigator.clipboard.writeText(shareText);
+                    alert('✓ Shareable text copied!');
+                    setShowCopyModal(false);
+                    setCopyingPage(null);
+                  }}
+                  className="w-full px-5 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:shadow-xl transition-all flex items-center gap-3 font-semibold"
+                >
+                  <Share2 className="w-6 h-6" />
+                  <div className="text-left">
+                    <p className="font-bold">Copy with Title</p>
+                    <p className="text-xs text-purple-100">Copy formatted text</p>
+                  </div>
+                </button>
+              </div>
+
+              {/* Cancel Button */}
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowCopyModal(false);
+                  setCopyingPage(null);
+                }}
+                className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Analytics Modal */}
+      {showAnalyticsModal && analyticsPage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-gradient-to-r from-purple-500 to-pink-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
+                  <BarChart3 className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Page Analytics</h2>
+                  <p className="text-purple-100 text-sm mt-0.5">{analyticsPage.title}</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowAnalyticsModal(false);
+                  setAnalyticsPage(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Key Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Eye className="w-6 h-6 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-600">Total Views</span>
+                  </div>
+                  <p className="text-4xl font-bold text-blue-900">{analyticsPage.views.toLocaleString()}</p>
+                  <p className="text-xs text-blue-600 mt-2">All time visitors</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="w-6 h-6 text-green-600" />
+                    <span className="text-sm font-medium text-green-600">Conversions</span>
+                  </div>
+                  <p className="text-4xl font-bold text-green-900">{analyticsPage.conversions}</p>
+                  <p className="text-xs text-green-600 mt-2">Total conversions</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border-2 border-purple-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                    <span className="text-sm font-medium text-purple-600">Conversion Rate</span>
+                  </div>
+                  <p className="text-4xl font-bold text-purple-900">{analyticsPage.conversionRate.toFixed(1)}%</p>
+                  <p className="text-xs text-purple-600 mt-2">Success rate</p>
+                </div>
+              </div>
+
+              {/* Page Info */}
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border-2 border-gray-200">
+                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-gray-700" />
+                  Page Information
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">Template</p>
+                    <p className="font-semibold text-gray-900 capitalize">{analyticsPage.template.replace('-', ' ')}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">Status</p>
+                    <p className="font-semibold text-gray-900 capitalize">{analyticsPage.status}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">Created</p>
+                    <p className="font-semibold text-gray-900">{analyticsPage.createdDate.toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 mb-1">Last Modified</p>
+                    <p className="font-semibold text-gray-900">{analyticsPage.lastModified.toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance Insights */}
+              <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-5 border-2 border-orange-200">
+                <h3 className="font-bold text-orange-900 mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5" />
+                  Performance Insights
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                    <span className="text-sm text-gray-700">Average time on page</span>
+                    <span className="font-bold text-orange-900">2m 34s</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                    <span className="text-sm text-gray-700">Bounce rate</span>
+                    <span className="font-bold text-orange-900">32.5%</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                    <span className="text-sm text-gray-700">Return visitors</span>
+                    <span className="font-bold text-orange-900">18.2%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowAnalyticsModal(false);
+                  setAnalyticsPage(null);
+                }}
+                className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer"
+              >
+                Close Analytics
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettingsModal && settingsPage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
+                  <Settings className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Page Settings</h2>
+                  <p className="text-gray-300 text-sm mt-0.5">{settingsPage.title}</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowSettingsModal(false);
+                  setSettingsPage(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* General Settings */}
+              <div>
+                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-gray-700" />
+                  General Settings
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Page Title</label>
+                    <input
+                      type="text"
+                      defaultValue={settingsPage.title}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Slug</label>
+                    <input
+                      type="text"
+                      defaultValue={settingsPage.slug}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select
+                      defaultValue={settingsPage.status}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                    >
+                      <option value="published">Published</option>
+                      <option value="draft">Draft</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* SEO Settings */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200">
+                <h3 className="font-bold text-blue-900 mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5" />
+                  SEO Settings
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-blue-700 mb-2">SEO Title</label>
+                    <input
+                      type="text"
+                      defaultValue={settingsPage.seoTitle}
+                      className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-blue-700 mb-2">SEO Description</label>
+                    <textarea
+                      defaultValue={settingsPage.seoDescription}
+                      rows={3}
+                      className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Advanced Settings */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border-2 border-purple-200">
+                <h3 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  Advanced Settings
+                </h3>
+                <div className="space-y-3">
+                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-purple-50 transition-colors">
+                    <span className="text-sm font-medium text-gray-900">Enable Analytics Tracking</span>
+                    <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
+                  </label>
+                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-purple-50 transition-colors">
+                    <span className="text-sm font-medium text-gray-900">Allow Search Engine Indexing</span>
+                    <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
+                  </label>
+                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-purple-50 transition-colors">
+                    <span className="text-sm font-medium text-gray-900">Enable Social Sharing</span>
+                    <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
+                  </label>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setShowSettingsModal(false);
+                    setSettingsPage(null);
+                  }}
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    alert('✓ Settings saved successfully!');
+                    setShowSettingsModal(false);
+                    setSettingsPage(null);
+                  }}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-900 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer"
+                >
+                  Save Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingPage && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingPage(null);
+          }}
+          onConfirm={() => {
+            setPages(pages.filter(page => page.id !== deletingPage.id));
+            alert('✓ Page deleted successfully!');
+          }}
+          title="Delete Micro Page"
+          itemName={deletingPage.title}
+          itemDetails={`${deletingPage.slug} - ${deletingPage.views.toLocaleString()} views`}
+          warningMessage="This will permanently remove this page and all its analytics data."
+        />
       )}
     </div>
   );

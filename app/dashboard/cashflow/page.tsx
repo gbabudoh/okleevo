@@ -8,6 +8,7 @@ import {
   ArrowRight, ChevronDown, RefreshCw, AlertCircle, CheckCircle,
   Activity, Target, Sparkles, TrendingDown as TrendDown, X, Edit, Trash2, Tag
 } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 export default function CashflowPage() {
   const [timeRange, setTimeRange] = useState('month');
@@ -16,8 +17,10 @@ export default function CashflowPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<typeof recentTransactions[0] | null>(null);
   const [viewingTransaction, setViewingTransaction] = useState<typeof recentTransactions[0] | null>(null);
+  const [deletingTransaction, setDeletingTransaction] = useState<typeof recentTransactions[0] | null>(null);
   const [newTransaction, setNewTransaction] = useState({
     type: 'income' as 'income' | 'expense',
     description: '',
@@ -73,21 +76,20 @@ export default function CashflowPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 rounded-3xl p-8 text-white shadow-2xl">
+      <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-              <Activity className="w-10 h-10" />
+            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
+              <Activity className="w-10 h-10 text-gray-700" />
               Cashflow Management
             </h1>
-            <p className="text-green-100 text-lg">Track your income, expenses and financial health</p>
+            <p className="text-gray-600 text-lg">Track your income, expenses and financial health</p>
           </div>
           <div className="flex items-center gap-3">
             <select 
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="px-6 py-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl hover:bg-opacity-30 transition-all font-semibold cursor-pointer border-2 border-white border-opacity-30"
-              style={{ color: 'var(--color-purple-600)' }}
+              className="px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all font-semibold cursor-pointer border-2 border-gray-200 text-gray-700"
             >
               <option value="week" className="text-gray-900">This Week</option>
               <option value="month" className="text-gray-900">This Month</option>
@@ -95,6 +97,7 @@ export default function CashflowPage() {
               <option value="year" className="text-gray-900">This Year</option>
             </select>
             <button 
+              type="button"
               onClick={() => {
                 // Export cashflow data as CSV
                 const csvData = [
@@ -112,16 +115,15 @@ export default function CashflowPage() {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
               }}
-              className="px-6 py-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl hover:bg-opacity-30 transition-all font-semibold flex items-center gap-2 cursor-pointer"
-              style={{ color: '#10b981' }}
+              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl rounded-xl transition-all font-semibold flex items-center gap-2 cursor-pointer"
             >
               <Download className="w-5 h-5" />
               <span>Export</span>
             </button>
             <button 
+              type="button"
               onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 bg-white rounded-xl hover:shadow-2xl transition-all font-bold flex items-center gap-2 cursor-pointer"
-              style={{ color: '#10b981' }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               Add Transaction
@@ -421,11 +423,11 @@ export default function CashflowPage() {
                       <Edit className="w-4 h-4 text-gray-600" />
                     </button>
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm(`Delete transaction:\n\n${transaction.description}\n\nAre you sure?`)) {
-                          alert('Transaction deleted successfully!');
-                        }
+                        setDeletingTransaction(transaction);
+                        setShowDeleteModal(true);
                       }}
                       className="p-2 bg-red-50 hover:bg-red-100 rounded-lg transition-colors cursor-pointer"
                       title="Delete Transaction"
@@ -930,6 +932,24 @@ export default function CashflowPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingTransaction && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingTransaction(null);
+          }}
+          onConfirm={() => {
+            alert('✓ Transaction deleted successfully!');
+          }}
+          title="Delete Transaction"
+          itemName={deletingTransaction.description}
+          itemDetails={`${deletingTransaction.type === 'income' ? '+' : '-'}£${Math.abs(deletingTransaction.amount).toLocaleString()} - ${deletingTransaction.date}`}
+          warningMessage="This will permanently remove this transaction from your cashflow records."
+        />
       )}
     </div>
   );

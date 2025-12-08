@@ -114,6 +114,7 @@ export default function AINotesPage() {
   const [showNewNoteModal, setShowNewNoteModal] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [showAIAssist, setShowAIAssist] = useState(false);
+  const [selectedNoteType, setSelectedNoteType] = useState<string>('meeting');
 
   const filteredNotes = notes.filter(note => {
     const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -271,18 +272,35 @@ export default function AINotesPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {noteTypes.map((type) => {
                     const Icon = type.icon;
+                    const isSelected = selectedNoteType === type.id;
                     return (
                       <button
                         key={type.id}
-                        className="group relative bg-white rounded-xl border-2 border-gray-200 p-4 hover:border-transparent hover:shadow-xl transition-all text-left overflow-hidden"
+                        onClick={() => setSelectedNoteType(type.id)}
+                        className={`group relative bg-white rounded-xl border-2 p-4 hover:shadow-xl transition-all text-left overflow-hidden cursor-pointer ${
+                          isSelected 
+                            ? 'border-transparent shadow-lg' 
+                            : 'border-gray-200 hover:border-transparent'
+                        }`}
                       >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${type.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                        <div className={`absolute inset-0 bg-gradient-to-br ${type.color} transition-opacity ${
+                          isSelected ? 'opacity-10' : 'opacity-0 group-hover:opacity-10'
+                        }`} />
                         <div className="relative">
                           <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${type.color} mb-2`}>
                             <Icon className="w-5 h-5 text-white" />
                           </div>
-                          <h3 className="font-bold text-gray-900 text-sm mb-1">{type.name}</h3>
+                          <h3 className={`font-bold text-sm mb-1 ${
+                            isSelected ? 'text-gray-900' : 'text-gray-900'
+                          }`}>{type.name}</h3>
                           <p className="text-xs text-gray-600">{type.description}</p>
+                          {isSelected && (
+                            <div className="absolute top-2 right-2">
+                              <div className={`p-1 rounded-full bg-gradient-to-br ${type.color}`}>
+                                <Check className="w-4 h-4 text-white" />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </button>
                     );

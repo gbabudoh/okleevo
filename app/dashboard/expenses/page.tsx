@@ -8,6 +8,7 @@ import {
   ArrowUpRight, ArrowDownRight, Eye, MoreVertical, CheckCircle,
   AlertCircle, TrendingUp, Activity, Target, Sparkles, FileText
 } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Expense {
   id: string;
@@ -39,7 +40,9 @@ export default function ExpensesPage() {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [newExpense, setNewExpense] = useState({
     title: '',
@@ -104,11 +107,9 @@ export default function ExpensesPage() {
     alert('✓ Expense added successfully!');
   };
 
-  const handleDeleteExpense = (id: string) => {
-    if (confirm('⚠️ Are you sure you want to delete this expense?')) {
-      setExpenses(expenses.filter(exp => exp.id !== id));
-      alert('✓ Expense deleted successfully!');
-    }
+  const handleDeleteExpense = (expense: Expense) => {
+    setDeletingExpense(expense);
+    setShowDeleteModal(true);
   };
 
   const handleEditExpense = () => {
@@ -161,28 +162,28 @@ export default function ExpensesPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl">
+      <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-              <Receipt className="w-10 h-10" />
+            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
+              <Receipt className="w-10 h-10 text-gray-700" />
               Expense Tracker
             </h1>
-            <p className="text-red-100 text-lg">Track and manage your business expenses efficiently</p>
+            <p className="text-gray-600 text-lg">Track and manage your business expenses efficiently</p>
           </div>
           <div className="flex items-center gap-3">
             <button 
+              type="button"
               onClick={handleExport}
-              className="px-6 py-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl hover:bg-opacity-30 transition-all font-semibold flex items-center gap-2 cursor-pointer"
-              style={{ color: 'var(--color-purple-600)' }}
+              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl rounded-xl transition-all font-semibold flex items-center gap-2 cursor-pointer"
             >
               <Download className="w-5 h-5" />
               <span>Export</span>
             </button>
             <button 
+              type="button"
               onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 bg-white rounded-xl hover:shadow-2xl transition-all font-bold flex items-center gap-2 cursor-pointer"
-              style={{ color: 'var(--color-purple-600)' }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               Add Expense
@@ -288,6 +289,7 @@ export default function ExpensesPage() {
         </div>
         <div className="relative">
           <button 
+            type="button"
             onClick={() => setShowFilterMenu(!showFilterMenu)}
             className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-2 font-medium shadow-sm transition-all cursor-pointer"
           >
@@ -299,6 +301,7 @@ export default function ExpensesPage() {
               <div className="fixed inset-0 z-40" onClick={() => setShowFilterMenu(false)} />
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
                 <button
+                  type="button"
                   onClick={() => {
                     setFilterCategory('all');
                     setShowFilterMenu(false);
@@ -312,6 +315,7 @@ export default function ExpensesPage() {
                 </button>
                 {categories.map((category) => (
                   <button
+                    type="button"
                     key={category.name}
                     onClick={() => {
                       setFilterCategory(category.name);
@@ -358,6 +362,360 @@ export default function ExpensesPage() {
           })}
         </div>
       </div>
+
+      {/* Expenses List */}
+      <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b-2 border-gray-200">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <Receipt className="w-6 h-6 text-red-600" />
+            Recent Expenses
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Expense</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Category</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Vendor</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredExpenses.map((expense) => {
+                const categoryInfo = getCategoryIcon(expense.category);
+                const Icon = categoryInfo.icon;
+                
+                return (
+                  <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg bg-gradient-to-br ${categoryInfo.color}`}>
+                          <Icon className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{expense.title}</p>
+                          {expense.notes && (
+                            <p className="text-sm text-gray-500">{expense.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1 rounded-lg bg-gray-100 text-gray-700 text-sm font-medium">
+                        {expense.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">{expense.vendor}</td>
+                    <td className="px-6 py-4 text-gray-700">{new Date(expense.date).toLocaleDateString()}</td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-900">£{expense.amount.toLocaleString()}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-lg text-sm font-medium ${
+                        expense.status === 'approved' ? 'bg-green-100 text-green-700' :
+                        expense.status === 'reimbursed' ? 'bg-blue-100 text-blue-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {expense.status || 'pending'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedExpense(expense);
+                            setShowEditModal(true);
+                          }}
+                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <Edit className="w-4 h-4 text-blue-600" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteExpense(expense)}
+                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Add Expense Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b-2 border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Plus className="w-6 h-6 text-red-600" />
+                Add New Expense
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  value={newExpense.title}
+                  onChange={(e) => setNewExpense({ ...newExpense, title: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="e.g., Office Supplies"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Amount (£)</label>
+                  <input
+                    type="number"
+                    value={newExpense.amount}
+                    onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) || 0 })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                  <input
+                    type="date"
+                    value={newExpense.date}
+                    onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                  <select
+                    value={newExpense.category}
+                    onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat.name} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Method</label>
+                  <select
+                    value={newExpense.paymentMethod}
+                    onChange={(e) => setNewExpense({ ...newExpense, paymentMethod: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  >
+                    <option value="Card">Card</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Vendor</label>
+                <input
+                  type="text"
+                  value={newExpense.vendor}
+                  onChange={(e) => setNewExpense({ ...newExpense, vendor: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="e.g., Staples"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Notes (Optional)</label>
+                <textarea
+                  value={newExpense.notes}
+                  onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  rows={3}
+                  placeholder="Add any additional notes..."
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={handleAddExpense}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:shadow-lg transition-all font-bold"
+                >
+                  Add Expense
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Expense Modal */}
+      {showEditModal && selectedExpense && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b-2 border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Edit className="w-6 h-6 text-blue-600" />
+                Edit Expense
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedExpense(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  value={selectedExpense.title}
+                  onChange={(e) => setSelectedExpense({ ...selectedExpense, title: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Amount (£)</label>
+                  <input
+                    type="number"
+                    value={selectedExpense.amount}
+                    onChange={(e) => setSelectedExpense({ ...selectedExpense, amount: parseFloat(e.target.value) || 0 })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                  <input
+                    type="date"
+                    value={selectedExpense.date}
+                    onChange={(e) => setSelectedExpense({ ...selectedExpense, date: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                  <select
+                    value={selectedExpense.category}
+                    onChange={(e) => setSelectedExpense({ ...selectedExpense, category: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat.name} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Method</label>
+                  <select
+                    value={selectedExpense.paymentMethod}
+                    onChange={(e) => setSelectedExpense({ ...selectedExpense, paymentMethod: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="Card">Card</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Vendor</label>
+                <input
+                  type="text"
+                  value={selectedExpense.vendor}
+                  onChange={(e) => setSelectedExpense({ ...selectedExpense, vendor: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                <select
+                  value={selectedExpense.status || 'pending'}
+                  onChange={(e) => setSelectedExpense({ ...selectedExpense, status: e.target.value as 'pending' | 'approved' | 'reimbursed' })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="reimbursed">Reimbursed</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Notes (Optional)</label>
+                <textarea
+                  value={selectedExpense.notes || ''}
+                  onChange={(e) => setSelectedExpense({ ...selectedExpense, notes: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={3}
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={handleEditExpense}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all font-bold"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedExpense(null);
+                  }}
+                  className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingExpense && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingExpense(null);
+          }}
+          onConfirm={() => {
+            setExpenses(expenses.filter(exp => exp.id !== deletingExpense.id));
+            alert('✓ Expense deleted successfully!');
+          }}
+          title="Delete Expense"
+          itemName={deletingExpense.title}
+          itemDetails={`£${deletingExpense.amount} - ${deletingExpense.vendor}`}
+          warningMessage="This will permanently remove this expense record."
+        />
+      )}
     </div>
   );
 }

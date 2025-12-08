@@ -230,29 +230,10 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">Welcome back! 👋</h1>
-            <p className="text-blue-100 text-lg">Here's what's happening with your business today</p>
-          </div>
-          <div className="hidden md:flex items-center gap-3">
-            <button 
-              onClick={handleExportReport}
-              className="px-6 py-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl hover:bg-opacity-30 transition-all font-semibold flex items-center gap-2 cursor-pointer"
-              style={{ color: 'var(--color-purple-600)' }}
-            >
-              <Download className="w-5 h-5" />
-              <span>Export Report</span>
-            </button>
-            <button 
-              onClick={() => setShowNewProjectModal(true)}
-              className="px-6 py-3 bg-white text-purple-600 rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer"
-            >
-              <Plus className="w-5 h-5" />
-              New Project
-            </button>
-          </div>
+      <div className="rounded-3xl p-8 text-white shadow-2xl" style={{ backgroundColor: '#5f6667' }}>
+        <div>
+          <h1 className="text-4xl font-bold mb-2">Welcome to Okleevo</h1>
+          <p className="text-gray-200 text-lg">Your all-in-one business management platform</p>
         </div>
       </div>
 
@@ -294,18 +275,12 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Zap className="w-6 h-6 text-yellow-500" />
-            Quick Actions
-          </h2>
-          <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-            View All
-            <ArrowUpRight className="w-4 h-4" />
-          </button>
-        </div>
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-6">
+          <Zap className="w-6 h-6 text-yellow-500" />
+          Quick Actions
+        </h2>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             

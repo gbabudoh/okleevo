@@ -12,6 +12,7 @@ import {
   Home, Car, Smartphone, Laptop, CreditCard, Wallet, Baby,
   Plane, Umbrella, HeartPulse, BookOpen, Settings
 } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Employee {
   id: string;
@@ -266,6 +267,16 @@ export default function HRRecordsPage() {
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messagingEmployee, setMessagingEmployee] = useState<Employee | null>(null);
+  const [messageSubject, setMessageSubject] = useState('');
+  const [messageBody, setMessageBody] = useState('');
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadingEmployee, setDownloadingEmployee] = useState<Employee | null>(null);
 
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch = emp.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -668,48 +679,56 @@ export default function HRRecordsPage() {
                             View Details
                           </button>
                           <button 
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              alert(`Edit ${employee.firstName} ${employee.lastName}`);
+                              setEditingEmployee(employee);
+                              setShowEditModal(true);
                               setActiveDropdown(null);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2 cursor-pointer"
                           >
                             <Edit3 className="w-4 h-4 text-blue-600" />
                             Edit Profile
                           </button>
                           <button 
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              alert(`Send message to ${employee.email}`);
+                              setMessagingEmployee(employee);
+                              setMessageSubject(`Message to ${employee.firstName} ${employee.lastName}`);
+                              setMessageBody('');
+                              setShowMessageModal(true);
                               setActiveDropdown(null);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2 cursor-pointer"
                           >
                             <MessageSquare className="w-4 h-4 text-green-600" />
                             Send Message
                           </button>
                           <button 
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              alert(`Download ${employee.firstName} ${employee.lastName}'s data`);
+                              setDownloadingEmployee(employee);
+                              setShowDownloadModal(true);
                               setActiveDropdown(null);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-cyan-50 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-cyan-50 flex items-center gap-2 cursor-pointer"
                           >
                             <Download className="w-4 h-4 text-cyan-600" />
                             Download Data
                           </button>
                           <div className="border-t border-gray-200 my-1"></div>
                           <button 
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (confirm(`Are you sure you want to delete ${employee.firstName} ${employee.lastName}?`)) {
-                                alert('Employee deleted');
-                              }
+                              setDeletingEmployee(employee);
+                              setShowDeleteModal(true);
                               setActiveDropdown(null);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4 text-red-600" />
                             Delete Employee
@@ -819,48 +838,56 @@ export default function HRRecordsPage() {
                                   View Details
                                 </button>
                                 <button 
+                                  type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    alert(`Edit ${employee.firstName} ${employee.lastName}`);
+                                    setEditingEmployee(employee);
+                                    setShowEditModal(true);
                                     setActiveDropdown(null);
                                   }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2 cursor-pointer"
                                 >
                                   <Edit3 className="w-4 h-4 text-blue-600" />
                                   Edit Profile
                                 </button>
                                 <button 
+                                  type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    alert(`Send message to ${employee.email}`);
+                                    setMessagingEmployee(employee);
+                                    setMessageSubject(`Message to ${employee.firstName} ${employee.lastName}`);
+                                    setMessageBody('');
+                                    setShowMessageModal(true);
                                     setActiveDropdown(null);
                                   }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2 cursor-pointer"
                                 >
                                   <MessageSquare className="w-4 h-4 text-green-600" />
                                   Send Message
                                 </button>
                                 <button 
+                                  type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    alert(`Download ${employee.firstName} ${employee.lastName}'s data`);
+                                    setDownloadingEmployee(employee);
+                                    setShowDownloadModal(true);
                                     setActiveDropdown(null);
                                   }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-cyan-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-cyan-50 flex items-center gap-2 cursor-pointer"
                                 >
                                   <Download className="w-4 h-4 text-cyan-600" />
                                   Download Data
                                 </button>
                                 <div className="border-t border-gray-200 my-1"></div>
                                 <button 
+                                  type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (confirm(`Are you sure you want to delete ${employee.firstName} ${employee.lastName}?`)) {
-                                      alert('Employee deleted');
-                                    }
+                                    setDeletingEmployee(employee);
+                                    setShowDeleteModal(true);
                                     setActiveDropdown(null);
                                   }}
-                                  className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
                                 >
                                   <Trash2 className="w-4 h-4 text-red-600" />
                                   Delete Employee
@@ -1080,15 +1107,38 @@ export default function HRRecordsPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                <button className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setEditingEmployee(selectedEmployee);
+                    setShowEditModal(true);
+                  }}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
                   <Edit3 className="w-5 h-5" />
                   Edit Profile
                 </button>
-                <button className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setMessagingEmployee(selectedEmployee);
+                    setMessageSubject(`Message to ${selectedEmployee.firstName} ${selectedEmployee.lastName}`);
+                    setMessageBody('');
+                    setShowMessageModal(true);
+                  }}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
                   <MessageSquare className="w-5 h-5" />
                   Send Message
                 </button>
-                <button className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setDownloadingEmployee(selectedEmployee);
+                    setShowDownloadModal(true);
+                  }}
+                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 cursor-pointer"
+                >
                   <Download className="w-5 h-5" />
                   Export
                 </button>
@@ -1250,6 +1300,495 @@ export default function HRRecordsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {showEditModal && editingEmployee && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                  <Edit3 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Edit Employee Profile</h2>
+                  <p className="text-blue-100 text-sm">{editingEmployee.firstName} {editingEmployee.lastName}</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingEmployee(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                  <input
+                    type="text"
+                    value={editingEmployee.firstName}
+                    onChange={(e) => setEditingEmployee({...editingEmployee, firstName: e.target.value})}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                  <input
+                    type="text"
+                    value={editingEmployee.lastName}
+                    onChange={(e) => setEditingEmployee({...editingEmployee, lastName: e.target.value})}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Position</label>
+                <input
+                  type="text"
+                  value={editingEmployee.position}
+                  onChange={(e) => setEditingEmployee({...editingEmployee, position: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={editingEmployee.email}
+                  onChange={(e) => setEditingEmployee({...editingEmployee, email: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
+                <input
+                  type="tel"
+                  value={editingEmployee.phone}
+                  onChange={(e) => setEditingEmployee({...editingEmployee, phone: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setEmployees(employees.map(emp => emp.id === editingEmployee.id ? editingEmployee : emp));
+                    setShowEditModal(false);
+                    setEditingEmployee(null);
+                    alert('✓ Employee profile updated successfully!');
+                  }}
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer"
+                >
+                  Save Changes
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingEmployee(null);
+                  }}
+                  className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Send Message Modal */}
+      {showMessageModal && messagingEmployee && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                  <MessageSquare className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Send Message</h2>
+                  <p className="text-green-100 text-sm">To: {messagingEmployee.email}</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowMessageModal(false);
+                  setMessagingEmployee(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
+                <input
+                  type="text"
+                  value={messageSubject}
+                  onChange={(e) => setMessageSubject(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter message subject"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Message</label>
+                <textarea
+                  value={messageBody}
+                  onChange={(e) => setMessageBody(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  rows={8}
+                  placeholder="Type your message here..."
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    window.location.href = `mailto:${messagingEmployee.email}?subject=${encodeURIComponent(messageSubject)}&body=${encodeURIComponent(messageBody)}`;
+                    setShowMessageModal(false);
+                    setMessagingEmployee(null);
+                    alert('✓ Email client opened!');
+                  }}
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Mail className="w-5 h-5" />
+                  Send Message
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setShowMessageModal(false);
+                    setMessagingEmployee(null);
+                  }}
+                  className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Download Modal */}
+      {showDownloadModal && downloadingEmployee && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
+                  <Download className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Download Employee Data</h2>
+                  <p className="text-cyan-100 text-sm mt-0.5">{downloadingEmployee.firstName} {downloadingEmployee.lastName} • {downloadingEmployee.employeeId}</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowDownloadModal(false);
+                  setDownloadingEmployee(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              {/* Employee Preview Card */}
+              <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-200 rounded-xl p-5">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                    {downloadingEmployee.firstName.charAt(0)}{downloadingEmployee.lastName.charAt(0)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900 text-lg">{downloadingEmployee.firstName} {downloadingEmployee.lastName}</p>
+                    <p className="text-sm text-gray-600">{downloadingEmployee.position}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded text-xs font-medium capitalize">
+                        {downloadingEmployee.department}
+                      </span>
+                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium capitalize">
+                        {downloadingEmployee.employmentType?.replace('-', ' ')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-cyan-600" />
+                    <span className="truncate">{downloadingEmployee.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-cyan-600" />
+                    <span>{downloadingEmployee.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-cyan-600" />
+                    <span>{downloadingEmployee.city}, {downloadingEmployee.country}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-cyan-600" />
+                    <span className="font-semibold">${downloadingEmployee.salary.toLocaleString()}/year</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Download Format Options */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm font-bold text-gray-900">Choose Download Format:</p>
+                  <span className="text-xs text-gray-500">Select your preferred file type</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Excel/CSV Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const csv = `First Name,Last Name,Employee ID,Position,Department,Email,Phone,Salary,Hire Date,Status,Employment Type,City,Country,Manager,Education,Performance Rating\n${downloadingEmployee.firstName},${downloadingEmployee.lastName},${downloadingEmployee.employeeId},${downloadingEmployee.position},${downloadingEmployee.department},${downloadingEmployee.email},${downloadingEmployee.phone},$${downloadingEmployee.salary},${downloadingEmployee.hireDate.toLocaleDateString()},${downloadingEmployee.status},${downloadingEmployee.employmentType},${downloadingEmployee.city},${downloadingEmployee.country},${downloadingEmployee.manager || 'N/A'},${downloadingEmployee.education},${downloadingEmployee.performance.rating}`;
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${downloadingEmployee.firstName}_${downloadingEmployee.lastName}_${downloadingEmployee.employeeId}_data.csv`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowDownloadModal(false);
+                      setDownloadingEmployee(null);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">Excel / CSV</p>
+                      <p className="text-xs text-green-100 mt-0.5">Spreadsheet format</p>
+                    </div>
+                  </button>
+
+                  {/* JSON Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const jsonData = {
+                        personalInfo: {
+                          firstName: downloadingEmployee.firstName,
+                          lastName: downloadingEmployee.lastName,
+                          employeeId: downloadingEmployee.employeeId,
+                          email: downloadingEmployee.email,
+                          phone: downloadingEmployee.phone,
+                          dateOfBirth: downloadingEmployee.dateOfBirth.toISOString(),
+                          address: downloadingEmployee.address,
+                          city: downloadingEmployee.city,
+                          country: downloadingEmployee.country
+                        },
+                        employment: {
+                          position: downloadingEmployee.position,
+                          department: downloadingEmployee.department,
+                          employmentType: downloadingEmployee.employmentType,
+                          hireDate: downloadingEmployee.hireDate.toISOString(),
+                          status: downloadingEmployee.status,
+                          salary: downloadingEmployee.salary,
+                          manager: downloadingEmployee.manager
+                        },
+                        performance: downloadingEmployee.performance,
+                        skills: downloadingEmployee.skills,
+                        education: downloadingEmployee.education,
+                        benefits: downloadingEmployee.benefits,
+                        emergencyContact: downloadingEmployee.emergencyContact,
+                        exportedAt: new Date().toISOString()
+                      };
+                      const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${downloadingEmployee.firstName}_${downloadingEmployee.lastName}_${downloadingEmployee.employeeId}_data.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowDownloadModal(false);
+                      setDownloadingEmployee(null);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">JSON</p>
+                      <p className="text-xs text-blue-100 mt-0.5">Structured data format</p>
+                    </div>
+                  </button>
+
+                  {/* PDF Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const pdfContent = `
+EMPLOYEE PROFILE REPORT
+${'='.repeat(80)}
+
+PERSONAL INFORMATION
+${'-'.repeat(80)}
+Name:              ${downloadingEmployee.firstName} ${downloadingEmployee.lastName}
+Employee ID:       ${downloadingEmployee.employeeId}
+Date of Birth:     ${downloadingEmployee.dateOfBirth.toLocaleDateString()}
+Email:             ${downloadingEmployee.email}
+Phone:             ${downloadingEmployee.phone}
+Address:           ${downloadingEmployee.address}, ${downloadingEmployee.city}, ${downloadingEmployee.country}
+
+EMPLOYMENT DETAILS
+${'-'.repeat(80)}
+Position:          ${downloadingEmployee.position}
+Department:        ${downloadingEmployee.department}
+Employment Type:   ${downloadingEmployee.employmentType}
+Hire Date:         ${downloadingEmployee.hireDate.toLocaleDateString()}
+Status:            ${downloadingEmployee.status}
+Manager:           ${downloadingEmployee.manager || 'N/A'}
+Tenure:            ${Math.floor((new Date().getTime() - downloadingEmployee.hireDate.getTime()) / (1000 * 60 * 60 * 24 * 365))} years
+
+COMPENSATION & PERFORMANCE
+${'-'.repeat(80)}
+Annual Salary:     $${downloadingEmployee.salary.toLocaleString()}
+Performance:       ${downloadingEmployee.performance.rating}/5.0
+Last Review:       ${downloadingEmployee.performance.lastReview.toLocaleDateString()}
+Active Goals:      ${downloadingEmployee.performance.goals}
+
+SKILLS & EDUCATION
+${'-'.repeat(80)}
+Education:         ${downloadingEmployee.education}
+Skills:            ${downloadingEmployee.skills.join(', ')}
+
+BENEFITS
+${'-'.repeat(80)}
+${downloadingEmployee.benefits.map(b => `• ${b}`).join('\n')}
+
+EMERGENCY CONTACT
+${'-'.repeat(80)}
+Name:              ${downloadingEmployee.emergencyContact.name}
+Relationship:      ${downloadingEmployee.emergencyContact.relationship}
+Phone:             ${downloadingEmployee.emergencyContact.phone}
+
+${'='.repeat(80)}
+Report Generated:  ${new Date().toLocaleString()}
+Confidential - For Internal Use Only
+`;
+                      const blob = new Blob([pdfContent], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${downloadingEmployee.firstName}_${downloadingEmployee.lastName}_${downloadingEmployee.employeeId}_profile.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowDownloadModal(false);
+                      setDownloadingEmployee(null);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">PDF Report</p>
+                      <p className="text-xs text-red-100 mt-0.5">Formatted document</p>
+                    </div>
+                  </button>
+
+                  {/* Plain Text Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const data = `EMPLOYEE DATA EXPORT\n${'='.repeat(60)}\n\nPERSONAL INFORMATION:\n  Name: ${downloadingEmployee.firstName} ${downloadingEmployee.lastName}\n  Employee ID: ${downloadingEmployee.employeeId}\n  Email: ${downloadingEmployee.email}\n  Phone: ${downloadingEmployee.phone}\n  Address: ${downloadingEmployee.address}, ${downloadingEmployee.city}, ${downloadingEmployee.country}\n\nEMPLOYMENT DETAILS:\n  Position: ${downloadingEmployee.position}\n  Department: ${downloadingEmployee.department}\n  Employment Type: ${downloadingEmployee.employmentType}\n  Hire Date: ${downloadingEmployee.hireDate.toLocaleDateString()}\n  Status: ${downloadingEmployee.status}\n  Manager: ${downloadingEmployee.manager || 'N/A'}\n\nCOMPENSATION:\n  Annual Salary: $${downloadingEmployee.salary.toLocaleString()}\n\nPERFORMANCE:\n  Rating: ${downloadingEmployee.performance.rating}/5.0\n  Last Review: ${downloadingEmployee.performance.lastReview.toLocaleDateString()}\n  Active Goals: ${downloadingEmployee.performance.goals}\n\nSKILLS:\n  ${downloadingEmployee.skills.join(', ')}\n\nEDUCATION:\n  ${downloadingEmployee.education}\n\nExported: ${new Date().toLocaleString()}\n`;
+                      const blob = new Blob([data], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${downloadingEmployee.firstName}_${downloadingEmployee.lastName}_${downloadingEmployee.employeeId}_data.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowDownloadModal(false);
+                      setDownloadingEmployee(null);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">Plain Text</p>
+                      <p className="text-xs text-gray-200 mt-0.5">Simple text file</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Info Banner */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-blue-800">
+                  <p className="font-semibold mb-1">Data Privacy Notice</p>
+                  <p>Downloaded files contain sensitive employee information. Handle with care and follow company data protection policies.</p>
+                </div>
+              </div>
+
+              {/* Cancel Button */}
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowDownloadModal(false);
+                  setDownloadingEmployee(null);
+                }}
+                className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingEmployee && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingEmployee(null);
+          }}
+          onConfirm={() => {
+            setEmployees(employees.filter(emp => emp.id !== deletingEmployee.id));
+            alert('✓ Employee deleted successfully!');
+          }}
+          title="Delete Employee"
+          itemName={`${deletingEmployee.firstName} ${deletingEmployee.lastName}`}
+          itemDetails={`${deletingEmployee.position} - ${deletingEmployee.department}`}
+          warningMessage="This will permanently remove this employee and all their records."
+        />
       )}
     </div>
   );

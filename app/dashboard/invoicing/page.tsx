@@ -9,6 +9,7 @@ import {
   ChevronDown, ChevronRight, Printer, RefreshCw
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Invoice {
   id: string;
@@ -217,7 +218,9 @@ export default function InvoicingPage() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showNewInvoiceModal, setShowNewInvoiceModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [emailInvoice, setEmailInvoice] = useState<Invoice | null>(null);
+  const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null);
   const [emailData, setEmailData] = useState({
     to: '',
     subject: '',
@@ -287,27 +290,57 @@ export default function InvoicingPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl">
+      <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-              <FileText className="w-10 h-10" />
+            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
+              <FileText className="w-10 h-10 text-gray-700" />
               Invoicing
             </h1>
-            <p className="text-blue-100 text-lg">Create, manage and track all your invoices</p>
+            <p className="text-gray-600 text-lg">Create, manage and track all your invoices</p>
           </div>
           <div className="flex items-center gap-3">
             <button 
-              className="px-6 py-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl hover:bg-opacity-30 transition-all font-semibold flex items-center gap-2 cursor-pointer"
-              style={{ color: 'var(--color-purple-600)' }}
+              type="button"
+              onClick={() => {
+                const headers = ['Invoice ID', 'Client', 'Email', 'Amount', 'Status', 'Issue Date', 'Due Date'];
+                const rows = invoices.map(inv => [
+                  inv.id,
+                  inv.client,
+                  inv.clientEmail,
+                  inv.amount,
+                  inv.status,
+                  inv.date,
+                  inv.dueDate
+                ]);
+                
+                let csv = 'Invoice Report\n';
+                csv += `Generated: ${new Date().toLocaleDateString()}\n`;
+                csv += `Total Invoices: ${invoices.length}\n`;
+                csv += `Total Amount: £${stats.total.toLocaleString()}\n\n`;
+                csv += headers.join(',') + '\n';
+                csv += rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `invoices-${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                alert('✓ All invoices exported successfully!');
+              }}
+              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl rounded-xl transition-all font-semibold flex items-center gap-2 cursor-pointer"
             >
               <Download className="w-5 h-5" />
               <span>Export All</span>
             </button>
             <button 
+              type="button"
               onClick={() => setShowNewInvoiceModal(true)}
-              className="px-6 py-3 bg-white rounded-xl hover:shadow-2xl transition-all font-bold flex items-center gap-2 cursor-pointer"
-              style={{ color: 'var(--color-purple-600)' }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               New Invoice
@@ -405,6 +438,7 @@ export default function InvoicingPage() {
         </div>
         <div className="relative">
           <button 
+            type="button"
             onClick={() => setShowFilterMenu(!showFilterMenu)}
             className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-2 font-medium shadow-sm transition-all cursor-pointer"
           >
@@ -418,6 +452,7 @@ export default function InvoicingPage() {
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
                 {['all', 'draft', 'sent', 'paid', 'overdue', 'cancelled'].map((status) => (
                   <button
+                    type="button"
                     key={status}
                     onClick={() => {
                       setFilterStatus(status);
@@ -501,6 +536,7 @@ export default function InvoicingPage() {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <button 
+                      type="button"
                       onClick={() => handleViewInvoice(invoice)}
                       className="p-2 hover:bg-blue-50 rounded-lg transition-colors group/btn cursor-pointer"
                       title="View"
@@ -509,6 +545,7 @@ export default function InvoicingPage() {
                     </button>
                     <div className="relative">
                       <button 
+                        type="button"
                         onClick={() => setDownloadMenuOpen(downloadMenuOpen === invoice.id ? null : invoice.id)}
                         className="p-2 hover:bg-green-50 rounded-lg transition-colors group/btn cursor-pointer" 
                         title="Download"
@@ -520,6 +557,7 @@ export default function InvoicingPage() {
                           <div className="fixed inset-0 z-40" onClick={() => setDownloadMenuOpen(null)} />
                           <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
                             <button 
+                              type="button"
                               onClick={() => {
                                 downloadAsPDF(invoice);
                                 setDownloadMenuOpen(null);
@@ -530,6 +568,7 @@ export default function InvoicingPage() {
                               <span className="font-medium">Download PDF</span>
                             </button>
                             <button 
+                              type="button"
                               onClick={() => {
                                 downloadAsExcel(invoice);
                                 setDownloadMenuOpen(null);
@@ -544,6 +583,7 @@ export default function InvoicingPage() {
                       )}
                     </div>
                     <button 
+                      type="button"
                       onClick={() => handleSendEmail(invoice)}
                       className="p-2 hover:bg-purple-50 rounded-lg transition-colors group/btn cursor-pointer" 
                       title="Send"
@@ -552,6 +592,7 @@ export default function InvoicingPage() {
                     </button>
                     <div className="relative">
                       <button 
+                        type="button"
                         onClick={() => setActiveMenu(activeMenu === invoice.id ? null : invoice.id)}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                       >
@@ -562,6 +603,7 @@ export default function InvoicingPage() {
                           <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
                           <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
                             <button 
+                              type="button"
                               onClick={() => {
                                 setSelectedInvoice(invoice);
                                 setShowInvoiceModal(true);
@@ -573,6 +615,7 @@ export default function InvoicingPage() {
                               <span className="font-medium">Edit</span>
                             </button>
                             <button 
+                              type="button"
                               onClick={() => {
                                 navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}`);
                                 alert('✓ Invoice link copied!');
@@ -584,6 +627,7 @@ export default function InvoicingPage() {
                               <span className="font-medium">Copy Link</span>
                             </button>
                             <button 
+                              type="button"
                               onClick={() => {
                                 handleSendEmail(invoice);
                                 setActiveMenu(null);
@@ -595,12 +639,11 @@ export default function InvoicingPage() {
                             </button>
                             <div className="border-t border-gray-200 my-1" />
                             <button 
+                              type="button"
                               onClick={() => {
-                                if (confirm(`⚠️ Are you sure you want to delete invoice ${invoice.id}?`)) {
-                                  setInvoices(invoices.filter(inv => inv.id !== invoice.id));
-                                  setActiveMenu(null);
-                                  alert('✓ Invoice deleted successfully');
-                                }
+                                setDeletingInvoice(invoice);
+                                setShowDeleteModal(true);
+                                setActiveMenu(null);
                               }}
                               className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
                             >
@@ -618,6 +661,404 @@ export default function InvoicingPage() {
           </tbody>
         </table>
       </div>
+
+      {/* New Invoice Modal */}
+      {showNewInvoiceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b-2 border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Plus className="w-6 h-6 text-blue-600" />
+                Create New Invoice
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowNewInvoiceModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Client Name</label>
+                  <input
+                    type="text"
+                    value={newInvoice.client}
+                    onChange={(e) => setNewInvoice({ ...newInvoice, client: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., Acme Corp"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Client Email</label>
+                  <input
+                    type="email"
+                    value={newInvoice.clientEmail}
+                    onChange={(e) => setNewInvoice({ ...newInvoice, clientEmail: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="client@example.com"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Issue Date</label>
+                  <input
+                    type="date"
+                    value={newInvoice.date}
+                    onChange={(e) => setNewInvoice({ ...newInvoice, date: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Due Date</label>
+                  <input
+                    type="date"
+                    value={newInvoice.dueDate}
+                    onChange={(e) => setNewInvoice({ ...newInvoice, dueDate: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-semibold text-gray-700">Invoice Items</label>
+                  <button
+                    type="button"
+                    onClick={() => setNewInvoice({
+                      ...newInvoice,
+                      items: [...newInvoice.items, { description: '', quantity: 1, rate: 0 }]
+                    })}
+                    className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-semibold flex items-center gap-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Item
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {newInvoice.items.map((item, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-3 items-end">
+                      <div className="col-span-5">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                        <input
+                          type="text"
+                          value={item.description}
+                          onChange={(e) => {
+                            const items = [...newInvoice.items];
+                            items[index].description = e.target.value;
+                            setNewInvoice({ ...newInvoice, items });
+                          }}
+                          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          placeholder="Service or product"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Qty</label>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const items = [...newInvoice.items];
+                            items[index].quantity = parseInt(e.target.value) || 0;
+                            setNewInvoice({ ...newInvoice, items });
+                          }}
+                          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          min="1"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Rate (£)</label>
+                        <input
+                          type="number"
+                          value={item.rate}
+                          onChange={(e) => {
+                            const items = [...newInvoice.items];
+                            items[index].rate = parseFloat(e.target.value) || 0;
+                            setNewInvoice({ ...newInvoice, items });
+                          }}
+                          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          min="0"
+                          step="0.01"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Total</label>
+                        <div className="px-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm font-bold text-gray-900">
+                          £{(item.quantity * item.rate).toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="col-span-1">
+                        {newInvoice.items.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const items = newInvoice.items.filter((_, i) => i !== index);
+                              setNewInvoice({ ...newInvoice, items });
+                            }}
+                            className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border-2 border-blue-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold text-gray-900">Total Amount:</span>
+                  <span className="text-3xl font-bold text-blue-600">
+                    £{newInvoice.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const totalAmount = newInvoice.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
+                    const newInv: Invoice = {
+                      id: `INV-${String(invoices.length + 1).padStart(3, '0')}`,
+                      client: newInvoice.client,
+                      clientEmail: newInvoice.clientEmail,
+                      amount: totalAmount,
+                      status: 'draft',
+                      date: newInvoice.date,
+                      dueDate: newInvoice.dueDate,
+                      items: newInvoice.items
+                    };
+                    setInvoices([...invoices, newInv]);
+                    setShowNewInvoiceModal(false);
+                    setNewInvoice({
+                      clientType: 'business',
+                      client: '',
+                      clientEmail: '',
+                      date: new Date().toISOString().split('T')[0],
+                      dueDate: '',
+                      items: [{ description: '', quantity: 1, rate: 0 }]
+                    });
+                    alert('✓ Invoice created successfully!');
+                  }}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-bold"
+                >
+                  Create Invoice
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewInvoiceModal(false)}
+                  className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Invoice Modal */}
+      {showInvoiceModal && selectedInvoice && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b-2 border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <FileText className="w-6 h-6 text-blue-600" />
+                Invoice {selectedInvoice.id}
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowInvoiceModal(false);
+                  setSelectedInvoice(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-8 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-3xl font-bold text-gray-900">{selectedInvoice.id}</h3>
+                  <p className="text-gray-600 mt-1">Invoice Details</p>
+                </div>
+                <span className={`px-4 py-2 rounded-xl font-bold text-sm ${
+                  selectedInvoice.status === 'paid' ? 'bg-green-100 text-green-700' :
+                  selectedInvoice.status === 'sent' ? 'bg-blue-100 text-blue-700' :
+                  selectedInvoice.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                  'bg-gray-100 text-gray-700'
+                }`}>
+                  {selectedInvoice.status.toUpperCase()}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <h4 className="font-bold text-gray-900 mb-2">Bill To:</h4>
+                  <p className="text-gray-900 font-semibold">{selectedInvoice.client}</p>
+                  <p className="text-gray-600 text-sm">{selectedInvoice.clientEmail}</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <h4 className="font-bold text-gray-900 mb-2">Invoice Details:</h4>
+                  <p className="text-gray-700 text-sm">Issue Date: {selectedInvoice.date}</p>
+                  <p className="text-gray-700 text-sm">Due Date: {selectedInvoice.dueDate}</p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-900 mb-3">Items:</h4>
+                <table className="w-full">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Description</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Qty</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Rate</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {selectedInvoice.items.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-3 text-gray-900">{item.description}</td>
+                        <td className="px-4 py-3 text-gray-700">{item.quantity}</td>
+                        <td className="px-4 py-3 text-gray-700">£{item.rate}</td>
+                        <td className="px-4 py-3 font-bold text-gray-900">£{(item.quantity * item.rate).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border-2 border-blue-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xl font-bold text-gray-900">Total Amount:</span>
+                  <span className="text-4xl font-bold text-blue-600">£{selectedInvoice.amount.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => downloadAsPDF(selectedInvoice)}
+                  className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl hover:shadow-lg transition-all font-bold flex items-center justify-center gap-2"
+                >
+                  <Download className="w-5 h-5" />
+                  Download PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSendEmail(selectedInvoice);
+                    setShowInvoiceModal(false);
+                  }}
+                  className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-bold flex items-center justify-center gap-2"
+                >
+                  <Send className="w-5 h-5" />
+                  Send Email
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Modal */}
+      {showEmailModal && emailInvoice && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full">
+            <div className="p-6 border-b-2 border-gray-200 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Mail className="w-6 h-6 text-purple-600" />
+                Send Invoice via Email
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowEmailModal(false);
+                  setEmailInvoice(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">To:</label>
+                <input
+                  type="email"
+                  value={emailData.to}
+                  onChange={(e) => setEmailData({ ...emailData, to: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Subject:</label>
+                <input
+                  type="text"
+                  value={emailData.subject}
+                  onChange={(e) => setEmailData({ ...emailData, subject: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Message:</label>
+                <textarea
+                  value={emailData.message}
+                  onChange={(e) => setEmailData({ ...emailData, message: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  rows={8}
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={sendInvoiceEmail}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all font-bold flex items-center justify-center gap-2"
+                >
+                  <Send className="w-5 h-5" />
+                  Send Invoice
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEmailModal(false);
+                    setEmailInvoice(null);
+                  }}
+                  className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingInvoice && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingInvoice(null);
+          }}
+          onConfirm={() => {
+            setInvoices(invoices.filter(inv => inv.id !== deletingInvoice.id));
+            alert('✓ Invoice deleted successfully');
+          }}
+          title="Delete Invoice"
+          itemName={deletingInvoice.id}
+          itemDetails={`${deletingInvoice.client} - £${deletingInvoice.amount.toLocaleString()}`}
+          warningMessage="This will permanently remove this invoice and all associated records."
+        />
+      )}
     </div>
   );
 }

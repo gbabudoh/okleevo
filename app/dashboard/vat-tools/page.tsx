@@ -107,30 +107,30 @@ export default function VATToolsPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl">
+      <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-              <Calculator className="w-10 h-10" />
+            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
+              <Calculator className="w-10 h-10 text-gray-700" />
               VAT Tools
             </h1>
-            <p className="text-indigo-100 text-lg">Calculate and manage VAT for your business with ease</p>
+            <p className="text-gray-600 text-lg">Calculate and manage VAT for your business with ease</p>
           </div>
           <div className="flex items-center gap-3">
             <button 
+              type="button"
               onClick={exportHistory}
               disabled={vatHistory.length === 0}
-              className="px-6 py-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl hover:bg-opacity-30 transition-all font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ color: 'var(--color-purple-600)' }}
+              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl rounded-xl transition-all font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download className="w-5 h-5" />
               <span>Export History</span>
             </button>
             <button 
+              type="button"
               onClick={() => setVatHistory([])}
               disabled={vatHistory.length === 0}
-              className="px-6 py-3 bg-white rounded-xl hover:shadow-2xl transition-all font-bold flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ color: 'var(--color-purple-600)' }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className="w-5 h-5" />
               Clear History

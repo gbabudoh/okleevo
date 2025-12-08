@@ -11,6 +11,7 @@ import {
   ArrowUpRight, ArrowDownRight, X, Check, ChevronRight, Star,
   QrCode, Scan, Link, Share2, Copy, History, AlertCircle
 } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface InventoryItem {
   id: string;
@@ -200,6 +201,9 @@ export default function InventoryPage() {
   const [showAddItem, setShowAddItem] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showStockMovement, setShowStockMovement] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<InventoryItem | null>(null);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -537,9 +541,50 @@ export default function InventoryPage() {
                   <button className="flex-1 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium">
                     Adjust Stock
                   </button>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <MoreVertical className="w-4 h-4 text-gray-600" />
-                  </button>
+                  <div className="relative">
+                    <button 
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenu(activeMenu === item.id ? null : item.id);
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <MoreVertical className="w-4 h-4 text-gray-600" />
+                    </button>
+                    {activeMenu === item.id && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedItem(item);
+                              setActiveMenu(null);
+                            }}
+                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer transition-colors"
+                          >
+                            <Eye className="w-4 h-4 text-blue-600" />
+                            <span className="font-medium">View Details</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingItem(item);
+                              setShowDeleteModal(true);
+                              setActiveMenu(null);
+                            }}
+                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span className="font-medium">Delete</span>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -617,9 +662,39 @@ export default function InventoryPage() {
                         >
                           <Eye className="w-4 h-4 text-indigo-600" />
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="More options">
-                          <MoreVertical className="w-4 h-4 text-gray-600" />
-                        </button>
+                        <div className="relative">
+                          <button 
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenu(activeMenu === item.id ? null : item.id);
+                            }}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer" 
+                            title="More options"
+                          >
+                            <MoreVertical className="w-4 h-4 text-gray-600" />
+                          </button>
+                          {activeMenu === item.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
+                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeletingItem(item);
+                                    setShowDeleteModal(true);
+                                    setActiveMenu(null);
+                                  }}
+                                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  <span className="font-medium">Delete</span>
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -792,7 +867,16 @@ export default function InventoryPage() {
                   <QrCode className="w-5 h-5" />
                   Generate QR
                 </button>
-                <button className="px-6 py-3 border-2 border-red-200 text-red-700 font-medium rounded-xl hover:bg-red-50 transition-all flex items-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    if (selectedItem) {
+                      setDeletingItem(selectedItem);
+                      setShowDeleteModal(true);
+                    }
+                  }}
+                  className="px-6 py-3 border-2 border-red-200 text-red-700 font-medium rounded-xl hover:bg-red-50 transition-all flex items-center gap-2 cursor-pointer"
+                >
                   <Trash2 className="w-5 h-5" />
                   Delete
                 </button>
@@ -1012,6 +1096,26 @@ export default function InventoryPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingItem && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingItem(null);
+          }}
+          onConfirm={() => {
+            setItems(items.filter(item => item.id !== deletingItem.id));
+            setSelectedItem(null);
+            alert('✓ Item deleted successfully!');
+          }}
+          title="Delete Inventory Item"
+          itemName={deletingItem.name}
+          itemDetails={`SKU: ${deletingItem.sku} - Qty: ${deletingItem.quantity} ${deletingItem.unit}`}
+          warningMessage="This will permanently remove this item from your inventory records."
+        />
       )}
     </div>
   );

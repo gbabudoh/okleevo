@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { MessageSquare, Clock, User, Plus, X, Mail, AlertCircle, CheckCircle, Timer, Search, Filter, Send, Paperclip, Tag, Eye, Edit, Trash2, MessageCircle, TrendingUp, Users, BarChart3, Zap } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Ticket {
   id: string;
@@ -31,8 +32,10 @@ export default function HelpdeskPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReplyModal, setShowReplyModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [editTicket, setEditTicket] = useState<Ticket | null>(null);
+  const [deletingTicket, setDeletingTicket] = useState<Ticket | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
@@ -95,10 +98,9 @@ export default function HelpdeskPage() {
     }
   };
 
-  const handleDeleteTicket = (id: string) => {
-    if (confirm('Are you sure you want to delete this ticket?')) {
-      setTickets(tickets.filter(t => t.id !== id));
-    }
+  const handleDeleteTicket = (ticket: Ticket) => {
+    setDeletingTicket(ticket);
+    setShowDeleteModal(true);
   };
 
   return (
@@ -349,7 +351,8 @@ export default function HelpdeskPage() {
                     <Edit className="w-5 h-5" />
                   </button>
                   <button 
-                    onClick={() => handleDeleteTicket(ticket.id)}
+                    type="button"
+                    onClick={() => handleDeleteTicket(ticket)}
                     className="p-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg hover:scale-105 cursor-pointer"
                     title="Delete"
                   >
@@ -826,6 +829,25 @@ export default function HelpdeskPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingTicket && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingTicket(null);
+          }}
+          onConfirm={() => {
+            setTickets(tickets.filter(t => t.id !== deletingTicket.id));
+            alert('✓ Ticket deleted successfully!');
+          }}
+          title="Delete Ticket"
+          itemName={deletingTicket.subject}
+          itemDetails={`${deletingTicket.customer} - Priority: ${deletingTicket.priority}`}
+          warningMessage="This will permanently remove this support ticket and all its messages."
+        />
       )}
     </div>
   );

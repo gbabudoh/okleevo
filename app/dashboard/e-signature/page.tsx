@@ -9,6 +9,7 @@ import {
   Type, Image as ImageIcon, Sparkles, Check, X, Zap,
   FileCheck, FileClock, FileX, Grid, List, ChevronRight
 } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Document {
   id: string;
@@ -120,6 +121,13 @@ export default function ESignaturePage() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingDocument, setDeletingDocument] = useState<Document | null>(null);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadingDocument, setDownloadingDocument] = useState<Document | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [sharingDocument, setSharingDocument] = useState<Document | null>(null);
 
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -153,6 +161,18 @@ export default function ESignaturePage() {
     ctx.lineJoin = 'round';
     ctx.imageSmoothingEnabled = true;
   }, [showSignModal]);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = () => {
+      if (activeDropdown) {
+        setActiveDropdown(null);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [activeDropdown]);
 
   // Get coordinates from mouse or touch event
   const getCoordinates = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -303,10 +323,33 @@ export default function ESignaturePage() {
           <p className="text-gray-600 mt-2">Sign and manage documents digitally with ease</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
+          <button 
+            onClick={() => document.getElementById('document-upload-top')?.click()}
+            className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer"
+          >
             <Upload className="w-5 h-5 text-gray-600" />
             <span className="font-medium text-gray-700">Upload</span>
           </button>
+          <input
+            type="file"
+            id="document-upload-top"
+            accept=".pdf,.doc,.docx,image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                if (file.size > 10 * 1024 * 1024) {
+                  alert('File size must be less than 10MB');
+                  return;
+                }
+                
+                alert(`✓ Document "${file.name}" uploaded successfully!\n\nFile size: ${(file.size / 1024).toFixed(2)} KB\nType: ${file.type || 'Unknown'}\n\nYou can now add signatures to this document.`);
+                
+                // Reset input so same file can be uploaded again
+                e.target.value = '';
+              }
+            }}
+          />
           <button
             onClick={() => setShowSignModal(true)}
             className="px-6 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2 group"
@@ -487,19 +530,116 @@ export default function ESignaturePage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
-                  <button className="flex-1 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium flex items-center justify-center gap-1">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedDocument(doc);
+                    }}
+                    className="flex-1 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                  >
                     <Eye className="w-4 h-4" />
                     View
                   </button>
                   {doc.status === 'pending' && (
-                    <button className="flex-1 px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium flex items-center justify-center gap-1">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSignModal(true);
+                      }}
+                      className="flex-1 px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                    >
                       <PenTool className="w-4 h-4" />
                       Sign
                     </button>
                   )}
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <MoreVertical className="w-4 h-4 text-gray-600" />
-                  </button>
+                  <div className="relative">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveDropdown(activeDropdown === doc.id ? null : doc.id);
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <MoreVertical className="w-4 h-4 text-gray-600" />
+                    </button>
+                    
+                    {activeDropdown === doc.id && (
+                      <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 z-[100]">
+                        <div className="py-2">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedDocument(doc);
+                              setActiveDropdown(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 flex items-center gap-2"
+                          >
+                            <Eye className="w-4 h-4 text-indigo-600" />
+                            View Details
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDownloadingDocument(doc);
+                              setShowDownloadModal(true);
+                              setActiveDropdown(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2"
+                          >
+                            <Download className="w-4 h-4 text-blue-600" />
+                            Download
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSharingDocument(doc);
+                              setShowShareModal(true);
+                              setActiveDropdown(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2"
+                          >
+                            <Share2 className="w-4 h-4 text-green-600" />
+                            Share
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const newDoc: Document = {
+                                ...doc,
+                                id: `${Date.now()}`,
+                                name: `${doc.name} (Copy)`,
+                                status: 'draft',
+                                createdDate: new Date(),
+                                signedDate: undefined,
+                                recipients: doc.recipients.map(r => ({ ...r, status: 'pending', signedDate: undefined }))
+                              };
+                              setDocuments([...documents, newDoc]);
+                              setActiveDropdown(null);
+                              alert('✓ Document duplicated successfully!');
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2"
+                          >
+                            <Copy className="w-4 h-4 text-purple-600" />
+                            Duplicate
+                          </button>
+                          <div className="border-t border-gray-200 my-1"></div>
+                          <button 
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingDocument(doc);
+                              setShowDeleteModal(true);
+                              setActiveDropdown(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                            Delete Document
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -565,20 +705,116 @@ export default function ESignaturePage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button 
-                          onClick={() => setSelectedDocument(doc)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedDocument(doc);
+                          }}
                           className="p-2 hover:bg-indigo-50 rounded-lg transition-colors"
                           title="View details"
                         >
                           <Eye className="w-4 h-4 text-indigo-600" />
                         </button>
                         {doc.status === 'pending' && (
-                          <button className="p-2 hover:bg-green-50 rounded-lg transition-colors" title="Sign">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowSignModal(true);
+                            }}
+                            className="p-2 hover:bg-green-50 rounded-lg transition-colors" 
+                            title="Sign"
+                          >
                             <PenTool className="w-4 h-4 text-green-600" />
                           </button>
                         )}
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="More options">
-                          <MoreVertical className="w-4 h-4 text-gray-600" />
-                        </button>
+                        <div className="relative">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDropdown(activeDropdown === `list-${doc.id}` ? null : `list-${doc.id}`);
+                            }}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors" 
+                            title="More options"
+                          >
+                            <MoreVertical className="w-4 h-4 text-gray-600" />
+                          </button>
+                          
+                          {activeDropdown === `list-${doc.id}` && (
+                            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 z-[100]">
+                              <div className="py-2">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedDocument(doc);
+                                    setActiveDropdown(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 flex items-center gap-2"
+                                >
+                                  <Eye className="w-4 h-4 text-indigo-600" />
+                                  View Details
+                                </button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDownloadingDocument(doc);
+                                    setShowDownloadModal(true);
+                                    setActiveDropdown(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2"
+                                >
+                                  <Download className="w-4 h-4 text-blue-600" />
+                                  Download
+                                </button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSharingDocument(doc);
+                                    setShowShareModal(true);
+                                    setActiveDropdown(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2"
+                                >
+                                  <Share2 className="w-4 h-4 text-green-600" />
+                                  Share
+                                </button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newDoc: Document = {
+                                      ...doc,
+                                      id: `${Date.now()}`,
+                                      name: `${doc.name} (Copy)`,
+                                      status: 'draft',
+                                      createdDate: new Date(),
+                                      signedDate: undefined,
+                                      recipients: doc.recipients.map(r => ({ ...r, status: 'pending', signedDate: undefined }))
+                                    };
+                                    setDocuments([...documents, newDoc]);
+                                    setActiveDropdown(null);
+                                    alert('✓ Document duplicated successfully!');
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2"
+                                >
+                                  <Copy className="w-4 h-4 text-purple-600" />
+                                  Duplicate
+                                </button>
+                                <div className="border-t border-gray-200 my-1"></div>
+                                <button 
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeletingDocument(doc);
+                                    setShowDeleteModal(true);
+                                    setActiveDropdown(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-600" />
+                                  Delete Document
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -742,13 +978,75 @@ export default function ESignaturePage() {
               {/* Upload Signature */}
               {signatureType === 'upload' && (
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-indigo-500 transition-colors cursor-pointer">
+                  <div 
+                    onClick={() => document.getElementById('signature-upload')?.click()}
+                    className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-indigo-500 transition-colors cursor-pointer"
+                  >
                     <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-400" />
                     <p className="font-semibold text-gray-900 mb-1">Upload Signature Image</p>
                     <p className="text-sm text-gray-600 mb-4">PNG, JPG up to 5MB</p>
+                    <input
+                      type="file"
+                      id="signature-upload"
+                      accept="image/png,image/jpeg,image/jpg"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 5 * 1024 * 1024) {
+                            alert('File size must be less than 5MB');
+                            return;
+                          }
+                          
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const img = new Image();
+                            img.onload = () => {
+                              // Create a canvas to display the uploaded image
+                              const canvas = canvasRef.current;
+                              if (canvas) {
+                                const ctx = canvas.getContext('2d');
+                                if (ctx) {
+                                  // Clear canvas
+                                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                  
+                                  // Calculate scaling to fit canvas while maintaining aspect ratio
+                                  const scale = Math.min(
+                                    canvas.width / img.width,
+                                    canvas.height / img.height
+                                  );
+                                  const x = (canvas.width - img.width * scale) / 2;
+                                  const y = (canvas.height - img.height * scale) / 2;
+                                  
+                                  // Draw image on canvas
+                                  ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                                }
+                              }
+                            };
+                            img.src = event.target?.result as string;
+                          };
+                          reader.readAsDataURL(file);
+                          
+                          alert(`✓ Signature image "${file.name}" uploaded successfully!`);
+                        }
+                      }}
+                    />
                     <button className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors font-medium">
                       Choose File
                     </button>
+                  </div>
+                  
+                  {/* Preview Canvas */}
+                  <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border-2 border-indigo-200">
+                    <p className="text-sm font-semibold text-indigo-900 mb-4">Preview</p>
+                    <div className="bg-white rounded-lg p-4 border-2 border-gray-200">
+                      <canvas
+                        ref={canvasRef}
+                        width={600}
+                        height={200}
+                        className="w-full border border-gray-300 rounded-lg"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -901,23 +1199,38 @@ export default function ESignaturePage() {
 
               {/* Actions */}
               <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                <button className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setDownloadingDocument(selectedDocument);
+                    setShowDownloadModal(true);
+                  }}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
                   <Download className="w-5 h-5" />
                   Download
                 </button>
                 {selectedDocument.status === 'pending' && (
                   <button 
+                    type="button"
                     onClick={() => {
                       setSelectedDocument(null);
                       setShowSignModal(true);
                     }}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <PenTool className="w-5 h-5" />
                     Sign Document
                   </button>
                 )}
-                <button className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setSharingDocument(selectedDocument);
+                    setShowShareModal(true);
+                  }}
+                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 cursor-pointer"
+                >
                   <Share2 className="w-5 h-5" />
                   Share
                 </button>
@@ -925,6 +1238,364 @@ export default function ESignaturePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Download Modal */}
+      {showDownloadModal && downloadingDocument && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
+            <div className="bg-gradient-to-r from-blue-500 to-cyan-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
+                  <Download className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Download Document</h2>
+                  <p className="text-blue-100 text-sm mt-0.5">{downloadingDocument.name}</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowDownloadModal(false);
+                  setDownloadingDocument(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              {/* Document Preview Card */}
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-5">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                    <FileText className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900 text-lg">{downloadingDocument.name}</p>
+                    <p className="text-sm text-gray-600">{downloadingDocument.type}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                        {downloadingDocument.pages} pages
+                      </span>
+                      <span className="px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded text-xs font-medium capitalize">
+                        {downloadingDocument.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-blue-600" />
+                    <span>Sender: {downloadingDocument.sender}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-blue-600" />
+                    <span>{downloadingDocument.recipients.length} Recipients</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Download Format Options */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm font-bold text-gray-900">Choose Download Format:</p>
+                  <span className="text-xs text-gray-500">Select your preferred file type</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* PDF Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const pdfContent = `
+E-SIGNATURE DOCUMENT
+${'='.repeat(80)}
+
+Document: ${downloadingDocument.name}
+Type: ${downloadingDocument.type}
+Status: ${downloadingDocument.status.toUpperCase()}
+Created: ${downloadingDocument.createdDate.toLocaleDateString()}
+${downloadingDocument.signedDate ? `Signed: ${downloadingDocument.signedDate.toLocaleDateString()}` : ''}
+Pages: ${downloadingDocument.pages}
+
+DESCRIPTION:
+${downloadingDocument.description || 'No description provided'}
+
+SENDER:
+${downloadingDocument.sender}
+
+RECIPIENTS (${downloadingDocument.recipients.length}):
+${downloadingDocument.recipients.map(r => `  • ${r.name} (${r.email}) - ${r.status.toUpperCase()}${r.signedDate ? ` - Signed: ${r.signedDate.toLocaleDateString()}` : ''}`).join('\n')}
+
+${'='.repeat(80)}
+Document Generated: ${new Date().toLocaleString()}
+`;
+                      const blob = new Blob([pdfContent], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${downloadingDocument.name.replace(/[^a-z0-9]/gi, '_')}_document.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowDownloadModal(false);
+                      setDownloadingDocument(null);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">PDF Report</p>
+                      <p className="text-xs text-red-100 mt-0.5">Formatted document</p>
+                    </div>
+                  </button>
+
+                  {/* Excel/CSV Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const csv = `Document Name,Type,Status,Created Date,Signed Date,Sender,Pages,Recipients\n${downloadingDocument.name},${downloadingDocument.type},${downloadingDocument.status},${downloadingDocument.createdDate.toLocaleDateString()},${downloadingDocument.signedDate?.toLocaleDateString() || 'N/A'},${downloadingDocument.sender},${downloadingDocument.pages},${downloadingDocument.recipients.length}\n\nRecipients:\nName,Email,Status,Signed Date\n${downloadingDocument.recipients.map(r => `${r.name},${r.email},${r.status},${r.signedDate?.toLocaleDateString() || 'N/A'}`).join('\n')}`;
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${downloadingDocument.name.replace(/[^a-z0-9]/gi, '_')}_data.csv`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowDownloadModal(false);
+                      setDownloadingDocument(null);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">Excel / CSV</p>
+                      <p className="text-xs text-green-100 mt-0.5">Spreadsheet format</p>
+                    </div>
+                  </button>
+
+                  {/* JSON Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const jsonData = {
+                        document: {
+                          id: downloadingDocument.id,
+                          name: downloadingDocument.name,
+                          type: downloadingDocument.type,
+                          status: downloadingDocument.status,
+                          createdDate: downloadingDocument.createdDate.toISOString(),
+                          signedDate: downloadingDocument.signedDate?.toISOString(),
+                          expiryDate: downloadingDocument.expiryDate?.toISOString(),
+                          sender: downloadingDocument.sender,
+                          pages: downloadingDocument.pages,
+                          description: downloadingDocument.description
+                        },
+                        recipients: downloadingDocument.recipients.map(r => ({
+                          name: r.name,
+                          email: r.email,
+                          status: r.status,
+                          signedDate: r.signedDate?.toISOString()
+                        })),
+                        exportedAt: new Date().toISOString()
+                      };
+                      const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${downloadingDocument.name.replace(/[^a-z0-9]/gi, '_')}_data.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowDownloadModal(false);
+                      setDownloadingDocument(null);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">JSON</p>
+                      <p className="text-xs text-blue-100 mt-0.5">Structured data format</p>
+                    </div>
+                  </button>
+
+                  {/* Plain Text Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const data = `DOCUMENT EXPORT\n${'='.repeat(60)}\n\nDocument: ${downloadingDocument.name}\nType: ${downloadingDocument.type}\nStatus: ${downloadingDocument.status}\nCreated: ${downloadingDocument.createdDate.toLocaleDateString()}\n${downloadingDocument.signedDate ? `Signed: ${downloadingDocument.signedDate.toLocaleDateString()}\n` : ''}Pages: ${downloadingDocument.pages}\nSender: ${downloadingDocument.sender}\n\nDescription:\n${downloadingDocument.description || 'No description'}\n\nRecipients (${downloadingDocument.recipients.length}):\n${downloadingDocument.recipients.map(r => `  • ${r.name} (${r.email}) - ${r.status}`).join('\n')}\n\nExported: ${new Date().toLocaleString()}\n`;
+                      const blob = new Blob([data], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${downloadingDocument.name.replace(/[^a-z0-9]/gi, '_')}_data.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowDownloadModal(false);
+                      setDownloadingDocument(null);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">Plain Text</p>
+                      <p className="text-xs text-gray-200 mt-0.5">Simple text file</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Cancel Button */}
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowDownloadModal(false);
+                  setDownloadingDocument(null);
+                }}
+                className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && sharingDocument && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
+                  <Share2 className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Share Document</h2>
+                  <p className="text-green-100 text-sm mt-0.5">{sharingDocument.name}</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowShareModal(false);
+                  setSharingDocument(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              {/* Document Info */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-lg">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">{sharingDocument.name}</p>
+                    <p className="text-sm text-gray-600">{sharingDocument.type} • {sharingDocument.pages} pages</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Share Options */}
+              <div className="space-y-3">
+                <p className="text-sm font-bold text-gray-900">Share via:</p>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    const subject = encodeURIComponent(`Document: ${sharingDocument.name}`);
+                    const body = encodeURIComponent(`I'm sharing the following document with you:\n\nDocument: ${sharingDocument.name}\nType: ${sharingDocument.type}\nStatus: ${sharingDocument.status}\nPages: ${sharingDocument.pages}\n\nPlease review and sign if required.`);
+                    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                    setShowShareModal(false);
+                    setSharingDocument(null);
+                  }}
+                  className="w-full px-5 py-4 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl hover:shadow-xl transition-all flex items-center gap-3 font-semibold"
+                >
+                  <Mail className="w-6 h-6" />
+                  <div className="text-left">
+                    <p className="font-bold">Email</p>
+                    <p className="text-xs text-blue-100">Send via email client</p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = `${window.location.origin}/documents/${sharingDocument.id}`;
+                    navigator.clipboard.writeText(url);
+                    alert('✓ Link copied to clipboard!');
+                    setShowShareModal(false);
+                    setSharingDocument(null);
+                  }}
+                  className="w-full px-5 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:shadow-xl transition-all flex items-center gap-3 font-semibold"
+                >
+                  <Copy className="w-6 h-6" />
+                  <div className="text-left">
+                    <p className="font-bold">Copy Link</p>
+                    <p className="text-xs text-purple-100">Copy shareable link</p>
+                  </div>
+                </button>
+              </div>
+
+              {/* Cancel Button */}
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowShareModal(false);
+                  setSharingDocument(null);
+                }}
+                className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingDocument && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingDocument(null);
+          }}
+          onConfirm={() => {
+            setDocuments(documents.filter(doc => doc.id !== deletingDocument.id));
+            alert('✓ Document deleted successfully!');
+          }}
+          title="Delete Document"
+          itemName={deletingDocument.name}
+          itemDetails={`${deletingDocument.type} - ${deletingDocument.pages} pages`}
+          warningMessage="This will permanently remove this document and all its signatures."
+        />
       )}
       </div>
     </>

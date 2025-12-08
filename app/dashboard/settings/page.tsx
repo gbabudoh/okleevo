@@ -10,6 +10,7 @@ import {
   Calendar, DollarSign, FileText, Link, Share2, Code, Plus,
   Edit3
 } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface UserProfile {
   firstName: string;
@@ -45,6 +46,8 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   const [profile, setProfile] = useState<UserProfile>({
     firstName: 'John',
@@ -155,10 +158,18 @@ export default function SettingsPage() {
                 <h3 className="font-bold text-gray-900 mb-1">{profile.firstName} {profile.lastName}</h3>
                 <p className="text-sm text-gray-600 mb-3">{profile.position} at {profile.company}</p>
                 <div className="flex items-center gap-3">
-                  <button className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium">
+                  <button 
+                    type="button"
+                    onClick={() => alert('Upload photo functionality')}
+                    className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium cursor-pointer"
+                  >
                     Upload Photo
                   </button>
-                  <button className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium">
+                  <button 
+                    type="button"
+                    onClick={() => alert('Remove photo')}
+                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium cursor-pointer"
+                  >
                     Remove
                   </button>
                 </div>
@@ -279,12 +290,17 @@ export default function SettingsPage() {
 
           {/* Save Button */}
           <div className="flex items-center justify-end gap-3">
-            <button className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all">
+            <button 
+              type="button"
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+            >
               Cancel
             </button>
             <button 
+              type="button"
               onClick={handleSave}
-              className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2"
+              className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2 cursor-pointer"
             >
               <Save className="w-5 h-5" />
               Save Changes
@@ -339,7 +355,11 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <button className="w-full px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-all">
+              <button 
+                type="button"
+                onClick={() => alert('✓ Password updated successfully!')}
+                className="w-full px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-all cursor-pointer"
+              >
                 Update Password
               </button>
             </div>
@@ -377,7 +397,11 @@ export default function SettingsPage() {
                     <div>
                       <h4 className="font-semibold text-blue-900 mb-2">Authenticator App</h4>
                       <p className="text-sm text-blue-700 mb-3">Use an authenticator app to generate verification codes</p>
-                      <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+                      <button 
+                        type="button"
+                        onClick={() => alert('Setup authenticator app')}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium cursor-pointer"
+                      >
                         Setup Authenticator
                       </button>
                     </div>
@@ -473,7 +497,11 @@ export default function SettingsPage() {
                     <p className="text-sm text-gray-600">Safari • Last active 2 hours ago</p>
                   </div>
                 </div>
-                <button className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors">
+                <button 
+                  type="button"
+                  onClick={() => alert('Session revoked')}
+                  className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                >
                   Revoke
                 </button>
               </div>
@@ -481,8 +509,9 @@ export default function SettingsPage() {
           </div>
 
           <button 
+            type="button"
             onClick={handleSave}
-            className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+            className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Save className="w-5 h-5" />
             Save Security Settings
@@ -579,8 +608,9 @@ export default function SettingsPage() {
           </div>
 
           <button 
+            type="button"
             onClick={handleSave}
-            className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+            className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Save className="w-5 h-5" />
             Save Notification Settings
@@ -607,10 +637,18 @@ export default function SettingsPage() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all">
+              <button 
+                type="button"
+                onClick={() => alert('Upgrade plan functionality')}
+                className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all cursor-pointer"
+              >
                 Upgrade Plan
               </button>
-              <button className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all">
+              <button 
+                type="button"
+                onClick={() => alert('View all plans')}
+                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all cursor-pointer"
+              >
                 View All Plans
               </button>
             </div>
@@ -632,12 +670,20 @@ export default function SettingsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Default</span>
-                  <button className="p-2 hover:bg-blue-100 rounded-lg transition-colors">
+                  <button 
+                    type="button"
+                    onClick={() => alert('Edit payment method')}
+                    className="p-2 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
+                  >
                     <Edit3 className="w-4 h-4 text-blue-600" />
                   </button>
                 </div>
               </div>
-              <button className="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-700 font-medium rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2">
+              <button 
+                type="button"
+                onClick={() => alert('Add payment method')}
+                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-700 font-medium rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
                 <Plus className="w-5 h-5" />
                 Add Payment Method
               </button>
@@ -664,7 +710,11 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-4">
                     <span className="font-bold text-gray-900">{item.amount}</span>
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">{item.status}</span>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <button 
+                      type="button"
+                      onClick={() => alert(`Downloading invoice ${item.invoice}`)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                    >
                       <Download className="w-4 h-4 text-gray-600" />
                     </button>
                   </div>
@@ -682,8 +732,9 @@ export default function SettingsPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-6">Appearance</h2>
             <div className="grid grid-cols-3 gap-4">
               <button
+                type="button"
                 onClick={() => setTheme('light')}
-                className={`p-4 rounded-xl border-2 transition-all ${
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
                   theme === 'light' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
@@ -692,8 +743,9 @@ export default function SettingsPage() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setTheme('dark')}
-                className={`p-4 rounded-xl border-2 transition-all ${
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
                   theme === 'dark' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
@@ -702,8 +754,9 @@ export default function SettingsPage() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setTheme('auto')}
-                className={`p-4 rounded-xl border-2 transition-all ${
+                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
                   theme === 'auto' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
@@ -749,8 +802,9 @@ export default function SettingsPage() {
           </div>
 
           <button 
+            type="button"
             onClick={handleSave}
-            className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+            className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Save className="w-5 h-5" />
             Save Preferences
@@ -781,11 +835,19 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   {app.connected ? (
-                    <button className="w-full px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-medium">
+                    <button 
+                      type="button"
+                      onClick={() => alert(`Disconnecting ${app.name}`)}
+                      className="w-full px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-medium cursor-pointer"
+                    >
                       Disconnect
                     </button>
                   ) : (
-                    <button className="w-full px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium">
+                    <button 
+                      type="button"
+                      onClick={() => alert(`Connecting ${app.name}`)}
+                      className="w-full px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium cursor-pointer"
+                    >
                       Connect
                     </button>
                   )}
@@ -809,12 +871,23 @@ export default function SettingsPage() {
                     readOnly
                     className="flex-1 px-4 py-2 bg-white border border-purple-200 rounded-lg font-mono text-sm"
                   />
-                  <button className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors font-medium">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText('sk_live_••••••••••••••••••••••••');
+                      alert('✓ API key copied to clipboard!');
+                    }}
+                    className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors font-medium cursor-pointer"
+                  >
                     Copy
                   </button>
                 </div>
               </div>
-              <button className="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-700 font-medium rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2">
+              <button 
+                type="button"
+                onClick={() => alert('✓ New API key generated!')}
+                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-700 font-medium rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
                 <Plus className="w-5 h-5" />
                 Generate New API Key
               </button>
@@ -835,7 +908,11 @@ export default function SettingsPage() {
               <h3 className="font-semibold text-red-900">Export Your Data</h3>
               <p className="text-sm text-red-700">Download all your account data</p>
             </div>
-            <button className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium flex items-center gap-2">
+            <button 
+              type="button"
+              onClick={() => setShowExportModal(true)}
+              className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium flex items-center gap-2 cursor-pointer"
+            >
               <Download className="w-4 h-4" />
               Export
             </button>
@@ -846,13 +923,292 @@ export default function SettingsPage() {
               <h3 className="font-semibold text-red-900">Delete Account</h3>
               <p className="text-sm text-red-700">Permanently delete your account and all data</p>
             </div>
-            <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2">
+            <button 
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 cursor-pointer"
+            >
               <Trash2 className="w-4 h-4" />
               Delete
             </button>
           </div>
         </div>
       </div>
+
+      {/* Export Data Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
+            <div className="bg-gradient-to-r from-orange-500 to-red-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
+                  <Download className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Export Account Data</h2>
+                  <p className="text-orange-100 text-sm mt-0.5">Download your complete account information</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowExportModal(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              {/* Account Info Preview */}
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-xl p-5">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                    {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900 text-lg">{profile.firstName} {profile.lastName}</p>
+                    <p className="text-sm text-gray-600">{profile.email}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">
+                        {profile.company}
+                      </span>
+                      <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-medium">
+                        {profile.position}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-orange-600" />
+                    <span>{profile.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-orange-600" />
+                    <span>{profile.city}, {profile.country}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Export Format Options */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm font-bold text-gray-900">Choose Export Format:</p>
+                  <span className="text-xs text-gray-500">Select your preferred file type</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* JSON Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const exportData = {
+                        profile: profile,
+                        security: {
+                          twoFactorEnabled: security.twoFactorEnabled,
+                          emailNotifications: security.emailNotifications,
+                          smsNotifications: security.smsNotifications,
+                          loginAlerts: security.loginAlerts
+                        },
+                        notifications: notifications,
+                        preferences: {
+                          theme: theme,
+                          language: profile.language,
+                          timezone: profile.timezone
+                        },
+                        exportDate: new Date().toISOString(),
+                        exportedBy: `${profile.firstName} ${profile.lastName}`
+                      };
+                      
+                      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `account_data_${new Date().toISOString().split('T')[0]}.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowExportModal(false);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <Code className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">JSON</p>
+                      <p className="text-xs text-blue-100 mt-0.5">Structured data format</p>
+                    </div>
+                  </button>
+
+                  {/* CSV Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const csv = `Account Data Export\n\nProfile Information\nFirst Name,${profile.firstName}\nLast Name,${profile.lastName}\nEmail,${profile.email}\nPhone,${profile.phone}\nCompany,${profile.company}\nPosition,${profile.position}\nAddress,${profile.address}\nCity,${profile.city}\nCountry,${profile.country}\n\nSecurity Settings\nTwo-Factor Auth,${security.twoFactorEnabled ? 'Enabled' : 'Disabled'}\nEmail Notifications,${security.emailNotifications ? 'Enabled' : 'Disabled'}\nSMS Notifications,${security.smsNotifications ? 'Enabled' : 'Disabled'}\nLogin Alerts,${security.loginAlerts ? 'Enabled' : 'Disabled'}\n\nNotification Preferences\nEmail Digest,${notifications.emailDigest ? 'Enabled' : 'Disabled'}\nTask Reminders,${notifications.taskReminders ? 'Enabled' : 'Disabled'}\nInvoice Alerts,${notifications.invoiceAlerts ? 'Enabled' : 'Disabled'}\nTeam Updates,${notifications.teamUpdates ? 'Enabled' : 'Disabled'}\nMarketing Emails,${notifications.marketingEmails ? 'Enabled' : 'Disabled'}\n\nPreferences\nTheme,${theme}\nLanguage,${profile.language}\nTimezone,${profile.timezone}\n\nExport Date,${new Date().toLocaleString()}`;
+                      
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `account_data_${new Date().toISOString().split('T')[0]}.csv`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowExportModal(false);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">CSV / Excel</p>
+                      <p className="text-xs text-green-100 mt-0.5">Spreadsheet format</p>
+                    </div>
+                  </button>
+
+                  {/* PDF Report Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const pdfContent = `
+ACCOUNT DATA EXPORT REPORT
+${'='.repeat(80)}
+
+PROFILE INFORMATION
+${'-'.repeat(80)}
+Name:              ${profile.firstName} ${profile.lastName}
+Email:             ${profile.email}
+Phone:             ${profile.phone}
+Company:           ${profile.company}
+Position:          ${profile.position}
+Address:           ${profile.address}
+City:              ${profile.city}
+Country:           ${profile.country}
+Language:          ${profile.language}
+Timezone:          ${profile.timezone}
+
+SECURITY SETTINGS
+${'-'.repeat(80)}
+Two-Factor Authentication:    ${security.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+Email Notifications:          ${security.emailNotifications ? 'Enabled' : 'Disabled'}
+SMS Notifications:            ${security.smsNotifications ? 'Enabled' : 'Disabled'}
+Login Alerts:                 ${security.loginAlerts ? 'Enabled' : 'Disabled'}
+
+NOTIFICATION PREFERENCES
+${'-'.repeat(80)}
+Email Digest:                 ${notifications.emailDigest ? 'Enabled' : 'Disabled'}
+Task Reminders:               ${notifications.taskReminders ? 'Enabled' : 'Disabled'}
+Invoice Alerts:               ${notifications.invoiceAlerts ? 'Enabled' : 'Disabled'}
+Team Updates:                 ${notifications.teamUpdates ? 'Enabled' : 'Disabled'}
+Marketing Emails:             ${notifications.marketingEmails ? 'Enabled' : 'Disabled'}
+
+APPEARANCE & PREFERENCES
+${'-'.repeat(80)}
+Theme:                        ${theme}
+Language:                     ${profile.language}
+Timezone:                     ${profile.timezone}
+
+${'='.repeat(80)}
+Report Generated:             ${new Date().toLocaleString()}
+Exported By:                  ${profile.firstName} ${profile.lastName}
+Confidential - For Personal Use Only
+`;
+                      
+                      const blob = new Blob([pdfContent], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `account_report_${new Date().toISOString().split('T')[0]}.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowExportModal(false);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">PDF Report</p>
+                      <p className="text-xs text-red-100 mt-0.5">Formatted document</p>
+                    </div>
+                  </button>
+
+                  {/* Plain Text Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const textData = `ACCOUNT DATA EXPORT\n${'='.repeat(60)}\n\nPROFILE:\n  Name: ${profile.firstName} ${profile.lastName}\n  Email: ${profile.email}\n  Phone: ${profile.phone}\n  Company: ${profile.company}\n  Position: ${profile.position}\n  Location: ${profile.city}, ${profile.country}\n\nSECURITY:\n  Two-Factor Auth: ${security.twoFactorEnabled ? 'Enabled' : 'Disabled'}\n  Email Notifications: ${security.emailNotifications ? 'Enabled' : 'Disabled'}\n  SMS Notifications: ${security.smsNotifications ? 'Enabled' : 'Disabled'}\n  Login Alerts: ${security.loginAlerts ? 'Enabled' : 'Disabled'}\n\nNOTIFICATIONS:\n  Email Digest: ${notifications.emailDigest ? 'Yes' : 'No'}\n  Task Reminders: ${notifications.taskReminders ? 'Yes' : 'No'}\n  Invoice Alerts: ${notifications.invoiceAlerts ? 'Yes' : 'No'}\n  Team Updates: ${notifications.teamUpdates ? 'Yes' : 'No'}\n  Marketing: ${notifications.marketingEmails ? 'Yes' : 'No'}\n\nPREFERENCES:\n  Theme: ${theme}\n  Language: ${profile.language}\n  Timezone: ${profile.timezone}\n\nExported: ${new Date().toLocaleString()}\n`;
+                      
+                      const blob = new Blob([textData], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `account_data_${new Date().toISOString().split('T')[0]}.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      setShowExportModal(false);
+                    }}
+                    className="group relative px-5 py-4 bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold">Plain Text</p>
+                      <p className="text-xs text-gray-200 mt-0.5">Simple text file</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Info Banner */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-blue-800">
+                  <p className="font-semibold mb-1">Data Privacy Notice</p>
+                  <p>Your exported data contains sensitive personal information. Store it securely and do not share it with unauthorized parties.</p>
+                </div>
+              </div>
+
+              {/* Cancel Button */}
+              <button 
+                type="button"
+                onClick={() => setShowExportModal(false)}
+                className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          alert('✓ Account deletion initiated. You will receive a confirmation email.');
+          setShowDeleteModal(false);
+        }}
+        title="Delete Account"
+        itemName={`${profile.firstName} ${profile.lastName}'s Account`}
+        itemDetails={`${profile.email} - ${profile.company}`}
+        warningMessage="This will permanently delete your account, all data, and cannot be undone. All subscriptions will be cancelled."
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Plus, Search, Mail, Phone, Building2, MapPin, Calendar, DollarSign, Users, TrendingUp, Star, Edit, Trash2, Eye, X, Tag } from 'lucide-react';
+import { Plus, Search, Mail, Phone, Building2, MapPin, Calendar, DollarSign, Users, TrendingUp, Star, Edit, Trash2, Eye, X, Tag, AlertCircle } from 'lucide-react';
 
 interface Client {
   id: string;
@@ -34,7 +34,9 @@ export default function CRMPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [deletingClient, setDeletingClient] = useState<Client | null>(null);
   const [emailData, setEmailData] = useState({
     to: '',
     subject: '',
@@ -55,17 +57,18 @@ export default function CRMPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-2xl">
+      <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-              <Users className="w-10 h-10" />
+            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
+              <Users className="w-10 h-10 text-gray-700" />
               Customer Relationship Management
             </h1>
-            <p className="text-cyan-100 text-lg">Manage your clients and build lasting relationships</p>
+            <p className="text-gray-600 text-lg">Manage your clients and build lasting relationships</p>
           </div>
           <div className="flex items-center gap-3">
             <button 
+              type="button"
               onClick={() => {
                 const emails = clients.filter(c => c.status === 'active').map(c => c.email).join(', ');
                 setEmailData({
@@ -75,16 +78,15 @@ export default function CRMPage() {
                 });
                 setShowEmailModal(true);
               }}
-              className="px-6 py-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl hover:bg-opacity-30 transition-all font-semibold flex items-center gap-2 cursor-pointer"
-              style={{ color: 'var(--color-purple-600)' }}
+              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl rounded-xl transition-all font-semibold flex items-center gap-2 cursor-pointer"
             >
               <Mail className="w-5 h-5" />
               <span>Send Email</span>
             </button>
             <button 
+              type="button"
               onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 bg-white rounded-xl hover:shadow-2xl transition-all font-bold flex items-center gap-2 cursor-pointer"
-              style={{ color: 'var(--color-purple-600)' }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               Add Client
@@ -253,10 +255,10 @@ export default function CRMPage() {
                     <Edit className="w-4 h-4 text-gray-600" />
                   </button>
                   <button 
+                    type="button"
                     onClick={() => {
-                      if (confirm(`Delete ${client.name}?`)) {
-                        setClients(clients.filter(c => c.id !== client.id));
-                      }
+                      setDeletingClient(client);
+                      setShowDeleteModal(true);
                     }}
                     className="p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                     title="Delete"
@@ -410,84 +412,290 @@ export default function CRMPage() {
       {/* Email Compose Modal */}
       {showEmailModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-3xl w-full shadow-2xl">
-            <div className="sticky top-0 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-6 py-5 flex items-center justify-between rounded-t-3xl">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Mail className="w-6 h-6" />
-                Compose Email
-              </h2>
+          <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                  <Mail className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Compose Email</h2>
+                  <p className="text-orange-100 text-sm">Send email to your clients</p>
+                </div>
+              </div>
               <button 
+                type="button"
                 onClick={() => setShowEmailModal(false)} 
-                className="p-2 hover:bg-white/20 rounded-xl transition-colors"
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
               >
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
             
-            <div className="p-6 space-y-4">
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              {/* Recipients */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">To:</label>
-                <input
-                  type="text"
-                  value={emailData.to}
-                  onChange={(e) => setEmailData({...emailData, to: e.target.value})}
-                  placeholder="client@email.com, another@email.com"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                />
-                <p className="text-xs text-gray-500 mt-1">Separate multiple emails with commas</p>
+                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  To:
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={emailData.to}
+                    onChange={(e) => setEmailData({...emailData, to: e.target.value})}
+                    placeholder="client@email.com, another@email.com"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-lg">
+                      {emailData.to.split(',').filter(e => e.trim()).length} recipient(s)
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
+                  <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                  Separate multiple emails with commas
+                </p>
               </div>
 
+              {/* Quick Templates */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4">
+                <label className="block text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-600" />
+                  Quick Templates
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEmailData({
+                      ...emailData,
+                      subject: 'Thank you for your business',
+                      message: 'Dear valued client,\n\nThank you for choosing our services. We appreciate your continued trust and partnership.\n\nBest regards,\nYour Company'
+                    })}
+                    className="px-3 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    Thank You
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEmailData({
+                      ...emailData,
+                      subject: 'Important Update',
+                      message: 'Dear valued client,\n\nWe wanted to inform you about an important update regarding our services.\n\nPlease let us know if you have any questions.\n\nBest regards,\nYour Company'
+                    })}
+                    className="px-3 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    Update
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEmailData({
+                      ...emailData,
+                      subject: 'Follow-up on our conversation',
+                      message: 'Dear valued client,\n\nI wanted to follow up on our recent conversation and see if you have any questions.\n\nLooking forward to hearing from you.\n\nBest regards,\nYour Company'
+                    })}
+                    className="px-3 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    Follow-up
+                  </button>
+                </div>
+              </div>
+
+              {/* Subject */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Subject:</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  Subject:
+                </label>
                 <input
                   type="text"
                   value={emailData.subject}
                   onChange={(e) => setEmailData({...emailData, subject: e.target.value})}
-                  placeholder="Email subject"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                  placeholder="Enter email subject"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-medium"
                 />
               </div>
 
+              {/* Message */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Message:</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                  <Edit className="w-4 h-4" />
+                  Message:
+                </label>
                 <textarea
                   value={emailData.message}
                   onChange={(e) => setEmailData({...emailData, message: e.target.value})}
                   placeholder="Type your message here..."
-                  rows={12}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all resize-none"
+                  rows={10}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none font-normal"
                 />
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-xs text-gray-500">{emailData.message.length} characters</p>
+                  <button
+                    type="button"
+                    onClick={() => setEmailData({...emailData, message: ''})}
+                    className="text-xs text-gray-500 hover:text-gray-700 underline"
+                  >
+                    Clear message
+                  </button>
+                </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <div className="flex items-start gap-2">
-                  <Mail className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-blue-900">Sending to {emailData.to.split(',').filter(e => e.trim()).length} recipient(s)</p>
-                    <p className="text-xs text-blue-700 mt-1">This will open your default email client with the pre-filled information</p>
+              {/* Info Box */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Mail className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900 mb-1">Ready to send</p>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      This will open your default email client (Outlook, Gmail, etc.) with all the information pre-filled. 
+                      You can review and make final changes before sending.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-gray-50 border-t-2 border-gray-200 px-6 py-4 flex gap-3">
+              <button 
+                type="button"
+                onClick={() => {
+                  if (!emailData.to.trim()) {
+                    alert('⚠️ Please enter at least one recipient email address');
+                    return;
+                  }
+                  if (!emailData.subject.trim()) {
+                    alert('⚠️ Please enter an email subject');
+                    return;
+                  }
+                  window.location.href = `mailto:${emailData.to}?subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.message)}`;
+                  alert('✓ Email client opened successfully!');
+                  setShowEmailModal(false);
+                }}
+                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+              >
+                <Mail className="w-5 h-5" />
+                Open in Email Client
+              </button>
+              <button 
+                type="button"
+                onClick={() => setShowEmailModal(false)}
+                className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && deletingClient && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5 flex items-center gap-3">
+              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                <Trash2 className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-white">Delete Client</h2>
+                <p className="text-red-100 text-sm">This action cannot be undone</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletingClient(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 space-y-5">
+              {/* Client Info */}
+              <div className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 rounded-xl p-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                    {deletingClient.name.charAt(0)}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900">{deletingClient.name}</h3>
+                    <p className="text-gray-600">{deletingClient.company}</p>
+                    <p className="text-sm text-gray-500">{deletingClient.email}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <button 
-                  onClick={() => {
-                    window.location.href = `mailto:${emailData.to}?subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.message)}`;
-                    alert('✓ Email client opened successfully!');
-                    setShowEmailModal(false);
-                  }}
-                  className="flex-1 px-6 py-4 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Mail className="w-5 h-5" />
-                  Send Email
-                </button>
-                <button 
-                  onClick={() => setShowEmailModal(false)}
-                  className="px-6 py-4 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
+              {/* Warning Message */}
+              <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <AlertCircle className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900 mb-1">Warning</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      Are you sure you want to delete <span className="font-bold">{deletingClient.name}</span>? 
+                      This will permanently remove all client data, history, and associated records.
+                    </p>
+                  </div>
+                </div>
               </div>
+
+              {/* Confirmation Text */}
+              <div className="text-center">
+                <p className="text-gray-600 text-sm">
+                  Type <span className="font-bold text-gray-900">DELETE</span> to confirm
+                </p>
+                <input
+                  type="text"
+                  id="delete-confirmation"
+                  placeholder="Type DELETE"
+                  className="mt-2 w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent text-center font-semibold"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-50 border-t-2 border-gray-200 px-6 py-4 flex gap-3">
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletingClient(null);
+                }}
+                className="flex-1 px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  const input = document.getElementById('delete-confirmation') as HTMLInputElement;
+                  if (input && input.value === 'DELETE') {
+                    setClients(clients.filter(c => c.id !== deletingClient.id));
+                    setShowDeleteModal(false);
+                    setDeletingClient(null);
+                    alert('✓ Client deleted successfully');
+                  } else {
+                    alert('⚠️ Please type DELETE to confirm');
+                  }
+                }}
+                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-5 h-5" />
+                Delete Client
+              </button>
             </div>
           </div>
         </div>

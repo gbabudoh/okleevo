@@ -12,6 +12,7 @@ import {
   Grid, List, ChevronRight, X, Check, ArrowUpRight, ArrowDownRight,
   Handshake, Factory, Store, Box, Boxes, ClipboardList
 } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Supplier {
   id: string;
@@ -252,6 +253,9 @@ export default function SuppliersPage() {
   const [showAddSupplier, setShowAddSupplier] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingSupplier, setDeletingSupplier] = useState<Supplier | null>(null);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [messageSubject, setMessageSubject] = useState('');
   const [messageBody, setMessageBody] = useState('');
   const [messagePriority, setMessagePriority] = useState('normal');
@@ -499,7 +503,7 @@ export default function SuppliersPage() {
             return (
               <div
                 key={supplier.id}
-                className="group relative bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-blue-300 hover:shadow-2xl transition-all cursor-pointer overflow-hidden"
+                className="group relative bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-blue-300 hover:shadow-2xl transition-all cursor-pointer"
                 onClick={() => setSelectedSupplier(supplier)}
               >
                 {/* Status Badge */}
@@ -604,9 +608,50 @@ export default function SuppliersPage() {
                     <ShoppingCart className="w-4 h-4" />
                     Order
                   </button>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <MoreVertical className="w-4 h-4 text-gray-600" />
-                  </button>
+                  <div className="relative">
+                    <button 
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenu(activeMenu === supplier.id ? null : supplier.id);
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <MoreVertical className="w-4 h-4 text-gray-600" />
+                    </button>
+                    {activeMenu === supplier.id && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSupplier(supplier);
+                              setActiveMenu(null);
+                            }}
+                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer transition-colors"
+                          >
+                            <Eye className="w-4 h-4 text-blue-600" />
+                            <span className="font-medium">View Details</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingSupplier(supplier);
+                              setShowDeleteModal(true);
+                              setActiveMenu(null);
+                            }}
+                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span className="font-medium">Delete</span>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -681,9 +726,39 @@ export default function SuppliersPage() {
                         >
                           <Eye className="w-4 h-4 text-blue-600" />
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="More options">
-                          <MoreVertical className="w-4 h-4 text-gray-600" />
-                        </button>
+                        <div className="relative">
+                          <button 
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenu(activeMenu === supplier.id ? null : supplier.id);
+                            }}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer" 
+                            title="More options"
+                          >
+                            <MoreVertical className="w-4 h-4 text-gray-600" />
+                          </button>
+                          {activeMenu === supplier.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
+                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeletingSupplier(supplier);
+                                    setShowDeleteModal(true);
+                                    setActiveMenu(null);
+                                  }}
+                                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  <span className="font-medium">Delete</span>
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -1320,6 +1395,25 @@ export default function SuppliersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingSupplier && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingSupplier(null);
+          }}
+          onConfirm={() => {
+            setSuppliers(suppliers.filter(s => s.id !== deletingSupplier.id));
+            alert('✓ Supplier deleted successfully!');
+          }}
+          title="Delete Supplier"
+          itemName={deletingSupplier.name}
+          itemDetails={`${deletingSupplier.contactPerson} - ${deletingSupplier.email}`}
+          warningMessage="This will permanently remove this supplier and all associated records."
+        />
       )}
     </div>
   );

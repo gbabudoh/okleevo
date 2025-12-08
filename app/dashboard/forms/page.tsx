@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Plus, Eye, Copy, Edit, Trash2, X, FileText, BarChart3, Users, Clock, CheckCircle, Link as LinkIcon, Download, Settings, MessageSquare, Star, TrendingUp } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Form {
   id: string;
@@ -26,8 +27,10 @@ export default function FormsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedForm, setSelectedForm] = useState<Form | null>(null);
   const [editForm, setEditForm] = useState<Form | null>(null);
+  const [deletingForm, setDeletingForm] = useState<Form | null>(null);
   const [newForm, setNewForm] = useState({
     name: '',
     description: '',
@@ -60,13 +63,12 @@ export default function FormsPage() {
     alert('Form link copied to clipboard!');
   };
 
-  const handleDeleteForm = (id: string) => {
-    if (confirm('Are you sure you want to delete this form?')) {
-      setForms(forms.filter(f => f.id !== id));
-    }
+  const handleDeleteForm = (form: Form) => {
+    setDeletingForm(form);
+    setShowDeleteModal(true);
   };
 
-  const categories = ['Contact', 'Survey', 'HR', 'Event', 'Sales', 'Support', 'Other'];
+  const categories = ['Contact', 'Survey', 'HR', 'Event', 'Sales', 'Support', 'Accounting', 'Contract', 'Other'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
@@ -249,7 +251,8 @@ export default function FormsPage() {
                     Edit Form
                   </button>
                   <button 
-                    onClick={() => handleDeleteForm(form.id)}
+                    type="button"
+                    onClick={() => handleDeleteForm(form)}
                     className="px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer font-semibold shadow-md hover:shadow-lg hover:scale-105"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -520,6 +523,25 @@ export default function FormsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingForm && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingForm(null);
+          }}
+          onConfirm={() => {
+            setForms(forms.filter(f => f.id !== deletingForm.id));
+            alert('✓ Form deleted successfully!');
+          }}
+          title="Delete Form"
+          itemName={deletingForm.name}
+          itemDetails={`${deletingForm.responses} responses - ${deletingForm.category}`}
+          warningMessage="This will permanently remove this form and all its responses."
+        />
       )}
     </div>
   );

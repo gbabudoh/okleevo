@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Calendar, Clock, User, Plus, X, Mail, Phone, MapPin, Video, CheckCircle, AlertCircle, Edit, Trash2, Filter, Search, TrendingUp, Users, CalendarCheck } from 'lucide-react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Booking {
   id: string;
@@ -30,8 +31,10 @@ export default function BookingPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
+  const [deletingBooking, setDeletingBooking] = useState<Booking | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [newBooking, setNewBooking] = useState({
@@ -59,10 +62,9 @@ export default function BookingPage() {
   const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
   const completedBookings = bookings.filter(b => b.status === 'completed').length;
 
-  const handleDeleteBooking = (id: string) => {
-    if (confirm('Are you sure you want to delete this booking?')) {
-      setBookings(bookings.filter(b => b.id !== id));
-    }
+  const handleDeleteBooking = (booking: Booking) => {
+    setDeletingBooking(booking);
+    setShowDeleteModal(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -313,7 +315,8 @@ export default function BookingPage() {
                     <Edit className="w-5 h-5" />
                   </button>
                   <button 
-                    onClick={() => handleDeleteBooking(booking.id)}
+                    type="button"
+                    onClick={() => handleDeleteBooking(booking)}
                     className="p-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg hover:scale-105 cursor-pointer"
                     title="Delete"
                   >
@@ -730,6 +733,25 @@ export default function BookingPage() {
           </div>
         </div>
         )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingBooking && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setDeletingBooking(null);
+          }}
+          onConfirm={() => {
+            setBookings(bookings.filter(b => b.id !== deletingBooking.id));
+            alert('✓ Booking deleted successfully!');
+          }}
+          title="Delete Booking"
+          itemName={deletingBooking.client}
+          itemDetails={`${deletingBooking.service} - ${deletingBooking.date} at ${deletingBooking.time}`}
+          warningMessage="This will permanently remove this booking and notify the client."
+        />
+      )}
       </div>
     </div>
   );
