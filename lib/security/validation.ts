@@ -3,18 +3,16 @@ import { z } from 'zod';
 // Email validation
 export const emailSchema = z.string().email('Invalid email address');
 
-// Password validation
+// Password validation (more lenient for better UX)
 export const passwordSchema = z
   .string()
-  .min(8, 'Password must be at least 8 characters')
-  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-  .regex(/[0-9]/, 'Password must contain at least one number');
+  .min(8, 'Password must be at least 8 characters');
 
-// UK Phone validation
+// UK Phone validation (more flexible)
 export const ukPhoneSchema = z
   .string()
-  .regex(/^(\+44|0)[1-9]\d{9}$/, 'Invalid UK phone number');
+  .min(10, 'Phone number must be at least 10 characters')
+  .regex(/^(\+44|0)[1-9]\d{8,9}$/, 'Invalid UK phone number format');
 
 // UK Postcode validation
 export const ukPostcodeSchema = z
@@ -32,12 +30,12 @@ export const registrationSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: emailSchema,
-  phone: ukPhoneSchema.optional(),
+  phone: z.string().optional(),
   password: passwordSchema,
   confirmPassword: z.string(),
   address: z.string().optional(),
   city: z.string().optional(),
-  postcode: ukPostcodeSchema.optional(),
+  postcode: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -69,7 +67,7 @@ export const invoiceSchema = z.object({
 export const contactSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: emailSchema,
-  phone: ukPhoneSchema.optional(),
+  phone: z.string().optional().or(z.literal('')),
   company: z.string().optional(),
   position: z.string().optional(),
   status: z.enum(['LEAD', 'ACTIVE', 'INACTIVE', 'CUSTOMER']).default('LEAD'),

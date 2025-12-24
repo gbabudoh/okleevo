@@ -1,21 +1,86 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { 
   TrendingUp, TrendingDown, Users, FileText, CheckSquare, 
   DollarSign, Calendar, Clock, ArrowUpRight, ArrowDownRight,
   Sparkles, Plus, Eye, Edit3, Download, Send, BarChart3,
   ShoppingCart, Package, CreditCard, Activity, Target,
   Zap, Star, Award, Bell, MessageSquare, Mail, Phone,
-  Globe, Shield, Briefcase, PieChart, LineChart, AlertCircle, X
+  Globe, Shield, Briefcase, PieChart, LineChart, AlertCircle, X,
+  Building2, Factory, UserCheck, UsersRound, AtSign, Cpu, Circle
 } from 'lucide-react';
+import { usePresence } from '@/components/hooks/use-presence';
+
+interface UserData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  business: {
+    name: string;
+    industry: string;
+    size: string;
+    seatCount: number;
+    maxSeats: number;
+  };
+}
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
+  
+  // Team presence tracking
+  const { presence } = usePresence();
+
+  // Fetch user and business data
+  useEffect(() => {
+    async function fetchUserData() {
+      if (status === 'loading') return;
+      
+      if (!session?.user?.id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/user/profile');
+        console.log('API Response:', response.status, response.statusText);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('User data fetched:', data);
+          
+          if (data && data.business) {
+            setUserData(data);
+          } else {
+            console.error('Missing business data in response:', data);
+          }
+        } else {
+          const errorText = await response.text();
+          console.error('API Error:', response.status, errorText);
+          try {
+            const errorData = JSON.parse(errorText);
+            console.error('Error details:', errorData);
+          } catch {
+            console.error('Error response text:', errorText);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUserData();
+  }, [session, status]);
 
   const handleExportReport = () => {
     const reportData = {
@@ -227,15 +292,132 @@ export default function DashboardPage() {
     }
   ];
 
-  return (
-    <div className="space-y-8 pb-8">
-      {/* Welcome Header */}
-      <div className="rounded-3xl p-8 text-white shadow-2xl" style={{ backgroundColor: '#5f6667' }}>
+  // Helper to render company info
+  const renderCompanyInfo = (
+    companyName: string,
+    industry: string,
+    seatCount: number,
+    maxSeats: number,
+    email: string
+  ) => (
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      {/* Company Name with Icon */}
+      <div className="flex items-center gap-4">
+        <Building2 className="w-7 h-7 text-white" />
         <div>
-          <h1 className="text-4xl font-bold mb-2">Welcome to Okleevo</h1>
-          <p className="text-gray-200 text-lg">Your all-in-one business management platform</p>
+          <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Company</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-white">{companyName}</h2>
         </div>
       </div>
+
+      {/* Info Pills */}
+      <div className="flex flex-wrap items-center gap-4">
+        {/* Industry */}
+        <div className="flex items-center gap-2">
+          <Cpu className="w-4 h-4 text-emerald-300" />
+          <span className="text-sm font-medium text-white capitalize">{industry}</span>
+        </div>
+
+        {/* Employees */}
+        <div className="flex items-center gap-2">
+          <UsersRound className="w-4 h-4 text-blue-300" />
+          <span className="text-sm font-medium text-white">{seatCount} / {maxSeats} employees</span>
+        </div>
+
+        {/* Email */}
+        <div className="flex items-center gap-2">
+          <AtSign className="w-4 h-4 text-amber-300" />
+          <span className="text-sm font-medium text-white">{email}</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-8 pb-8">
+      {/* Company Header */}
+      <div className="rounded-2xl p-6 md:p-8 text-white shadow-lg overflow-hidden relative bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-white rounded-full -mr-36 -mt-36"></div>
+          <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-white rounded-full -mb-24"></div>
+        </div>
+        
+        <div className="relative z-10">
+          {loading ? (
+            <div className="flex items-center gap-3 py-4">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-slate-300 text-base">Loading...</p>
+            </div>
+          ) : userData && userData.business ? (
+            renderCompanyInfo(
+              userData.business.name,
+              userData.business.industry,
+              userData.business.seatCount,
+              userData.business.maxSeats,
+              userData.email
+            )
+          ) : (
+            renderCompanyInfo(
+              'Egobas Limited',
+              'technology',
+              1,
+              5,
+              'godwinbabs@egobas.com'
+            )
+          )}
+        </div>
+      </div>
+
+      {/* Team Collaboration Widget */}
+      {presence && presence.presence && presence.presence.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Users className="w-5 h-5 text-indigo-600" />
+              Team Collaboration
+            </h2>
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <Circle className={`w-2 h-2 ${presence.onlineCount > 0 ? 'fill-green-500 text-green-500' : 'fill-gray-400 text-gray-400'}`} />
+              <span>{presence.onlineCount} of {presence.totalCount} online</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {presence.presence.map((member) => (
+              <div
+                key={member.userId}
+                className="flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:shadow-md transition-all"
+              >
+                <div className="relative mb-2">
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    {member.firstName.charAt(0)}{member.lastName.charAt(0)}
+                  </div>
+                  {member.isOnline && (
+                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                  )}
+                </div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white text-center">
+                  {member.firstName} {member.lastName.charAt(0)}.
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
+                  {member.isOnline ? (
+                    <span className="text-green-600 font-medium">● Online</span>
+                  ) : (
+                    <span className="text-gray-400">Offline</span>
+                  )}
+                </p>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+            <p className="text-sm text-indigo-800 dark:text-indigo-300">
+              <strong>Collaboration Enabled:</strong> All team members can see and share business data within {userData?.business?.name || 'your organization'}.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* KPI Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -264,9 +446,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 
-                <p className="text-sm text-gray-600 font-medium mb-1">{stat.title}</p>
-                <p className="text-4xl font-bold text-gray-900 mb-2">{stat.value}</p>
-                <p className="text-xs text-gray-500">{stat.period}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">{stat.title}</p>
+                <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{stat.period}</p>
               </div>
             </div>
           );
@@ -274,8 +456,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
           <Zap className="w-6 h-6 text-yellow-500" />
           Quick Actions
         </h2>
@@ -297,7 +479,7 @@ export default function DashboardPage() {
                   <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
                     <Icon className="w-8 h-8 text-white" />
                   </div>
-                  <p className="font-bold text-gray-900 group-hover:text-white transition-colors mb-1">{action.name}</p>
+                  <p className="font-bold text-gray-900 dark:text-white group-hover:text-white transition-colors mb-1">{action.name}</p>
                   <p className="text-xs text-gray-500 group-hover:text-white group-hover:text-opacity-90 transition-colors">{action.description}</p>
                 </div>
               </button>
@@ -309,9 +491,9 @@ export default function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent Activity - Takes 2 columns */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Activity className="w-6 h-6 text-blue-600" />
               Recent Activity
             </h2>
@@ -335,13 +517,13 @@ export default function DashboardPage() {
                   </div>
                   
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{activity.title}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{activity.title}</p>
                     <p className="text-sm text-gray-600">{activity.client}</p>
                   </div>
                   
                   <div className="text-right">
                     {activity.amount && (
-                      <p className="font-bold text-gray-900 mb-1">{activity.amount}</p>
+                      <p className="font-bold text-gray-900 dark:text-white mb-1">{activity.amount}</p>
                     )}
                     <p className="text-xs text-gray-500">{activity.time}</p>
                   </div>
@@ -378,7 +560,7 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">{task.title}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">{task.title}</p>
                       <p className="text-xs text-gray-500">{task.category}</p>
                     </div>
                     <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
@@ -392,9 +574,9 @@ export default function DashboardPage() {
                         <Clock className="w-3 h-3" />
                         {task.dueDate}
                       </span>
-                      <span className="font-bold text-gray-900">{task.progress}%</span>
+                      <span className="font-bold text-gray-900 dark:text-white">{task.progress}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
                         className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all"
                         style={{ width: `${task.progress}%` }}
@@ -474,8 +656,8 @@ export default function DashboardPage() {
       {/* Bottom Section */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Top Performing Products */}
-        <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <Award className="w-5 h-5 text-yellow-500" />
             Top Performing
           </h2>
@@ -491,7 +673,7 @@ export default function DashboardPage() {
                   {index + 1}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900">{item.name}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{item.name}</p>
                   <p className="text-sm text-gray-600">{item.sales} revenue</p>
                 </div>
                 <div className="text-right">
@@ -505,8 +687,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Notifications */}
-        <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <Bell className="w-5 h-5 text-red-500" />
             Notifications
             <span className="ml-auto px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">3</span>
@@ -531,7 +713,7 @@ export default function DashboardPage() {
                   <div className={`p-2 bg-white rounded-lg ${colorScheme.text}`}>
                     <Icon className="w-5 h-5" />
                   </div>
-                  <p className="flex-1 text-sm font-medium text-gray-900">{notification.message}</p>
+                  <p className="flex-1 text-sm font-medium text-gray-900 dark:text-white">{notification.message}</p>
                   <button className="text-gray-400 hover:text-gray-600">
                     <X className="w-4 h-4" />
                   </button>
@@ -545,9 +727,9 @@ export default function DashboardPage() {
       {/* New Project Modal */}
       {showNewProjectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-2xl w-full shadow-2xl">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl">
                   <Plus className="w-6 h-6 text-white" />
                 </div>

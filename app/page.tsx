@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { HeroAnimation } from "@/components/hero-animation";
 import { 
   PiggyBank, 
@@ -13,6 +16,8 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const isLoggedIn = status === "authenticated" && session?.user;
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
       {/* Navigation */}
@@ -34,19 +39,39 @@ export default function Home() {
               </Link>
             </div>
             <div className="flex items-center gap-4">
-              <Link 
-                href="/access" 
-                className="px-4 py-2 text-gray-700 hover:text-primary-600 transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link 
-                href="/onboarding" 
-                className="px-6 py-2.5 rounded-full text-white font-medium hover:shadow-lg transition-all hover-lift"
-                style={{ backgroundColor: '#fc6813' }}
-              >
-                Get Started
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link 
+                    href="/dashboard" 
+                    className="px-4 py-2 text-gray-700 hover:text-primary-600 transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    href="/dashboard" 
+                    className="px-6 py-2.5 rounded-full text-white font-medium hover:shadow-lg transition-all hover-lift"
+                    style={{ backgroundColor: '#fc6813' }}
+                  >
+                    Go to Dashboard
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    href="/access" 
+                    className="px-4 py-2 text-gray-700 hover:text-primary-600 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link 
+                    href="/onboarding" 
+                    className="px-6 py-2.5 rounded-full text-white font-medium hover:shadow-lg transition-all hover-lift"
+                    style={{ backgroundColor: '#fc6813' }}
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

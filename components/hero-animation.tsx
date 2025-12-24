@@ -5,33 +5,14 @@ import {
   DollarSign,
   Users,
   Calendar,
-  FileText,
-  TrendingUp,
-  Package,
-  Mail,
   CheckSquare,
   Sparkles,
   BarChart3,
-  Truck,
   UserCheck,
-  PenTool,
-  Globe,
   Shield,
   Receipt,
-  Clock,
   Target,
 } from "lucide-react";
-
-const tools = [
-  { icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-50", position: { top: "5%", left: "-5%" }, delay: 0 },
-  { icon: Users, color: "text-blue-500", bg: "bg-blue-50", position: { top: "10%", right: "-8%" }, delay: 0.2 },
-  { icon: Calendar, color: "text-purple-500", bg: "bg-purple-50", position: { top: "40%", left: "-8%" }, delay: 0.4 },
-  { icon: FileText, color: "text-orange-500", bg: "bg-orange-50", position: { bottom: "15%", left: "5%" }, delay: 0.6 },
-  { icon: TrendingUp, color: "text-teal-500", bg: "bg-teal-50", position: { top: "30%", right: "-5%" }, delay: 0.8 },
-  { icon: Package, color: "text-amber-500", bg: "bg-amber-50", position: { top: "65%", right: "-10%" }, delay: 1 },
-  { icon: Mail, color: "text-pink-500", bg: "bg-pink-50", position: { bottom: "10%", right: "8%" }, delay: 1.2 },
-  { icon: CheckSquare, color: "text-indigo-500", bg: "bg-indigo-50", position: { top: "50%", left: "-3%" }, delay: 1.4 },
-];
 
 const dashboardModules = [
   { icon: Receipt, label: "Invoicing", color: "from-emerald-400 to-emerald-600", iconColor: "text-emerald-600" },
@@ -42,77 +23,11 @@ const dashboardModules = [
   { icon: Target, label: "Tasks", color: "from-indigo-400 to-indigo-600", iconColor: "text-indigo-600" },
 ];
 
-// Fixed particle positions to avoid hydration errors
-const particlePositions = [
-  { left: "15%", top: "20%" },
-  { left: "85%", top: "15%" },
-  { left: "25%", top: "75%" },
-  { left: "70%", top: "80%" },
-  { left: "45%", top: "10%" },
-  { left: "90%", top: "50%" },
-  { left: "10%", top: "60%" },
-  { left: "60%", top: "30%" },
-  { left: "35%", top: "90%" },
-  { left: "80%", top: "65%" },
-  { left: "20%", top: "40%" },
-  { left: "55%", top: "70%" },
-  { left: "75%", top: "25%" },
-  { left: "40%", top: "55%" },
-  { left: "95%", top: "85%" },
-];
-
 export function HeroAnimation() {
   return (
     <div className="grid lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto">
-      {/* Left Side - Computer with Floating Icons */}
+      {/* Left Side - Computer */}
       <div className="relative h-[500px]">
-        {/* Floating Tool Icons with Actions */}
-        {tools.map((Tool, index) => (
-          <motion.div
-            key={index}
-            className="absolute"
-            style={Tool.position}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{
-              opacity: [0, 1, 1, 1],
-              scale: [0, 1.2, 1, 1],
-              y: [0, -15, 0, -15, 0],
-            }}
-            transition={{
-              duration: 3,
-              delay: Tool.delay,
-              repeat: Infinity,
-              repeatDelay: 2,
-              y: {
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              },
-            }}
-          >
-            <motion.div 
-              className={`p-3 ${Tool.bg} rounded-xl shadow-lg border border-white/50 backdrop-blur-sm`}
-              whileHover={{ scale: 1.1, rotate: 5 }}
-            >
-              <Tool.icon className={`w-6 h-6 ${Tool.color}`} />
-            </motion.div>
-            
-            {/* Action indicator */}
-            <motion.div
-              className={`absolute -top-1 -right-1 w-3 h-3 ${Tool.color.replace('text', 'bg')} rounded-full`}
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [1, 0.5, 1],
-              }}
-              transition={{
-                duration: 2,
-                delay: Tool.delay + 0.5,
-                repeat: Infinity,
-              }}
-            />
-          </motion.div>
-        ))}
-
         {/* Computer Mockup */}
         <motion.div
           className="absolute top-[35%] left-1/2 transform -translate-x-1/2 -translate-y-1/2"
@@ -323,28 +238,6 @@ export function HeroAnimation() {
           <div className="w-[610px] h-2 bg-gray-400 rounded-b-2xl shadow-xl mx-auto"></div>
         </div>
       </motion.div>
-
-        {/* Animated Particles */}
-        {particlePositions.map((pos, i) => (
-          <motion.div
-            key={`particle-${i}`}
-            className="absolute w-1 h-1 bg-primary-400 rounded-full"
-            style={{
-              left: pos.left,
-              top: pos.top,
-            }}
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [0, 1.5, 0],
-            }}
-            transition={{
-              duration: 3,
-              delay: i * 0.2,
-              repeat: Infinity,
-              repeatDelay: 2 + (i % 3),
-            }}
-          />
-        ))}
       </div>
 
       {/* Right Side - USP Messaging */}

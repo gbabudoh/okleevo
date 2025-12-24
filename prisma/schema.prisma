@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // =============================================================================
@@ -15,25 +16,39 @@ datasource db {
 
 model User {
   id            String    @id @default(cuid())
+  
+  // NextAuth.js Integration
   email         String    @unique
-  password      String
+  emailVerified DateTime?
+  password      String?   // Hashed password for credentials provider
+  name          String?   // Full name (can be split into firstName/lastName)
   firstName     String
   lastName      String
   phone         String?
-  emailVerified Boolean   @default(false)
-  role          UserRole  @default(OWNER)
+  image         String?   // Avatar URL
+  
+  role          UserRole  @default(MEMBER)
   status        UserStatus @default(ACTIVE)
   
-  // Business Info
-  businessId    String
+  // Multi-tenancy: SME (Organization) Info
+  businessId    String    // SME ID
   business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  // User Preferences
+  timezone      String    @default("Europe/London")
+  avatar        String?
+  notificationPreferences Json? // Store notification settings
   
   // Timestamps
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lastLoginAt   DateTime?
   
-  // Relations
+  // NextAuth.js Relations
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Business Relations
   invoices      Invoice[]
   contacts      Contact[]
   tasks         Task[]
@@ -45,11 +60,52 @@ model User {
   @@index([businessId])
 }
 
+// NextAuth.js Account Model (for OAuth providers)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// NextAuth.js Session Model
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// NextAuth.js Verification Token Model
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 enum UserRole {
-  OWNER
-  ADMIN
-  MANAGER
-  EMPLOYEE
+  OWNER      // SME Owner - full access
+  ADMIN      // Admin - can manage users and settings
+  MANAGER    // Manager - can see team data (Tier 3 feature)
+  MEMBER     // Basic member - sees own data only
 }
 
 enum UserStatus {
@@ -64,6 +120,7 @@ enum UserStatus {
 
 model Business {
   id              String   @id @default(cuid())
+  
   name            String
   industry        String
   size            String
@@ -72,9 +129,13 @@ model Business {
   postcode        String?
   country         String   @default("UK")
   
-  // Subscription
+  // Subscription & Billing
   subscriptionId  String?  @unique
   subscription    Subscription?
+  
+  // Seat Management (for per-seat billing)
+  seatCount       Int      @default(1)
+  maxSeats        Int      @default(10) // Based on tier
   
   // Timestamps
   createdAt       DateTime @default(now())
@@ -594,4 +655,68 @@ enum ComplianceStatus {
   PENDING
   COMPLETED
   OVERDUE
+}
+
+// =============================================================================
+// Audit Logs (Tier 2: 10-20 Users)
+// =============================================================================
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  
+  smeId         String   // Organization ID
+  businessId    String   // For backward compatibility
+  
+  userId        String   // Who performed the action
+  userEmail     String   // Denormalized for quick lookup
+  
+  action        String   // CREATE, UPDATE, DELETE, etc.
+  resourceType  String   // Invoice, Contact, Task, etc.
+  resourceId    String   // ID of the resource
+  
+  changes       Json?    // Before/after changes
+  metadata      Json?    // Additional context
+  
+  ipAddress     String?
+  userAgent     String?
+  
+  createdAt     DateTime @default(now())
+  
+  @@index([smeId])
+  @@index([businessId])
+  @@index([userId])
+  @@index([resourceType])
+  @@index([createdAt])
+}
+
+// =============================================================================
+// Workspace Visibility (Tier 2: Shared vs Private)
+// =============================================================================
+
+model WorkspaceVisibility {
+  id            String   @id @default(cuid())
+  
+  smeId         String
+  businessId    String
+  
+  resourceType  String   // Invoice, Contact, Task, Note, etc.
+  resourceId    String   // ID of the resource
+  
+  visibility    VisibilityType @default(PRIVATE)
+  
+  // If SHARED, which users can access (empty = all users in SME)
+  sharedWithUserIds String[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([resourceType, resourceId])
+  @@index([smeId])
+  @@index([businessId])
+  @@index([visibility])
+}
+
+enum VisibilityType {
+  PRIVATE  // Only creator can see
+  SHARED   // Shared with team (or specific users)
 }

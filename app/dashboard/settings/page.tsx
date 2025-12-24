@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { 
   User, Mail, Phone, MapPin, Building2, Briefcase, Lock,
   Bell, CreditCard, Globe, Shield, Eye, EyeOff, Camera,
@@ -8,9 +9,11 @@ import {
   Palette, Moon, Sun, Zap, Database, Download, Upload,
   Trash2, LogOut, Key, Smartphone, Monitor, Users, Crown,
   Calendar, DollarSign, FileText, Link, Share2, Code, Plus,
-  Edit3
+  Edit3, UserPlus, UserMinus, UserCheck, UserX
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { usePresence } from '@/components/hooks/use-presence';
+import { TeamActivityFeed } from '@/components/team-activity-feed';
 
 interface UserProfile {
   firstName: string;
@@ -43,25 +46,258 @@ interface NotificationSettings {
 }
 
 export default function SettingsPage() {
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string>('MEMBER'); // Track user role
+  
+  // Team management state
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [seatInfo, setSeatInfo] = useState({ used: 0, max: 0, available: 0 });
+  const [loadingTeam, setLoadingTeam] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  
+  // Presence tracking
+  const { presence } = usePresence();
+  const [newEmployee, setNewEmployee] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    role: 'MEMBER',
+    password: '',
+  });
 
   const [profile, setProfile] = useState<UserProfile>({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@company.com',
-    phone: '+1 (555) 123-4567',
-    company: 'Acme Corporation',
-    position: 'CEO',
-    address: '123 Business Street',
-    city: 'San Francisco',
-    country: 'United States',
-    timezone: 'America/Los_Angeles',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
+    position: '',
+    address: '',
+    city: '',
+    country: 'UK',
+    timezone: 'Europe/London',
     language: 'English'
   });
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    async function fetchUserData() {
+      if (status === 'loading') return;
+      
+      if (!session?.user?.id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const data = await response.json();
+          // Store user role
+          setUserRole(data.role || 'MEMBER');
+          // Map database fields to profile state
+          setProfile({
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            email: data.email || '',
+            phone: data.phone || '',
+            company: data.business?.name || '',
+            position: data.role === 'OWNER' ? 'Owner' : data.role === 'ADMIN' ? 'Administrator' : data.role === 'MANAGER' ? 'Manager' : 'Member',
+            address: data.business?.address || '',
+            city: data.business?.city || '',
+            country: data.business?.country || 'UK',
+            timezone: 'Europe/London', // Default, can be updated from user preferences later
+            language: 'English'
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUserData();
+  }, [session, status]);
+
+  // Fetch team members when team tab is active
+  useEffect(() => {
+    if (activeTab === 'team') {
+      fetchTeamMembers();
+    }
+  }, [activeTab, session, status]);
+
+  async function fetchTeamMembers() {
+    if (status === 'loading' || !session?.user?.id) {
+      console.log('Skipping fetch - status:', status, 'hasSession:', !!session?.user?.id);
+      return;
+    }
+    
+    setLoadingTeam(true);
+    try {
+      const response = await fetch('/api/employees', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : {};
+        setTeamMembers(data.users || []);
+        setSeatInfo(data.seatInfo || { used: 0, max: 0, available: 0 });
+      } else {
+        const text = await response.text();
+        let errorData;
+        try {
+          errorData = text ? JSON.parse(text) : { error: `HTTP ${response.status}` };
+        } catch (parseError) {
+          errorData = { error: `Server error (${response.status}): ${text || response.statusText}` };
+        }
+        
+        console.error('Failed to fetch team members:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          responseText: text
+        });
+
+        // Show user-friendly error message
+        if (response.status === 401) {
+          console.warn('Session expired. Please refresh the page and sign in again.');
+        } else if (response.status === 403) {
+          console.warn('You do not have permission to view team members. Only owners and admins can access this.');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error fetching team members:', error);
+      console.error('Error details:', error.message, error.stack);
+    } finally {
+      setLoadingTeam(false);
+    }
+  }
+
+  async function handleAddEmployee() {
+    if (!newEmployee.email || !newEmployee.firstName || !newEmployee.lastName) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/employees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(newEmployee),
+      });
+
+      let data;
+      try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        data = { error: 'Invalid response from server' };
+      }
+
+      if (response.ok) {
+        alert('✓ Employee added successfully!');
+        setShowAddModal(false);
+        setNewEmployee({
+          email: '',
+          firstName: '',
+          lastName: '',
+          phone: '',
+          role: 'MEMBER',
+          password: '',
+        });
+        fetchTeamMembers();
+      } else {
+        console.error('Failed to add employee:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: data
+        });
+        const errorMessage = data?.error || `Server error (${response.status})`;
+        alert(`Error: ${errorMessage}`);
+      }
+    } catch (error: any) {
+      console.error('Error adding employee:', error);
+      alert(`Failed to add employee: ${error.message || 'Please try again.'}`);
+    }
+  }
+
+  async function handleDeleteEmployee(userId: string) {
+    if (!confirm('Are you sure you want to remove this employee?')) return;
+
+    try {
+      const response = await fetch(`/api/employees/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
+
+      if (response.ok) {
+        alert('✓ Employee removed successfully!');
+        fetchTeamMembers();
+      } else {
+        console.error('Failed to delete employee:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: data
+        });
+        alert(`Error: ${data.error || `Server error (${response.status})`}`);
+      }
+    } catch (error: any) {
+      console.error('Error deleting employee:', error);
+      alert(`Failed to remove employee: ${error.message || 'Please try again.'}`);
+    }
+  }
+
+  async function handleUpdateEmployee() {
+    if (!editingUser) return;
+
+    try {
+      const response = await fetch(`/api/employees/${editingUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(editingUser),
+      });
+
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
+
+      if (response.ok) {
+        alert('✓ Employee updated successfully!');
+        setShowEditModal(false);
+        setEditingUser(null);
+        fetchTeamMembers();
+      } else {
+        console.error('Failed to update employee:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: data
+        });
+        alert(`Error: ${data.error || `Server error (${response.status})`}`);
+      }
+    } catch (error: any) {
+      console.error('Error updating employee:', error);
+      alert(`Failed to update employee: ${error.message || 'Please try again.'}`);
+    }
+  }
 
   const [security, setSecurity] = useState<SecuritySettings>({
     twoFactorEnabled: true,
@@ -78,21 +314,31 @@ export default function SettingsPage() {
     marketingEmails: false
   });
 
-  const [theme, setTheme] = useState('light');
-
   const handleSave = () => {
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
-  const tabs = [
-    { id: 'profile', name: 'Profile', icon: User },
-    { id: 'security', name: 'Security', icon: Shield },
-    { id: 'notifications', name: 'Notifications', icon: Bell },
-    { id: 'billing', name: 'Billing', icon: CreditCard },
-    { id: 'preferences', name: 'Preferences', icon: SettingsIcon },
-    { id: 'integrations', name: 'Integrations', icon: Link },
+  // Filter tabs based on user role
+  const allTabs = [
+    { id: 'profile', name: 'Profile', icon: User, roles: ['OWNER', 'ADMIN', 'MANAGER', 'MEMBER'] },
+    { id: 'team', name: 'Team', icon: Users, roles: ['OWNER'] },
+    { id: 'security', name: 'Security', icon: Shield, roles: ['OWNER', 'ADMIN', 'MANAGER', 'MEMBER'] },
+    { id: 'notifications', name: 'Notifications', icon: Bell, roles: ['OWNER', 'ADMIN'] },
+    { id: 'billing', name: 'Billing', icon: CreditCard, roles: ['OWNER'] },
+    { id: 'preferences', name: 'Preferences', icon: SettingsIcon, roles: ['OWNER', 'ADMIN'] },
+    { id: 'integrations', name: 'Integrations', icon: Link, roles: ['OWNER', 'ADMIN'] },
   ];
+
+  const tabs = allTabs.filter(tab => tab.roles.includes(userRole));
+  
+  // If current tab is not available for user role, switch to profile
+  useEffect(() => {
+    const availableTabs = allTabs.filter(tab => tab.roles.includes(userRole));
+    if (!availableTabs.find(tab => tab.id === activeTab)) {
+      setActiveTab('profile');
+    }
+  }, [userRole, activeTab]);
 
   return (
     <div className="space-y-6 pb-8">
@@ -142,37 +388,50 @@ export default function SettingsPage() {
       {/* Profile Tab */}
       {activeTab === 'profile' && (
         <div className="space-y-6">
-          {/* Avatar Section */}
-          <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Picture</h2>
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                <div className="w-24 h-24 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-3xl">
-                  {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
-                </div>
-                <button className="absolute bottom-0 right-0 p-2 bg-indigo-500 rounded-full text-white hover:bg-indigo-600 transition-colors">
-                  <Camera className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 mb-1">{profile.firstName} {profile.lastName}</h3>
-                <p className="text-sm text-gray-600 mb-3">{profile.position} at {profile.company}</p>
-                <div className="flex items-center gap-3">
-                  <button 
-                    type="button"
-                    onClick={() => alert('Upload photo functionality')}
-                    className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium cursor-pointer"
-                  >
-                    Upload Photo
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => alert('Remove photo')}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium cursor-pointer"
-                  >
-                    Remove
-                  </button>
-                </div>
+          {loading ? (
+            <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+              <p className="text-gray-600">Loading profile data...</p>
+            </div>
+          ) : (
+            <>
+              {/* Avatar Section */}
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Picture</h2>
+                <div className="flex items-center gap-6">
+                  <div className="relative">
+                    <div className="w-24 h-24 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-3xl">
+                      {profile.firstName ? profile.firstName.charAt(0) : ''}{profile.lastName ? profile.lastName.charAt(0) : ''}
+                    </div>
+                    <button className="absolute bottom-0 right-0 p-2 bg-indigo-500 rounded-full text-white hover:bg-indigo-600 transition-colors">
+                      <Camera className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 mb-1">
+                      {profile.firstName} {profile.lastName}
+                      {!profile.firstName && !profile.lastName && 'Loading...'}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      {profile.position && profile.company ? `${profile.position} at ${profile.company}` : profile.company || 'Loading...'}
+                    </p>
+                {(userRole === 'OWNER' || userRole === 'ADMIN') && (
+                  <div className="flex items-center gap-3">
+                    <button 
+                      type="button"
+                      onClick={() => alert('Upload photo functionality')}
+                      className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium cursor-pointer"
+                    >
+                      Upload Photo
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => alert('Remove photo')}
+                      className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -187,7 +446,10 @@ export default function SettingsPage() {
                   type="text"
                   value={profile.firstName}
                   onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                  className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                    (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'bg-gray-100 cursor-not-allowed' : ''
+                  }`}
                 />
               </div>
 
@@ -197,7 +459,10 @@ export default function SettingsPage() {
                   type="text"
                   value={profile.lastName}
                   onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                  className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                    (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'bg-gray-100 cursor-not-allowed' : ''
+                  }`}
                 />
               </div>
 
@@ -209,7 +474,10 @@ export default function SettingsPage() {
                     type="email"
                     value={profile.email}
                     onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                    className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                      (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -222,7 +490,10 @@ export default function SettingsPage() {
                     type="tel"
                     value={profile.phone}
                     onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                    className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                      (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -235,7 +506,10 @@ export default function SettingsPage() {
                     type="text"
                     value={profile.company}
                     onChange={(e) => setProfile({ ...profile, company: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                    className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                      (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -248,7 +522,10 @@ export default function SettingsPage() {
                     type="text"
                     value={profile.position}
                     onChange={(e) => setProfile({ ...profile, position: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                    className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                      (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -261,7 +538,10 @@ export default function SettingsPage() {
                     type="text"
                     value={profile.address}
                     onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                    className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                      (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -272,7 +552,10 @@ export default function SettingsPage() {
                   type="text"
                   value={profile.city}
                   onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                  className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                    (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'bg-gray-100 cursor-not-allowed' : ''
+                  }`}
                 />
               </div>
 
@@ -282,30 +565,191 @@ export default function SettingsPage() {
                   type="text"
                   value={profile.country}
                   onChange={(e) => setProfile({ ...profile, country: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                  className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                    (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'bg-gray-100 cursor-not-allowed' : ''
+                  }`}
                 />
               </div>
             </div>
           </div>
 
           {/* Save Button */}
-          <div className="flex items-center justify-end gap-3">
-            <button 
-              type="button"
-              onClick={() => window.location.reload()}
-              className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+          {(userRole === 'OWNER' || userRole === 'ADMIN') && (
+            <div className="flex items-center justify-end gap-3">
+              <button 
+                type="button"
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                onClick={handleSave}
+                className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Save className="w-5 h-5" />
+                Save Changes
+              </button>
+            </div>
+          )}
+          {(userRole === 'MANAGER' || userRole === 'MEMBER') && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> You can only change your password. Contact your administrator to update other profile information.
+              </p>
+            </div>
+          )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Team Tab */}
+      {activeTab === 'team' && (
+        <div className="space-y-6">
+          {/* Seat Usage Card */}
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl border-2 border-indigo-600 p-6 text-white">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold mb-2">Team Seats</h2>
+                <p className="text-indigo-100 text-sm">Manage your team members and seat allocation</p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold">{seatInfo.used} / {seatInfo.max}</div>
+                <div className="text-indigo-200 text-sm">{seatInfo.available} available</div>
+              </div>
+            </div>
+            <div className="w-full bg-indigo-400 bg-opacity-30 rounded-full h-3">
+              <div
+                className="bg-white rounded-full h-3 transition-all"
+                style={{ width: `${(seatInfo.used / seatInfo.max) * 100}%` }}
+              />
+            </div>
+            {seatInfo.available === 0 && (
+              <div className="mt-4 flex items-center gap-2 text-amber-200">
+                <AlertCircle className="w-5 h-5" />
+                <span className="text-sm">Seat limit reached. Upgrade your plan to add more employees.</span>
+              </div>
+            )}
+          </div>
+
+          {/* Add Employee Button */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Team Members</h2>
+            <button
+              onClick={() => setShowAddModal(true)}
+              disabled={seatInfo.available === 0}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${
+                seatInfo.available === 0
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg'
+              }`}
             >
-              Cancel
-            </button>
-            <button 
-              type="button"
-              onClick={handleSave}
-              className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <Save className="w-5 h-5" />
-              Save Changes
+              <UserPlus className="w-5 h-5" />
+              Add Employee
             </button>
           </div>
+
+          {/* Team Members List */}
+          {loadingTeam ? (
+            <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+              <p className="text-gray-600">Loading team members...</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
+              {teamMembers.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-4">No team members yet</p>
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
+                  >
+                    Add First Employee
+                  </button>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {teamMembers.map((member) => {
+                    const isOnline = presence?.presence?.find(p => p.userId === member.id)?.isOnline || false;
+                    return (
+                      <div key={member.id} className="p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="relative">
+                              <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold">
+                                {member.firstName?.charAt(0)}{member.lastName?.charAt(0)}
+                              </div>
+                              {isOnline && (
+                                <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold text-gray-900">
+                                  {member.firstName} {member.lastName}
+                                </h3>
+                                {member.role === 'OWNER' && (
+                                  <Crown className="w-4 h-4 text-amber-500" />
+                                )}
+                                {isOnline && (
+                                  <span className="text-xs text-green-600 font-medium">● Online</span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600">{member.email}</p>
+                              <div className="flex items-center gap-3 mt-1">
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  member.role === 'OWNER' ? 'bg-amber-100 text-amber-700' :
+                                  member.role === 'ADMIN' ? 'bg-blue-100 text-blue-700' :
+                                  member.role === 'MANAGER' ? 'bg-green-100 text-green-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {member.role}
+                                </span>
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  member.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
+                                  member.status === 'INACTIVE' ? 'bg-gray-100 text-gray-700' :
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {member.status}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {member.role !== 'OWNER' && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setEditingUser({ ...member });
+                                    setShowEditModal(true);
+                                  }}
+                                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                  <Edit3 className="w-5 h-5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteEmployee(member.id)}
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Team Activity Feed - Visible to all team members */}
+          <TeamActivityFeed />
         </div>
       )}
 
@@ -624,15 +1068,12 @@ export default function SettingsPage() {
           {/* Current Plan */}
           <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl p-6 text-white">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <Crown className="w-8 h-8" />
-                <div>
-                  <h2 className="text-2xl font-bold">Professional Plan</h2>
-                  <p className="text-indigo-100">Billed monthly</p>
-                </div>
+              <div>
+                <h2 className="text-2xl font-bold">All-in-One Plan</h2>
+                <p className="text-indigo-100">Billed monthly</p>
               </div>
               <div className="text-right">
-                <p className="text-4xl font-bold">$49</p>
+                <p className="text-4xl font-bold">£19.99</p>
                 <p className="text-indigo-100">per month</p>
               </div>
             </div>
@@ -695,9 +1136,9 @@ export default function SettingsPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-6">Billing History</h2>
             <div className="space-y-3">
               {[
-                { date: 'Dec 1, 2024', amount: '$49.00', status: 'Paid', invoice: 'INV-2024-12' },
-                { date: 'Nov 1, 2024', amount: '$49.00', status: 'Paid', invoice: 'INV-2024-11' },
-                { date: 'Oct 1, 2024', amount: '$49.00', status: 'Paid', invoice: 'INV-2024-10' },
+                { date: 'Dec 1, 2024', amount: '£19.99', status: 'Paid', invoice: 'INV-2024-12' },
+                { date: 'Nov 1, 2024', amount: '£19.99', status: 'Paid', invoice: 'INV-2024-11' },
+                { date: 'Oct 1, 2024', amount: '£19.99', status: 'Paid', invoice: 'INV-2024-10' },
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-3">
@@ -728,45 +1169,7 @@ export default function SettingsPage() {
       {/* Preferences Tab */}
       {activeTab === 'preferences' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Appearance</h2>
-            <div className="grid grid-cols-3 gap-4">
-              <button
-                type="button"
-                onClick={() => setTheme('light')}
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                  theme === 'light' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <Sun className="w-8 h-8 mx-auto mb-2 text-yellow-500" />
-                <p className="font-semibold text-gray-900">Light</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTheme('dark')}
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                  theme === 'dark' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <Moon className="w-8 h-8 mx-auto mb-2 text-indigo-500" />
-                <p className="font-semibold text-gray-900">Dark</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTheme('auto')}
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                  theme === 'auto' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <Monitor className="w-8 h-8 mx-auto mb-2 text-gray-600" />
-                <p className="font-semibold text-gray-900">Auto</p>
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Language & Region</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -1012,7 +1415,7 @@ export default function SettingsPage() {
                         },
                         notifications: notifications,
                         preferences: {
-                          theme: theme,
+                          theme: 'light',
                           language: profile.language,
                           timezone: profile.timezone
                         },
@@ -1047,7 +1450,7 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      const csv = `Account Data Export\n\nProfile Information\nFirst Name,${profile.firstName}\nLast Name,${profile.lastName}\nEmail,${profile.email}\nPhone,${profile.phone}\nCompany,${profile.company}\nPosition,${profile.position}\nAddress,${profile.address}\nCity,${profile.city}\nCountry,${profile.country}\n\nSecurity Settings\nTwo-Factor Auth,${security.twoFactorEnabled ? 'Enabled' : 'Disabled'}\nEmail Notifications,${security.emailNotifications ? 'Enabled' : 'Disabled'}\nSMS Notifications,${security.smsNotifications ? 'Enabled' : 'Disabled'}\nLogin Alerts,${security.loginAlerts ? 'Enabled' : 'Disabled'}\n\nNotification Preferences\nEmail Digest,${notifications.emailDigest ? 'Enabled' : 'Disabled'}\nTask Reminders,${notifications.taskReminders ? 'Enabled' : 'Disabled'}\nInvoice Alerts,${notifications.invoiceAlerts ? 'Enabled' : 'Disabled'}\nTeam Updates,${notifications.teamUpdates ? 'Enabled' : 'Disabled'}\nMarketing Emails,${notifications.marketingEmails ? 'Enabled' : 'Disabled'}\n\nPreferences\nTheme,${theme}\nLanguage,${profile.language}\nTimezone,${profile.timezone}\n\nExport Date,${new Date().toLocaleString()}`;
+                      const csv = `Account Data Export\n\nProfile Information\nFirst Name,${profile.firstName}\nLast Name,${profile.lastName}\nEmail,${profile.email}\nPhone,${profile.phone}\nCompany,${profile.company}\nPosition,${profile.position}\nAddress,${profile.address}\nCity,${profile.city}\nCountry,${profile.country}\n\nSecurity Settings\nTwo-Factor Auth,${security.twoFactorEnabled ? 'Enabled' : 'Disabled'}\nEmail Notifications,${security.emailNotifications ? 'Enabled' : 'Disabled'}\nSMS Notifications,${security.smsNotifications ? 'Enabled' : 'Disabled'}\nLogin Alerts,${security.loginAlerts ? 'Enabled' : 'Disabled'}\n\nNotification Preferences\nEmail Digest,${notifications.emailDigest ? 'Enabled' : 'Disabled'}\nTask Reminders,${notifications.taskReminders ? 'Enabled' : 'Disabled'}\nInvoice Alerts,${notifications.invoiceAlerts ? 'Enabled' : 'Disabled'}\nTeam Updates,${notifications.teamUpdates ? 'Enabled' : 'Disabled'}\nMarketing Emails,${notifications.marketingEmails ? 'Enabled' : 'Disabled'}\n\nPreferences\nTheme,light\nLanguage,${profile.language}\nTimezone,${profile.timezone}\n\nExport Date,${new Date().toLocaleString()}`;
                       
                       const blob = new Blob([csv], { type: 'text/csv' });
                       const url = URL.createObjectURL(blob);
@@ -1110,7 +1513,7 @@ Marketing Emails:             ${notifications.marketingEmails ? 'Enabled' : 'Dis
 
 APPEARANCE & PREFERENCES
 ${'-'.repeat(80)}
-Theme:                        ${theme}
+Theme:                        light
 Language:                     ${profile.language}
 Timezone:                     ${profile.timezone}
 
@@ -1147,7 +1550,7 @@ Confidential - For Personal Use Only
                   <button
                     type="button"
                     onClick={() => {
-                      const textData = `ACCOUNT DATA EXPORT\n${'='.repeat(60)}\n\nPROFILE:\n  Name: ${profile.firstName} ${profile.lastName}\n  Email: ${profile.email}\n  Phone: ${profile.phone}\n  Company: ${profile.company}\n  Position: ${profile.position}\n  Location: ${profile.city}, ${profile.country}\n\nSECURITY:\n  Two-Factor Auth: ${security.twoFactorEnabled ? 'Enabled' : 'Disabled'}\n  Email Notifications: ${security.emailNotifications ? 'Enabled' : 'Disabled'}\n  SMS Notifications: ${security.smsNotifications ? 'Enabled' : 'Disabled'}\n  Login Alerts: ${security.loginAlerts ? 'Enabled' : 'Disabled'}\n\nNOTIFICATIONS:\n  Email Digest: ${notifications.emailDigest ? 'Yes' : 'No'}\n  Task Reminders: ${notifications.taskReminders ? 'Yes' : 'No'}\n  Invoice Alerts: ${notifications.invoiceAlerts ? 'Yes' : 'No'}\n  Team Updates: ${notifications.teamUpdates ? 'Yes' : 'No'}\n  Marketing: ${notifications.marketingEmails ? 'Yes' : 'No'}\n\nPREFERENCES:\n  Theme: ${theme}\n  Language: ${profile.language}\n  Timezone: ${profile.timezone}\n\nExported: ${new Date().toLocaleString()}\n`;
+                      const textData = `ACCOUNT DATA EXPORT\n${'='.repeat(60)}\n\nPROFILE:\n  Name: ${profile.firstName} ${profile.lastName}\n  Email: ${profile.email}\n  Phone: ${profile.phone}\n  Company: ${profile.company}\n  Position: ${profile.position}\n  Location: ${profile.city}, ${profile.country}\n\nSECURITY:\n  Two-Factor Auth: ${security.twoFactorEnabled ? 'Enabled' : 'Disabled'}\n  Email Notifications: ${security.emailNotifications ? 'Enabled' : 'Disabled'}\n  SMS Notifications: ${security.smsNotifications ? 'Enabled' : 'Disabled'}\n  Login Alerts: ${security.loginAlerts ? 'Enabled' : 'Disabled'}\n\nNOTIFICATIONS:\n  Email Digest: ${notifications.emailDigest ? 'Yes' : 'No'}\n  Task Reminders: ${notifications.taskReminders ? 'Yes' : 'No'}\n  Invoice Alerts: ${notifications.invoiceAlerts ? 'Yes' : 'No'}\n  Team Updates: ${notifications.teamUpdates ? 'Yes' : 'No'}\n  Marketing: ${notifications.marketingEmails ? 'Yes' : 'No'}\n\nPREFERENCES:\n  Theme: light\n  Language: ${profile.language}\n  Timezone: ${profile.timezone}\n\nExported: ${new Date().toLocaleString()}\n`;
                       
                       const blob = new Blob([textData], { type: 'text/plain' });
                       const url = URL.createObjectURL(blob);
@@ -1191,6 +1594,229 @@ Confidential - For Personal Use Only
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Employee Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <UserPlus className="w-6 h-6 text-indigo-500" />
+                Add Employee
+              </h2>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setNewEmployee({
+                    email: '',
+                    firstName: '',
+                    lastName: '',
+                    phone: '',
+                    role: 'MEMBER',
+                    password: '',
+                  });
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                <input
+                  type="email"
+                  value={newEmployee.email}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="employee@example.com"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
+                  <input
+                    type="text"
+                    value={newEmployee.firstName}
+                    onChange={(e) => setNewEmployee({ ...newEmployee, firstName: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
+                  <input
+                    type="text"
+                    value={newEmployee.lastName}
+                    onChange={(e) => setNewEmployee({ ...newEmployee, lastName: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
+                <input
+                  type="tel"
+                  value={newEmployee.phone}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                <select
+                  value={newEmployee.role}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, role: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="MEMBER">Member</option>
+                  <option value="MANAGER">Manager</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Password (optional)</label>
+                <input
+                  type="password"
+                  value={newEmployee.password}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Leave empty to send invite email"
+                />
+                <p className="text-xs text-gray-500 mt-1">If left empty, employee will receive an invitation email</p>
+              </div>
+              <div className="flex items-center gap-3 pt-4">
+                <button
+                  onClick={handleAddEmployee}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+                >
+                  Add Employee
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setNewEmployee({
+                      email: '',
+                      firstName: '',
+                      lastName: '',
+                      phone: '',
+                      role: 'MEMBER',
+                      password: '',
+                    });
+                  }}
+                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Employee Modal */}
+      {showEditModal && editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <Edit3 className="w-6 h-6 text-indigo-500" />
+                Edit Employee
+              </h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingUser(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={editingUser.email}
+                  disabled
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                  <input
+                    type="text"
+                    value={editingUser.firstName || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, firstName: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                  <input
+                    type="text"
+                    value={editingUser.lastName || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, lastName: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
+                <input
+                  type="tel"
+                  value={editingUser.phone || ''}
+                  onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                <select
+                  value={editingUser.role}
+                  onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="MEMBER">Member</option>
+                  <option value="MANAGER">Manager</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                <select
+                  value={editingUser.status}
+                  onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
+                  <option value="SUSPENDED">Suspended</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-3 pt-4">
+                <button
+                  onClick={handleUpdateEmployee}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingUser(null);
+                  }}
+                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

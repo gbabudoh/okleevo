@@ -57,11 +57,47 @@ export default function OnboardingPage() {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
-    setStep(5); // Success step
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Server returned an invalid response. Please try again.');
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = data.error || data.message || 'Registration failed';
+        const errorDetails = data.details ? ` Details: ${JSON.stringify(data.details)}` : '';
+        throw new Error(errorMessage + errorDetails);
+      }
+
+      // Success - move to success step
+      setStep(5);
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      setSubmitError(error.message || 'Failed to create account. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -175,13 +211,16 @@ export default function OnboardingPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       required
                     >
-                      <option value="">Select business size</option>
-                      <option value="1-5">1-5 employees</option>
-                      <option value="6-10">6-10 employees</option>
-                      <option value="11-25">11-25 employees</option>
-                      <option value="26-50">26-50 employees</option>
-                      <option value="51+">51+ employees</option>
+                      <option value="">Select number of employees</option>
+                      <option value="1-5">1 - 5 employees</option>
+                      <option value="6-10">6 - 10 employees</option>
+                      <option value="11-25">11 - 25 employees</option>
+                      <option value="26-50">26 - 50 employees</option>
+                      <option value="50+">50+ employees</option>
                     </select>
+                    <p className="text-sm text-gray-500 mt-2">
+                      This helps us set up the right plan for your team size
+                    </p>
                   </div>
                 </div>
 
@@ -339,7 +378,7 @@ export default function OnboardingPage() {
                       required
                     />
                     <p className="text-sm text-gray-500 mt-2">
-                      Must be at least 8 characters with uppercase, lowercase, and numbers
+                      Must be at least 8 characters long
                     </p>
                   </div>
 
@@ -453,23 +492,31 @@ export default function OnboardingPage() {
                     </div>
                   </div>
 
+                  {/* Error Message */}
+                  {submitError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-600">{submitError}</p>
+                    </div>
+                  )}
+
                   <div className="flex gap-4 mt-8">
                     <button
                       type="button"
                       onClick={prevStep}
                       className="flex-1 px-6 py-4 rounded-full border-2 border-gray-300 text-gray-700 font-semibold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                      disabled={isSubmitting}
                     >
                       <ArrowLeft className="w-5 h-5" />
                       Back
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-6 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2"
+                      className="flex-1 px-6 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: '#fc6813' }}
-                      disabled={!formData.address || !formData.city || !formData.postcode}
+                      disabled={!formData.address || !formData.city || !formData.postcode || isSubmitting}
                     >
-                      Complete Setup
-                      <CheckCircle2 className="w-5 h-5" />
+                      {isSubmitting ? 'Creating Account...' : 'Complete Setup'}
+                      {!isSubmitting && <CheckCircle2 className="w-5 h-5" />}
                     </button>
                   </div>
                 </form>
@@ -496,16 +543,16 @@ export default function OnboardingPage() {
                 </p>
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
                   <p className="text-gray-700 mb-2">
-                    We've sent a verification email to:
+                    You can now sign in with:
                   </p>
                   <p className="font-semibold text-gray-900">{formData.email}</p>
                 </div>
                 <Link
-                  href="/dashboard"
+                  href="/access"
                   className="inline-block px-12 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
                   style={{ backgroundColor: '#fc6813' }}
                 >
-                  Go to Dashboard
+                  Sign In to Continue
                 </Link>
               </motion.div>
             )}
