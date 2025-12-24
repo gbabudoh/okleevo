@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
   LayoutDashboard,
@@ -61,12 +61,38 @@ export default function DashboardLayout({
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const router = useRouter();
+
+  // Check if user is super admin and redirect
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      return;
+    }
+
+    // Check if user is SUPER_ADMIN - they should only access admin panel
+    const userRole = (session.user as any)?.role;
+    if (userRole === 'SUPER_ADMIN') {
+      console.log('[DASHBOARD] Super admin detected, redirecting to admin panel');
+      router.push('/admin');
+      return;
+    }
+  }, [session, status, router]);
+
   // Fetch user and business data
   useEffect(() => {
     async function fetchUserData() {
       if (status === 'loading') return;
       
       if (!session?.user?.id) {
+        setLoading(false);
+        return;
+      }
+
+      // Don't fetch if super admin (will be redirected)
+      const userRole = (session.user as any)?.role;
+      if (userRole === 'SUPER_ADMIN') {
         setLoading(false);
         return;
       }

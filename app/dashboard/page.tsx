@@ -39,12 +39,36 @@ export default function DashboardPage() {
   // Team presence tracking
   const { presence } = usePresence();
 
+  // Check if user is super admin and redirect
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      return;
+    }
+
+    // Check if user is SUPER_ADMIN - they should only access admin panel
+    const userRole = (session.user as any)?.role;
+    if (userRole === 'SUPER_ADMIN') {
+      console.log('[DASHBOARD] Super admin detected, redirecting to admin panel');
+      router.push('/admin');
+      return;
+    }
+  }, [session, status, router]);
+
   // Fetch user and business data
   useEffect(() => {
     async function fetchUserData() {
       if (status === 'loading') return;
       
       if (!session?.user?.id) {
+        setLoading(false);
+        return;
+      }
+
+      // Don't fetch if super admin (will be redirected)
+      const userRole = (session.user as any)?.role;
+      if (userRole === 'SUPER_ADMIN') {
         setLoading(false);
         return;
       }

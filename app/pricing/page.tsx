@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { Check } from "lucide-react";
 
 export default function PricingPage() {
+  const { data: session, status } = useSession();
+  const isLoggedIn = status === "authenticated" && session?.user;
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
       {/* Navigation */}
@@ -240,9 +245,14 @@ export default function PricingPage() {
             The all-in-one business platform designed specifically for UK SMEs
           </p>
           <div className="flex justify-center gap-6 text-sm">
-            <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-white transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-white transition-colors">Support</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link 
+              href={isLoggedIn ? "/dashboard/helpdesk" : "/support"} 
+              className="hover:text-white transition-colors"
+            >
+              Support
+            </Link>
           </div>
           <p className="mt-6 text-sm text-gray-500">
             © 2024 Okleevo. All rights reserved.

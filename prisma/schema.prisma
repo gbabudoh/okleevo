@@ -102,10 +102,11 @@ model VerificationToken {
 }
 
 enum UserRole {
-  OWNER      // SME Owner - full access
-  ADMIN      // Admin - can manage users and settings
-  MANAGER    // Manager - can see team data (Tier 3 feature)
-  MEMBER     // Basic member - sees own data only
+  SUPER_ADMIN // Platform admin - manages all SMEs and users
+  OWNER       // SME Owner - full access to their business
+  ADMIN       // Admin - can manage users and settings within SME
+  MANAGER     // Manager - can see team data (Tier 3 feature)
+  MEMBER      // Basic member - sees own data only
 }
 
 enum UserStatus {

@@ -43,8 +43,25 @@ export default function AccessPage() {
       if (result?.error) {
         setError('Invalid email or password');
       } else if (result?.ok) {
-        // Session is now created, redirect to dashboard
-        // The session will persist across page refreshes
+        // Wait a moment for session to update with role
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Fetch user profile to check role
+        try {
+          const profileResponse = await fetch('/api/user/profile', { credentials: 'include' });
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            if (profileData.role === 'SUPER_ADMIN') {
+              // Super admins should go to admin panel, not SME dashboard
+              window.location.href = '/admin';
+              return;
+            }
+          }
+        } catch (profileError) {
+          console.warn('Could not check user role, defaulting to dashboard');
+        }
+        
+        // Regular users go to dashboard
         window.location.href = '/dashboard';
       }
     } catch (err: any) {
