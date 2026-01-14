@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { signIn, useSession } from "next-auth/react";
-import { useRouter } from 'next/navigation';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { signIn } from "next-auth/react";
 
 export default function AccessPage() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,12 +23,11 @@ export default function AccessPage() {
       ...formData,
       [e.target.name]: value,
     });
-    setError(null); // Clear error on input change
+    setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setIsLoading(true);
     setError(null);
 
@@ -43,179 +41,165 @@ export default function AccessPage() {
       if (result?.error) {
         setError('Invalid email or password');
       } else if (result?.ok) {
-        // Wait a moment for session to update with role
         await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Fetch user profile to check role
         try {
           const profileResponse = await fetch('/api/user/profile', { credentials: 'include' });
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
             if (profileData.role === 'SUPER_ADMIN') {
-              // Super admins should go to admin panel, not SME dashboard
               window.location.href = '/admin';
               return;
             }
           }
-        } catch (profileError) {
+        } catch {
           console.warn('Could not check user role, defaulting to dashboard');
         }
-        
-        // Regular users go to dashboard
         window.location.href = '/dashboard';
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in. Please try again.');
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to sign in. Please try again.');
+      } else {
+        setError('Failed to sign in. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 flex items-center justify-center px-6 py-12">
-      {/* Logo */}
-      <Link href="/" className="absolute top-6 left-6">
-        <img src="/logo.png" alt="Okleevo" className="h-10 w-auto" />
-      </Link>
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Dynamic Background */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[100px] animate-blob mix-blend-multiply" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-orange-400/20 rounded-full blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply" />
+        <div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] bg-purple-400/20 rounded-full blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply" />
+      </div>
 
-      <div className="w-full max-w-md">
-        <motion.div
-          className="bg-white rounded-2xl shadow-xl p-8 md:p-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-gray-600">
-              Sign in to access your Okleevo account
-            </p>
+      <motion.div 
+        className="w-full max-w-[440px] bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 md:p-10 relative z-10"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="text-center mb-10">
+          <Link href="/" className="inline-block mb-6 hover:scale-105 transition-transform">
+            <Image src="/logo.png" alt="Okleevo" width={160} height={42} className="h-10 w-auto" />
+          </Link>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome Back</h1>
+            <p className="text-base text-gray-500 font-medium">Sign in to manage your entire business.</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">
+              Email Address
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-orange-500">
+                <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+              </div>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 placeholder:text-gray-400 hover:bg-white hover:border-gray-300"
+                placeholder="you@business.com"
+                required
+              />
+            </div>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="you@business.com"
-                  required
-                />
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">
+              Password
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
               </div>
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="w-full pl-12 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 placeholder:text-gray-400 hover:bg-white hover:border-gray-300"
+                placeholder="Enter your password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center focus:outline-none group/eye"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-400 group-hover/eye:text-gray-600 transition-colors" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-400 group-hover/eye:text-gray-600 transition-colors" />
+                )}
+              </button>
             </div>
+          </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Enter your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
+          <div className="flex items-center justify-between pt-1">
+            <label className="flex items-center cursor-pointer group">
+              <div className="relative flex items-center">
                 <input
                   type="checkbox"
                   name="rememberMe"
                   checked={formData.rememberMe}
                   onChange={handleInputChange}
-                  className="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-orange-500"
-                  style={{ accentColor: '#fc6813' }}
+                  className="peer sr-only" 
                 />
-                <span className="ml-2 text-sm text-gray-700">Remember me</span>
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-sm font-medium hover:underline"
-                style={{ color: '#fc6813' }}
-              >
-                Forgot password?
-              </Link>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
+                <div className="w-5 h-5 border-2 border-gray-300 rounded-md peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-all flex items-center justify-center">
+                   <ArrowRight className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 -rotate-45" strokeWidth={4} />
+                </div>
+                <span className="ml-2.5 text-sm font-medium text-gray-600 group-hover:text-gray-800 transition-colors">Remember me</span>
               </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={!formData.email || !formData.password || isLoading}
-              className="w-full px-6 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              style={{ backgroundColor: '#fc6813' }}
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-sm font-bold text-orange-600 hover:text-orange-700 hover:underline transition-colors"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
+              Forgot password?
+            </Link>
+          </div>
 
-          {/* Sign Up Link */}
-          <p className="text-center mt-8 text-gray-600">
-            Don't have an account?{" "}
+          {error && (
+            <motion.div 
+               initial={{ opacity: 0, height: 0 }}
+               animate={{ opacity: 1, height: "auto" }}
+               className="p-4 bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-2xl flex items-center gap-3"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+              <p className="text-sm font-medium text-red-700">{error}</p>
+            </motion.div>
+          )}
+
+          <button
+            type="submit"
+            disabled={!formData.email || !formData.password || isLoading}
+            className="w-full group relative flex items-center justify-center gap-2 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none bg-gradient-to-r from-[#fc6813] to-[#ff8c42] overflow-hidden"
+          >
+            <span className="relative z-10">{isLoading ? 'Signing in...' : 'Sign In'}</span>
+            {!isLoading && <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />}
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+          </button>
+
+          <p className="text-center text-gray-500 mt-8 text-sm font-medium">
+            Don&apos;t have an account?{" "}
             <Link
               href="/onboarding"
-              className="font-semibold hover:underline"
-              style={{ color: '#fc6813' }}
+              className="font-bold text-gray-900 hover:text-orange-600 transition-colors ml-1"
             >
-              Get Started
+              Start Free Trial
             </Link>
           </p>
-        </motion.div>
-
-        {/* Help Text */}
-        <p className="text-center mt-6 text-sm text-gray-500">
-          By signing in, you agree to our{" "}
-          <Link href="/terms" className="underline hover:text-gray-700">
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link href="/privacy" className="underline hover:text-gray-700">
-            Privacy Policy
-          </Link>
-        </p>
-      </div>
+        </form>
+      </motion.div>
     </div>
   );
 }

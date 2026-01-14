@@ -4,9 +4,8 @@ import React, { useState } from 'react';
 import { 
   Plus, Search, Filter, Download, Eye, Edit, Send, Trash2, 
   DollarSign, Clock, CheckCircle, AlertCircle, MoreVertical, X, 
-  Calendar, Mail, FileText, TrendingUp, Users, CreditCard,
-  ArrowUpRight, ArrowDownRight, Sparkles, Share2, Copy,
-  ChevronDown, ChevronRight, Printer, RefreshCw
+  Calendar, Mail, FileText, TrendingUp, ArrowUpRight, ArrowDownRight, Copy,
+  ChevronDown, RefreshCw
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
@@ -290,8 +289,9 @@ export default function InvoicingPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Header */}
-      <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-200">
-        <div className="flex items-center justify-between">
+      <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 shadow-lg border border-white/50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+        <div className="flex items-center justify-between relative z-10">
           <div>
             <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
               <FileText className="w-10 h-10 text-gray-700" />
@@ -351,14 +351,14 @@ export default function InvoicingPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200 hover:shadow-2xl hover:scale-105 transition-all cursor-pointer overflow-hidden group">
+        <div className="relative bg-white/60 backdrop-blur-xl rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group">
           <div className="absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-500 opacity-10 rounded-full group-hover:scale-150 transition-transform" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
                 <DollarSign className="w-6 h-6 text-white" />
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-100 text-blue-700">
+              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-100 text-blue-700 backdrop-blur-sm bg-opacity-50">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-sm font-bold">+12%</span>
               </div>
@@ -369,14 +369,14 @@ export default function InvoicingPage() {
           </div>
         </div>
 
-        <div className="relative bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200 hover:shadow-2xl hover:scale-105 transition-all cursor-pointer overflow-hidden group">
+        <div className="relative bg-white/60 backdrop-blur-xl rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group">
           <div className="absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br from-green-500 to-emerald-500 opacity-10 rounded-full group-hover:scale-150 transition-transform" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg">
                 <CheckCircle className="w-6 h-6 text-white" />
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-green-100 text-green-700">
+              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-green-100 text-green-700 backdrop-blur-sm bg-opacity-50">
                 <ArrowUpRight className="w-4 h-4" />
                 <span className="text-sm font-bold">+8%</span>
               </div>
@@ -387,14 +387,14 @@ export default function InvoicingPage() {
           </div>
         </div>
 
-        <div className="relative bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border-2 border-yellow-200 hover:shadow-2xl hover:scale-105 transition-all cursor-pointer overflow-hidden group">
+        <div className="relative bg-white/60 backdrop-blur-xl rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group">
           <div className="absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br from-yellow-500 to-orange-500 opacity-10 rounded-full group-hover:scale-150 transition-transform" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 shadow-lg">
                 <Clock className="w-6 h-6 text-white" />
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-yellow-100 text-yellow-700">
+              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-yellow-100 text-yellow-700 backdrop-blur-sm bg-opacity-50">
                 <RefreshCw className="w-4 h-4" />
                 <span className="text-sm font-bold">Pending</span>
               </div>
@@ -405,14 +405,14 @@ export default function InvoicingPage() {
           </div>
         </div>
 
-        <div className="relative bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl p-6 border-2 border-red-200 hover:shadow-2xl hover:scale-105 transition-all cursor-pointer overflow-hidden group">
+        <div className="relative bg-white/60 backdrop-blur-xl rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group">
           <div className="absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br from-red-500 to-rose-500 opacity-10 rounded-full group-hover:scale-150 transition-transform" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 shadow-lg">
                 <AlertCircle className="w-6 h-6 text-white" />
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-red-100 text-red-700">
+              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-red-100 text-red-700 backdrop-blur-sm bg-opacity-50">
                 <ArrowDownRight className="w-4 h-4" />
                 <span className="text-sm font-bold">Urgent</span>
               </div>
@@ -433,14 +433,14 @@ export default function InvoicingPage() {
             placeholder="Search by client name or invoice number..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm"
+            className="w-full pl-12 pr-4 py-3 bg-white/40 border border-white/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white/60 transition-all shadow-sm backdrop-blur-sm"
           />
         </div>
         <div className="relative">
           <button 
             type="button"
             onClick={() => setShowFilterMenu(!showFilterMenu)}
-            className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-2 font-medium shadow-sm transition-all cursor-pointer"
+            className="px-6 py-3 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 flex items-center gap-2 font-medium shadow-sm transition-all cursor-pointer backdrop-blur-sm"
           >
             <Filter className="w-5 h-5 text-gray-600" />
             Filter {filterStatus !== 'all' && `(${filterStatus})`}
@@ -473,9 +473,9 @@ export default function InvoicingPage() {
       </div>
 
       {/* Invoices Table */}
-      <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 overflow-hidden shadow-lg">
         <table className="w-full">
-          <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
+          <thead className="bg-slate-50/50 border-b border-white/20">
             <tr>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Invoice</th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Client</th>
@@ -486,7 +486,7 @@ export default function InvoicingPage() {
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-white/20">
             {filteredInvoices.map((invoice) => (
               <tr key={invoice.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all group">
                 <td className="px-6 py-4">
@@ -664,8 +664,8 @@ export default function InvoicingPage() {
 
       {/* New Invoice Modal */}
       {showNewInvoiceModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/50">
             <div className="p-6 border-b-2 border-gray-200 flex items-center justify-between sticky top-0 bg-white">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <Plus className="w-6 h-6 text-blue-600" />
@@ -864,9 +864,9 @@ export default function InvoicingPage() {
 
       {/* View Invoice Modal */}
       {showInvoiceModal && selectedInvoice && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b-2 border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/50">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-sm z-10">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <FileText className="w-6 h-6 text-blue-600" />
                 Invoice {selectedInvoice.id}
@@ -970,8 +970,8 @@ export default function InvoicingPage() {
 
       {/* Email Modal */}
       {showEmailModal && emailInvoice && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl max-w-2xl w-full shadow-2xl border border-white/50">
             <div className="p-6 border-b-2 border-gray-200 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <Mail className="w-6 h-6 text-purple-600" />

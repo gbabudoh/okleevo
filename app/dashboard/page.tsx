@@ -4,13 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { 
-  TrendingUp, TrendingDown, Users, FileText, CheckSquare, 
+  TrendingUp, Users, FileText, CheckSquare, 
   DollarSign, Calendar, Clock, ArrowUpRight, ArrowDownRight,
-  Sparkles, Plus, Eye, Edit3, Download, Send, BarChart3,
-  ShoppingCart, Package, CreditCard, Activity, Target,
-  Zap, Star, Award, Bell, MessageSquare, Mail, Phone,
-  Globe, Shield, Briefcase, PieChart, LineChart, AlertCircle, X,
-  Building2, Factory, UserCheck, UsersRound, AtSign, Cpu, Circle
+  Sparkles, Plus, BarChart3, Activity, Target,
+  Zap, Award, Bell, MessageSquare, Mail,
+  Shield, Briefcase, AlertCircle, X,
+  Building2, UsersRound, AtSign, Cpu, Circle, LineChart
 } from 'lucide-react';
 import { usePresence } from '@/components/hooks/use-presence';
 
@@ -48,7 +47,7 @@ export default function DashboardPage() {
     }
 
     // Check if user is SUPER_ADMIN - they should only access admin panel
-    const userRole = (session.user as any)?.role;
+    const userRole = (session.user as { role?: string })?.role;
     if (userRole === 'SUPER_ADMIN') {
       console.log('[DASHBOARD] Super admin detected, redirecting to admin panel');
       router.push('/admin');
@@ -67,7 +66,7 @@ export default function DashboardPage() {
       }
 
       // Don't fetch if super admin (will be redirected)
-      const userRole = (session.user as any)?.role;
+      const userRole = (session.user as { role?: string })?.role;
       if (userRole === 'SUPER_ADMIN') {
         setLoading(false);
         return;
@@ -106,24 +105,24 @@ export default function DashboardPage() {
     fetchUserData();
   }, [session, status]);
 
-  const handleExportReport = () => {
-    const reportData = {
-      date: new Date().toISOString(),
-      revenue: '£124,500',
-      customers: '2,847',
-      projects: '42',
-      tasks: '18'
-    };
-    const dataStr = JSON.stringify(reportData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `dashboard_report_${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-    alert('✓ Report exported successfully!');
-  };
+  // const handleExportReport = () => {
+  //   const reportData = {
+  //     date: new Date().toISOString(),
+  //     revenue: '£124,500',
+  //     customers: '2,847',
+  //     projects: '42',
+  //     tasks: '18'
+  //   };
+  //   const dataStr = JSON.stringify(reportData, null, 2);
+  //   const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  //   const url = URL.createObjectURL(dataBlob);
+  //   const link = document.createElement('a');
+  //   link.href = url;
+  //   link.download = `dashboard_report_${new Date().toISOString().split('T')[0]}.json`;
+  //   link.click();
+  //   URL.revokeObjectURL(url);
+  //   alert('✓ Report exported successfully!');
+  // };
 
   const handleCreateProject = () => {
     if (projectName.trim()) {
@@ -360,7 +359,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Company Header */}
-      <div className="rounded-2xl p-6 md:p-8 text-white shadow-lg overflow-hidden relative bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800">
+      {/* Company Header */}
+      <div className="rounded-2xl p-6 md:p-8 text-white shadow-lg overflow-hidden relative bg-gradient-to-r from-slate-800/90 via-slate-700/90 to-slate-800/90 backdrop-blur-md border border-white/20">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 right-0 w-72 h-72 bg-white rounded-full -mr-36 -mt-36"></div>
@@ -395,7 +395,7 @@ export default function DashboardPage() {
 
       {/* Team Collaboration Widget */}
       {presence && presence.presence && presence.presence.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Users className="w-5 h-5 text-indigo-600" />
@@ -452,7 +452,7 @@ export default function DashboardPage() {
           return (
             <div
               key={index}
-              className={`relative bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-6 border-2 border-gray-200 hover:shadow-2xl hover:scale-105 transition-all cursor-pointer overflow-hidden group`}
+              className={`relative bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group backdrop-blur-sm`}
             >
               {/* Background decoration */}
               <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full group-hover:scale-150 transition-transform`} />
@@ -480,7 +480,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+      <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
           <Zap className="w-6 h-6 text-yellow-500" />
           Quick Actions
@@ -493,11 +493,11 @@ export default function DashboardPage() {
             return (
               <button
                 key={index}
-                onClick={() => window.location.href = action.href}
-                className="group relative p-6 rounded-2xl border-2 border-gray-200 hover:border-transparent hover:shadow-2xl transition-all text-center overflow-hidden"
+                onClick={() => router.push(action.href)}
+                className="group relative p-6 rounded-2xl border border-white/40 bg-white/40 hover:bg-white/60 hover:border-transparent hover:shadow-2xl transition-all text-center overflow-hidden cursor-pointer"
               >
                 {/* Hover gradient background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                 
                 <div className="relative">
                   <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
@@ -515,7 +515,7 @@ export default function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent Activity - Takes 2 columns */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Activity className="w-6 h-6 text-blue-600" />
@@ -558,7 +558,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Upcoming Tasks - Takes 1 column */}
-        <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
               <CheckSquare className="w-5 h-5 text-green-600" />
@@ -680,7 +680,7 @@ export default function DashboardPage() {
       {/* Bottom Section */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Top Performing Products */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <Award className="w-5 h-5 text-yellow-500" />
             Top Performing
@@ -711,7 +711,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Notifications */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <Bell className="w-5 h-5 text-red-500" />
             Notifications

@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Plus, Search, Mail, Phone, Building2, MapPin, Calendar, DollarSign, Users, TrendingUp, Star, Edit, Trash2, Eye, X, Tag, AlertCircle } from 'lucide-react';
+import { 
+  Plus, Search, Mail, Phone, Building2, MapPin, DollarSign, 
+  Users, TrendingUp, Star, Edit, Trash2, Eye, X, Tag, AlertCircle, 
+  MoreHorizontal, Clock, ChevronDown, Sparkles, LayoutGrid, List
+} from 'lucide-react';
+import StatusModal from '@/components/StatusModal';
 
 interface Client {
   id: string;
@@ -11,24 +16,27 @@ interface Client {
   company: string;
   clientType: 'business' | 'individual';
   status: 'active' | 'lead' | 'inactive';
+  pipelineStage: 'new' | 'contacted' | 'proposal' | 'negotiation' | 'closed-won' | 'closed-lost';
   revenue: number;
   location?: string;
   lastContact?: string;
   tags?: string[];
+  notes?: string;
 }
 
 export default function CRMPage() {
   const [clients, setClients] = useState<Client[]>([
-    { id: '1', name: 'John Smith', email: 'john@acme.com', phone: '+44 20 1234 5678', company: 'Acme Corp', clientType: 'business', status: 'active', revenue: 25000, location: 'London, UK', lastContact: '2024-12-01', tags: ['Enterprise', 'Priority'] },
-    { id: '2', name: 'Sarah Johnson', email: 'sarah@tech.com', phone: '+44 161 234 5678', company: 'Tech Solutions', clientType: 'business', status: 'active', revenue: 18000, location: 'Manchester, UK', lastContact: '2024-12-03', tags: ['SMB'] },
-    { id: '3', name: 'Mike Brown', email: 'mike@design.com', phone: '+44 131 234 5678', company: 'Design Studio', clientType: 'business', status: 'lead', revenue: 0, location: 'Edinburgh, UK', lastContact: '2024-12-05', tags: ['New Lead'] },
-    { id: '4', name: 'Emma Wilson', email: 'emma@startup.com', phone: '+44 117 234 5678', company: 'StartupXYZ', clientType: 'business', status: 'active', revenue: 12000, location: 'Bristol, UK', lastContact: '2024-12-02', tags: ['Startup'] },
-    { id: '5', name: 'David Thompson', email: 'david.t@email.com', phone: '+44 20 9876 5432', company: 'Self-Employed', clientType: 'individual', status: 'active', revenue: 8500, location: 'London, UK', lastContact: '2024-12-04', tags: ['Freelancer'] },
-    { id: '6', name: 'Lisa Anderson', email: 'lisa.a@email.com', phone: '+44 161 8765 4321', company: 'Personal', clientType: 'individual', status: 'lead', revenue: 0, location: 'Manchester, UK', lastContact: '2024-12-05', tags: ['Consultant'] },
+    { id: '1', name: 'John Smith', email: 'john@acme.com', phone: '+44 20 1234 5678', company: 'Acme Corp', clientType: 'business', status: 'active', pipelineStage: 'negotiation', revenue: 25000, location: 'London, UK', lastContact: '2024-12-01', tags: ['Enterprise', 'Priority'] },
+    { id: '2', name: 'Sarah Johnson', email: 'sarah@tech.com', phone: '+44 161 234 5678', company: 'Tech Solutions', clientType: 'business', status: 'active', pipelineStage: 'contacted', revenue: 18000, location: 'Manchester, UK', lastContact: '2024-12-03', tags: ['SMB'] },
+    { id: '3', name: 'Mike Brown', email: 'mike@design.com', phone: '+44 131 234 5678', company: 'Design Studio', clientType: 'business', status: 'lead', pipelineStage: 'new', revenue: 0, location: 'Edinburgh, UK', lastContact: '2024-12-05', tags: ['New Lead'] },
+    { id: '4', name: 'Emma Wilson', email: 'emma@startup.com', phone: '+44 117 234 5678', company: 'StartupXYZ', clientType: 'business', status: 'active', pipelineStage: 'proposal', revenue: 12000, location: 'Bristol, UK', lastContact: '2024-12-02', tags: ['Startup'] },
+    { id: '5', name: 'David Thompson', email: 'david.t@email.com', phone: '+44 20 9876 5432', company: 'Self-Employed', clientType: 'individual', status: 'active', pipelineStage: 'closed-won', revenue: 8500, location: 'London, UK', lastContact: '2024-12-04', tags: ['Freelancer'] },
+    { id: '6', name: 'Lisa Anderson', email: 'lisa.a@email.com', phone: '+44 161 8765 4321', company: 'Personal', clientType: 'individual', status: 'lead', pipelineStage: 'closed-lost', revenue: 0, location: 'Manchester, UK', lastContact: '2024-12-05', tags: ['Consultant'] },
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -37,11 +45,44 @@ export default function CRMPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'success'
+  });
+  
   const [emailData, setEmailData] = useState({
     to: '',
     subject: '',
     message: ''
   });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'lead': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'inactive': return 'bg-gray-100 text-gray-700 border-gray-200';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getStageColor = (stage: string) => {
+    switch (stage) {
+      case 'new': return 'bg-blue-50 text-blue-600 border-blue-100';
+      case 'contacted': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+      case 'proposal': return 'bg-purple-50 text-purple-600 border-purple-100';
+      case 'negotiation': return 'bg-amber-50 text-amber-600 border-amber-100';
+      case 'closed-won': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'closed-lost': return 'bg-red-50 text-red-600 border-red-100';
+      default: return 'bg-gray-50 text-gray-600';
+    }
+  };
 
   const filteredClients = clients.filter(client => {
     const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -55,222 +96,380 @@ export default function CRMPage() {
   const leadClients = clients.filter(c => c.status === 'lead').length;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
-              <Users className="w-10 h-10 text-gray-700" />
-              Customer Relationship Management
-            </h1>
-            <p className="text-gray-600 text-lg">Manage your clients and build lasting relationships</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button 
-              type="button"
-              onClick={() => {
-                const emails = clients.filter(c => c.status === 'active').map(c => c.email).join(', ');
-                setEmailData({
-                  to: emails,
-                  subject: 'Update from Your Company',
-                  message: 'Dear valued clients,\n\n\n\nBest regards,\nYour Company'
-                });
-                setShowEmailModal(true);
-              }}
-              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl rounded-xl transition-all font-semibold flex items-center gap-2 cursor-pointer"
-            >
-              <Mail className="w-5 h-5" />
-              <span>Send Email</span>
-            </button>
-            <button 
-              type="button"
-              onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer"
-            >
-              <Plus className="w-5 h-5" />
-              Add Client
-            </button>
-          </div>
-        </div>
+    <div className="relative min-h-screen pb-20 overflow-hidden">
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/20 blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400/20 blur-[120px] animate-pulse delay-1000" />
+        <div className="absolute top-[20%] right-[30%] w-[60%] h-[60%] rounded-full bg-purple-300/10 blur-[100px]" />
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-white hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between mb-2">
-            <Users className="w-8 h-8 opacity-80" />
-            <span className="text-3xl font-bold">{clients.length}</span>
+      <div className="relative z-10 space-y-8 p-8 max-w-[1600px] mx-auto">
+        {/* Header */}
+        <div className="bg-white/70 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/50 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-6">
+              <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-500">
+                <Users className="w-8 h-8 text-white" />
+              </div>
+              <div className="space-y-1 text-center md:text-left">
+                <h1 className="text-3xl font-black text-gray-900 tracking-tight">
+                  CRM <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Dashboard</span>
+                </h1>
+                <p className="text-gray-500 font-medium">Manage relationships and track pipeline performance</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <button 
+                type="button"
+                onClick={() => {
+                  const emails = clients.filter(c => c.status === 'active').map(c => c.email).join(', ');
+                  setEmailData({
+                    to: emails,
+                    subject: 'Update from Your Company',
+                    message: 'Dear valued clients,\n\n\n\nBest regards,\nYour Company'
+                  });
+                  setShowEmailModal(true);
+                }}
+                className="flex-1 md:flex-none px-6 py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl transition-all font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
+              >
+                <Mail className="w-5 h-5" />
+                <span>Bulk Email</span>
+              </button>
+              <button 
+                type="button"
+                onClick={() => setShowAddModal(true)}
+                className="flex-1 md:flex-none px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl hover:shadow-blue-500/25 transition-all font-bold flex items-center justify-center gap-2 hover:-translate-y-0.5 cursor-pointer"
+              >
+                <Plus className="w-5 h-5" />
+                Add Client
+              </button>
+            </div>
           </div>
-          <p className="text-blue-100 text-sm">Total Clients</p>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6 text-white hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between mb-2">
-            <Star className="w-8 h-8 opacity-80" />
-            <span className="text-3xl font-bold">{activeClients}</span>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-6 border border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group hover:border-blue-500/50">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg group-hover:scale-110 transition-transform duration-500">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <div className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-500/10 text-blue-600">Total</div>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-1 opacity-80">All Clients</p>
+              <h3 className="text-3xl font-black text-gray-900 mb-1 tracking-tight">{clients.length}</h3>
+              <p className="text-xs font-semibold text-gray-400 group-hover:text-gray-600 transition-colors">Total database size</p>
+            </div>
           </div>
-          <p className="text-green-100 text-sm">Active Clients</p>
-        </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-6 text-white hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between mb-2">
-            <TrendingUp className="w-8 h-8 opacity-80" />
-            <span className="text-3xl font-bold">{leadClients}</span>
+          <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-6 border border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group hover:border-emerald-500/50">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg group-hover:scale-110 transition-transform duration-500">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <div className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600">Active</div>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-1 opacity-80">Active Clients</p>
+              <h3 className="text-3xl font-black text-gray-900 mb-1 tracking-tight">{activeClients}</h3>
+              <p className="text-xs font-semibold text-gray-400 group-hover:text-gray-600 transition-colors">Currently engaged</p>
+            </div>
           </div>
-          <p className="text-purple-100 text-sm">New Leads</p>
-        </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg p-6 text-white hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between mb-2">
-            <DollarSign className="w-8 h-8 opacity-80" />
-            <span className="text-3xl font-bold">£{(totalRevenue / 1000).toFixed(0)}k</span>
+          <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-6 border border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group hover:border-purple-500/50">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg group-hover:scale-110 transition-transform duration-500">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-500/10 text-purple-600">Pipeline</div>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-1 opacity-80">New Leads</p>
+              <h3 className="text-3xl font-black text-gray-900 mb-1 tracking-tight">{leadClients}</h3>
+              <p className="text-xs font-semibold text-gray-400 group-hover:text-gray-600 transition-colors">Potential opportunities</p>
+            </div>
           </div>
-          <p className="text-orange-100 text-sm">Total Revenue</p>
-        </div>
-      </div>
 
-      {/* Search and Filter */}
-      <div className="flex gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by name or company..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
+          <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-6 border border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group hover:border-amber-500/50">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg group-hover:scale-110 transition-transform duration-500">
+                <DollarSign className="w-6 h-6 text-white" />
+              </div>
+              <div className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600">Revenue</div>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-1 opacity-80">Total Revenue</p>
+              <h3 className="text-3xl font-black text-gray-900 mb-1 tracking-tight">£{(totalRevenue / 1000).toFixed(1)}k</h3>
+              <p className="text-xs font-semibold text-gray-400 group-hover:text-gray-600 transition-colors">Lifetime value</p>
+            </div>
+          </div>
         </div>
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 cursor-pointer"
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="lead">Lead</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
 
-      {/* Clients Grid */}
-      <div className="grid gap-4">
-        {filteredClients.map((client) => (
-          <div key={client.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg hover:border-primary-300 transition-all">
-            <div className="flex items-start justify-between">
-              <div className="flex gap-4 flex-1">
-                {/* Avatar */}
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
-                  {client.name.split(' ').map(n => n[0]).join('')}
+        {/* Search & Filter Bar */}
+        <div className="bg-white/70 backdrop-blur-2xl rounded-2xl p-4 border border-white/50 shadow-lg flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search clients, companies, or tags..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-white text-gray-900 placeholder-gray-400 transition-all outline-none font-medium"
+            />
+          </div>
+          <div className="flex gap-3 w-full md:w-auto">
+            <div className="flex bg-white/50 border border-gray-200 rounded-xl p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                title="Grid View"
+              >
+                <LayoutGrid className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                title="List View"
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="relative group">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="appearance-none pl-4 pr-10 py-3 bg-white/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-white text-gray-700 font-bold cursor-pointer transition-all hover:bg-white"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="lead">Lead</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+            </div>
+          </div>
+        </div>
+
+        {/* Kanban / List View */}
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredClients.map((client) => (
+              <div 
+                key={client.id} 
+                className="bg-white/70 backdrop-blur-xl rounded-3xl p-6 border border-white/50 shadow-lg hover:shadow-xl hover:scale-[1.01] hover:-translate-y-1 transition-all duration-300 group"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
+                      {client.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-gray-900 leading-tight mb-1">{client.name}</h3>
+                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-500">
+                        <Building2 className="w-3.5 h-3.5" />
+                        {client.company}
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); /* Menu logic */ }}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 rounded-xl transition-colors cursor-pointer"
+                  >
+                    <MoreHorizontal className="w-5 h-5" />
+                  </button>
                 </div>
-                
-                {/* Client Info */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-semibold text-gray-900">{client.name}</h3>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                      client.clientType === 'business' ? 'bg-purple-100 text-purple-800' : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {client.clientType === 'business' ? '🏢 Business' : '👤 Individual'}
+
+                <div className="space-y-3 mb-6">
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${getStatusColor(client.status)}`}>
+                      {client.status.toUpperCase()}
                     </span>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                      client.status === 'active' ? 'bg-green-100 text-green-800' : 
-                      client.status === 'lead' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {client.status}
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${getStageColor(client.pipelineStage)}`}>
+                      {client.pipelineStage.replace('-', ' ').toUpperCase()}
                     </span>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-gray-600 mb-2">
-                    <Building2 className="w-4 h-4" />
-                    <span className="text-sm">{client.company}</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 mt-3">
-                    <a href={`mailto:${client.email}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600 transition-colors">
-                      <Mail className="w-4 h-4" />
-                      {client.email}
-                    </a>
-                    {client.phone && (
-                      <a href={`tel:${client.phone}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600 transition-colors">
-                        <Phone className="w-4 h-4" />
-                        {client.phone}
-                      </a>
-                    )}
+                  <div className="grid grid-cols-2 gap-y-2 text-sm">
                     {client.location && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-gray-500 font-medium">
+                        <MapPin className="w-3.5 h-3.5 text-gray-400" />
                         {client.location}
                       </div>
                     )}
                     {client.lastContact && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-gray-500 font-medium">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
                         {client.lastContact}
                       </div>
                     )}
-                  </div>
-
-                  {client.tags && client.tags.length > 0 && (
-                    <div className="flex gap-2 mt-3">
-                      {client.tags.map((tag, idx) => (
-                        <span key={idx} className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full flex items-center gap-1">
-                          <Tag className="w-3 h-3" />
-                          {tag}
-                        </span>
-                      ))}
+                    <div className="flex items-center gap-2 text-gray-500 font-medium truncate">
+                      <Mail className="w-3.5 h-3.5 text-gray-400" />
+                      {client.email}
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Revenue & Actions */}
-              <div className="text-right flex flex-col items-end gap-3">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 px-4 py-3 rounded-lg border border-green-200">
-                  <p className="text-2xl font-bold text-green-700">£{client.revenue.toLocaleString()}</p>
-                  <p className="text-xs text-green-600">Total Revenue</p>
+                    {client.phone && (
+                      <div className="flex items-center gap-2 text-gray-500 font-medium truncate">
+                        <Phone className="w-3.5 h-3.5 text-gray-400" />
+                        {client.phone}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => {
-                      setSelectedClient(client);
-                      setShowDetailModal(true);
-                    }}
-                    className="p-2 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                    title="View Details"
-                  >
-                    <Eye className="w-4 h-4 text-blue-600" />
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setEditingClient(client);
-                      setShowEditModal(true);
-                    }}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-                    title="Edit"
-                  >
-                    <Edit className="w-4 h-4 text-gray-600" />
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      setDeletingClient(client);
-                      setShowDeleteModal(true);
-                    }}
-                    className="p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4 text-red-600" />
-                  </button>
+                <div className="pt-4 border-t border-gray-100/50 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Value</p>
+                    <p className="text-lg font-black text-gray-900">£{client.revenue.toLocaleString()}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => {
+                        setSelectedClient(client);
+                        setShowDetailModal(true);
+                      }}
+                      className="p-2.5 bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all cursor-pointer"
+                      title="View Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setEditingClient(client);
+                        setShowEditModal(true);
+                      }}
+                      className="p-2.5 bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 rounded-xl transition-all cursor-pointer"
+                      title="Edit"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setDeletingClient(client);
+                        setShowDeleteModal(true);
+                      }}
+                      className="p-2.5 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all cursor-pointer"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/50 shadow-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50/50 border-b border-gray-200">
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Client / Company</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Contact Info</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Pipeline Stage</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Revenue</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredClients.map((client) => (
+                    <tr key={client.id} className="hover:bg-blue-50/30 transition-colors group">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
+                            {client.name.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div>
+                            <div className="text-sm font-black text-gray-900">{client.name}</div>
+                            <div className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                              <Building2 className="w-3 h-3" />
+                              {client.company}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Mail className="w-3.5 h-3.5 text-gray-400" />
+                            {client.email}
+                          </div>
+                          {client.phone && (
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <Phone className="w-3 h-3 text-gray-400" />
+                              {client.phone}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${getStatusColor(client.status)}`}>
+                          {client.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${getStageColor(client.pipelineStage)}`}>
+                          {client.pipelineStage.replace('-', ' ').toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="text-sm font-black text-gray-900">£{client.revenue.toLocaleString()}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => {
+                              setSelectedClient(client);
+                              setShowDetailModal(true);
+                            }}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setEditingClient(client);
+                              setShowEditModal(true);
+                            }}
+                            className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setDeletingClient(client);
+                              setShowDeleteModal(true);
+                            }}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        ))}
-      </div>
+        )}
+        </div>
+
+
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal(prev => ({ ...prev, isOpen: false }))}
+        title={statusModal.title}
+        message={statusModal.message}
+        type={statusModal.type}
+      />
 
       {/* Edit Client Modal */}
       {showEditModal && editingClient && (
@@ -286,7 +485,7 @@ export default function CRMPage() {
                   setShowEditModal(false);
                   setEditingClient(null);
                 }} 
-                className="p-2 hover:bg-white/20 rounded-xl transition-colors"
+                className="p-2 hover:bg-white/20 rounded-xl transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-white" />
               </button>
@@ -387,7 +586,12 @@ export default function CRMPage() {
                     setClients(clients.map(c => c.id === editingClient.id ? editingClient : c));
                     setShowEditModal(false);
                     setEditingClient(null);
-                    alert('✓ Client updated successfully!');
+                    setStatusModal({
+                      isOpen: true,
+                      title: 'Client Updated',
+                      message: 'Client details have been successfully updated.',
+                      type: 'success'
+                    });
                   }}
                   className="flex-1 px-6 py-4 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
@@ -427,7 +631,7 @@ export default function CRMPage() {
               <button 
                 type="button"
                 onClick={() => setShowEmailModal(false)} 
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-white" />
               </button>
@@ -475,7 +679,7 @@ export default function CRMPage() {
                       subject: 'Thank you for your business',
                       message: 'Dear valued client,\n\nThank you for choosing our services. We appreciate your continued trust and partnership.\n\nBest regards,\nYour Company'
                     })}
-                    className="px-3 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+                    className="px-3 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
                   >
                     Thank You
                   </button>
@@ -486,7 +690,7 @@ export default function CRMPage() {
                       subject: 'Important Update',
                       message: 'Dear valued client,\n\nWe wanted to inform you about an important update regarding our services.\n\nPlease let us know if you have any questions.\n\nBest regards,\nYour Company'
                     })}
-                    className="px-3 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+                    className="px-3 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
                   >
                     Update
                   </button>
@@ -497,7 +701,7 @@ export default function CRMPage() {
                       subject: 'Follow-up on our conversation',
                       message: 'Dear valued client,\n\nI wanted to follow up on our recent conversation and see if you have any questions.\n\nLooking forward to hearing from you.\n\nBest regards,\nYour Company'
                     })}
-                    className="px-3 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+                    className="px-3 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
                   >
                     Follow-up
                   </button>
@@ -537,7 +741,7 @@ export default function CRMPage() {
                   <button
                     type="button"
                     onClick={() => setEmailData({...emailData, message: ''})}
-                    className="text-xs text-gray-500 hover:text-gray-700 underline"
+                    className="text-xs text-gray-500 hover:text-gray-700 underline cursor-pointer"
                   >
                     Clear message
                   </button>
@@ -567,18 +771,33 @@ export default function CRMPage() {
                 type="button"
                 onClick={() => {
                   if (!emailData.to.trim()) {
-                    alert('⚠️ Please enter at least one recipient email address');
+                    setStatusModal({
+                      isOpen: true,
+                      title: 'Validation Error',
+                      message: 'Please enter at least one recipient email address.',
+                      type: 'error'
+                    });
                     return;
                   }
                   if (!emailData.subject.trim()) {
-                    alert('⚠️ Please enter an email subject');
+                    setStatusModal({
+                      isOpen: true,
+                      title: 'Validation Error',
+                      message: 'Please enter an email subject.',
+                      type: 'error'
+                    });
                     return;
                   }
                   window.location.href = `mailto:${emailData.to}?subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.message)}`;
-                  alert('✓ Email client opened successfully!');
+                  setStatusModal({
+                    isOpen: true,
+                    title: 'Email Opened',
+                    message: 'The default email client has been opened successfully.',
+                    type: 'success'
+                  });
                   setShowEmailModal(false);
                 }}
-                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Mail className="w-5 h-5" />
                 Open in Email Client
@@ -586,7 +805,7 @@ export default function CRMPage() {
               <button 
                 type="button"
                 onClick={() => setShowEmailModal(false)}
-                className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all"
+                className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -614,7 +833,7 @@ export default function CRMPage() {
                   setShowDeleteModal(false);
                   setDeletingClient(null);
                 }}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-white" />
               </button>
@@ -674,7 +893,7 @@ export default function CRMPage() {
                   setShowDeleteModal(false);
                   setDeletingClient(null);
                 }}
-                className="flex-1 px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all"
+                className="flex-1 px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -686,12 +905,22 @@ export default function CRMPage() {
                     setClients(clients.filter(c => c.id !== deletingClient.id));
                     setShowDeleteModal(false);
                     setDeletingClient(null);
-                    alert('✓ Client deleted successfully');
+                    setStatusModal({
+                      isOpen: true,
+                      title: 'Client Deleted',
+                      message: 'The client has been successfully deleted from the system.',
+                      type: 'success'
+                    });
                   } else {
-                    alert('⚠️ Please type DELETE to confirm');
+                    setStatusModal({
+                      isOpen: true,
+                      title: 'Confirmation Failed',
+                      message: 'Please type DELETE to confirm this action.',
+                      type: 'error'
+                    });
                   }
                 }}
-                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Trash2 className="w-5 h-5" />
                 Delete Client
@@ -712,7 +941,7 @@ export default function CRMPage() {
               </h2>
               <button 
                 onClick={() => setShowAddModal(false)} 
-                className="p-2 hover:bg-white/20 rounded-xl transition-colors"
+                className="p-2 hover:bg-white/20 rounded-xl transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-white" />
               </button>
@@ -796,8 +1025,13 @@ export default function CRMPage() {
               <div className="flex gap-3 pt-4">
                 <button 
                   onClick={() => {
-                    alert('✓ Client added successfully!');
                     setShowAddModal(false);
+                    setStatusModal({
+                      isOpen: true,
+                      title: 'Client Added',
+                      message: 'New client has been successfully added to the CRM.',
+                      type: 'success'
+                    });
                   }}
                   className="flex-1 px-6 py-4 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
@@ -822,7 +1056,7 @@ export default function CRMPage() {
           <div className="bg-white rounded-lg max-w-2xl w-full">
             <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-500 to-accent-500">
               <h2 className="text-xl font-bold text-white">Client Details</h2>
-              <button onClick={() => setShowDetailModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+              <button onClick={() => setShowDetailModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer">
                 <X className="w-5 h-5 text-white" />
               </button>
             </div>

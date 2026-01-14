@@ -4,10 +4,9 @@ import React, { useState } from 'react';
 import { 
   Calculator, Plus, Search, Filter, Download, Upload, Eye, Edit3,
   Trash2, TrendingUp, TrendingDown, DollarSign, FileText, Calendar,
-  BarChart3, PieChart, BookOpen, Briefcase, Building2, CreditCard,
-  ArrowUpRight, ArrowDownRight, CheckCircle, AlertCircle, Clock,
-  Printer, Send, Save, X, Check, Sparkles, Target, Award, Users,
-  Package, ShoppingCart, Wallet, Receipt, FileCheck, Grid, List
+  BarChart3, PieChart, BookOpen, Building2, ArrowUpRight, ArrowDownRight, 
+  CheckCircle, AlertCircle, Clock, Printer, Send, Save, X, Target, 
+  Wallet, Receipt, FileCheck
 } from 'lucide-react';
 
 interface Account {
@@ -31,7 +30,7 @@ interface Transaction {
 
 export default function AccountingPage() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
   const [showNewEntryModal, setShowNewEntryModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -282,120 +281,85 @@ export default function AccountingPage() {
   return (
     <div className="space-y-6 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl">
-              <Calculator className="w-8 h-8 text-white" />
-            </div>
-            Accounting & Bookkeeping
-          </h1>
-          <p className="text-gray-600 mt-2">Complete double-entry bookkeeping system for UK SMEs</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setShowImportModal(true)}
-            className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2"
-          >
-            <Upload className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Import</span>
-          </button>
-          <button 
-            onClick={() => setShowExportModal(true)}
-            className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2"
-          >
-            <Download className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Export</span>
-          </button>
-          <button 
-            onClick={() => setShowNewEntryModal(true)}
-            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            New Entry
-          </button>
+      <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 shadow-lg border border-white/50 relative overflow-hidden mb-6">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+        <div className="flex items-center justify-between relative z-10">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-lg">
+                <Calculator className="w-8 h-8 text-white" />
+              </div>
+              Accounting & Bookkeeping
+            </h1>
+            <p className="text-gray-600 mt-2">Complete double-entry bookkeeping system for UK SMEs</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setShowImportModal(true)}
+              className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer"
+            >
+              <Upload className="w-5 h-5 text-gray-600" />
+              <span className="font-medium text-gray-700">Import</span>
+            </button>
+            <button 
+              onClick={() => setShowExportModal(true)}
+              className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer"
+            >
+              <Download className="w-5 h-5 text-gray-600" />
+              <span className="font-medium text-gray-700">Export</span>
+            </button>
+            <button 
+              onClick={() => setShowNewEntryModal(true)}
+              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2 shadow-lg cursor-pointer"
+            >
+              <Plus className="w-5 h-5" />
+              New Entry
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Financial Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-blue-500 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-white" />
+        {[
+          { label: 'Total Assets', value: financialSummary.totalAssets, color: 'blue', icon: TrendingUp },
+          { label: 'Total Liabilities', value: financialSummary.totalLiabilities, color: 'red', icon: TrendingDown },
+          { label: 'Total Equity', value: financialSummary.totalEquity, color: 'purple', icon: Wallet },
+          { label: 'Total Revenue', value: financialSummary.totalRevenue, color: 'green', icon: DollarSign },
+          { label: 'Total Expenses', value: financialSummary.totalExpenses, color: 'orange', icon: Receipt },
+          { label: 'Net Profit', value: financialSummary.netProfit, color: 'indigo', icon: Target }
+        ].map((item, idx) => {
+          const Icon = item.icon;
+          return (
+            <div key={idx} className="bg-white/60 backdrop-blur-xl rounded-xl p-5 border border-white/50 hover:shadow-lg transition-all cursor-pointer">
+              <div className="flex items-center justify-between mb-2">
+                <div className={`p-2 bg-${item.color}-500 rounded-lg shadow-md`}>
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <p className={`text-sm text-${item.color}-600 font-medium mb-1`}>{item.label}</p>
+              <p className={`text-2xl font-bold text-${item.color}-900`}>£{item.value.toLocaleString()}</p>
             </div>
-          </div>
-          <p className="text-sm text-blue-600 font-medium mb-1">Total Assets</p>
-          <p className="text-2xl font-bold text-blue-900">£{financialSummary.totalAssets.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-5 border-2 border-red-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-red-500 rounded-lg">
-              <TrendingDown className="w-5 h-5 text-white" />
-            </div>
-          </div>
-          <p className="text-sm text-red-600 font-medium mb-1">Total Liabilities</p>
-          <p className="text-2xl font-bold text-red-900">£{financialSummary.totalLiabilities.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border-2 border-purple-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-purple-500 rounded-lg">
-              <Wallet className="w-5 h-5 text-white" />
-            </div>
-          </div>
-          <p className="text-sm text-purple-600 font-medium mb-1">Total Equity</p>
-          <p className="text-2xl font-bold text-purple-900">£{financialSummary.totalEquity.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-green-500 rounded-lg">
-              <DollarSign className="w-5 h-5 text-white" />
-            </div>
-          </div>
-          <p className="text-sm text-green-600 font-medium mb-1">Total Revenue</p>
-          <p className="text-2xl font-bold text-green-900">£{financialSummary.totalRevenue.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-5 border-2 border-orange-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-orange-500 rounded-lg">
-              <Receipt className="w-5 h-5 text-white" />
-            </div>
-          </div>
-          <p className="text-sm text-orange-600 font-medium mb-1">Total Expenses</p>
-          <p className="text-2xl font-bold text-orange-900">£{financialSummary.totalExpenses.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 border-2 border-indigo-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-indigo-500 rounded-lg">
-              <Target className="w-5 h-5 text-white" />
-            </div>
-          </div>
-          <p className="text-sm text-indigo-600 font-medium mb-1">Net Profit</p>
-          <p className="text-2xl font-bold text-indigo-900">£{financialSummary.netProfit.toLocaleString()}</p>
-        </div>
+          );
+        })}
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl border-2 border-gray-200 p-2">
-        <div className="flex items-center gap-2 overflow-x-auto">
+      <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/50 p-2 shadow-sm">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all ${
+                className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-white shadow-md text-indigo-600'
+                    : 'text-gray-600 hover:bg-white/50 hover:text-gray-900'
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-indigo-600' : 'text-gray-500'}`} />
                 {tab.name}
               </button>
             );
@@ -407,16 +371,16 @@ export default function AccountingPage() {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Recent Transactions */}
-          <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+          <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <FileText className="w-6 h-6 text-blue-600" />
               Recent Journal Entries
             </h2>
             <div className="space-y-3">
               {recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:shadow-lg transition-all">
+                <div key={transaction.id} className="flex items-center justify-between p-4 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 hover:shadow-md transition-all cursor-pointer">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-100 rounded-lg">
+                    <div className="p-3 bg-blue-100/50 rounded-xl backdrop-blur-sm">
                       <FileText className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
@@ -429,7 +393,7 @@ export default function AccountingPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold text-gray-900">£{transaction.debit.amount.toLocaleString()}</p>
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                    <span className="px-3 py-1 bg-green-100/50 border border-green-200/50 text-green-700 rounded-full text-xs font-semibold backdrop-blur-sm">
                       {transaction.status}
                     </span>
                   </div>
@@ -440,24 +404,24 @@ export default function AccountingPage() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 hover:shadow-xl transition-all text-left">
-              <div className="p-3 bg-blue-500 rounded-lg w-fit mb-3">
+            <button className="p-6 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left group cursor-pointer">
+              <div className="p-3 bg-blue-500 rounded-xl w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <FileCheck className="w-6 h-6 text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-1">Prepare Year-End Accounts</h3>
               <p className="text-sm text-gray-600">Generate financial statements for HMRC submission</p>
             </button>
 
-            <button className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 hover:shadow-xl transition-all text-left">
-              <div className="p-3 bg-green-500 rounded-lg w-fit mb-3">
+            <button className="p-6 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left group cursor-pointer">
+              <div className="p-3 bg-green-500 rounded-xl w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <Calculator className="w-6 h-6 text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-1">Run Trial Balance</h3>
               <p className="text-sm text-gray-600">Verify all debits equal credits</p>
             </button>
 
-            <button className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 hover:shadow-xl transition-all text-left">
-              <div className="p-3 bg-purple-500 rounded-lg w-fit mb-3">
+            <button className="p-6 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left group cursor-pointer">
+              <div className="p-3 bg-purple-500 rounded-xl w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <PieChart className="w-6 h-6 text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-1">Financial Reports</h3>
@@ -468,12 +432,12 @@ export default function AccountingPage() {
       )}
 
       {activeTab === 'chart-of-accounts' && (
-        <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">Chart of Accounts</h2>
             <button 
               onClick={() => setShowAddAccountModal(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Add Account
@@ -481,7 +445,7 @@ export default function AccountingPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b-2 border-gray-200">
+              <thead className="bg-gray-50/50 border-b border-gray-200/50">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Code</th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Account Name</th>
@@ -491,43 +455,43 @@ export default function AccountingPage() {
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200/50">
                 {accounts.map((account) => (
-                  <tr key={account.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-mono text-sm font-semibold text-gray-900">{account.code}</td>
-                    <td className="px-6 py-4 font-semibold text-gray-900">{account.name}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        account.type === 'asset' ? 'bg-blue-100 text-blue-700' :
-                        account.type === 'liability' ? 'bg-red-100 text-red-700' :
-                        account.type === 'equity' ? 'bg-purple-100 text-purple-700' :
-                        account.type === 'revenue' ? 'bg-green-100 text-green-700' :
-                        'bg-orange-100 text-orange-700'
+                  <tr key={account.id} className="hover:bg-white/50 transition-colors group">
+                    <td className="px-6 py-4 font-mono text-sm font-semibold text-gray-900 bg-white/30 rounded-l-lg my-1">{account.code}</td>
+                    <td className="px-6 py-4 font-semibold text-gray-900 bg-white/30 my-1">{account.name}</td>
+                    <td className="px-6 py-4 bg-white/30 my-1">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
+                        account.type === 'asset' ? 'bg-blue-100/80 text-blue-700' :
+                        account.type === 'liability' ? 'bg-red-100/80 text-red-700' :
+                        account.type === 'equity' ? 'bg-purple-100/80 text-purple-700' :
+                        account.type === 'revenue' ? 'bg-green-100/80 text-green-700' :
+                        'bg-orange-100/80 text-orange-700'
                       }`}>
                         {account.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-gray-900">£{account.balance.toLocaleString()}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{account.lastTransaction.toLocaleDateString()}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                    <td className="px-6 py-4 text-right font-bold text-gray-900 bg-white/30 my-1">£{account.balance.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 bg-white/30 my-1">{account.lastTransaction.toLocaleDateString()}</td>
+                    <td className="px-6 py-4 bg-white/30 rounded-r-lg my-1">
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
                           onClick={() => handleViewAccount(account)}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                           title="View Account"
                         >
                           <Eye className="w-4 h-4 text-blue-600" />
                         </button>
                         <button 
                           onClick={() => handleEditAccount(account)}
-                          className="p-2 hover:bg-purple-50 rounded-lg transition-colors"
+                          className="p-2 hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
                           title="Edit Account"
                         >
                           <Edit3 className="w-4 h-4 text-purple-600" />
                         </button>
                         <button 
                           onClick={() => handleDeleteClick('account', account.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete Account"
                         >
                           <Trash2 className="w-4 h-4 text-red-600" />
@@ -543,7 +507,7 @@ export default function AccountingPage() {
       )}
 
       {activeTab === 'journal' && (
-        <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Journal Entries</h2>
@@ -555,16 +519,16 @@ export default function AccountingPage() {
                 <input
                   type="text"
                   placeholder="Search entries..."
-                  className="pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                  className="pl-10 pr-4 py-2 bg-white/40 border border-white/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white/60 transition-all shadow-sm backdrop-blur-sm outline-none"
                 />
               </div>
-              <button className="px-4 py-2 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+              <button className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 shadow-sm font-medium text-gray-700 cursor-pointer">
                 <Filter className="w-4 h-4 text-gray-600" />
-                <span className="font-medium text-gray-700">Filter</span>
+                Filter
               </button>
               <button 
                 onClick={() => setShowNewEntryModal(true)}
-                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 New Entry
@@ -574,10 +538,10 @@ export default function AccountingPage() {
 
           <div className="space-y-3">
             {recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="border-2 border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all">
+              <div key={transaction.id} className="bg-white/40 border border-white/50 rounded-xl p-5 hover:bg-white/60 hover:shadow-lg transition-all backdrop-blur-sm">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg">
+                    <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-md">
                       <FileText className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -588,10 +552,10 @@ export default function AccountingPage() {
                           {transaction.date.toLocaleDateString('en-GB')}
                         </span>
                         <span className="text-sm text-gray-600">Ref: {transaction.reference}</span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          transaction.status === 'posted' ? 'bg-green-100 text-green-700' :
-                          transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-gray-100 text-gray-700'
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
+                          transaction.status === 'posted' ? 'bg-green-100/80 text-green-700' :
+                          transaction.status === 'pending' ? 'bg-yellow-100/80 text-yellow-700' :
+                          'bg-gray-100/80 text-gray-700'
                         }`}>
                           {transaction.status.toUpperCase()}
                         </span>
@@ -601,21 +565,21 @@ export default function AccountingPage() {
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => handleViewEntry(transaction)}
-                      className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-2 hover:bg-blue-50/50 rounded-lg transition-colors cursor-pointer"
                       title="View Entry"
                     >
                       <Eye className="w-5 h-5 text-blue-600" />
                     </button>
                     <button 
                       onClick={() => handleEditEntry(transaction)}
-                      className="p-2 hover:bg-purple-50 rounded-lg transition-colors"
+                      className="p-2 hover:bg-purple-50/50 rounded-lg transition-colors cursor-pointer"
                       title="Edit Entry"
                     >
                       <Edit3 className="w-5 h-5 text-purple-600" />
                     </button>
                     <button 
                       onClick={() => handleDeleteClick('entry', transaction.id)}
-                      className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 hover:bg-red-50/50 rounded-lg transition-colors cursor-pointer"
                       title="Delete Entry"
                     >
                       <Trash2 className="w-5 h-5 text-red-600" />
@@ -625,7 +589,7 @@ export default function AccountingPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   {/* Debit Side */}
-                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                  <div className="bg-green-50/50 border border-green-200/50 rounded-xl p-4 backdrop-blur-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <ArrowUpRight className="w-5 h-5 text-green-600" />
                       <span className="font-bold text-green-900">DEBIT</span>
@@ -635,7 +599,7 @@ export default function AccountingPage() {
                   </div>
 
                   {/* Credit Side */}
-                  <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                  <div className="bg-red-50/50 border border-red-200/50 rounded-xl p-4 backdrop-blur-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <ArrowDownRight className="w-5 h-5 text-red-600" />
                       <span className="font-bold text-red-900">CREDIT</span>
@@ -658,7 +622,7 @@ export default function AccountingPage() {
               <p className="text-gray-600 mb-6">Start recording your transactions with double-entry bookkeeping</p>
               <button 
                 onClick={() => setShowNewEntryModal(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all inline-flex items-center gap-2"
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all inline-flex items-center gap-2 cursor-pointer"
               >
                 <Plus className="w-5 h-5" />
                 Create First Entry
@@ -669,7 +633,7 @@ export default function AccountingPage() {
       )}
 
       {activeTab === 'trial-balance' && (
-        <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Trial Balance</h2>
@@ -678,14 +642,14 @@ export default function AccountingPage() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={handlePrint}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer"
               >
                 <Printer className="w-4 h-4 text-gray-600" />
                 <span className="font-medium text-gray-700">Print</span>
               </button>
               <button 
                 onClick={() => setShowExportModal(true)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer"
               >
                 <Download className="w-4 h-4 text-gray-600" />
                 <span className="font-medium text-gray-700">Export</span>
@@ -695,7 +659,7 @@ export default function AccountingPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b-2 border-gray-200">
+              <thead className="bg-gray-50/50 border-b border-gray-200/50">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Account Code</th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Account Name</th>
@@ -703,21 +667,21 @@ export default function AccountingPage() {
                   <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase">Credit (£)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200/50">
                 {accounts.map((account) => (
-                  <tr key={account.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-mono text-sm font-semibold text-gray-900">{account.code}</td>
-                    <td className="px-6 py-4 font-semibold text-gray-900">{account.name}</td>
-                    <td className="px-6 py-4 text-right font-bold text-green-900">
+                  <tr key={account.id} className="hover:bg-white/50 transition-colors">
+                    <td className="px-6 py-4 font-mono text-sm font-semibold text-gray-900 bg-white/30 rounded-l-lg my-1">{account.code}</td>
+                    <td className="px-6 py-4 font-semibold text-gray-900 bg-white/30 my-1">{account.name}</td>
+                    <td className="px-6 py-4 text-right font-bold text-green-900 bg-white/30 my-1">
                       {['asset', 'expense'].includes(account.type) ? `£${account.balance.toLocaleString()}` : '-'}
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-red-900">
+                    <td className="px-6 py-4 text-right font-bold text-red-900 bg-white/30 rounded-r-lg my-1">
                       {['liability', 'equity', 'revenue'].includes(account.type) ? `£${account.balance.toLocaleString()}` : '-'}
                     </td>
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-gray-50 border-t-2 border-gray-300">
+              <tfoot className="bg-gray-50/50 border-t border-gray-200/50">
                 <tr>
                   <td colSpan={2} className="px-6 py-4 font-bold text-gray-900 text-lg">TOTALS</td>
                   <td className="px-6 py-4 text-right font-bold text-green-900 text-lg">
@@ -738,7 +702,7 @@ export default function AccountingPage() {
           </div>
 
           {/* Balance Check */}
-          <div className="mt-6 p-6 bg-green-50 border-2 border-green-200 rounded-xl">
+          <div className="mt-6 p-6 bg-green-50/50 border border-green-200/50 rounded-xl backdrop-blur-sm">
             <div className="flex items-center gap-3">
               <CheckCircle className="w-8 h-8 text-green-600" />
               <div>
@@ -760,7 +724,7 @@ export default function AccountingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <button 
               onClick={() => handleGenerateReport('Profit & Loss Statement')}
-              className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:shadow-xl transition-all text-left"
+              className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:shadow-xl transition-all text-left cursor-pointer"
             >
               <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl w-fit mb-4">
                 <BarChart3 className="w-8 h-8 text-white" />
@@ -775,7 +739,7 @@ export default function AccountingPage() {
 
             <button 
               onClick={() => handleGenerateReport('Balance Sheet')}
-              className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:shadow-xl transition-all text-left"
+              className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:shadow-xl transition-all text-left cursor-pointer"
             >
               <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl w-fit mb-4">
                 <PieChart className="w-8 h-8 text-white" />
@@ -790,7 +754,7 @@ export default function AccountingPage() {
 
             <button 
               onClick={() => handleGenerateReport('Cash Flow Statement')}
-              className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:shadow-xl transition-all text-left"
+              className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:shadow-xl transition-all text-left cursor-pointer"
             >
               <div className="p-4 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl w-fit mb-4">
                 <TrendingUp className="w-8 h-8 text-white" />
@@ -814,13 +778,13 @@ export default function AccountingPage() {
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => setShowYearEndModal(true)}
-                className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all"
+                className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all cursor-pointer"
               >
                 Generate Accounts
               </button>
               <button 
                 onClick={() => setShowYearEndModal(true)}
-                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all"
+                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all cursor-pointer"
               >
                 View Checklist
               </button>
@@ -875,8 +839,8 @@ export default function AccountingPage() {
 
       {/* New Entry Modal */}
       {showNewEntryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
             <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-indigo-500 p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -885,7 +849,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowNewEntryModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6 text-white" />
                 </button>
@@ -1062,8 +1026,8 @@ export default function AccountingPage() {
 
       {/* Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
             <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-5 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -1072,7 +1036,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowImportModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5 text-white" />
                 </button>
@@ -1155,7 +1119,7 @@ export default function AccountingPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowImportModal(false)}
-                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1169,7 +1133,7 @@ export default function AccountingPage() {
                       alert('Please select a file first');
                     }
                   }}
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
                 >
                   <Upload className="w-4 h-4" />
                   Start Import
@@ -1182,8 +1146,8 @@ export default function AccountingPage() {
 
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
             <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-5 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -1192,7 +1156,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowExportModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5 text-white" />
                 </button>
@@ -1229,7 +1193,7 @@ export default function AccountingPage() {
                 <div className="grid grid-cols-3 gap-2">
                   <button 
                     onClick={() => setSelectedExportFormat('CSV')}
-                    className={`p-3 border-2 rounded-lg transition-all text-center ${
+                    className={`p-3 border-2 rounded-lg transition-all text-center cursor-pointer ${
                       selectedExportFormat === 'CSV'
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
@@ -1253,7 +1217,7 @@ export default function AccountingPage() {
 
                   <button 
                     onClick={() => setSelectedExportFormat('Excel')}
-                    className={`p-3 border-2 rounded-lg transition-all text-center ${
+                    className={`p-3 border-2 rounded-lg transition-all text-center cursor-pointer ${
                       selectedExportFormat === 'Excel'
                         ? 'border-green-500 bg-green-50'
                         : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
@@ -1277,7 +1241,7 @@ export default function AccountingPage() {
 
                   <button 
                     onClick={() => setSelectedExportFormat('PDF')}
-                    className={`p-3 border-2 rounded-lg transition-all text-center ${
+                    className={`p-3 border-2 rounded-lg transition-all text-center cursor-pointer ${
                       selectedExportFormat === 'PDF'
                         ? 'border-red-500 bg-red-50'
                         : 'border-gray-200 hover:border-red-300 hover:bg-red-50'
@@ -1364,7 +1328,7 @@ export default function AccountingPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowExportModal(false)}
-                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1373,7 +1337,7 @@ export default function AccountingPage() {
                     handleExportReport(`Accounting_Data_${selectedExportFormat}`);
                     setShowExportModal(false);
                   }}
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   Download {selectedExportFormat}
@@ -1386,8 +1350,8 @@ export default function AccountingPage() {
 
       {/* Add Account Modal */}
       {showAddAccountModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
             <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -1396,7 +1360,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowAddAccountModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6 text-white" />
                 </button>
@@ -1443,7 +1407,7 @@ export default function AccountingPage() {
                     <button
                       key={type}
                       onClick={() => setNewAccount({ ...newAccount, type })}
-                      className={`p-4 rounded-xl border-2 transition-all text-center ${
+                      className={`p-4 rounded-xl border-2 transition-all text-center cursor-pointer ${
                         newAccount.type === type
                           ? type === 'asset' ? 'bg-blue-50 border-blue-500' :
                             type === 'liability' ? 'bg-red-50 border-red-500' :
@@ -1508,7 +1472,7 @@ export default function AccountingPage() {
                     <ul className="text-sm text-indigo-800 space-y-1">
                       <li>• <strong>Asset:</strong> Resources owned (Cash, Inventory, Equipment)</li>
                       <li>• <strong>Liability:</strong> Money owed (Loans, Accounts Payable)</li>
-                      <li>• <strong>Equity:</strong> Owner's stake (Share Capital, Retained Earnings)</li>
+                      <li>• <strong>Equity:</strong> Owner&apos;s stake (Share Capital, Retained Earnings)</li>
                       <li>• <strong>Revenue:</strong> Income earned (Sales, Service Revenue)</li>
                       <li>• <strong>Expense:</strong> Costs incurred (Rent, Salaries, Utilities)</li>
                     </ul>
@@ -1520,13 +1484,13 @@ export default function AccountingPage() {
               <div className="flex items-center gap-3 pt-4">
                 <button
                   onClick={() => setShowAddAccountModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveAccount}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Save className="w-5 h-5" />
                   Save Account
@@ -1539,8 +1503,8 @@ export default function AccountingPage() {
 
       {/* View Account Modal */}
       {showViewAccountModal && selectedAccount && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
             <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -1549,7 +1513,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowViewAccountModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6 text-white" />
                 </button>
@@ -1588,7 +1552,7 @@ export default function AccountingPage() {
               </div>
               <button
                 onClick={() => setShowViewAccountModal(false)}
-                className="w-full px-6 py-3 bg-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-300 transition-colors mt-4"
+                className="w-full px-6 py-3 bg-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-300 transition-colors mt-4 cursor-pointer"
               >
                 Close
               </button>
@@ -1599,8 +1563,8 @@ export default function AccountingPage() {
 
       {/* View Entry Modal */}
       {showViewEntryModal && selectedEntry && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
             <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -1609,7 +1573,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowViewEntryModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6 text-white" />
                 </button>
@@ -1631,7 +1595,7 @@ export default function AccountingPage() {
                 <p className="text-lg text-gray-900">{selectedEntry.description}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                <div className="bg-green-50/50 border border-green-200/50 rounded-xl p-4 backdrop-blur-sm">
                   <p className="text-sm font-semibold text-green-900 mb-2 flex items-center gap-2">
                     <ArrowUpRight className="w-4 h-4" />
                     DEBIT
@@ -1639,7 +1603,7 @@ export default function AccountingPage() {
                   <p className="text-sm text-gray-700 mb-1">{selectedEntry.debit.account}</p>
                   <p className="text-2xl font-bold text-green-900">£{selectedEntry.debit.amount.toLocaleString()}</p>
                 </div>
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                <div className="bg-red-50/50 border border-red-200/50 rounded-xl p-4 backdrop-blur-sm">
                   <p className="text-sm font-semibold text-red-900 mb-2 flex items-center gap-2">
                     <ArrowDownRight className="w-4 h-4" />
                     CREDIT
@@ -1650,17 +1614,17 @@ export default function AccountingPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-600 mb-1">Status</p>
-                <span className={`px-4 py-2 rounded-full text-sm font-semibold inline-block ${
-                  selectedEntry.status === 'posted' ? 'bg-green-100 text-green-700' :
-                  selectedEntry.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-gray-100 text-gray-700'
+                <span className={`px-4 py-2 rounded-full text-sm font-semibold inline-block backdrop-blur-sm ${
+                  selectedEntry.status === 'posted' ? 'bg-green-100/80 text-green-700' :
+                  selectedEntry.status === 'pending' ? 'bg-yellow-100/80 text-yellow-700' :
+                  'bg-gray-100/80 text-gray-700'
                 }`}>
                   {selectedEntry.status.toUpperCase()}
                 </span>
               </div>
               <button
                 onClick={() => setShowViewEntryModal(false)}
-                className="w-full px-6 py-3 bg-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-300 transition-colors mt-4"
+                className="w-full px-6 py-3 bg-gray-100 rounded-xl font-semibold text-gray-700 hover:bg-gray-200 transition-colors mt-4 cursor-pointer"
               >
                 Close
               </button>
@@ -1671,8 +1635,8 @@ export default function AccountingPage() {
 
       {/* Edit Account Modal */}
       {showEditAccountModal && selectedAccount && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
             <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -1681,7 +1645,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowEditAccountModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6 text-white" />
                 </button>
@@ -1769,7 +1733,7 @@ export default function AccountingPage() {
               <div className="flex items-center gap-3 pt-4">
                 <button
                   onClick={() => setShowEditAccountModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1778,7 +1742,7 @@ export default function AccountingPage() {
                     handleSaveAccount();
                     setShowEditAccountModal(false);
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Save className="w-5 h-5" />
                   Update Account
@@ -1791,8 +1755,8 @@ export default function AccountingPage() {
 
       {/* Edit Entry Modal */}
       {showEditEntryModal && selectedEntry && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
             <div className="sticky top-0 bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -1801,7 +1765,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowEditEntryModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6 text-white" />
                 </button>
@@ -1955,7 +1919,7 @@ export default function AccountingPage() {
               <div className="flex items-center gap-3 pt-4">
                 <button
                   onClick={() => setShowEditEntryModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1964,7 +1928,7 @@ export default function AccountingPage() {
                     handleSaveEntry();
                     setShowEditEntryModal(false);
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Save className="w-5 h-5" />
                   Update Entry
@@ -1977,8 +1941,8 @@ export default function AccountingPage() {
 
       {/* Report Generation Modal */}
       {showReportModal && selectedReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full my-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-3xl w-full my-8 max-h-[90vh] overflow-y-auto border border-white/50">
             <div className={`p-6 rounded-t-2xl ${
               selectedReport.includes('Profit') ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
               selectedReport.includes('Balance') ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
@@ -1995,7 +1959,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowReportModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6 text-white" />
                 </button>
@@ -2029,7 +1993,7 @@ export default function AccountingPage() {
                 <div className="grid grid-cols-4 gap-2">
                   <button
                     onClick={() => handleDownloadReport('PDF')}
-                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all text-center group"
+                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all text-center group cursor-pointer"
                   >
                     <div className="p-2 bg-red-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-red-200 transition-colors">
                       <FileText className="w-6 h-6 text-red-600" />
@@ -2039,7 +2003,7 @@ export default function AccountingPage() {
 
                   <button
                     onClick={() => handleDownloadReport('Excel')}
-                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-center group"
+                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-center group cursor-pointer"
                   >
                     <div className="p-2 bg-green-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-green-200 transition-colors">
                       <FileText className="w-6 h-6 text-green-600" />
@@ -2049,7 +2013,7 @@ export default function AccountingPage() {
 
                   <button
                     onClick={() => handleDownloadReport('CSV')}
-                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center group"
+                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center group cursor-pointer"
                   >
                     <div className="p-2 bg-blue-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-blue-200 transition-colors">
                       <FileText className="w-6 h-6 text-blue-600" />
@@ -2059,7 +2023,7 @@ export default function AccountingPage() {
 
                   <button
                     onClick={() => handleDownloadReport('JSON')}
-                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-center group"
+                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-center group cursor-pointer"
                   >
                     <div className="p-2 bg-purple-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-purple-200 transition-colors">
                       <FileText className="w-6 h-6 text-purple-600" />
@@ -2096,20 +2060,20 @@ export default function AccountingPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handlePrint}
-                  className="px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm"
+                  className="px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
                   Print
                 </button>
                 <button
                   onClick={() => handleDownloadReport('PDF')}
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   Generate
@@ -2122,8 +2086,8 @@ export default function AccountingPage() {
 
       {/* Year-End Accounts Modal */}
       {showYearEndModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto border border-white/50">
             <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -2132,7 +2096,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowYearEndModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6 text-white" />
                 </button>
@@ -2261,7 +2225,7 @@ export default function AccountingPage() {
                       handleDownloadReport('PDF');
                       setShowYearEndModal(false);
                     }}
-                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all text-center group"
+                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all text-center group cursor-pointer"
                   >
                     <div className="p-2 bg-red-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-red-200 transition-colors">
                       <FileText className="w-6 h-6 text-red-600" />
@@ -2275,7 +2239,7 @@ export default function AccountingPage() {
                       handleDownloadReport('Excel');
                       setShowYearEndModal(false);
                     }}
-                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-center group"
+                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-center group cursor-pointer"
                   >
                     <div className="p-2 bg-green-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-green-200 transition-colors">
                       <FileText className="w-6 h-6 text-green-600" />
@@ -2289,7 +2253,7 @@ export default function AccountingPage() {
                       alert('iXBRL format for HMRC submission');
                       setShowYearEndModal(false);
                     }}
-                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center group"
+                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center group cursor-pointer"
                   >
                     <div className="p-2 bg-blue-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-blue-200 transition-colors">
                       <Send className="w-6 h-6 text-blue-600" />
@@ -2303,7 +2267,7 @@ export default function AccountingPage() {
                       alert('Companies House WebFiling format');
                       setShowYearEndModal(false);
                     }}
-                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-center group"
+                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-center group cursor-pointer"
                   >
                     <div className="p-2 bg-purple-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-purple-200 transition-colors">
                       <Building2 className="w-6 h-6 text-purple-600" />
@@ -2334,13 +2298,13 @@ export default function AccountingPage() {
               <div className="flex items-center gap-3 pt-2">
                 <button
                   onClick={() => setShowYearEndModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Close
                 </button>
                 <button
                   onClick={handlePrint}
-                  className="px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  className="px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   <Printer className="w-5 h-5" />
                   Print
@@ -2350,7 +2314,7 @@ export default function AccountingPage() {
                     handleDownloadReport('Year-End Accounts Package');
                     setShowYearEndModal(false);
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Download className="w-5 h-5" />
                   Generate Package
@@ -2363,8 +2327,8 @@ export default function AccountingPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && deleteTarget && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md w-full border border-white/50">
             <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -2373,7 +2337,7 @@ export default function AccountingPage() {
                 </h2>
                 <button 
                   onClick={() => setShowDeleteModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6 text-white" />
                 </button>
@@ -2386,13 +2350,13 @@ export default function AccountingPage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleConfirmDelete}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Trash2 className="w-5 h-5" />
                   Delete
@@ -2405,8 +2369,8 @@ export default function AccountingPage() {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-bounce-in">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md w-full animate-bounce-in border border-white/50">
             <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-t-2xl">
               <div className="flex items-center justify-center">
                 <div className="p-4 bg-white rounded-full">

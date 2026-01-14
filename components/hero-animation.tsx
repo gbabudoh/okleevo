@@ -254,7 +254,7 @@ export function HeroAnimation() {
             transition={{ delay: 0.5 }}
           >
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
-              All Your SME Essentials<br />in One Place
+              Run Your Entire Business<br />from One Dashboard
             </h2>
           </motion.div>
           
@@ -264,7 +264,7 @@ export function HeroAnimation() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
           >
-            Stop juggling multiple tools and subscriptions. Okleevo brings together 20 essential business modules in one unified platform.
+            One platform, zero headaches. All the tools you need to manage and grow your business, without the juggling act.
           </motion.p>
         </div>
 

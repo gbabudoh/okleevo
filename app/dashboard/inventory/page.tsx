@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import { 
-  Package, Plus, Search, Filter, Download, Upload, Barcode,
-  AlertTriangle, CheckCircle, TrendingUp, TrendingDown, DollarSign,
-  ShoppingCart, Truck, Archive, Edit3, Trash2, Eye, MoreVertical,
-  Grid, List, RefreshCw, Settings, Bell, Tag, MapPin, Calendar,
-  Box, Boxes, PackageCheck, PackageX, PackagePlus, PackageMinus,
-  Warehouse, ClipboardList, FileText, Zap, Target, Activity,
-  ArrowUpRight, ArrowDownRight, X, Check, ChevronRight, Star,
-  QrCode, Scan, Link, Share2, Copy, History, AlertCircle
+  Package, Plus, Search, Filter, Download, Upload,
+  AlertTriangle, CheckCircle, DollarSign,
+  Truck, Trash2, Eye, MoreVertical,
+  Grid, List, Settings, Tag, MapPin, 
+  Box, Boxes, PackageX, PackagePlus, PackageMinus,
+  Warehouse, Zap, Target, Activity,
+  X, Check, QrCode, Scan, History, User,
+  ClipboardList, ShoppingCart, Bell, FileText
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
@@ -204,6 +204,13 @@ export default function InventoryPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingItem, setDeletingItem] = useState<InventoryItem | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [showScanOverlay, setShowScanOverlay] = useState(false);
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'info'} | null>(null);
+
+  const showNotify = (message: string, type: 'success' | 'info' = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -233,653 +240,623 @@ export default function InventoryPage() {
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl">
-              <Warehouse className="w-8 h-8 text-white" />
-            </div>
-            Inventory Management
-          </h1>
-          <p className="text-gray-600 mt-2">Track, manage, and optimize your stock levels</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <Scan className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Scan Barcode</span>
-          </button>
-          <button className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <Upload className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Import</span>
-          </button>
-          <button className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <Download className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Export</span>
-          </button>
-          <button
-            onClick={() => setShowAddItem(true)}
-            className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Add Item
-          </button>
-        </div>
+    <div className="relative min-h-screen">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[5%] left-[10%] w-[45%] h-[45%] bg-indigo-600/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[10%] right-[10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px] animate-bounce duration-[12s]" />
+        <div className="absolute top-[50%] left-[25%] w-[30%] h-[30%] bg-blue-600/5 rounded-full blur-[100px] animate-pulse" />
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-blue-500 rounded-lg">
-              <DollarSign className="w-6 h-6 text-white" />
+      <div className="relative z-10 space-y-8 pb-12">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 bg-white/40 backdrop-blur-xl p-8 rounded-[2.5rem] border-2 border-white shadow-2xl shadow-indigo-500/5">
+          <div className="flex items-center gap-6">
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000" />
+              <div className="relative p-5 bg-white rounded-2xl shadow-xl flex items-center justify-center">
+                <Warehouse className="w-10 h-10 text-indigo-600" />
+              </div>
             </div>
-            <div className="flex items-center gap-1 text-blue-700 text-sm font-semibold">
-              <TrendingUp className="w-4 h-4" />
-              12.5%
-            </div>
-          </div>
-          <p className="text-sm text-blue-600 font-medium mb-1">Total Value</p>
-          <p className="text-3xl font-bold text-blue-900">${totalInventoryValue.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border-2 border-purple-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-purple-500 rounded-lg">
-              <Boxes className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex items-center gap-1 text-purple-700 text-sm font-semibold">
-              <TrendingUp className="w-4 h-4" />
-              8.2%
-            </div>
-          </div>
-          <p className="text-sm text-purple-600 font-medium mb-1">Total Items</p>
-          <p className="text-3xl font-bold text-purple-900">{totalItems.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-5 border-2 border-orange-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-orange-500 rounded-lg">
-              <AlertTriangle className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-1 rounded-full">
-              Needs Attention
-            </span>
-          </div>
-          <p className="text-sm text-orange-600 font-medium mb-1">Low Stock Alerts</p>
-          <p className="text-3xl font-bold text-orange-900">{lowStockItems}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-green-500 rounded-lg">
-              <Package className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex items-center gap-1 text-green-700 text-sm font-semibold">
-              <TrendingUp className="w-4 h-4" />
-              5.3%
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-indigo-100">
+                  Logistics & Fulfillment
+                </span>
+                <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-emerald-100">
+                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                  Live Inventory
+                </span>
+              </div>
+              <h1 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">
+                Inventory <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Command</span>
+              </h1>
+              <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Real-time stock optimization engine</p>
             </div>
           </div>
-          <p className="text-sm text-green-600 font-medium mb-1">Product Lines</p>
-          <p className="text-3xl font-bold text-green-900">{items.length}</p>
-        </div>
-      </div>
 
-      {/* Quick Actions & Integrations */}
-      <div className="bg-white rounded-xl border-2 border-gray-200 p-5">
-        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Zap className="w-5 h-5 text-yellow-500" />
-          Quick Actions & Integrations
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border-2 border-blue-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-blue-500 rounded-lg group-hover:scale-110 transition-transform">
-              <ShoppingCart className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-blue-900">Shopify Sync</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-purple-500 rounded-lg group-hover:scale-110 transition-transform">
-              <Truck className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-purple-900">Ship Orders</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-green-500 rounded-lg group-hover:scale-110 transition-transform">
-              <QrCode className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-green-900">Generate QR</span>
-          </button>
-
-          <button 
-            onClick={() => setShowStockMovement(true)}
-            className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-xl border-2 border-orange-200 hover:shadow-lg transition-all group"
-          >
-            <div className="p-2 bg-orange-500 rounded-lg group-hover:scale-110 transition-transform">
-              <History className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-orange-900">Stock History</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-indigo-500 rounded-lg group-hover:scale-110 transition-transform">
-              <Bell className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-indigo-900">Set Alerts</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border-2 border-pink-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-pink-500 rounded-lg group-hover:scale-110 transition-transform">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-pink-900">Reports</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by name, SKU, or barcode..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          />
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Filters</span>
-          </button>
-          
-          <div className="flex items-center gap-1 bg-white border-2 border-gray-200 rounded-xl p-1">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-indigo-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >
-              <Grid className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-indigo-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >
-              <List className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Filter */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        {categories.map((category) => {
-          const Icon = category.icon;
-          return (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
-                selectedCategory === category.id
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {category.name}
-              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                selectedCategory === category.id ? 'bg-white bg-opacity-20' : 'bg-gray-100'
-              }`}>
-                {category.count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Inventory Grid/List */}
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredItems.map((item) => {
-            const statusConfig = getStatusConfig(item.status);
-            const StatusIcon = statusConfig.icon;
-            const stockPercentage = (item.quantity / item.maxStock) * 100;
-            
-            return (
-              <div
-                key={item.id}
-                className="group relative bg-white rounded-xl border-2 border-gray-200 p-5 hover:border-indigo-300 hover:shadow-2xl transition-all cursor-pointer overflow-hidden"
-                onClick={() => setSelectedItem(item)}
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2 p-2 bg-white/80 backdrop-blur-md rounded-2xl border-2 border-gray-100 shadow-sm">
+              <button 
+                onClick={() => {
+                  setShowScanOverlay(true);
+                  setTimeout(() => {
+                    setShowScanOverlay(false);
+                    showNotify('✓ Provisioning Scan Complete: Asset Synchronized');
+                  }, 3000);
+                }}
+                className="p-3 hover:bg-indigo-50 rounded-xl transition-all duration-300 group cursor-pointer" 
+                title="Scan Barcode"
               >
-                {/* Status Badge */}
-                <div className={`absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                  <StatusIcon className="w-3 h-3" />
-                  {statusConfig.label}
+                <Scan className="w-5 h-5 text-gray-400 group-hover:text-indigo-600" />
+              </button>
+              <div className="w-px h-6 bg-gray-100" />
+              <button 
+                onClick={() => showNotify('Bulk Import Node Active: Awaiting Files', 'info')}
+                className="p-3 hover:bg-gray-50 rounded-xl transition-all duration-300 group cursor-pointer" 
+                title="Bulk Import"
+              >
+                <Upload className="w-5 h-5 text-gray-400 group-hover:text-indigo-600" />
+              </button>
+              <button 
+                onClick={() => showNotify('✓ Manifest Exported to Fulfillment Hub')}
+                className="p-3 hover:bg-gray-50 rounded-xl transition-all duration-300 group cursor-pointer" 
+                title="Export Manifest"
+              >
+                <Download className="w-5 h-5 text-gray-400 group-hover:text-indigo-600" />
+              </button>
+              <div className="w-px h-6 bg-gray-100" />
+              <button 
+                onClick={() => showNotify('Global Stock Settings Node Online', 'info')}
+                className="p-3 hover:bg-gray-50 rounded-xl transition-all duration-300 group cursor-pointer" 
+                title="Stock Settings"
+              >
+                <Settings className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 group-hover:rotate-90" />
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowAddItem(true)}
+              className="px-8 py-4 bg-gray-900 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-indigo-600 hover:shadow-2xl hover:shadow-indigo-500/40 transition-all duration-500 cursor-pointer flex items-center gap-3 active:scale-95"
+            >
+              <Plus className="w-5 h-5" />
+              Provision Asset
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { label: 'Asset Valuation', value: `$${totalInventoryValue.toLocaleString()}`, change: '+12.5%', icon: DollarSign, color: 'emerald', detail: 'Total capital in stock' },
+            { label: 'Inventory Volume', value: totalItems.toLocaleString(), change: '+8.2%', icon: Boxes, color: 'indigo', detail: 'Active product units' },
+            { label: 'Critical Assets', value: lowStockItems, change: 'NEEDS ATTENTION', icon: AlertTriangle, color: 'rose', detail: 'Low stock & stockouts' },
+            { label: 'Product Lines', value: items.length, change: '+5.3%', icon: Package, color: 'blue', detail: 'Across all categories' }
+          ].map((stat, i) => (
+            <div key={i} className="group relative bg-white/60 backdrop-blur-xl p-6 rounded-[2rem] border-2 border-white shadow-xl shadow-indigo-500/5 hover:-translate-y-1 transition-all duration-500 overflow-hidden">
+              <div className={`absolute top-0 right-0 w-32 h-32 bg-${stat.color}-500/5 rounded-full blur-3xl group-hover:bg-${stat.color}-500/10 transition-all duration-500`} />
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className={`p-4 bg-${stat.color}-500 rounded-2xl shadow-lg shadow-${stat.color}-500/20 group-hover:scale-110 transition-transform duration-500`}>
+                  <stat.icon className="w-6 h-6 text-white" />
                 </div>
-
-                {/* Product Image Placeholder */}
-                <div className="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center">
-                  <Package className="w-12 h-12 text-gray-400" />
+                <div className={`px-3 py-1 bg-${stat.color}-50 text-${stat.color}-600 text-[10px] font-black tracking-widest uppercase rounded-full border border-${stat.color}-100`}>
+                  {stat.change}
                 </div>
+              </div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 relative z-10">{stat.label}</p>
+              <h3 className="text-3xl font-black text-gray-900 mb-1 relative z-10">{stat.value}</h3>
+              <p className="text-xs font-bold text-gray-500 relative z-10">{stat.detail}</p>
+            </div>
+          ))}
+        </div>
 
-                {/* Product Info */}
-                <h3 className="font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-indigo-600 transition-colors">
-                  {item.name}
-                </h3>
-                
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                    SKU: {item.sku}
-                  </span>
-                  {item.barcode && (
-                    <Barcode className="w-4 h-4 text-gray-400" />
-                  )}
+        {/* Global Action Suite */}
+        <div className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] border-2 border-white p-8 shadow-2xl shadow-indigo-500/5 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl" />
+          <div className="flex items-center justify-between mb-8 relative z-10">
+            <div>
+              <h3 className="text-xl font-black text-gray-900 flex items-center gap-3 italic uppercase tracking-tighter">
+                <Zap className="w-6 h-6 text-indigo-600 animate-pulse" />
+                Integrated Logistics Node
+              </h3>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Cross-platform fulfillment & sync</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">System Active</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 relative z-10">
+            {[
+              { label: 'Shopify Sync', icon: ShoppingCart, color: 'blue', desc: 'Real-time sync' },
+              { label: 'Ship Orders', icon: Truck, color: 'purple', desc: 'Fulfillment hub' },
+              { label: 'Asset Labels', icon: QrCode, color: 'emerald', desc: 'Print QR codes' },
+              { label: 'Inventory Log', icon: History, color: 'orange', desc: 'Movement history', onClick: () => setShowStockMovement(true) },
+              { label: 'Auto-Alerts', icon: Bell, color: 'indigo', desc: 'Stock thresholds' },
+              { label: 'Manifests', icon: FileText, color: 'rose', desc: 'Detailed reports' }
+            ].map((action, i) => (
+              <button 
+                key={i}
+                onClick={action.onClick}
+                className="group p-5 bg-white/80 hover:bg-white rounded-3xl border-2 border-white shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-500 text-center relative overflow-hidden cursor-pointer"
+              >
+                <div className={`absolute top-0 right-0 w-16 h-16 bg-${action.color}-500/5 rounded-full blur-2xl group-hover:bg-${action.color}-500/10 transition-all duration-500`} />
+                <div className={`w-12 h-12 bg-${action.color}-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-${action.color}-500/20 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500`}>
+                  <action.icon className="w-6 h-6 text-white" />
                 </div>
+                <p className="text-xs font-black text-gray-900 mb-1 relative z-10">{action.label}</p>
+                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider relative z-10">{action.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
 
-                {/* Stock Level */}
-                <div className="mb-3">
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-gray-600">Stock Level</span>
-                    <span className="font-bold text-gray-900">{item.quantity} {item.unit}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        stockPercentage > 50 ? 'bg-green-500' :
-                        stockPercentage > 20 ? 'bg-orange-500' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${Math.min(stockPercentage, 100)}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
-                    <span>Min: {item.minStock}</span>
-                    <span>Max: {item.maxStock}</span>
-                  </div>
+        {/* Search and Filters */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex-1 relative group">
+            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+              <Search className="w-5 h-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search by name, SKU, or serial code..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-14 pr-6 py-5 bg-white/60 backdrop-blur-xl border-2 border-white rounded-[2rem] shadow-xl shadow-indigo-500/5 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium text-gray-900 placeholder:text-gray-400"
+            />
+            <div className="absolute inset-y-0 right-5 flex items-center gap-2">
+              <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-gray-200">
+                <kbd className="font-sans">CMD</kbd> K
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button className="px-8 py-5 bg-white/60 backdrop-blur-xl border-2 border-white rounded-[2rem] shadow-xl shadow-indigo-500/5 hover:bg-white hover:-translate-y-1 transition-all duration-300 flex items-center gap-3 font-black text-[10px] uppercase tracking-[0.2em] text-gray-600 cursor-pointer group">
+              <Filter className="w-5 h-5 text-gray-400 group-hover:text-indigo-600" />
+              Advanced Filters
+            </button>
+            
+            <div className="flex items-center gap-1 bg-white/60 backdrop-blur-xl border-2 border-white rounded-[2rem] p-1.5 shadow-xl shadow-indigo-500/5">
+              {[
+                { id: 'grid', icon: Grid },
+                { id: 'list', icon: List }
+              ].map((mode) => (
+                <button
+                  key={mode.id}
+                  onClick={() => setViewMode(mode.id as 'grid' | 'list')}
+                  className={`p-3.5 rounded-2xl transition-all duration-500 cursor-pointer ${
+                    viewMode === mode.id 
+                      ? 'bg-gray-900 text-white shadow-lg' 
+                      : 'text-gray-400 hover:bg-white hover:text-gray-900'
+                  }`}
+                >
+                  <mode.icon className="w-5 h-5" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Categories Node */}
+        <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide">
+          {categories.map((category) => {
+            const Icon = category.icon;
+            const isActive = selectedCategory === category.id;
+            return (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`flex items-center gap-3 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-500 cursor-pointer border-2 ${
+                  isActive
+                    ? 'bg-gray-900 text-white border-gray-900 shadow-2xl shadow-gray-900/20 -translate-y-1'
+                    : 'bg-white/60 backdrop-blur-xl text-gray-400 border-white hover:border-gray-200 hover:text-gray-600 hover:-translate-y-0.5'
+                }`}
+              >
+                <div className={`p-2 rounded-lg transition-colors duration-500 ${isActive ? 'bg-white/10' : 'bg-gray-50'}`}>
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                 </div>
+                {category.name}
+                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${
+                  isActive ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {category.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-                {/* Value & Location */}
-                <div className="space-y-2 mb-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Unit Price</span>
-                    <span className="font-semibold text-gray-900">${item.unitPrice}</span>
+        {/* Inventory Grid/List */}
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredItems.map((item, idx) => {
+              const statusConfig = getStatusConfig(item.status);
+              const StatusIcon = statusConfig.icon;
+              const stockPercentage = (item.quantity / item.maxStock) * 100;
+              
+              return (
+                <div
+                  key={item.id}
+                  className="group relative bg-white/40 backdrop-blur-xl rounded-[2.5rem] border-2 border-white p-6 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-700 cursor-pointer overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both"
+                  style={{ animationDelay: `${idx * 100}ms` }}
+                  onClick={() => setSelectedItem(item)}
+                >
+                  {/* Status Node */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
+                      <StatusIcon className="w-3 h-3" />
+                      {statusConfig.label}
+                    </div>
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-white/60 rounded-full border border-white text-[10px] font-black text-gray-400">
+                      <Box className="w-3 h-3" />
+                      {item.unit}
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Total Value</span>
-                    <span className="font-bold text-indigo-600">${item.totalValue.toLocaleString()}</span>
+
+                  {/* Asset Identity */}
+                  <div className="relative mb-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1 italic">SKU: {item.sku}</p>
+                        <h3 className="text-lg font-black text-gray-900 leading-tight line-clamp-2 group-hover:text-indigo-600 transition-colors duration-500">
+                          {item.name}
+                        </h3>
+                      </div>
+                      <div className="relative">
+                        <div className={`absolute inset-0 bg-indigo-500/20 blur-xl rounded-full scale-0 group-hover:scale-100 transition-transform duration-700`} />
+                        <div className="relative p-3 bg-white rounded-2xl shadow-lg shadow-indigo-500/5 group-hover:rotate-12 transition-transform duration-500">
+                          <Package className="w-6 h-6 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                {/* Location */}
-                <div className="flex items-center gap-2 text-xs text-gray-600 mb-3 p-2 bg-gray-50 rounded-lg">
-                  <MapPin className="w-3 h-3" />
-                  <span className="truncate">{item.location}</span>
-                </div>
-
-                {/* Tags */}
-                {item.tags && item.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {item.tags.slice(0, 2).map((tag, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs">
-                        #{tag}
-                      </span>
-                    ))}
-                    {item.tags.length > 2 && (
-                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                        +{item.tags.length - 2}
-                      </span>
-                    )}
+                  {/* Operational Metrics */}
+                  <div className="bg-white/40 rounded-3xl p-4 border border-white mb-6 relative overflow-hidden">
+                    <div className="flex items-end justify-between mb-3">
+                      <div>
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Available Stock</p>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-black text-gray-900">{item.quantity}</span>
+                          <span className="text-[10px] font-bold text-gray-400">/ {item.maxStock}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Stock Utility</p>
+                        <span className={`text-sm font-black ${stockPercentage > 50 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {stockPercentage.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-white">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-1000 ${
+                          stockPercentage > 50 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' : 
+                          stockPercentage > 20 ? 'bg-gradient-to-r from-orange-400 to-orange-600' : 'bg-gradient-to-r from-rose-400 to-rose-600'
+                        }`}
+                        style={{ width: `${Math.min(stockPercentage, 100)}%` }}
+                      />
+                    </div>
                   </div>
-                )}
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                  <button className="flex-1 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium">
-                    Adjust Stock
-                  </button>
-                  <div className="relative">
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="p-3 bg-white/40 rounded-2xl border border-white">
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Unit Value</p>
+                      <p className="text-sm font-black text-gray-900">${item.unitPrice}</p>
+                    </div>
+                    <div className="p-3 bg-white/40 rounded-2xl border border-white">
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Net Allocation</p>
+                      <p className="text-sm font-black text-indigo-600 italic">${item.totalValue.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  {/* Asset Footprint */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 bg-gray-50/50 px-3 py-2 rounded-xl border border-gray-100">
+                      <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                      <span className="truncate max-w-[120px]">{item.location}</span>
+                    </div>
+                    <div className="flex items-center -space-x-2">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden">
+                          <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300" />
+                        </div>
+                      ))}
+                      <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-900 flex items-center justify-center text-[8px] font-black text-white">
+                        +4
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Node Actions */}
+                  <div className="flex items-center gap-2 pt-5 border-t border-white">
+                    <button className="flex-1 py-3 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-indigo-600 hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 group/btn cursor-pointer">
+                      Adjust Stock
+                    </button>
                     <button 
-                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveMenu(activeMenu === item.id ? null : item.id);
                       }}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                      className="p-3 bg-white hover:bg-gray-50 rounded-xl border-2 border-white shadow-sm transition-all duration-300 group/ctx cursor-pointer relative"
                     >
-                      <MoreVertical className="w-4 h-4 text-gray-600" />
+                      <MoreVertical className="w-4 h-4 text-gray-400 group-hover/ctx:text-indigo-600" />
+                      {activeMenu === item.id && (
+                        <>
+                          <div className="fixed inset-0 z-[60]" onClick={() => setActiveMenu(null)} />
+                          <div className="absolute right-0 bottom-full mb-4 w-48 bg-white/80 backdrop-blur-2xl rounded-2xl shadow-2xl border-2 border-white py-2 z-[70] animate-in fade-in zoom-in duration-300">
+                            {[
+                              { label: 'Deep Analysis', icon: Eye, color: 'blue', onClick: () => setSelectedItem(item) },
+                              { label: 'Stock History', icon: History, color: 'orange', onClick: () => setShowStockMovement(true) },
+                              { label: 'Print Labels', icon: QrCode, color: 'emerald' },
+                              { label: 'Terminate Node', icon: Trash2, color: 'rose', danger: true, onClick: () => { setDeletingItem(item); setShowDeleteModal(true); } }
+                            ].map((opt, i) => (
+                              <button
+                                key={i}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  opt.onClick?.();
+                                  setActiveMenu(null);
+                                }}
+                                className={`w-full px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest hover:bg-white flex items-center gap-3 transition-colors cursor-pointer ${opt.danger ? 'text-rose-500' : 'text-gray-600'}`}
+                              >
+                                <opt.icon className="w-4 h-4" />
+                                {opt.label}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </button>
-                    {activeMenu === item.id && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedItem(item);
-                              setActiveMenu(null);
-                            }}
-                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer transition-colors"
-                          >
-                            <Eye className="w-4 h-4 text-blue-600" />
-                            <span className="font-medium">View Details</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeletingItem(item);
-                              setShowDeleteModal(true);
-                              setActiveMenu(null);
-                            }}
-                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            <span className="font-medium">Delete</span>
-                          </button>
-                        </div>
-                      </>
-                    )}
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b-2 border-gray-200">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Product</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">SKU</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Category</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Stock</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Value</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Location</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredItems.map((item) => {
-                const statusConfig = getStatusConfig(item.status);
-                const StatusIcon = statusConfig.icon;
-                
-                return (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Package className="w-5 h-5 text-gray-400" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">{item.name}</p>
-                          <p className="text-xs text-gray-500">{item.supplier}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-mono text-gray-700">{item.sku}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-700 capitalize">{item.category}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">{item.quantity} {item.unit}</p>
-                        <p className="text-xs text-gray-500">Reorder: {item.reorderPoint}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                        <StatusIcon className="w-3 h-3" />
-                        {statusConfig.label}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">${item.totalValue.toLocaleString()}</p>
-                        <p className="text-xs text-gray-500">${item.unitPrice}/unit</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <MapPin className="w-3 h-3" />
-                        <span className="truncate max-w-[150px]">{item.location}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => setSelectedItem(item)}
-                          className="p-2 hover:bg-indigo-50 rounded-lg transition-colors"
-                          title="View details"
-                        >
-                          <Eye className="w-4 h-4 text-indigo-600" />
-                        </button>
-                        <div className="relative">
-                          <button 
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveMenu(activeMenu === item.id ? null : item.id);
-                            }}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer" 
-                            title="More options"
-                          >
-                            <MoreVertical className="w-4 h-4 text-gray-600" />
-                          </button>
-                          {activeMenu === item.id && (
-                            <>
-                              <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
-                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeletingItem(item);
-                                    setShowDeleteModal(true);
-                                    setActiveMenu(null);
-                                  }}
-                                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                  <span className="font-medium">Delete</span>
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </td>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] border-2 border-white shadow-2xl shadow-indigo-500/5 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/60">
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Asset Identity</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Allocation</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Operational Status</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Net Valuation</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Logistics</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Actions</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                </thead>
+                <tbody className="divide-y divide-white/60">
+                  {filteredItems.map((item) => {
+                    const statusConfig = getStatusConfig(item.status);
+                    const StatusIcon = statusConfig.icon;
+                    return (
+                      <tr key={item.id} className="group hover:bg-white/40 transition-all duration-500">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-white rounded-2xl shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                              <Package className="w-6 h-6 text-gray-400 group-hover:text-indigo-600" />
+                            </div>
+                            <div>
+                              <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest mb-0.5">SKU: {item.sku}</p>
+                              <p className="font-black text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors duration-500">{item.name}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div>
+                            <p className="text-sm font-black text-gray-900">{item.quantity} <span className="text-[10px] font-bold text-gray-400 uppercase">{item.unit}</span></p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Reorder @ {item.reorderPoint}</p>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
+                            <StatusIcon className="w-3.5 h-3.5" />
+                            {statusConfig.label}
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div>
+                            <p className="text-sm font-black text-indigo-600 italic">${item.totalValue.toLocaleString()}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">${item.unitPrice}/UNIT</p>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                            <MapPin className="w-4 h-4 text-indigo-400" />
+                            {item.location}
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => setSelectedItem(item)}
+                              className="p-3 bg-white/60 hover:bg-white rounded-xl border border-white shadow-sm transition-all duration-300 group/btn cursor-pointer"
+                            >
+                              <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-indigo-600" />
+                            </button>
+                            <div className="relative">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveMenu(activeMenu === item.id ? null : item.id);
+                                }}
+                                className="p-3 bg-white/60 hover:bg-white rounded-xl border border-white shadow-sm transition-all duration-300 group/btn cursor-pointer"
+                              >
+                                <MoreVertical className="w-4 h-4 text-gray-400 group-hover/btn:text-indigo-600" />
+                              </button>
+                              {activeMenu === item.id && (
+                                <>
+                                  <div className="fixed inset-0 z-[60]" onClick={() => setActiveMenu(null)} />
+                                  <div className="absolute right-0 top-full mt-2 w-48 bg-white/80 backdrop-blur-2xl rounded-2xl shadow-2xl border-2 border-white py-2 z-[70] animate-in fade-in zoom-in duration-300">
+                                    {[
+                                      { label: 'Deep Analysis', icon: Eye, color: 'blue', onClick: () => { setSelectedItem(item); showNotify('Deep Analysis Engine Online'); } },
+                                      { label: 'Stock History', icon: History, color: 'orange', onClick: () => { setShowStockMovement(true); showNotify('Temporal Audit Synchronized', 'info'); } },
+                                      { label: 'Print Labels', icon: QrCode, color: 'emerald', onClick: () => showNotify('Asset Labels Sent to Logistics Node') },
+                                      { label: 'Terminate Node', icon: Trash2, color: 'rose', danger: true, onClick: () => { setDeletingItem(item); setShowDeleteModal(true); } }
+                                    ].map((opt, i) => (
+                                      <button
+                                        key={i}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          opt.onClick?.();
+                                          setActiveMenu(null);
+                                        }}
+                                        className={`w-full px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest hover:bg-white flex items-center gap-3 transition-colors cursor-pointer ${opt.danger ? 'text-rose-500' : 'text-gray-600'}`}
+                                      >
+                                        <opt.icon className="w-4 h-4" />
+                                        {opt.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
       {/* Item Detail Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
-              <h2 className="text-2xl font-bold text-gray-900">{selectedItem.name}</h2>
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Product Image */}
-                <div className="space-y-4">
-                  <div className="w-full h-64 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
-                    <Package className="w-24 h-24 text-gray-400" />
-                  </div>
-                  
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                      <p className="text-xs text-blue-600 mb-1">Current Stock</p>
-                      <p className="text-2xl font-bold text-blue-900">{selectedItem.quantity}</p>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                      <p className="text-xs text-green-600 mb-1">Total Value</p>
-                      <p className="text-2xl font-bold text-green-900">${selectedItem.totalValue}</p>
-                    </div>
-                  </div>
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
+          <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="absolute top-6 right-6 p-3 bg-white hover:bg-gray-50 rounded-2xl shadow-lg border-2 border-gray-100 transition-all z-20 cursor-pointer"
+            >
+              <X className="w-6 h-6 text-gray-400" />
+            </button>
+
+            <div className="p-8 overflow-y-auto custom-scrollbar">
+              {/* Header Visual */}
+              <div className="flex flex-col items-center mb-8">
+                <div className="mb-4">
+                  <span className="px-4 py-1.5 bg-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-indigo-200">
+                    {selectedItem.category} Node
+                  </span>
+                </div>
+                
+                <div className="w-32 h-32 bg-white rounded-[2rem] shadow-xl shadow-indigo-500/10 flex items-center justify-center mb-6 group overflow-hidden border-2 border-white">
+                  <Package className="w-16 h-16 text-gray-200 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700" />
                 </div>
 
-                {/* Product Details */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">SKU</label>
-                    <p className="text-gray-900 font-mono">{selectedItem.sku}</p>
-                  </div>
+                <div className="text-center mb-6">
+                  <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-2">Asset detailed view</p>
+                  <h2 className="text-3xl font-black text-gray-900 tracking-tight leading-tight mb-2">
+                    {selectedItem.name}
+                  </h2>
+                  <p className="text-sm font-bold text-gray-400 max-w-md mx-auto">
+                    {selectedItem.description || "High-fidelity asset monitoring and logistical synchronization."}
+                  </p>
+                </div>
 
-                  {selectedItem.barcode && (
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="p-4 bg-white/60 rounded-3xl border-2 border-white shadow-sm flex flex-col items-center text-center">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stock Identity</p>
+                    <p className="text-xs font-black text-gray-900 font-mono italic">ID: {selectedItem.id}</p>
+                    <p className="text-xs font-black text-indigo-600 font-mono uppercase tracking-tighter">SKU: {selectedItem.sku}</p>
+                  </div>
+                  <button 
+                    onClick={() => showNotify('QR Matrix Generated Successfully')}
+                    className="p-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-indigo-600 hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-1"
+                  >
+                    <QrCode className="w-5 h-5 mb-1" />
+                    Export QR
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {[
+                  { label: 'Current Level', value: `${selectedItem.quantity} ${selectedItem.unit}`, icon: Boxes, color: 'indigo' },
+                  { label: 'Net Valuation', value: `$${selectedItem.totalValue.toLocaleString()}`, icon: DollarSign, color: 'emerald' },
+                  { label: 'Min/Max Buff', value: `${selectedItem.minStock}/${selectedItem.maxStock}`, icon: Activity, color: 'blue' },
+                  { label: 'Reorder At', value: selectedItem.reorderPoint, icon: Target, color: 'orange' }
+                ].map((stat, i) => (
+                  <div key={i} className="p-5 bg-gray-50/50 rounded-3xl border-2 border-white shadow-sm flex items-center gap-4">
+                    <div className={`w-10 h-10 bg-${stat.color}-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-${stat.color}-500/20`}>
+                      <stat.icon className="w-5 h-5 text-white" />
+                    </div>
                     <div>
-                      <label className="text-sm font-semibold text-gray-700">Barcode</label>
-                      <div className="flex items-center gap-2">
-                        <p className="text-gray-900 font-mono">{selectedItem.barcode}</p>
-                        <button className="p-1 hover:bg-gray-100 rounded">
-                          <Copy className="w-4 h-4 text-gray-600" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Category</label>
-                    <p className="text-gray-900 capitalize">{selectedItem.category}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Supplier</label>
-                    <p className="text-gray-900">{selectedItem.supplier}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Location</label>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-600" />
-                      <p className="text-gray-900">{selectedItem.location}</p>
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
+                      <p className="text-sm font-black text-gray-900">{stat.value}</p>
                     </div>
                   </div>
-
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Last Restocked</label>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-600" />
-                      <p className="text-gray-900">{selectedItem.lastRestocked.toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {/* Stock Information */}
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-200">
-                <h3 className="font-bold text-indigo-900 mb-4">Stock Information</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-xs text-indigo-600 mb-1">Current Stock</p>
-                    <p className="text-xl font-bold text-indigo-900">{selectedItem.quantity} {selectedItem.unit}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-indigo-600 mb-1">Min Stock</p>
-                    <p className="text-xl font-bold text-indigo-900">{selectedItem.minStock}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-indigo-600 mb-1">Max Stock</p>
-                    <p className="text-xl font-bold text-indigo-900">{selectedItem.maxStock}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-indigo-600 mb-1">Reorder Point</p>
-                    <p className="text-xl font-bold text-indigo-900">{selectedItem.reorderPoint}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Pricing */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200">
-                <h3 className="font-bold text-green-900 mb-4">Pricing</h3>
+              {/* Details List */}
+              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-green-600 mb-1">Unit Price</p>
-                    <p className="text-2xl font-bold text-green-900">${selectedItem.unitPrice}</p>
+                  <div className="p-5 bg-white rounded-3xl border-2 border-gray-100 shadow-sm">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5" />
+                      Logistical Footprint
+                    </h4>
+                    <p className="text-sm font-black text-gray-900 mb-1">{selectedItem.location}</p>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase">Primary Storage Node</p>
                   </div>
-                  <div>
-                    <p className="text-xs text-green-600 mb-1">Total Value</p>
-                    <p className="text-2xl font-bold text-green-900">${selectedItem.totalValue.toLocaleString()}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Physical Details */}
-              {(selectedItem.weight || selectedItem.dimensions) && (
-                <div className="grid grid-cols-2 gap-4">
-                  {selectedItem.weight && (
-                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <p className="text-xs text-gray-600 mb-1">Weight</p>
-                      <p className="text-lg font-bold text-gray-900">{selectedItem.weight} kg</p>
-                    </div>
-                  )}
-                  {selectedItem.dimensions && (
-                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <p className="text-xs text-gray-600 mb-1">Dimensions</p>
-                      <p className="text-lg font-bold text-gray-900">{selectedItem.dimensions}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Tags */}
-              {selectedItem.tags && selectedItem.tags.length > 0 && (
-                <div>
-                  <label className="text-sm font-semibold text-gray-700 mb-2 block">Tags</label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedItem.tags.map((tag, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                        #{tag}
-                      </span>
-                    ))}
+                  <div className="p-5 bg-white rounded-3xl border-2 border-gray-100 shadow-sm">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <User className="w-3.5 h-3.5" />
+                      Vendor Network
+                    </h4>
+                    <p className="text-sm font-black text-gray-900 mb-1">{selectedItem.supplier}</p>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase">Certified Partner</p>
                   </div>
                 </div>
-              )}
 
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                <button className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2">
-                  <Edit3 className="w-5 h-5" />
-                  Edit Item
-                </button>
-                <button className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2">
-                  <QrCode className="w-5 h-5" />
-                  Generate QR
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => {
-                    if (selectedItem) {
+                <div className="p-5 bg-white rounded-3xl border-2 border-gray-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                       <History className="w-3.5 h-3.5" />
+                       Temporal History
+                    </h4>
+                    <span className="text-xs font-black text-indigo-600 tracking-tighter">{selectedItem.lastRestocked.toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-[10px] font-bold text-gray-500 leading-relaxed italic">
+                    Asset movement has been stable over the last 30 business days with zero fulfillment anomalies reported.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {selectedItem.tags?.map((tag, i) => (
+                    <span key={i} className="px-4 py-2 bg-gray-50 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded-xl border border-gray-100">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="pt-6 flex gap-3">
+                  <button 
+                    onClick={() => {
+                      showNotify('Asset Configuration Node Synchronized');
+                      setSelectedItem(null);
+                    }}
+                    className="flex-1 py-5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-[2rem] hover:bg-black transition-all duration-500 cursor-pointer active:scale-95 shadow-xl shadow-indigo-500/10"
+                  >
+                    Adjust Asset Node
+                  </button>
+                  <button 
+                    onClick={() => {
                       setDeletingItem(selectedItem);
                       setShowDeleteModal(true);
-                    }
-                  }}
-                  className="px-6 py-3 border-2 border-red-200 text-red-700 font-medium rounded-xl hover:bg-red-50 transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Trash2 className="w-5 h-5" />
-                  Delete
-                </button>
+                    }}
+                    className="p-5 bg-white text-rose-500 rounded-[1.5rem] border-2 border-white shadow-lg hover:bg-rose-50 transition-all cursor-pointer"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -888,55 +865,68 @@ export default function InventoryPage() {
 
       {/* Stock Movement History Modal */}
       {showStockMovement && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <History className="w-6 h-6 text-indigo-600" />
-                Stock Movement History
-              </h2>
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
+          <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] max-w-xl w-full max-h-[80vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col">
+            <div className="p-8 border-b-2 border-gray-50 flex items-center justify-between sticky top-0 bg-white/50 backdrop-blur-xl z-20">
+              <div>
+                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-2 flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  Temporal Audit Log
+                </p>
+                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Movement History</h2>
+              </div>
               <button
                 onClick={() => setShowStockMovement(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-3 hover:bg-gray-100 rounded-2xl transition-all cursor-pointer border-2 border-transparent hover:border-gray-200"
               >
-                <X className="w-6 h-6 text-gray-600" />
+                <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
             
-            <div className="p-6">
-              <div className="space-y-3">
-                {stockMovements.map((movement) => {
+            <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-gray-50/30">
+              <div className="relative space-y-6 before:absolute before:inset-0 before:ml-4 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+                {stockMovements.map((movement, idx) => {
                   const isInbound = movement.type === 'in';
                   return (
-                    <div key={movement.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all">
-                      <div className={`p-3 rounded-xl ${isInbound ? 'bg-green-500' : 'bg-red-500'}`}>
-                        {isInbound ? (
-                          <PackagePlus className="w-6 h-6 text-white" />
-                        ) : (
-                          <PackageMinus className="w-6 h-6 text-white" />
-                        )}
-                      </div>
-                      
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-900">{movement.itemName}</h4>
-                        <p className="text-sm text-gray-600">{movement.reason}</p>
+                    <div key={movement.id} className="relative flex items-center group animate-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{ animationDelay: `${idx * 100}ms` }}>
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow-lg z-10 shrink-0 ${isInbound ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+                        {isInbound ? <PackagePlus className="w-3 h-3 text-white" /> : <PackageMinus className="w-3 h-3 text-white" />}
                       </div>
 
-                      <div className="text-right">
-                        <p className={`text-xl font-bold ${isInbound ? 'text-green-600' : 'text-red-600'}`}>
-                          {isInbound ? '+' : '-'}{movement.quantity}
-                        </p>
-                        <p className="text-xs text-gray-500">{movement.date.toLocaleDateString()}</p>
-                      </div>
+                      <div className="ml-6 flex-1 bg-white p-5 rounded-[1.5rem] border-2 border-white shadow-sm hover:shadow-md hover:scale-[1.01] transition-all duration-300">
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <time className="text-[8px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-0.5 rounded-md">
+                            {movement.date.toLocaleDateString()}
+                          </time>
+                          <div className={`text-[12px] font-black ${isInbound ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {isInbound ? '+' : '-'}{movement.quantity}
+                          </div>
+                        </div>
+                        
+                        <h4 className="text-xs font-black text-gray-900 leading-tight mb-1">{movement.itemName}</h4>
+                        <p className="text-[10px] font-bold text-gray-400 italic mb-2">{movement.reason}</p>
 
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">By</p>
-                        <p className="text-sm font-semibold text-gray-900">{movement.user}</p>
+                        <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
+                          <div className="w-5 h-5 rounded-md bg-gray-100 flex items-center justify-center text-[8px] font-black">
+                            {movement.user.charAt(0)}
+                          </div>
+                          <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">{movement.user}</span>
+                        </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
+            </div>
+            
+            <div className="p-6 border-t-2 border-gray-50 bg-white/50 backdrop-blur-xl">
+              <button 
+                onClick={() => showNotify('Full Audit Manifest Exported', 'info')}
+                className="w-full py-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-indigo-600 transition-all duration-500 cursor-pointer flex items-center justify-center gap-3"
+              >
+                <Download className="w-4 h-4" />
+                Download Report
+              </button>
             </div>
           </div>
         </div>
@@ -944,155 +934,115 @@ export default function InventoryPage() {
 
       {/* Add Item Modal */}
       {showAddItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
-              <h2 className="text-2xl font-bold text-gray-900">Add New Item</h2>
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
+          <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[85vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
+            <div className="p-8 border-b-2 border-gray-50 flex items-center justify-between bg-white/50 backdrop-blur-xl z-20">
+              <div>
+                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-1 flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  Asset Provisioning
+                </p>
+                <h2 className="text-xl font-black text-gray-900 tracking-tight">Register New Inventory Node</h2>
+              </div>
               <button
                 onClick={() => setShowAddItem(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-3 hover:bg-gray-100 rounded-2xl transition-all cursor-pointer border-2 border-transparent hover:border-gray-200"
               >
-                <X className="w-6 h-6 text-gray-600" />
+                <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
             
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Product Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Wireless Headphones"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
+            <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+              <div className="space-y-6">
+                {/* Primary Config */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Nomenclature</label>
+                    <input type="text" placeholder="e.g. Quantum Processor" className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 transition-all font-bold text-gray-900 text-xs outline-none" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">SKU</label>
+                    <input type="text" placeholder="SKU-AUTO" className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 transition-all font-mono font-bold text-indigo-600 text-xs outline-none uppercase" />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">SKU</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., WBH-2024-001"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Classification</label>
+                    <select className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 transition-all font-bold text-gray-700 text-xs outline-none">
+                      <option value="">Select Category</option>
+                      {categories.filter(c => c.id !== 'all').map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Allocation</label>
+                    <input type="number" placeholder="0" className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 transition-all font-bold text-gray-900 text-xs outline-none" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Unit</label>
+                    <select className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 transition-all font-bold text-gray-700 text-xs outline-none">
+                      <option value="pcs">pcs</option>
+                      <option value="kg">kg</option>
+                      <option value="units">units</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Barcode</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., 1234567890123"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
+                {/* Logistics & Valuation */}
+                <div className="p-6 bg-gray-900 rounded-[2rem] shadow-xl relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl" />
+                   <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-[9px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                        <DollarSign className="w-3 h-3" />
+                        Valuation
+                      </h4>
+                      <p className="text-xl font-black text-white">$0.00</p>
+                   </div>
+                   <input type="number" step="0.01" placeholder="Procurement Price" className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-xl focus:border-indigo-500 transition-all font-bold text-white text-xs outline-none" />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    <option value="">Select category...</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="food">Food & Beverage</option>
-                    <option value="furniture">Furniture</option>
-                    <option value="supplies">Supplies</option>
-                  </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Primary Vendor</label>
+                    <input type="text" placeholder="Node Supplier" className="w-full px-4 py-3 bg-white border-2 border-gray-100 rounded-xl focus:border-indigo-500 text-xs font-bold text-gray-900 outline-none" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Shelf Location</label>
+                    <input type="text" placeholder="Zone-X / Shelf-Y" className="w-full px-4 py-3 bg-white border-2 border-gray-100 rounded-xl focus:border-indigo-500 text-xs font-bold text-gray-900 outline-none" />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Unit</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    <option value="pcs">Pieces</option>
-                    <option value="kg">Kilograms</option>
-                    <option value="lbs">Pounds</option>
-                    <option value="boxes">Boxes</option>
-                    <option value="units">Units</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Min Stock Level</label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Stock Level</label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Reorder Point</label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Unit Price</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Supplier</label>
-                  <input
-                    type="text"
-                    placeholder="Supplier name"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Warehouse A - Shelf 12"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                  <textarea
-                    placeholder="Product description..."
-                    rows={3}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Min. Buffer</label>
+                    <input type="number" placeholder="5" className="w-full px-4 py-3 bg-white border-2 border-gray-100 rounded-xl focus:border-indigo-500 text-xs font-bold text-gray-900 outline-none" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Max. Capacity</label>
+                    <input type="number" placeholder="100" className="w-full px-4 py-3 bg-white border-2 border-gray-100 rounded-xl focus:border-indigo-500 text-xs font-bold text-gray-900 outline-none" />
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setShowAddItem(false)}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all"
-                >
-                  Cancel
-                </button>
-                <button className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all">
-                  Add Item
-                </button>
-              </div>
+            <div className="p-8 border-t-2 border-gray-50 flex items-center justify-end bg-white/50 backdrop-blur-xl">
+              <button
+                onClick={() => setShowAddItem(false)}
+                className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mr-6 cursor-pointer"
+              >
+                Abort
+              </button>
+              <button 
+                onClick={() => {
+                  showNotify('✓ New Asset Node Successfully Online');
+                  setShowAddItem(false);
+                }}
+                className="px-8 py-4 bg-gray-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-600 transition-all duration-500 cursor-pointer active:scale-95"
+              >
+                Finalize Registry
+              </button>
             </div>
           </div>
         </div>
@@ -1117,6 +1067,33 @@ export default function InventoryPage() {
           warningMessage="This will permanently remove this item from your inventory records."
         />
       )}
+      {/* Notifications */}
+      {notification && (
+        <div className="fixed bottom-8 right-8 z-[100] animate-in fade-in slide-in-from-right-8 duration-500">
+          <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${
+            notification.type === 'success' ? 'bg-emerald-500 border-emerald-400 text-white' : 'bg-indigo-600 border-indigo-500 text-white'
+          }`}>
+            {notification.type === 'success' ? <Check className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
+            <p className="text-xs font-black uppercase tracking-[0.2em]">{notification.message}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Scan Overlay */}
+      {showScanOverlay && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-500">
+          <div className="relative w-80 h-80">
+            <div className="absolute inset-0 border-4 border-white/20 rounded-[3rem]" />
+            <div className="absolute inset-10 border-2 border-indigo-500/50 rounded-[2rem] animate-pulse" />
+            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.8)] animate-scan-y" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+              <QrCode className="w-16 h-16 mb-4 animate-bounce" />
+              <p className="text-[10px] font-black uppercase tracking-[0.3em]">Initializing Bioscan...</p>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 }

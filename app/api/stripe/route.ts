@@ -1,70 +1,83 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16',
+  typescript: true,
+});
 
 // Create Stripe checkout session
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { priceId, customerId } = body;
-
-    if (!priceId) {
+    const session = await auth();
+    
+    if (!session?.user) {
       return NextResponse.json(
-        { error: 'Price ID is required' },
-        { status: 400 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userBusinessId = (session.user as any).businessId;
+    if (!userBusinessId) {
+        return NextResponse.json({ error: 'Business ID missing' }, { status: 400 });
+    }
 
-    // TODO: Initialize Stripe and create checkout session
-    // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-    // const session = await stripe.checkout.sessions.create({...});
+    const body = await request.json();
+    const { priceId, returnUrl } = body; 
+    // returnUrl is where to redirect after success/cancel
 
-    // Mock response for now
-    const mockSession = {
-      id: 'cs_test_' + Date.now(),
-      url: 'https://checkout.stripe.com/mock-session',
-      status: 'open',
-    };
+    // Fetch subscription to get stripeCustomerId
+    const subscription = await prisma.subscription.findUnique({
+      where: { businessId: userBusinessId },
+    });
 
-    return NextResponse.json(mockSession);
-  } catch (error) {
+    if (!subscription || !subscription.stripeCustomerId) {
+       return NextResponse.json(
+         { error: 'No subscription/customer found. Contact support.' },
+         { status: 400 }
+       );
+    }
+
+    // Determine mode: if connecting card for existing trial, use 'setup'
+    // If upgrading or new sub, use 'subscription'
+    const mode = 'subscription'; 
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      customer: subscription.stripeCustomerId,
+      mode: mode,
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId || process.env.STRIPE_PRICE_TIER_1, 
+          quantity: 1, // Logic for seats should be handled if dynamic
+        },
+      ],
+      success_url: `${returnUrl || process.env.NEXT_PUBLIC_APP_URL + '/dashboard'}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${returnUrl || process.env.NEXT_PUBLIC_APP_URL + '/dashboard'}?canceled=true`,
+      metadata: {
+        businessId: userBusinessId,
+      },
+    });
+
+    return NextResponse.json({ url: checkoutSession.url });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
     console.error('Stripe Checkout Error:', error);
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: error.message || 'Failed to create checkout session' },
       { status: 500 }
     );
   }
 }
 
-// Get subscription status
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const customerId = searchParams.get('customerId');
-
-    if (!customerId) {
-      return NextResponse.json(
-        { error: 'Customer ID is required' },
-        { status: 400 }
-      );
-    }
-
-    // TODO: Fetch from Stripe
-    const mockSubscription = {
-      id: 'sub_' + Date.now(),
-      status: 'active',
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      plan: {
-        amount: 1999,
-        currency: 'gbp',
-        interval: 'month',
-      },
-    };
-
-    return NextResponse.json(mockSubscription);
-  } catch (error) {
-    console.error('Stripe Subscription Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch subscription' },
-      { status: 500 }
-    );
-  }
+// Get subscription status - Handled by /api/billing/subscription now
+// Keeping this as a proxy or removing. 
+// Given the previous file handled it, we can remove GET or redirect logic.
+// But valid REST API might keep it. Let's return 404 or use it for specific stripe direct calls.
+export async function GET() {
+   return NextResponse.json({ message: 'Use /api/billing/subscription for status' });
 }

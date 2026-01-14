@@ -3,15 +3,14 @@
 import React, { useState } from 'react';
 import { 
   Shield, Bell, AlertTriangle, CheckCircle, Clock, Calendar,
-  FileText, Download, Upload, Plus, Search, Filter, Eye,
-  Edit3, Trash2, MoreVertical, X, Check, ChevronRight,
-  Scale, Gavel, BookOpen, ClipboardCheck, Award, Lock,
-  Users, Building2, Globe, DollarSign, TrendingUp, Target,
-  AlertCircle, XCircle, Zap, Star, Settings, Link, Share2,
-  Grid, List, Archive, RefreshCw, Mail, Phone, MapPin,
-  BarChart3, PieChart, Activity, Briefcase, FileCheck,
-  Layers, Database, Server, Cloud, Code, GitBranch,
-  Workflow, Boxes, Package, Cpu, HardDrive, Network
+  FileText, Download, Plus, Search, Filter, Eye,
+  Edit3, Trash2, X, MoreVertical, ChevronRight,
+  Scale, Gavel, ClipboardCheck, Award, Lock,
+  Users, Globe, DollarSign, TrendingUp, Target,
+  AlertCircle, XCircle, Link, Share2,
+  Grid, List,
+  BarChart3, PieChart, Activity, FileCheck,
+  Server, Workflow
 } from 'lucide-react';
 
 interface ComplianceItem {
@@ -41,7 +40,7 @@ interface ComplianceFramework {
   id: string;
   name: string;
   description: string;
-  icon: any;
+  icon: React.ElementType;
   color: string;
   gradient: string;
   requirements: number;
@@ -57,16 +56,15 @@ interface RiskMetric {
   value: number;
   trend: 'up' | 'down' | 'stable';
   severity: 'low' | 'medium' | 'high' | 'critical';
-  icon: any;
+  icon: React.ElementType;
 }
 
 interface AuditLog {
-  id: string;
   action: string;
-  user: string;
-  timestamp: Date;
   item: string;
-  details: string;
+  user: string;
+  time: string;
+  type: 'success' | 'info' | 'error' | 'warning';
 }
 
 const frameworks: ComplianceFramework[] = [
@@ -188,6 +186,17 @@ const categories = [
   { id: 'security', name: 'Security', icon: Shield, count: 5 },
   { id: 'operational', name: 'Operational', icon: Workflow, count: 4 },
   { id: 'environmental', name: 'Environmental', icon: Globe, count: 3 },
+];
+
+const auditLogs: AuditLog[] = [
+  { action: 'Completed', item: 'GDPR Data Protection Assessment', user: 'Sarah Johnson', time: '2 hours ago', type: 'success' },
+  { action: 'Updated', item: 'ISO 27001 Security Audit', user: 'Mike Chen', time: '5 hours ago', type: 'info' },
+  { action: 'Overdue', item: 'Quarterly VAT Return', user: 'System', time: '1 day ago', type: 'error' },
+  { action: 'Created', item: 'Environmental Impact Assessment', user: 'Emma Wilson', time: '2 days ago', type: 'success' },
+  { action: 'Reviewed', item: 'Data Breach Response Plan', user: 'David Lee', time: '3 days ago', type: 'info' },
+  { action: 'Assigned', item: 'Employee Background Checks', user: 'HR Team', time: '4 days ago', type: 'info' },
+  { action: 'Certified', item: 'ISO 9001 Quality Management', user: 'BSI Auditor', time: '1 week ago', type: 'success' },
+  { action: 'Risk Alert', item: 'PCI DSS Compliance Scan', user: 'Security System', time: '1 week ago', type: 'warning' }
 ];
 
 export default function CompliancePage() {
@@ -364,6 +373,7 @@ export default function CompliancePage() {
   const [editingItem, setEditingItem] = useState<ComplianceItem | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [sharingItem, setSharingItem] = useState<ComplianceItem | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -425,7 +435,8 @@ export default function CompliancePage() {
   const handleDuplicate = (item: ComplianceItem) => {
     const newItem = {
       ...item,
-      id: `${Date.now()}`,
+      // eslint-disable-next-line
+      id: Math.random().toString(36).substr(2, 9),
       title: `${item.title} (Copy)`,
     };
     setItems([...items, newItem]);
@@ -588,40 +599,55 @@ export default function CompliancePage() {
   };
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl shadow-lg">
-              <Shield className="w-10 h-10 text-white" />
+    <div className="min-h-screen bg-gray-50/50 p-6 pb-24 space-y-8 font-sans text-gray-900">
+      {/* Premium Header */}
+      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-100 p-6 rounded-[2rem] shadow-sm sticky top-4 z-40 transition-all duration-300">
+         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+               <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-blue-500/20 rounded-2xl blur-lg transition-all duration-300 group-hover:bg-blue-500/30"></div>
+                  <div className="relative p-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg border border-white/20 group-hover:scale-105 transition-transform duration-300 ring-4 ring-blue-50/50">
+                     <Shield className="w-8 h-8 text-white" />
+                  </div>
+               </div>
+               <div>
+                  <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                     Compliance <span className="text-gray-300 font-light">|</span> <span className="text-blue-600">Center</span>
+                  </h1>
+                  <p className="text-sm font-medium text-gray-500 mt-1 flex items-center gap-2">
+                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                     Regulatory Assurance System Active
+                  </p>
+               </div>
             </div>
-            Compliance Management
-          </h1>
-          <p className="text-gray-600 mt-2 text-lg">Enterprise regulatory compliance & risk management</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="px-5 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
-            <Bell className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Alerts</span>
-            <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">3</span>
-          </button>
-          <button className="px-5 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
-            <Download className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Export</span>
-          </button>
-          <button
-            onClick={() => setShowAddItem(true)}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-2xl transition-all flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Add Compliance Item
-          </button>
-        </div>
+
+            <div className="flex items-center gap-3">
+               <button className="h-12 w-12 flex items-center justify-center bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group relative cursor-pointer">
+                  <Bell className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                  <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+               </button>
+               
+               <button 
+                  onClick={() => setShowExportModal(true)}
+                  className="h-12 px-5 flex items-center gap-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm font-bold text-sm text-gray-600 cursor-pointer"
+               >
+                  <Download className="w-4 h-4" />
+                  <span>Export Report</span>
+               </button>
+
+               <button
+                  onClick={() => setShowAddItem(true)}
+                  className="h-12 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 font-bold text-sm flex items-center gap-2 cursor-pointer"
+               >
+                  <Plus className="w-5 h-5" />
+                  <span>New Compliance Item</span>
+               </button>
+            </div>
+         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white rounded-2xl border-2 border-gray-200 p-2 shadow-sm">
+      <div className="bg-white/60 backdrop-blur-md rounded-[20px] p-2 border border-gray-100 flex items-center justify-between gap-2 overflow-x-auto shadow-sm sticky top-32 z-30">
         <div className="flex items-center gap-2">
           {[
             { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -634,15 +660,18 @@ export default function CompliancePage() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all ${
+                onClick={() => setActiveTab(tab.id as 'overview' | 'items' | 'frameworks' | 'risks' | 'audits')}
+                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 relative overflow-hidden group cursor-pointer whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? 'bg-gray-900 text-white shadow-lg scale-100'
+                    : 'text-gray-500 hover:bg-white hover:text-gray-900 hover:shadow-md'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                {tab.label}
+                <Icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-blue-400' : 'text-gray-400 group-hover:text-blue-500'} transition-colors`} />
+                <span>{tab.label}</span>
+                {activeTab === tab.id && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl"></div>
+                )}
               </button>
             );
           })}
@@ -655,179 +684,199 @@ export default function CompliancePage() {
           {/* Key Metrics Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Compliance Score */}
-            <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <Shield className="w-8 h-8" />
-                </div>
-                <TrendingUp className="w-6 h-6 opacity-70" />
-              </div>
-              <p className="text-sm opacity-90 mb-1">Compliance Score</p>
-              <p className="text-5xl font-bold mb-2">{complianceRate}%</p>
-              <div className="flex items-center gap-2 text-sm">
-                <div className="flex items-center gap-1 bg-white bg-opacity-20 px-2 py-1 rounded-lg">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>+5.2%</span>
-                </div>
-                <span className="opacity-80">vs last month</span>
-              </div>
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-[2rem] p-6 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden group">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl transform translate-x-10 -translate-y-10"></div>
+               <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-8">
+                     <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/10 group-hover:scale-110 transition-transform duration-500">
+                        <Shield className="w-6 h-6 text-white" />
+                     </div>
+                     <span className="flex items-center gap-1 text-xs font-bold bg-white/20 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/10">
+                        <TrendingUp className="w-3 h-3" />
+                        +5.2%
+                     </span>
+                  </div>
+                  <div>
+                     <p className="text-sm font-medium text-blue-100 mb-1 tracking-wide">Compliance Score</p>
+                     <h3 className="text-4xl font-black text-white tracking-tight">{complianceRate}%</h3>
+                  </div>
+               </div>
             </div>
 
             {/* Total Frameworks */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-sm hover:shadow-xl transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl">
-                  <Award className="w-8 h-8 text-white" />
-                </div>
-                <ChevronRight className="w-6 h-6 text-gray-400" />
-              </div>
-              <p className="text-sm text-gray-600 mb-1">Active Frameworks</p>
-              <p className="text-5xl font-bold text-gray-900 mb-2">{frameworks.length}</p>
-              <p className="text-sm text-green-600 font-medium">
-                {frameworks.filter(f => (f.compliant / f.requirements) === 1).length} fully compliant
-              </p>
+            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+               <div className="flex items-center justify-between mb-8">
+                  <div className="p-3 bg-purple-50 rounded-2xl group-hover:bg-purple-100 transition-colors duration-300">
+                     <Award className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-purple-500 transition-colors" />
+               </div>
+               <div>
+                  <p className="text-sm font-bold text-gray-500 mb-1 tracking-wide uppercase text-[10px]">Active Frameworks</p>
+                  <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-2">{frameworks.length}</h3>
+                  <p className="text-xs font-medium text-green-600 bg-green-50 inline-block px-2 py-1 rounded-lg">
+                     {frameworks.filter(f => (f.compliant / f.requirements) === 1).length} fully compliant
+                  </p>
+               </div>
             </div>
 
             {/* Risk Level */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-sm hover:shadow-xl transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl">
-                  <AlertTriangle className="w-8 h-8 text-white" />
-                </div>
-                <Activity className="w-6 h-6 text-gray-400" />
-              </div>
-              <p className="text-sm text-gray-600 mb-1">Avg Risk Level</p>
-              <p className="text-5xl font-bold text-gray-900 mb-2">{avgRiskLevel.toFixed(0)}</p>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
-                  style={{ width: `${avgRiskLevel}%` }}
-                />
-              </div>
+            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+               <div className="flex items-center justify-between mb-8">
+                  <div className="p-3 bg-red-50 rounded-2xl group-hover:bg-red-100 transition-colors duration-300">
+                     <AlertTriangle className="w-6 h-6 text-red-500" />
+                  </div>
+                  <Activity className="w-5 h-5 text-gray-300 group-hover:text-red-500 transition-colors" />
+               </div>
+               <div>
+                  <p className="text-sm font-bold text-gray-500 mb-1 tracking-wide uppercase text-[10px]">Avg Risk Level</p>
+                  <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-3">{avgRiskLevel.toFixed(0)}</h3>
+                  <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                     <div
+                        className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
+                        style={{ width: `${avgRiskLevel}%` }}
+                     />
+                  </div>
+               </div>
             </div>
 
             {/* Compliance Cost */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-sm hover:shadow-xl transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl">
-                  <DollarSign className="w-8 h-8 text-white" />
-                </div>
-                <TrendingUp className="w-6 h-6 text-green-500" />
-              </div>
-              <p className="text-sm text-gray-600 mb-1">Annual Cost</p>
-              <p className="text-5xl font-bold text-gray-900 mb-2">${(totalCost / 1000).toFixed(0)}K</p>
-              <p className="text-sm text-gray-600">
-                ${(totalCost / items.length / 1000).toFixed(1)}K per item
-              </p>
+            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+               <div className="flex items-center justify-between mb-8">
+                  <div className="p-3 bg-emerald-50 rounded-2xl group-hover:bg-emerald-100 transition-colors duration-300">
+                     <DollarSign className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <TrendingUp className="w-5 h-5 text-gray-300 group-hover:text-emerald-500 transition-colors" />
+               </div>
+               <div>
+                  <p className="text-sm font-bold text-gray-500 mb-1 tracking-wide uppercase text-[10px]">Annual Cost</p>
+                  <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-2">${(totalCost / 1000).toFixed(0)}K</h3>
+                  <p className="text-xs text-gray-400 font-medium">
+                     ${(totalCost / items.length / 1000).toFixed(1)}K per item
+                  </p>
+               </div>
             </div>
           </div>
 
           {/* Status Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200 hover:shadow-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-green-500 rounded-lg shadow-md">
-                  <CheckCircle className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-green-900">{stats.compliant}</p>
-                  <p className="text-xs text-green-600 font-medium">Compliant</p>
-                </div>
-              </div>
-              <div className="w-full bg-green-200 rounded-full h-2">
-                <div
-                  className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: `${(stats.compliant / stats.total) * 100}%` }}
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+               <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className="p-3 bg-green-50 rounded-2xl group-hover:bg-green-100 transition-colors">
+                     <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="text-right">
+                     <p className="text-4xl font-black text-gray-900 tracking-tight">{stats.compliant}</p>
+                     <p className="text-xs font-bold text-green-600 uppercase tracking-widest mt-1">Compliant</p>
+                  </div>
+               </div>
+               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                  <div
+                     className="h-full bg-green-500 rounded-full transition-all duration-500 group-hover:shadow-[0_0_10px_rgba(34,197,94,0.5)]"
+                     style={{ width: `${(stats.compliant / stats.total) * 100}%` }}
+                  />
+               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200 hover:shadow-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-blue-500 rounded-lg shadow-md">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-blue-900">{stats.pending}</p>
-                  <p className="text-xs text-blue-600 font-medium">Pending</p>
-                </div>
-              </div>
-              <div className="w-full bg-blue-200 rounded-full h-2">
-                <div
-                  className="h-full bg-blue-500 rounded-full transition-all"
-                  style={{ width: `${(stats.pending / stats.total) * 100}%` }}
-                />
-              </div>
+            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+               <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className="p-3 bg-blue-50 rounded-2xl group-hover:bg-blue-100 transition-colors">
+                     <Clock className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="text-right">
+                     <p className="text-4xl font-black text-gray-900 tracking-tight">{stats.pending}</p>
+                     <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mt-1">Pending</p>
+                  </div>
+               </div>
+               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                  <div
+                     className="h-full bg-blue-500 rounded-full transition-all duration-500 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                     style={{ width: `${(stats.pending / stats.total) * 100}%` }}
+                  />
+               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-xl p-5 border-2 border-red-200 hover:shadow-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-red-500 rounded-lg shadow-md">
-                  <AlertTriangle className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-red-900">{stats.overdue}</p>
-                  <p className="text-xs text-red-600 font-medium">Overdue</p>
-                </div>
-              </div>
-              <div className="w-full bg-red-200 rounded-full h-2">
-                <div
-                  className="h-full bg-red-500 rounded-full transition-all"
-                  style={{ width: `${(stats.overdue / stats.total) * 100}%` }}
-                />
-              </div>
+            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+               <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className="p-3 bg-red-50 rounded-2xl group-hover:bg-red-100 transition-colors">
+                     <AlertTriangle className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div className="text-right">
+                     <p className="text-4xl font-black text-gray-900 tracking-tight">{stats.overdue}</p>
+                     <p className="text-xs font-bold text-red-600 uppercase tracking-widest mt-1">Overdue</p>
+                  </div>
+               </div>
+               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                  <div
+                     className="h-full bg-red-500 rounded-full transition-all duration-500 group-hover:shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+                     style={{ width: `${(stats.overdue / stats.total) * 100}%` }}
+                  />
+               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-5 border-2 border-orange-200 hover:shadow-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-orange-500 rounded-lg shadow-md">
-                  <AlertCircle className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-orange-900">{stats.atRisk}</p>
-                  <p className="text-xs text-orange-600 font-medium">At Risk</p>
-                </div>
-              </div>
-              <div className="w-full bg-orange-200 rounded-full h-2">
-                <div
-                  className="h-full bg-orange-500 rounded-full transition-all"
-                  style={{ width: `${(stats.atRisk / stats.total) * 100}%` }}
-                />
-              </div>
+            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+               <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className="p-3 bg-orange-50 rounded-2xl group-hover:bg-orange-100 transition-colors">
+                     <AlertCircle className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="text-right">
+                     <p className="text-4xl font-black text-gray-900 tracking-tight">{stats.atRisk}</p>
+                     <p className="text-xs font-bold text-orange-600 uppercase tracking-widest mt-1">At Risk</p>
+                  </div>
+               </div>
+               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                  <div
+                     className="h-full bg-orange-500 rounded-full transition-all duration-500 group-hover:shadow-[0_0_10px_rgba(249,115,22,0.5)]"
+                     style={{ width: `${(stats.atRisk / stats.total) * 100}%` }}
+                  />
+               </div>
             </div>
           </div>
 
           {/* Risk Metrics */}
-          <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center gap-2">
-              <Activity className="w-6 h-6 text-purple-600" />
-              Risk Metrics & Indicators
+          <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
+            <h3 className="font-black text-xl text-gray-900 mb-8 flex items-center gap-2">
+               <div className="p-2 bg-purple-50 rounded-xl">
+                  <Activity className="w-5 h-5 text-purple-600" />
+               </div>
+               Risk Metrics & Indicators
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {riskMetrics.map((metric) => {
                 const Icon = metric.icon;
                 const severityColors = {
-                  low: 'from-green-500 to-emerald-500',
-                  medium: 'from-yellow-500 to-orange-500',
-                  high: 'from-orange-500 to-red-500',
-                  critical: 'from-red-500 to-rose-500'
+                  low: 'bg-green-50 text-green-600 border-green-100',
+                  medium: 'bg-yellow-50 text-yellow-600 border-yellow-100',
+                  high: 'bg-orange-50 text-orange-600 border-orange-100',
+                  critical: 'bg-red-50 text-red-600 border-red-100'
                 };
                 
                 return (
-                  <div key={metric.id} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-lg transition-all">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className={`p-2 rounded-lg bg-gradient-to-br ${severityColors[metric.severity]}`}>
-                        <Icon className="w-5 h-5 text-white" />
+                  <div key={metric.id} className="p-6 bg-white rounded-[2rem] border border-gray-100 hover:border-blue-100 hover:shadow-xl transition-all group cursor-pointer">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`p-3 rounded-2xl ${severityColors[metric.severity]} border`}>
+                        <Icon className="w-5 h-5" />
                       </div>
-                      <div className="flex items-center gap-1">
-                        {metric.trend === 'up' && <TrendingUp className="w-4 h-4 text-red-500" />}
-                        {metric.trend === 'down' && <TrendingUp className="w-4 h-4 text-green-500 rotate-180" />}
-                        {metric.trend === 'stable' && <Activity className="w-4 h-4 text-gray-500" />}
+                      <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg">
+                        {metric.trend === 'up' && <TrendingUp className="w-3 h-3 text-red-500" />}
+                        {metric.trend === 'down' && <TrendingUp className="w-3 h-3 text-green-500 rotate-180" />}
+                        {metric.trend === 'stable' && <Activity className="w-3 h-3 text-gray-400" />}
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 mb-1">{metric.name}</p>
-                    <p className="text-3xl font-bold text-gray-900">{metric.value}</p>
-                    <p className="text-xs text-gray-500 mt-1 capitalize">{metric.severity} severity</p>
+                    <p className="text-sm font-bold text-gray-500 mb-1">{metric.name}</p>
+                    <p className="text-3xl font-black text-gray-900 mb-2">{metric.value}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                     <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
+                        metric.severity === 'critical' ? 'bg-red-500' :
+                        metric.severity === 'high' ? 'bg-orange-500' :
+                        metric.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                     }`}></span>
+                     {metric.severity} severity
+                    </p>
                   </div>
                 );
               })}
@@ -959,7 +1008,7 @@ export default function CompliancePage() {
           {/* Items Grid/List */}
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredItems.map((item) => {
+               {filteredItems.map((item) => {
                 const statusConfig = getStatusConfig(item.status);
                 const priorityConfig = getPriorityConfig(item.priority);
                 const StatusIcon = statusConfig.icon;
@@ -968,205 +1017,208 @@ export default function CompliancePage() {
                 return (
                   <div
                     key={item.id}
-                    className="group relative bg-white rounded-2xl border-2 border-gray-200 p-6 hover:border-blue-300 hover:shadow-2xl transition-all cursor-pointer"
+                    className="group relative bg-white rounded-[2.5rem] border border-gray-100 p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
                     onClick={() => setSelectedItem(item)}
                   >
+                     <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
                     {/* Priority Badge */}
-                    <div className={`absolute top-4 right-4 px-3 py-1 rounded-lg text-xs font-bold ${priorityConfig.bg} ${priorityConfig.text} shadow-sm`}>
+                    <div className={`absolute top-6 right-6 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${priorityConfig.bg} ${priorityConfig.text} shadow-sm z-10`}>
                       {priorityConfig.label}
                     </div>
 
                     {/* Framework Badge */}
                     {item.framework && (
-                      <div className="absolute top-4 left-4 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold shadow-sm">
+                      <div className="absolute top-6 left-6 px-4 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm z-10 flex items-center gap-1.5">
+                        <Shield className="w-3 h-3" />
                         {item.framework}
                       </div>
                     )}
 
                     {/* Status Icon */}
-                    <div className={`w-16 h-16 rounded-xl flex items-center justify-center mb-4 mt-8 ${statusConfig.bg} border-2 ${statusConfig.border} group-hover:scale-110 transition-transform shadow-md`}>
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mt-10 ${statusConfig.bg} border ${statusConfig.border} group-hover:scale-110 transition-transform duration-300 shadow-lg relative z-10`}>
                       <StatusIcon className={`w-8 h-8 ${statusConfig.text}`} />
                     </div>
 
                     {/* Item Info */}
-                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
-                      {item.title}
-                    </h3>
-                    
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.description}</p>
-
-                    {/* Risk Level */}
-                    {item.riskLevel && (
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-gray-600 font-medium">Risk Level</span>
-                          <span className="font-bold text-gray-900">{item.riskLevel}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-full rounded-full transition-all ${
-                              item.riskLevel > 70 ? 'bg-red-500' :
-                              item.riskLevel > 50 ? 'bg-orange-500' :
-                              item.riskLevel > 30 ? 'bg-yellow-500' : 'bg-green-500'
-                            }`}
-                            style={{ width: `${item.riskLevel}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Due Date */}
-                    <div className={`flex items-center gap-2 mb-3 p-2 rounded-lg ${
-                      isOverdue ? 'bg-red-50 border border-red-200' : 'bg-gray-50 border border-gray-200'
-                    }`}>
-                      <Calendar className={`w-4 h-4 ${isOverdue ? 'text-red-600' : 'text-gray-600'}`} />
-                      <span className={`text-sm font-medium ${isOverdue ? 'text-red-700' : 'text-gray-700'}`}>
-                        Due: {item.dueDate.toLocaleDateString()}
-                      </span>
-                    </div>
-
-                    {/* Assigned To */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <Users className="w-4 h-4 text-gray-600" />
-                      <span className="text-sm text-gray-700 font-medium">{item.assignedTo}</span>
-                    </div>
-
-                    {/* Cost */}
-                    {item.cost && (
-                      <div className="flex items-center gap-2 mb-4">
-                        <DollarSign className="w-4 h-4 text-green-600" />
-                        <span className="text-sm text-gray-700 font-medium">${item.cost.toLocaleString()}</span>
-                      </div>
-                    )}
-
-                    {/* Status */}
-                    <div className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold mb-4 ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border} shadow-sm`}>
-                      <StatusIcon className="w-3 h-3" />
-                      {statusConfig.label}
-                    </div>
-
-                    {/* Documents Count & Actions */}
-                    <div className="flex items-center justify-between text-xs text-gray-600 pt-4 border-t border-gray-200">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1">
-                          <FileText className="w-3 h-3" />
-                          <span>{item.documents.length} docs</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <ClipboardCheck className="w-3 h-3" />
-                          <span>{item.requirements.length} reqs</span>
-                        </div>
-                      </div>
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenu
-                          id={`grid-item-${item.id}`}
-                          onEdit={() => handleEdit(item)}
-                          onDuplicate={() => handleDuplicate(item)}
-                          onExport={() => handleExport(item)}
-                          onShare={() => handleShare(item)}
-                          onDelete={() => handleDelete(item)}
-                        />
-                      </div>
+                    <div className="relative z-10">
+                       <h3 className="font-black text-xl text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 tracking-tight">
+                         {item.title}
+                       </h3>
+                       
+                       <p className="text-sm font-medium text-gray-500 mb-6 line-clamp-2 leading-relaxed">{item.description}</p>
+   
+                       {/* Risk Level */}
+                       {item.riskLevel && (
+                         <div className="mb-6 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group-hover:bg-white group-hover:border-blue-100 transition-colors">
+                           <div className="flex items-center justify-between text-xs mb-2">
+                             <span className="text-gray-500 font-bold uppercase tracking-wider">Risk Level</span>
+                             <span className="font-black text-gray-900">{item.riskLevel}%</span>
+                           </div>
+                           <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                             <div
+                               className={`h-full rounded-full transition-all duration-500 ${
+                                 item.riskLevel > 70 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' :
+                                 item.riskLevel > 50 ? 'bg-orange-500' :
+                                 item.riskLevel > 30 ? 'bg-yellow-500' : 'bg-green-500'
+                               }`}
+                               style={{ width: `${item.riskLevel}%` }}
+                             />
+                           </div>
+                         </div>
+                       )}
+   
+                       {/* Meta Grid */}
+                       <div className="grid grid-cols-2 gap-3 mb-6">
+                           <div className={`flex items-center gap-2 p-2.5 rounded-xl border transition-colors ${
+                              isOverdue ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100 group-hover:bg-white group-hover:border-gray-200'
+                           }`}>
+                              <Calendar className={`w-4 h-4 ${isOverdue ? 'text-red-600' : 'text-gray-400'}`} />
+                              <div className="flex flex-col">
+                                 <span className="text-[10px] uppercase font-bold text-gray-400 leading-none mb-0.5">Due Date</span>
+                                 <span className={`text-xs font-bold ${isOverdue ? 'text-red-700' : 'text-gray-700'}`}>
+                                    {item.dueDate.toLocaleDateString()}
+                                 </span>
+                              </div>
+                           </div>
+                           
+                           <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50 border border-gray-100 group-hover:bg-white group-hover:border-gray-200 transition-colors">
+                              <Users className="w-4 h-4 text-gray-400" />
+                              <div className="flex flex-col">
+                                 <span className="text-[10px] uppercase font-bold text-gray-400 leading-none mb-0.5">Assigned</span>
+                                 <span className="text-xs font-bold text-gray-700 truncate">{item.assignedTo}</span>
+                              </div>
+                           </div>
+                       </div>
+   
+                       {/* Footer Actions */}
+                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
+                             <StatusIcon className="w-3 h-3" />
+                             {statusConfig.label}
+                          </div>
+   
+                          <div onClick={(e) => e.stopPropagation()} className="opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
+                             <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow-lg p-1">
+                                <button onClick={() => handleEdit(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-blue-600 transition-colors tooltip" title="Edit">
+                                   <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button onClick={() => handleShare(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-green-600 transition-colors tooltip" title="Share">
+                                   <Share2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button onClick={() => handleDelete(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-red-600 transition-colors tooltip" title="Delete">
+                                   <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                             </div>
+                          </div>
+                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm">
-              <table className="w-full">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Item</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Priority</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Risk</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Due Date</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Assigned</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
+            <div className="space-y-4">
+               {/* List View Header */}
+               <div className="grid grid-cols-12 gap-4 px-8 py-3 bg-gray-100/50 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-widest border border-gray-200/50">
+                  <div className="col-span-4">Item Details</div>
+                  <div className="col-span-2">Priority</div>
+                  <div className="col-span-2">Risk Status</div>
+                  <div className="col-span-2">Due Date</div>
+                  <div className="col-span-1">Status</div>
+                  <div className="col-span-1 text-right">Actions</div>
+               </div>
+
+               {/* List Items */}
+               <div className="space-y-3">
                   {filteredItems.map((item) => {
-                    const statusConfig = getStatusConfig(item.status);
-                    const priorityConfig = getPriorityConfig(item.priority);
-                    const StatusIcon = statusConfig.icon;
-                    const isOverdue = item.status === 'overdue' || (item.dueDate < new Date() && item.status !== 'compliant');
-                    
-                    return (
-                      <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${statusConfig.bg} border ${statusConfig.border}`}>
-                              <StatusIcon className={`w-5 h-5 ${statusConfig.text}`} />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">{item.title}</p>
-                              <p className="text-xs text-gray-500">{item.category}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-lg text-xs font-bold ${priorityConfig.bg} ${priorityConfig.text}`}>
-                            {priorityConfig.label}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-16 bg-gray-200 rounded-full h-2">
-                              <div
-                                className={`h-full rounded-full ${
-                                  (item.riskLevel || 0) > 70 ? 'bg-red-500' :
-                                  (item.riskLevel || 0) > 50 ? 'bg-orange-500' :
-                                  (item.riskLevel || 0) > 30 ? 'bg-yellow-500' : 'bg-green-500'
-                                }`}
-                                style={{ width: `${item.riskLevel || 0}%` }}
-                              />
-                            </div>
-                            <span className="text-sm font-medium text-gray-700">{item.riskLevel || 0}%</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`text-sm font-medium ${isOverdue ? 'text-red-700' : 'text-gray-700'}`}>
-                            {item.dueDate.toLocaleDateString()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-gray-700">{item.assignedTo}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                            <StatusIcon className="w-3 h-3" />
-                            {statusConfig.label}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedItem(item);
-                              }}
-                              className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="View details"
-                            >
-                              <Eye className="w-4 h-4 text-blue-600" />
-                            </button>
-                            <DropdownMenu
-                              id={`item-${item.id}`}
-                              onEdit={() => handleEdit(item)}
-                              onDuplicate={() => handleDuplicate(item)}
-                              onExport={() => handleExport(item)}
-                              onShare={() => handleShare(item)}
-                              onDelete={() => handleDelete(item)}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    );
+                     const statusConfig = getStatusConfig(item.status);
+                     const priorityConfig = getPriorityConfig(item.priority);
+                     const StatusIcon = statusConfig.icon;
+                     const isOverdue = item.status === 'overdue' || (item.dueDate < new Date() && item.status !== 'compliant');
+                     
+                     return (
+                        <div 
+                           key={item.id} 
+                           onClick={() => setSelectedItem(item)}
+                           className="group grid grid-cols-12 gap-4 items-center bg-white p-5 rounded-[1.5rem] border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-x-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
+                        >
+                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                           
+                           <div className="col-span-4 relative z-10">
+                              <div className="flex items-center gap-4">
+                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${statusConfig.bg} border ${statusConfig.border} shadow-sm group-hover:scale-105 transition-transform`}>
+                                    <StatusIcon className={`w-6 h-6 ${statusConfig.text}`} />
+                                 </div>
+                                 <div>
+                                    <h4 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{item.title}</h4>
+                                    <div className="flex items-center gap-2 mt-1">
+                                       <span className="text-xs font-medium text-gray-500">{item.category}</span>
+                                       {item.framework && (
+                                          <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
+                                             {item.framework}
+                                          </span>
+                                       )}
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+
+                           <div className="col-span-2 relative z-10">
+                              <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${priorityConfig.bg} ${priorityConfig.text} shadow-sm`}>
+                                 {priorityConfig.label}
+                              </span>
+                           </div>
+
+                           <div className="col-span-2 relative z-10">
+                              <div className="flex flex-col gap-1.5">
+                                 <div className="flex items-center justify-between text-[10px] font-bold">
+                                    <span className="text-gray-500">Risk Level</span>
+                                    <span className={item.riskLevel && item.riskLevel > 50 ? 'text-red-600' : 'text-gray-900'}>{item.riskLevel || 0}%</span>
+                                 </div>
+                                 <div className="w-24 bg-gray-100 rounded-full h-1.5">
+                                    <div
+                                       className={`h-full rounded-full ${
+                                          (item.riskLevel || 0) > 70 ? 'bg-red-500' :
+                                          (item.riskLevel || 0) > 50 ? 'bg-orange-500' :
+                                          (item.riskLevel || 0) > 30 ? 'bg-yellow-500' : 'bg-green-500'
+                                       }`}
+                                       style={{ width: `${item.riskLevel || 0}%` }}
+                                    />
+                                 </div>
+                              </div>
+                           </div>
+
+                           <div className="col-span-2 relative z-10">
+                              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border w-fit ${isOverdue ? 'bg-red-50 border-red-100 text-red-700' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
+                                 <Calendar className="w-3.5 h-3.5" />
+                                 <span className="text-xs font-bold">{item.dueDate.toLocaleDateString()}</span>
+                              </div>
+                           </div>
+
+                           <div className="col-span-1 relative z-10">
+                              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
+                                 {statusConfig.icon === CheckCircle && <CheckCircle className="w-3 h-3" />}
+                                 {statusConfig.label}
+                              </div>
+                           </div>
+
+                           <div className="col-span-1 relative z-10 text-right">
+                              <div onClick={(e) => e.stopPropagation()} className="inline-block">
+                                 <DropdownMenu
+                                    id={`list-item-${item.id}`}
+                                    onEdit={() => handleEdit(item)}
+                                    onDuplicate={() => handleDuplicate(item)}
+                                    onExport={() => handleExport(item)}
+                                    onShare={() => handleShare(item)}
+                                    onDelete={() => handleDelete(item)}
+                                 />
+                              </div>
+                           </div>
+                        </div>
+                     );
                   })}
-                </tbody>
-              </table>
+               </div>
             </div>
           )}
         </div>
@@ -1409,16 +1461,7 @@ export default function CompliancePage() {
               Recent Audit Activities
             </h3>
             <div className="space-y-3">
-              {[
-                { action: 'Completed', item: 'GDPR Data Protection Assessment', user: 'Sarah Johnson', time: '2 hours ago', type: 'success' },
-                { action: 'Updated', item: 'ISO 27001 Security Audit', user: 'Mike Chen', time: '5 hours ago', type: 'info' },
-                { action: 'Overdue', item: 'Quarterly VAT Return', user: 'System', time: '1 day ago', type: 'error' },
-                { action: 'Created', item: 'Environmental Impact Assessment', user: 'Emma Wilson', time: '2 days ago', type: 'success' },
-                { action: 'Reviewed', item: 'Data Breach Response Plan', user: 'David Lee', time: '3 days ago', type: 'info' },
-                { action: 'Assigned', item: 'Employee Background Checks', user: 'HR Team', time: '4 days ago', type: 'info' },
-                { action: 'Certified', item: 'ISO 9001 Quality Management', user: 'BSI Auditor', time: '1 week ago', type: 'success' },
-                { action: 'Risk Alert', item: 'PCI DSS Compliance Scan', user: 'Security System', time: '1 week ago', type: 'warning' }
-              ].map((log, idx) => {
+              {auditLogs.map((log, idx) => {
                 const typeConfig = {
                   success: { bg: 'bg-green-50', border: 'border-green-200', icon: CheckCircle, iconColor: 'text-green-600' },
                   error: { bg: 'bg-red-50', border: 'border-red-200', icon: AlertTriangle, iconColor: 'text-red-600' },
@@ -1513,427 +1556,476 @@ export default function CompliancePage() {
         </div>
       )}
 
-      {/* Item Detail Modal */}
+      {/* Item Detail Modal - Compact & Centered */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-3xl">
-              <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${getStatusConfig(selectedItem.status).bg} border-2 ${getStatusConfig(selectedItem.status).border} shadow-md`}>
-                  {React.createElement(getStatusConfig(selectedItem.status).icon, { 
-                    className: `w-7 h-7 ${getStatusConfig(selectedItem.status).text}` 
-                  })}
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedItem.title}</h2>
-                  <p className="text-sm text-gray-600">{selectedItem.category} • {selectedItem.framework || 'General'}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
+         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden border border-gray-100">
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                  <div className="flex items-center gap-4">
+                     <div className={`p-4 rounded-2xl flex items-center justify-center ${getStatusConfig(selectedItem.status).bg} border-2 ${getStatusConfig(selectedItem.status).border} shadow-lg shadow-gray-200`}>
+                        {React.createElement(getStatusConfig(selectedItem.status).icon, { 
+                           className: `w-8 h-8 ${getStatusConfig(selectedItem.status).text}` 
+                        })}
+                     </div>
+                     <div>
+                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">{selectedItem.title}</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{selectedItem.category}</span>
+                           <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{selectedItem.framework || 'General'}</span>
+                        </div>
+                     </div>
+                  </div>
+                  <button onClick={() => setSelectedItem(null)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
+                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
+                  </button>
+               </div>
             
-            <div className="p-6 space-y-6">
-              {/* Status & Priority */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className={`p-5 rounded-xl border-2 ${getStatusConfig(selectedItem.status).bg} ${getStatusConfig(selectedItem.status).border} shadow-sm`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    {React.createElement(getStatusConfig(selectedItem.status).icon, { 
-                      className: `w-6 h-6 ${getStatusConfig(selectedItem.status).text}` 
-                    })}
-                    <span className={`text-sm font-medium ${getStatusConfig(selectedItem.status).text}`}>Status</span>
-                  </div>
-                  <p className={`text-3xl font-bold ${getStatusConfig(selectedItem.status).text}`}>
-                    {getStatusConfig(selectedItem.status).label}
-                  </p>
-                </div>
+               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/50">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                     <div className={`p-6 rounded-[2rem] border-2 ${getStatusConfig(selectedItem.status).bg} ${getStatusConfig(selectedItem.status).border} shadow-sm group hover:scale-[1.02] transition-transform`}>
+                        <div className="flex items-center gap-2 mb-3">
+                           {React.createElement(getStatusConfig(selectedItem.status).icon, { 
+                              className: `w-5 h-5 ${getStatusConfig(selectedItem.status).text}` 
+                           })}
+                           <span className={`text-xs font-black uppercase tracking-widest ${getStatusConfig(selectedItem.status).text}`}>Status</span>
+                        </div>
+                        <p className={`text-2xl font-black ${getStatusConfig(selectedItem.status).text}`}>
+                           {getStatusConfig(selectedItem.status).label}
+                        </p>
+                     </div>
 
-                <div className={`p-5 rounded-xl ${getPriorityConfig(selectedItem.priority).bg} shadow-sm`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className={`w-6 h-6 ${getPriorityConfig(selectedItem.priority).text}`} />
-                    <span className={`text-sm font-medium ${getPriorityConfig(selectedItem.priority).text}`}>Priority</span>
-                  </div>
-                  <p className={`text-3xl font-bold ${getPriorityConfig(selectedItem.priority).text}`}>
-                    {getPriorityConfig(selectedItem.priority).label}
-                  </p>
-                </div>
+                     <div className={`p-6 rounded-[2rem] ${getPriorityConfig(selectedItem.priority).bg} shadow-sm group hover:scale-[1.02] transition-transform`}>
+                        <div className="flex items-center gap-2 mb-3">
+                           <AlertTriangle className={`w-5 h-5 ${getPriorityConfig(selectedItem.priority).text}`} />
+                           <span className={`text-xs font-black uppercase tracking-widest ${getPriorityConfig(selectedItem.priority).text}`}>Priority</span>
+                        </div>
+                        <p className={`text-2xl font-black ${getPriorityConfig(selectedItem.priority).text}`}>
+                           {getPriorityConfig(selectedItem.priority).label}
+                        </p>
+                     </div>
 
-                {selectedItem.riskLevel && (
-                  <div className="p-5 rounded-xl bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 shadow-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Activity className="w-6 h-6 text-orange-700" />
-                      <span className="text-sm font-medium text-orange-700">Risk Level</span>
-                    </div>
-                    <p className="text-3xl font-bold text-orange-900 mb-2">{selectedItem.riskLevel}%</p>
-                    <div className="w-full bg-orange-200 rounded-full h-2">
-                      <div
-                        className="h-full bg-orange-500 rounded-full"
-                        style={{ width: `${selectedItem.riskLevel}%` }}
-                      />
-                    </div>
+                     {selectedItem.riskLevel && (
+                        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 shadow-sm group hover:scale-[1.02] transition-transform">
+                           <div className="flex items-center gap-2 mb-3">
+                              <Activity className="w-5 h-5 text-orange-600" />
+                              <span className="text-xs font-black uppercase tracking-widest text-orange-600">Risk Level</span>
+                           </div>
+                           <p className="text-2xl font-black text-orange-900 mb-2">{selectedItem.riskLevel}%</p>
+                           <div className="w-full bg-orange-200/50 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                 className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
+                                 style={{ width: `${selectedItem.riskLevel}%` }}
+                              />
+                           </div>
+                        </div>
+                     )}
                   </div>
-                )}
-              </div>
 
-              {/* Description */}
-              <div className="p-5 bg-gray-50 rounded-xl border border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" />
-                  Description
-                </h3>
-                <p className="text-gray-700 leading-relaxed">{selectedItem.description}</p>
-                {selectedItem.impact && (
-                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm font-semibold text-red-900">Impact: {selectedItem.impact}</p>
+                  <div className="space-y-6">
+                     <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+                           <FileText className="w-5 h-5 text-blue-500" />
+                           Compliance Details
+                        </h3>
+                        <p className="text-gray-600 leading-relaxed font-medium">{selectedItem.description}</p>
+                        {selectedItem.impact && (
+                           <div className="mt-4 p-4 bg-red-50/50 border border-red-100 rounded-2xl flex items-start gap-3">
+                              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                              <div>
+                                 <span className="text-xs font-black text-red-600 uppercase tracking-widest block mb-1">Impact Analysis</span>
+                                 <p className="text-sm font-medium text-red-800">{selectedItem.impact}</p>
+                              </div>
+                           </div>
+                        )}
+                     </div>
+
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm h-full">
+                           <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-widest">
+                              <Calendar className="w-4 h-4 text-purple-500" /> Key Dates
+                           </h3>
+                           <div className="space-y-3">
+                              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                 <span className="text-sm text-gray-500 font-medium">Due Date</span>
+                                 <span className="text-sm font-bold text-gray-900">{selectedItem.dueDate.toLocaleDateString()}</span>
+                              </div>
+                              {selectedItem.nextReview && (
+                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                    <span className="text-sm text-gray-500 font-medium">Next Review</span>
+                                    <span className="text-sm font-bold text-gray-900">{selectedItem.nextReview.toLocaleDateString()}</span>
+                                 </div>
+                              )}
+                              {selectedItem.lastAudit && (
+                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                    <span className="text-sm text-gray-500 font-medium">Last Audit</span>
+                                    <span className="text-sm font-bold text-gray-900">{selectedItem.lastAudit.toLocaleDateString()}</span>
+                                 </div>
+                              )}
+                           </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm h-full">
+                           <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-widest">
+                              <Users className="w-4 h-4 text-green-500" /> Responsibility
+                           </h3>
+                           <div className="space-y-3">
+                              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                 <span className="text-sm text-gray-500 font-medium">Assigned To</span>
+                                 <span className="text-sm font-bold text-gray-900">{selectedItem.assignedTo}</span>
+                              </div>
+                              {selectedItem.auditor && (
+                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                    <span className="text-sm text-gray-500 font-medium">Auditor</span>
+                                    <span className="text-sm font-bold text-gray-900">{selectedItem.auditor}</span>
+                                 </div>
+                              )}
+                              {selectedItem.jurisdiction && (
+                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                    <span className="text-sm text-gray-500 font-medium">Jurisdiction</span>
+                                    <span className="text-sm font-bold text-gray-900">{selectedItem.jurisdiction}</span>
+                                 </div>
+                              )}
+                           </div>
+                        </div>
+                     </div>
+
                   </div>
-                )}
-              </div>
+               </div>
 
-              {/* Key Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
-                    <Calendar className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <p className="text-xs text-blue-600 font-medium">Due Date</p>
-                      <p className="font-bold text-gray-900">{selectedItem.dueDate.toLocaleDateString()}</p>
-                    </div>
+               <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
+                   <button 
+                     onClick={() => {
+                        handleMarkComplete(selectedItem);
+                        setSelectedItem(null);
+                     }}
+                     className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                   >
+                     <CheckCircle className="w-4 h-4" />
+                     Mark Compliant
+                   </button>
+                   <button 
+                     onClick={() => {
+                        handleEdit(selectedItem);
+                        setSelectedItem(null);
+                     }}
+                     className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                   >
+                     <Edit3 className="w-4 h-4" />
+                     Edit Item
+                   </button>
+               </div>
+            </div>
+         </div>
+      )}
+
+      {/* Edit Modal - Compact & Centered */}
+      {showEditModal && editingItem && (
+         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden border border-gray-100">
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                  <div>
+                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        <Edit3 className="w-6 h-6 text-blue-600" />
+                        Edit Compliance Item
+                     </h2>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Update details for {editingItem.title}</p>
+                  </div>
+                  <button onClick={() => setShowEditModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
+                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
+                  </button>
+               </div>
+               
+               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/50">
+                  <div className="space-y-6">
+                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                        <div className="space-y-6">
+                           <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Item Title</label>
+                              <input 
+                                 type="text" 
+                                 value={editingItem.title} 
+                                 onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })} 
+                                 className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" 
+                              />
+                           </div>
+                           <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Description</label>
+                              <textarea 
+                                 value={editingItem.description} 
+                                 onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })} 
+                                 rows={3}
+                                 className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-blue-500 focus:outline-none transition-colors resize-none" 
+                              />
+                           </div>
+                           <div className="grid grid-cols-2 gap-6">
+                              <div>
+                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Category</label>
+                                 <select 
+                                    value={editingItem.category} 
+                                    onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })} 
+                                    className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                                 >
+                                    {categories.filter(c => c.id !== 'all').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                 </select>
+                              </div>
+                              <div>
+                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Status</label>
+                                 <select 
+                                    value={editingItem.status} 
+                                    onChange={(e) => setEditingItem({ ...editingItem, status: e.target.value as ComplianceItem['status'] })} 
+                                    className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                                 >
+                                    <option value="compliant">Compliant</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="overdue">Overdue</option>
+                                    <option value="at-risk">At Risk</option>
+                                    <option value="not-applicable">Not Applicable</option>
+                                 </select>
+                              </div>
+                           </div>
+                           <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Assigned To</label>
+                              <input 
+                                 type="text" 
+                                 value={editingItem.assignedTo} 
+                                 onChange={(e) => setEditingItem({ ...editingItem, assignedTo: e.target.value })} 
+                                 className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" 
+                              />
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
+                  <button onClick={() => setShowEditModal(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
+                  <button 
+                     onClick={() => {
+                        setItems(items.map(i => i.id === editingItem.id ? editingItem : i));
+                        setShowEditModal(false);
+                        setEditingItem(null);
+                        alert(`✓ Updated: ${editingItem.title}`);
+                     }} 
+                     className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
+                  >
+                     Save Changes
+                  </button>
+               </div>
+            </div>
+         </div>
+      )}
+
+      {/* Share Modal - Compact & Centered */}
+      {showShareModal && sharingItem && (
+         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl relative overflow-hidden border border-gray-100">
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                  <div>
+                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        <Share2 className="w-6 h-6 text-green-600" />
+                        Share Item
+                     </h2>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Collaborate with team</p>
+                  </div>
+                  <button onClick={() => setShowShareModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
+                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
+                  </button>
+               </div>
+               
+               <div className="p-8 space-y-6">
+                  <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+                     <p className="font-bold text-gray-900 mb-1">{sharingItem.title}</p>
+                     <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">{sharingItem.category}</p>
+                  </div>
+
+                  <div>
+                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Share with (Email)</label>
+                     <input 
+                        type="email" 
+                        placeholder="colleague@company.com" 
+                        className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-green-500 focus:outline-none transition-colors" 
+                     />
                   </div>
                   
-                  <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl border border-purple-200">
-                    <Users className="w-6 h-6 text-purple-600" />
-                    <div>
-                      <p className="text-xs text-purple-600 font-medium">Assigned To</p>
-                      <p className="font-bold text-gray-900">{selectedItem.assignedTo}</p>
-                    </div>
+                  <div>
+                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Message</label>
+                     <textarea 
+                        placeholder="Add a message..." 
+                        rows={3}
+                        className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-green-500 focus:outline-none transition-colors resize-none" 
+                     />
                   </div>
 
-                  {selectedItem.cost && (
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl border border-green-200">
-                      <DollarSign className="w-6 h-6 text-green-600" />
-                      <div>
-                        <p className="text-xs text-green-600 font-medium">Estimated Cost</p>
-                        <p className="font-bold text-gray-900">${selectedItem.cost.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-4">
-                  {selectedItem.jurisdiction && (
-                    <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-200">
-                      <Globe className="w-6 h-6 text-indigo-600" />
-                      <div>
-                        <p className="text-xs text-indigo-600 font-medium">Jurisdiction</p>
-                        <p className="font-bold text-gray-900">{selectedItem.jurisdiction}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-xl border border-orange-200">
-                    <RefreshCw className="w-6 h-6 text-orange-600" />
-                    <div>
-                      <p className="text-xs text-orange-600 font-medium">Frequency</p>
-                      <p className="font-bold text-gray-900 capitalize">{selectedItem.frequency.replace('-', ' ')}</p>
-                    </div>
+                  <div className="space-y-3">
+                     <label className="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" defaultChecked className="w-5 h-5 text-green-600 rounded-lg border-2 border-gray-200 focus:ring-green-500 cursor-pointer" />
+                        <span className="text-sm font-bold text-gray-700 group-hover:text-green-700 transition-colors">Allow editing</span>
+                     </label>
+                     <label className="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" defaultChecked className="w-5 h-5 text-green-600 rounded-lg border-2 border-gray-200 focus:ring-green-500 cursor-pointer" />
+                        <span className="text-sm font-bold text-gray-700 group-hover:text-green-700 transition-colors">Send notification</span>
+                     </label>
                   </div>
 
-                  {selectedItem.nextReview && (
-                    <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-xl border border-cyan-200">
-                      <Clock className="w-6 h-6 text-cyan-600" />
-                      <div>
-                        <p className="text-xs text-cyan-600 font-medium">Next Review</p>
-                        <p className="font-bold text-gray-900">{selectedItem.nextReview.toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Audit Information */}
-              {(selectedItem.lastAudit || selectedItem.auditor) && (
-                <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200">
-                  <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <FileCheck className="w-5 h-5 text-purple-600" />
-                    Audit Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {selectedItem.lastAudit && (
-                      <div>
-                        <p className="text-xs text-purple-600 font-medium mb-1">Last Audit</p>
-                        <p className="font-semibold text-gray-900">{selectedItem.lastAudit.toLocaleDateString()}</p>
-                      </div>
-                    )}
-                    {selectedItem.auditor && (
-                      <div>
-                        <p className="text-xs text-purple-600 font-medium mb-1">Auditor</p>
-                        <p className="font-semibold text-gray-900">{selectedItem.auditor}</p>
-                      </div>
-                    )}
+                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                     <button 
+                        onClick={() => {
+                           setShowShareModal(false);
+                           setSharingItem(null);
+                           alert(`✓ Shared: ${sharingItem.title}`);
+                        }} 
+                        className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-600/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                     >
+                        <Share2 className="w-5 h-5" />
+                        Share Now
+                     </button>
+                     <button 
+                        onClick={() => {
+                           navigator.clipboard.writeText(`${window.location.origin}/compliance/${sharingItem.id}`);
+                           alert('✓ Link copied!');
+                        }} 
+                        className="px-6 py-3 border-2 border-gray-100 hover:border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
+                     >
+                        <Link className="w-5 h-5" />
+                        Copy Link
+                     </button>
                   </div>
-                </div>
-              )}
-
-              {/* Requirements */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <ClipboardCheck className="w-5 h-5 text-blue-600" />
-                  Requirements Checklist
-                </h3>
-                <div className="space-y-2">
-                  {selectedItem.requirements.map((req, idx) => (
-                    <div key={idx} className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-200 hover:bg-blue-100 transition-colors">
-                      <div className="p-1 bg-blue-500 rounded-md mt-0.5">
-                        <Check className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-sm text-blue-900 font-medium flex-1">{req}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Documents */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-green-600" />
-                  Required Documents
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {selectedItem.documents.map((doc, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200 hover:bg-green-100 transition-colors cursor-pointer group">
-                      <div className="p-2 bg-green-500 rounded-lg">
-                        <FileText className="w-5 h-5 text-white" />
-                      </div>
-                      <span className="text-sm text-green-900 font-medium flex-1">{doc}</span>
-                      <Download className="w-5 h-5 text-green-600 group-hover:scale-110 transition-transform" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-4 border-t-2 border-gray-200">
-                <button 
-                  onClick={() => handleEdit(selectedItem)}
-                  className="flex-1 px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2"
-                >
-                  <Edit3 className="w-5 h-5" />
-                  Edit Item
-                </button>
-                <button 
-                  onClick={() => handleMarkComplete(selectedItem)}
-                  className="flex-1 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2"
-                >
-                  <CheckCircle className="w-5 h-5" />
-                  Mark Complete
-                </button>
-                <button 
-                  onClick={() => handleExport(selectedItem)}
-                  className="px-6 py-4 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2"
-                >
-                  <Download className="w-5 h-5" />
-                  Export
-                </button>
-              </div>
+               </div>
             </div>
-          </div>
-        </div>
+         </div>
       )}
 
-      {/* Edit Modal */}
-      {showEditModal && editingItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-3xl">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                <Edit3 className="w-6 h-6 text-blue-600" />
-                Edit Compliance Item
-              </h2>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingItem(null);
-                }}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
+      {/* Add Item Modal - Compact & Centered */}
+      {showAddItem && (
+         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden border border-gray-100">
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                  <div>
+                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        <Plus className="w-6 h-6 text-blue-600" />
+                        New Compliance Item
+                     </h2>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Add item to regulatory tracking</p>
+                  </div>
+                  <button onClick={() => setShowAddItem(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
+                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
+                  </button>
+               </div>
+               
+               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/50">
+                  <div className="space-y-6">
+                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                        <div className="space-y-6">
+                           <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Item Title</label>
+                              <input type="text" className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" placeholder="e.g. Annual Audit" />
+                           </div>
+                           <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Description</label>
+                              <textarea rows={3} className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-blue-500 focus:outline-none transition-colors resize-none" placeholder="Enter details..." />
+                           </div>
+                           <div className="grid grid-cols-2 gap-6">
+                              <div>
+                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Category</label>
+                                 <select className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
+                                    {categories.filter(c => c.id !== 'all').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                 </select>
+                              </div>
+                              <div>
+                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Priority</label>
+                                 <select className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                 </select>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
+                  <button onClick={() => setShowAddItem(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
+                  <button onClick={() => { alert('Added Successfully'); setShowAddItem(false); }} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer">
+                     Create Item
+                  </button>
+               </div>
             </div>
-            
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
-                <input
-                  type="text"
-                  value={editingItem.title}
-                  onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                <textarea
-                  value={editingItem.description}
-                  onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Priority</label>
-                  <select
-                    value={editingItem.priority}
-                    onChange={(e) => setEditingItem({ ...editingItem, priority: e.target.value as any })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                  <select
-                    value={editingItem.status}
-                    onChange={(e) => setEditingItem({ ...editingItem, status: e.target.value as any })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="compliant">Compliant</option>
-                    <option value="pending">Pending</option>
-                    <option value="overdue">Overdue</option>
-                    <option value="at-risk">At Risk</option>
-                    <option value="not-applicable">Not Applicable</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Assigned To</label>
-                <input
-                  type="text"
-                  value={editingItem.assignedTo}
-                  onChange={(e) => setEditingItem({ ...editingItem, assignedTo: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    setItems(items.map(i => i.id === editingItem.id ? editingItem : i));
-                    setShowEditModal(false);
-                    setEditingItem(null);
-                    alert(`✓ Updated: ${editingItem.title}`);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all"
-                >
-                  Save Changes
-                </button>
-                <button
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditingItem(null);
-                  }}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+         </div>
       )}
+      
+      {/* Export Report Modal */}
+      {showExportModal && (
+         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl relative overflow-hidden border border-gray-100">
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                  <div>
+                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        <Download className="w-6 h-6 text-indigo-600" />
+                        Export Report
+                     </h2>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Generate compliance documentation</p>
+                  </div>
+                  <button onClick={() => setShowExportModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
+                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
+                  </button>
+               </div>
+               
+               <div className="p-8 space-y-6">
+                  {/* Format Selection */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Report Format</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {['PDF', 'Excel', 'CSV'].map((format) => (
+                        <button key={format} className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${format === 'PDF' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-600'}`}>
+                          <div className="text-center font-bold text-lg">{format}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-      {/* Share Modal */}
-      {showShareModal && sharingItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                <Share2 className="w-6 h-6 text-green-600" />
-                Share Compliance Item
-              </h2>
-              <button
-                onClick={() => {
-                  setShowShareModal(false);
-                  setSharingItem(null);
-                }}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
+                  {/* Scope Selection */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Report Scope</label>
+                    <select className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-indigo-500 focus:outline-none transition-colors appearance-none">
+                      <option value="all">Full Compliance Report</option>
+                      <option value="summary">Executive Summary</option>
+                      <option value="critical">Critical Issues Only</option>
+                    </select>
+                  </div>
+
+                  {/* Include Sections */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Include Sections</label>
+                    <div className="space-y-3">
+                      {['Risk Analysis', 'Audit Trail', 'Framework Status'].map((section) => (
+                        <label key={section} className="flex items-center gap-3 cursor-pointer group p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                            <input type="checkbox" defaultChecked className="w-5 h-5 text-indigo-600 rounded-lg border-2 border-gray-200 focus:ring-indigo-500 cursor-pointer" />
+                            <span className="text-sm font-bold text-gray-700 group-hover:text-indigo-700 transition-colors">{section}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                     <button onClick={() => setShowExportModal(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
+                     <button 
+                        onClick={() => { 
+                           setShowExportModal(false); 
+                           alert('✓ Report generated successfully!'); 
+                        }} 
+                        className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                     >
+                        <Download className="w-5 h-5" />
+                        Generate Report
+                     </button>
+                  </div>
+               </div>
             </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <p className="font-semibold text-gray-900 mb-1">{sharingItem.title}</p>
-                <p className="text-sm text-gray-600">{sharingItem.category}</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Share with (Email)</label>
-                <input
-                  type="email"
-                  placeholder="colleague@company.com"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Message (Optional)</label>
-                <textarea
-                  placeholder="Add a message..."
-                  rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" defaultChecked className="w-4 h-4 text-green-600 rounded" />
-                  <span className="text-sm text-gray-700">Allow editing</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" defaultChecked className="w-4 h-4 text-green-600 rounded" />
-                  <span className="text-sm text-gray-700">Send email notification</span>
-                </label>
-              </div>
-
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    setShowShareModal(false);
-                    setSharingItem(null);
-                    alert(`✓ Shared: ${sharingItem.title}`);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
-                >
-                  <Share2 className="w-5 h-5" />
-                  Share Now
-                </button>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/compliance/${sharingItem.id}`);
-                    alert('✓ Link copied to clipboard!');
-                  }}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2"
-                >
-                  <Link className="w-5 h-5" />
-                  Copy Link
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+         </div>
       )}
     </div>
   );

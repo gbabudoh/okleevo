@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Globe, Plus, Search, Filter, Download, Upload, Eye, Edit3,
-  Trash2, Copy, Share2, BarChart3, Settings, Link, ExternalLink,
-  Layout, Type, Image as ImageIcon, Video, Code, Palette,
-  Smartphone, Monitor, Tablet, Zap, TrendingUp, Users, Clock,
-  CheckCircle, XCircle, AlertCircle, MoreVertical, Star, Heart,
-  MessageSquare, ShoppingCart, Calendar, Mail, Phone, MapPin,
-  Grid, List, ChevronRight, X, Check, Sparkles, Target, Award
+  Globe, Plus, Search, Upload, Eye, Edit3,
+  Trash2, Copy, BarChart3, Settings, Link, ExternalLink,
+  Layout, 
+  Zap, TrendingUp, Clock,
+  CheckCircle, XCircle, AlertCircle, MoreVertical, 
+  ShoppingCart, Calendar, 
+  Grid, List, X, Sparkles, Target, Award,
+  Rocket, MousePointer
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
@@ -36,7 +37,7 @@ interface Template {
   name: string;
   description: string;
   category: string;
-  icon: any;
+  icon: React.ElementType;
   gradient: string;
   components: string[];
   preview: string;
@@ -48,7 +49,7 @@ const templates: Template[] = [
     name: 'Product Launch',
     description: 'Perfect for announcing new products with hero section, features, and CTA',
     category: 'Marketing',
-    icon: Sparkles,
+    icon: Rocket,
     gradient: 'from-blue-500 to-cyan-500',
     components: ['Hero', 'Features', 'CTA', 'Footer'],
     preview: '/previews/product-launch.jpg'
@@ -189,7 +190,6 @@ export default function MicroPagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [showTemplates, setShowTemplates] = useState(false);
-  const [selectedPage, setSelectedPage] = useState<MicroPage | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -202,6 +202,12 @@ export default function MicroPagesPage() {
   const [analyticsPage, setAnalyticsPage] = useState<MicroPage | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [settingsPage, setSettingsPage] = useState<MicroPage | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
+
+  const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const filteredPages = pages.filter(page => {
     const matchesSearch = page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -235,7 +241,7 @@ export default function MicroPagesPage() {
   };
 
   // Close dropdown when clicking outside
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = () => {
       if (activeDropdown) {
         setActiveDropdown(null);
@@ -247,1344 +253,526 @@ export default function MicroPagesPage() {
   }, [activeDropdown]);
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl">
-              <Globe className="w-8 h-8 text-white" />
-            </div>
-            Micro Pages
-          </h1>
-          <p className="text-gray-600 mt-2">Create beautiful landing pages in minutes</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <Upload className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Import</span>
-          </button>
-          <button
-            onClick={() => setShowTemplates(true)}
-            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2 group"
-          >
-            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-            Create Page
-          </button>
-        </div>
+    <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 overflow-hidden">
+      {/* Background Layer */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-500/10 rounded-full blur-[120px] animate-mesh" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-500/10 rounded-full blur-[140px] animate-mesh-delayed" />
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-blue-500 rounded-lg">
-              <Globe className="w-6 h-6 text-white" />
-            </div>
-            <TrendingUp className="w-5 h-5 text-blue-500" />
-          </div>
-          <p className="text-sm text-blue-600 font-medium mb-1">Total Pages</p>
-          <p className="text-3xl font-bold text-blue-900">{stats.total}</p>
-          <p className="text-xs text-blue-600 mt-1">{stats.published} published</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border-2 border-purple-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-purple-500 rounded-lg">
-              <Eye className="w-6 h-6 text-white" />
-            </div>
-            <Users className="w-5 h-5 text-purple-500" />
-          </div>
-          <p className="text-sm text-purple-600 font-medium mb-1">Total Views</p>
-          <p className="text-3xl font-bold text-purple-900">{stats.totalViews.toLocaleString()}</p>
-          <p className="text-xs text-purple-600 mt-1">All time</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-green-500 rounded-lg">
-              <Target className="w-6 h-6 text-white" />
-            </div>
-            <BarChart3 className="w-5 h-5 text-green-500" />
-          </div>
-          <p className="text-sm text-green-600 font-medium mb-1">Avg Conversion</p>
-          <p className="text-3xl font-bold text-green-900">{stats.avgConversion.toFixed(1)}%</p>
-          <p className="text-xs text-green-600 mt-1">Conversion rate</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-5 border-2 border-orange-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-orange-500 rounded-lg">
-              <Layout className="w-6 h-6 text-white" />
-            </div>
-            <Sparkles className="w-5 h-5 text-orange-500" />
-          </div>
-          <p className="text-sm text-orange-600 font-medium mb-1">Templates</p>
-          <p className="text-3xl font-bold text-orange-900">{templates.length}</p>
-          <p className="text-xs text-orange-600 mt-1">Available</p>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search pages by title or slug..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-          />
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="all">All Status</option>
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
-            <option value="archived">Archived</option>
-          </select>
+      <div className="relative z-10 space-y-8 max-w-[1600px] mx-auto">
+        {/* Header / Command Center */}
+        <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 border-2 border-white shadow-2xl flex flex-col items-center text-center relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           
-          <div className="flex items-center gap-1 bg-white border-2 border-gray-200 rounded-xl p-1">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 border border-blue-100 rounded-full mb-6 relative z-10">
+            <Globe className="w-4 h-4 text-blue-600" />
+            <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Web Presence Hub</span>
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tight mb-4 relative z-10">
+            Micro <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500">Pages</span>
+          </h1>
+          <p className="text-gray-500 font-bold max-w-2xl mb-10 leading-relaxed uppercase text-[10px] tracking-[0.1em] relative z-10">
+            High-Performance Landing Page Builder & Management System
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 relative z-10">
             <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+               className="px-8 py-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-500 flex items-center gap-3 cursor-pointer shadow-xl shadow-gray-900/20"
             >
-              <Grid className="w-5 h-5" />
+               <Upload className="w-4 h-4" />
+               Import Page
             </button>
             <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+               onClick={() => setShowTemplates(true)}
+               className="px-8 py-4 bg-blue-500 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-500 flex items-center gap-3 cursor-pointer shadow-xl shadow-blue-500/20"
             >
-              <List className="w-5 h-5" />
+               <Plus className="w-4 h-4" />
+               Create New
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Pages Grid/List */}
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredPages.map((page) => {
-            const statusConfig = getStatusConfig(page.status);
-            const StatusIcon = statusConfig.icon;
-            
-            return (
-              <div
-                key={page.id}
-                className="group relative bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-blue-300 hover:shadow-2xl transition-all cursor-pointer"
-                onClick={() => setSelectedPage(page)}
-              >
-                {/* Status Badge */}
-                <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                  <StatusIcon className="w-3 h-3" />
-                  {statusConfig.label}
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[
+             { label: 'Total Pages', val: stats.total, sub: `${stats.published} Published`, icon: Globe, color: 'blue' },
+             { label: 'Total Views', val: stats.totalViews.toLocaleString(), sub: 'All Time Traffic', icon: Eye, color: 'purple' },
+             { label: 'Avg Conversion', val: `${stats.avgConversion.toFixed(1)}%`, sub: 'Success Rate', icon: Target, color: 'green' },
+             { label: 'Templates', val: templates.length, sub: 'Available Design', icon: Layout, color: 'orange' },
+          ].map((stat, idx) => (
+             <div key={idx} className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-8 border-2 border-white shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden">
+                <div className={`absolute top-0 right-0 w-24 h-24 bg-${stat.color}-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700`} />
+                <div className="flex items-center justify-between mb-4">
+                   <div className={`p-4 bg-${stat.color}-500 rounded-2xl shadow-lg shadow-${stat.color}-500/20`}>
+                      <stat.icon className="w-6 h-6 text-white" />
+                   </div>
+                   <TrendingUp className={`w-5 h-5 text-${stat.color}-500 opacity-50`} />
                 </div>
-
-                {/* Page Preview */}
-                <div className="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Globe className="w-12 h-12 text-gray-400" />
-                </div>
-
-                {/* Page Info */}
-                <h3 className="font-bold text-gray-900 mb-1 pr-20 group-hover:text-blue-600 transition-colors line-clamp-2">
-                  {page.title}
-                </h3>
-                
-                <p className="text-sm text-gray-600 mb-3 line-clamp-1">{page.slug}</p>
-
-                {page.description && (
-                  <p className="text-xs text-gray-500 mb-4 line-clamp-2">{page.description}</p>
-                )}
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-blue-50 rounded-lg p-2 border border-blue-200">
-                    <p className="text-xs text-blue-600 mb-0.5">Views</p>
-                    <p className="text-lg font-bold text-blue-900">{page.views.toLocaleString()}</p>
-                  </div>
-                  <div className="bg-green-50 rounded-lg p-2 border border-green-200">
-                    <p className="text-xs text-green-600 mb-0.5">Conversion</p>
-                    <p className="text-lg font-bold text-green-900">{page.conversionRate.toFixed(1)}%</p>
-                  </div>
-                </div>
-
-                {/* Components */}
-                <div className="mb-4">
-                  <p className="text-xs font-semibold text-gray-700 mb-2">Components:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {page.components.slice(0, 3).map((comp, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                        {comp}
-                      </span>
-                    ))}
-                    {page.components.length > 3 && (
-                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                        +{page.components.length - 3}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingPage(page);
-                      setShowEditModal(true);
-                    }}
-                    className="flex-1 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium flex items-center justify-center gap-1"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    Edit
-                  </button>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(page.url, '_blank');
-                    }}
-                    className="flex-1 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium flex items-center justify-center gap-1"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Preview
-                  </button>
-                  <div className="relative">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveDropdown(activeDropdown === page.id ? null : page.id);
-                      }}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <MoreVertical className="w-4 h-4 text-gray-600" />
-                    </button>
-                    
-                    {activeDropdown === page.id && (
-                      <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 z-[100]">
-                        <div className="py-2">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCopyingPage(page);
-                              setShowCopyModal(true);
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2"
-                          >
-                            <Copy className="w-4 h-4 text-blue-600" />
-                            Copy URL
-                          </button>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const newPage: MicroPage = {
-                                ...page,
-                                id: `${Date.now()}`,
-                                title: `${page.title} (Copy)`,
-                                slug: `${page.slug}-copy`,
-                                url: `${page.url}-copy`,
-                                status: 'draft',
-                                views: 0,
-                                conversions: 0,
-                                conversionRate: 0,
-                                createdDate: new Date(),
-                                lastModified: new Date()
-                              };
-                              setPages([...pages, newPage]);
-                              setActiveDropdown(null);
-                              alert('✓ Page duplicated successfully!');
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2"
-                          >
-                            <Copy className="w-4 h-4 text-green-600" />
-                            Duplicate
-                          </button>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setAnalyticsPage(page);
-                              setShowAnalyticsModal(true);
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2"
-                          >
-                            <BarChart3 className="w-4 h-4 text-purple-600" />
-                            Analytics
-                          </button>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSettingsPage(page);
-                              setShowSettingsModal(true);
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                          >
-                            <Settings className="w-4 h-4 text-gray-600" />
-                            Settings
-                          </button>
-                          <div className="border-t border-gray-200 my-1"></div>
-                          <button 
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeletingPage(page);
-                              setShowDeleteModal(true);
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                <p className="text-3xl font-black text-gray-900 tracking-tight">{stat.val}</p>
+                <p className={`text-[9px] font-bold text-${stat.color}-600 mt-2 flex items-center gap-1`}>
+                   <Zap className="w-3 h-3" />
+                   {stat.sub}
+                </p>
+             </div>
+          ))}
         </div>
-      ) : (
-        <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b-2 border-gray-200">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Page</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">URL</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Views</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Conversion</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredPages.map((page) => {
-                const statusConfig = getStatusConfig(page.status);
-                const StatusIcon = statusConfig.icon;
-                
-                return (
-                  <tr key={page.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Globe className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">{page.title}</p>
-                          <p className="text-xs text-gray-500">{page.template}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-700 truncate max-w-[200px]">{page.url}</span>
-                        <button className="p-1 hover:bg-gray-100 rounded">
-                          <ExternalLink className="w-3 h-3 text-gray-500" />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-semibold text-gray-900">{page.views.toLocaleString()}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-green-600">{page.conversionRate.toFixed(1)}%</span>
-                        <span className="text-xs text-gray-500">({page.conversions})</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                        <StatusIcon className="w-3 h-3" />
-                        {statusConfig.label}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedPage(page);
-                          }}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="View details"
-                        >
-                          <Eye className="w-4 h-4 text-blue-600" />
-                        </button>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingPage(page);
-                            setShowEditModal(true);
-                          }}
-                          className="p-2 hover:bg-purple-50 rounded-lg transition-colors" 
-                          title="Edit"
-                        >
-                          <Edit3 className="w-4 h-4 text-purple-600" />
-                        </button>
-                        <div className="relative">
+
+        {/* Search & Filters */}
+        <div className="flex flex-col md:flex-row gap-6">
+           <div className="flex-1 relative group">
+              <div className="absolute inset-0 bg-blue-500/5 rounded-3xl blur-xl group-focus-within:bg-blue-500/10 transition-all opacity-0 group-focus-within:opacity-100" />
+              <div className="relative flex items-center bg-white/60 backdrop-blur-xl border-2 border-white shadow-xl rounded-3xl p-2 pl-6 focus-within:border-blue-500/50 transition-all">
+                 <Search className="w-5 h-5 text-gray-400" />
+                 <input
+                    type="text"
+                    placeholder="Search pages by title or slug..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1 px-4 py-3 bg-transparent text-sm font-bold text-gray-900 outline-none placeholder:text-gray-400"
+                 />
+              </div>
+           </div>
+           
+           <div className="flex items-center gap-3">
+              <select
+                 value={selectedStatus}
+                 onChange={(e) => setSelectedStatus(e.target.value)}
+                 className="px-8 py-5 bg-white/60 backdrop-blur-xl border-2 border-white rounded-3xl shadow-xl outline-none text-[10px] font-black uppercase tracking-[0.2em] text-gray-700 cursor-pointer hover:border-blue-500/50 transition-all appearance-none"
+                 style={{ backgroundImage: 'none' }}
+              >
+                 <option value="all">All Status</option>
+                 <option value="published">Published</option>
+                 <option value="draft">Draft</option>
+                 <option value="archived">Archived</option>
+              </select>
+              
+              <div className="flex items-center gap-1 bg-white/60 backdrop-blur-xl border-2 border-white shadow-xl rounded-2xl p-1.5">
+                 <button onClick={() => setViewMode('grid')} className={`p-3 rounded-xl transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}>
+                    <Grid className="w-5 h-5" />
+                 </button>
+                 <button onClick={() => setViewMode('list')} className={`p-3 rounded-xl transition-all cursor-pointer ${viewMode === 'list' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}>
+                    <List className="w-5 h-5" />
+                 </button>
+              </div>
+           </div>
+        </div>
+
+        {/* Pages Content */}
+        {viewMode === 'grid' ? (
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredPages.map((page, idx) => {
+                 const config = getStatusConfig(page.status);
+                 const StatusIcon = config.icon;
+                 
+                 return (
+                    <div
+                       key={page.id}
+                       onClick={() => { setEditingPage(page); setShowEditModal(true); }}
+                       className="group relative bg-white/60 backdrop-blur-xl rounded-[3rem] border-2 border-white p-8 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 cursor-pointer animate-in fade-in zoom-in-95 fill-mode-both"
+                       style={{ animationDelay: `${idx * 100}ms` }}
+                    >
+                       {/* Status Badge */}
+                       <div className={`absolute top-6 right-6 flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${config.bg} ${config.text} border ${config.border} shadow-sm z-10`}>
+                          <StatusIcon className="w-3 h-3" />
+                          {config.label}
+                       </div>
+                       
+                       {/* Preview Window */}
+                       <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-[2rem] mb-6 relative overflow-hidden group-hover:shadow-lg transition-all border-4 border-white">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                             <Globe className="w-12 h-12 text-gray-300 group-hover:text-blue-500 group-hover:scale-110 transition-all duration-500" />
+                          </div>
+                          {/* Mock Browser UI */}
+                          <div className="absolute top-0 left-0 right-0 h-6 bg-white/80 backdrop-blur-sm border-b border-white px-4 flex items-center gap-1.5">
+                             <div className="w-2 h-2 rounded-full bg-red-400" />
+                             <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                             <div className="w-2 h-2 rounded-full bg-green-400" />
+                          </div>
+                       </div>
+                       
+                       <h3 className="text-lg font-black text-gray-900 tracking-tight leading-tight mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
+                          {page.title}
+                       </h3>
+                       <div className="flex items-center gap-2 mb-6">
+                           <Link className="w-3 h-3 text-gray-400" />
+                           <p className="text-[10px] font-bold text-gray-400 truncate">{page.slug}</p>
+                       </div>
+                       
+                       {/* Mini Stats */}
+                       <div className="grid grid-cols-2 gap-3 mb-6">
+                          <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100">
+                             <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Views</p>
+                             <p className="text-xl font-black text-blue-900">{page.views.toLocaleString()}</p>
+                          </div>
+                          <div className="bg-green-50/50 rounded-2xl p-4 border border-green-100">
+                             <p className="text-[9px] font-black text-green-400 uppercase tracking-widest mb-1">Conv.</p>
+                             <p className="text-xl font-black text-green-900">{page.conversionRate.toFixed(1)}%</p>
+                          </div>
+                       </div>
+
+                       {/* Actions */}
+                       <div className="flex items-center gap-2">
                           <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveDropdown(activeDropdown === `list-${page.id}` ? null : `list-${page.id}`);
-                            }}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors" 
-                            title="More options"
+                             onClick={(e) => { e.stopPropagation(); setEditingPage(page); setShowEditModal(true); }}
+                             className="flex-1 py-3 bg-white border border-gray-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-50 transition-all cursor-pointer flex items-center justify-center gap-2"
                           >
-                            <MoreVertical className="w-4 h-4 text-gray-600" />
+                             <Edit3 className="w-3 h-3" /> Edit
+                          </button>
+                          <button 
+                             onClick={(e) => { e.stopPropagation(); window.open(page.url, '_blank'); }}
+                             className="p-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all cursor-pointer shadow-lg shadow-blue-500/20"
+                          >
+                             <ExternalLink className="w-4 h-4" />
+                          </button>
+                          <button 
+                             onClick={(e) => { e.stopPropagation(); setActiveDropdown(activeDropdown === page.id ? null : page.id); }}
+                             className="p-3 bg-white border border-gray-100 text-gray-400 rounded-xl hover:bg-gray-50 transition-all cursor-pointer relative"
+                          >
+                             <MoreVertical className="w-4 h-4" />
                           </button>
                           
-                          {activeDropdown === `list-${page.id}` && (
-                            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 z-[100]">
-                              <div className="py-2">
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    window.open(page.url, '_blank');
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2"
-                                >
-                                  <ExternalLink className="w-4 h-4 text-blue-600" />
-                                  Open Page
-                                </button>
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCopyingPage(page);
-                                    setShowCopyModal(true);
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2"
-                                >
-                                  <Copy className="w-4 h-4 text-green-600" />
-                                  Copy URL
-                                </button>
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const newPage: MicroPage = {
-                                      ...page,
-                                      id: `${Date.now()}`,
-                                      title: `${page.title} (Copy)`,
-                                      slug: `${page.slug}-copy`,
-                                      url: `${page.url}-copy`,
-                                      status: 'draft',
-                                      views: 0,
-                                      conversions: 0,
-                                      conversionRate: 0,
-                                      createdDate: new Date(),
-                                      lastModified: new Date()
-                                    };
-                                    setPages([...pages, newPage]);
-                                    setActiveDropdown(null);
-                                    alert('✓ Page duplicated successfully!');
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2"
-                                >
-                                  <Copy className="w-4 h-4 text-purple-600" />
-                                  Duplicate
-                                </button>
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setAnalyticsPage(page);
-                                    setShowAnalyticsModal(true);
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2"
-                                >
-                                  <BarChart3 className="w-4 h-4 text-orange-600" />
-                                  Analytics
-                                </button>
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSettingsPage(page);
-                                    setShowSettingsModal(true);
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                >
-                                  <Settings className="w-4 h-4 text-gray-600" />
-                                  Settings
-                                </button>
-                                <div className="border-t border-gray-200 my-1"></div>
-                                <button 
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeletingPage(page);
-                                    setShowDeleteModal(true);
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
-                                >
-                                  <Trash2 className="w-4 h-4 text-red-600" />
-                                  Delete
-                                </button>
-                              </div>
+                          {activeDropdown === page.id && (
+                            <div className="absolute right-8 bottom-20 w-48 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white p-2 z-50 flex flex-col gap-1 anime-in fade-in slide-in-from-bottom-2">
+                               <button onClick={(e) => { e.stopPropagation(); setCopyingPage(page); setShowCopyModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2 rounded-xl hover:bg-blue-50 text-[10px] font-bold text-gray-600 flex items-center gap-2">
+                                  <Copy className="w-3 h-3" /> Copy URL
+                               </button>
+                               <button onClick={(e) => { e.stopPropagation(); setAnalyticsPage(page); setShowAnalyticsModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2 rounded-xl hover:bg-purple-50 text-[10px] font-bold text-gray-600 flex items-center gap-2">
+                                  <BarChart3 className="w-3 h-3" /> Analytics
+                               </button>
+                               <button onClick={(e) => { e.stopPropagation(); setSettingsPage(page); setShowSettingsModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2 rounded-xl hover:bg-gray-50 text-[10px] font-bold text-gray-600 flex items-center gap-2">
+                                  <Settings className="w-3 h-3" /> Settings
+                               </button>
+                               <div className="h-px bg-gray-100 my-1" />
+                               <button onClick={(e) => { e.stopPropagation(); setDeletingPage(page); setShowDeleteModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2 rounded-xl hover:bg-red-50 text-[10px] font-bold text-red-500 flex items-center gap-2">
+                                  <Trash2 className="w-3 h-3" /> Delete
+                               </button>
                             </div>
                           )}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
+                       </div>
+                    </div>
+                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Template Selection Modal */}
-      {showTemplates && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Choose a Template</h2>
-                <p className="text-sm text-gray-600 mt-1">Start with a professionally designed template</p>
-              </div>
-              <button
-                onClick={() => setShowTemplates(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              {/* Category Filter */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.id)}
-                    className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
-                      selectedCategory === cat.id
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200'
-                    }`}
-                  >
-                    {cat.name}
-                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
-                      selectedCategory === cat.id ? 'bg-white bg-opacity-20' : 'bg-gray-100'
-                    }`}>
-                      {cat.count}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Templates Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredTemplates.map((template) => {
-                  const Icon = template.icon;
-                  return (
-                    <div
-                      key={template.id}
-                      className="group relative bg-white rounded-xl border-2 border-gray-200 p-5 hover:border-transparent hover:shadow-2xl transition-all cursor-pointer overflow-hidden"
-                      onClick={() => {
-                        alert(`Creating page with ${template.name} template`);
-                        setShowTemplates(false);
-                      }}
-                    >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${template.gradient} opacity-0 group-hover:opacity-5 transition-opacity`} />
-                      
-                      <div className="relative">
-                        {/* Template Preview */}
-                        <div className="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform">
-                          <Icon className="w-16 h-16 text-gray-400" />
-                        </div>
-
-                        {/* Template Info */}
-                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold mb-3 bg-gradient-to-r ${template.gradient} text-white`}>
-                          {template.category}
-                        </div>
-
-                        <h3 className="font-bold text-gray-900 mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600">
-                          {template.name}
-                        </h3>
-                        
-                        <p className="text-sm text-gray-600 mb-4">
-                          {template.description}
-                        </p>
-
-                        {/* Components */}
-                        <div className="mb-4">
-                          <p className="text-xs font-semibold text-gray-700 mb-2">Includes:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {template.components.map((comp, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                                {comp}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Use Template Button */}
-                        <button className="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                          <Plus className="w-4 h-4" />
-                          Use Template
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Blank Template Option */}
-              <div className="border-t border-gray-200 pt-6">
-                <button
-                  onClick={() => {
-                    alert('Creating blank page');
-                    setShowTemplates(false);
-                  }}
-                  className="w-full p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all group"
-                >
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="p-3 bg-gray-100 group-hover:bg-blue-100 rounded-xl transition-colors">
-                      <Layout className="w-8 h-8 text-gray-600 group-hover:text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-bold text-gray-900 group-hover:text-blue-600">Start from Scratch</h3>
-                      <p className="text-sm text-gray-600">Build your own custom page with our drag-and-drop builder</p>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Page Detail Modal */}
-      {selectedPage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center">
-                  <Globe className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">{selectedPage.title}</h2>
-                  <p className="text-sm text-gray-600">{selectedPage.slug}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedPage(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              {/* Status & Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Eye className="w-5 h-5 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-600">Views</span>
-                  </div>
-                  <p className="text-3xl font-bold text-blue-900">{selectedPage.views.toLocaleString()}</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-5 h-5 text-green-600" />
-                    <span className="text-sm font-medium text-green-600">Conversions</span>
-                  </div>
-                  <p className="text-3xl font-bold text-green-900">{selectedPage.conversions}</p>
-                  <p className="text-xs text-green-600 mt-1">{selectedPage.conversionRate.toFixed(1)}% rate</p>
-                </div>
-
-                <div className={`rounded-xl p-4 border ${getStatusConfig(selectedPage.status).bg} ${getStatusConfig(selectedPage.status).border}`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    {React.createElement(getStatusConfig(selectedPage.status).icon, { 
-                      className: `w-5 h-5 ${getStatusConfig(selectedPage.status).text}` 
-                    })}
-                    <span className={`text-sm font-medium ${getStatusConfig(selectedPage.status).text}`}>Status</span>
-                  </div>
-                  <p className={`text-2xl font-bold ${getStatusConfig(selectedPage.status).text}`}>
-                    {getStatusConfig(selectedPage.status).label}
-                  </p>
-                </div>
-              </div>
-
-              {/* URL */}
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Link className="w-5 h-5 text-gray-600 flex-shrink-0" />
-                    <span className="text-sm text-gray-900 truncate">{selectedPage.url}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => {
-                        navigator.clipboard.writeText(selectedPage.url);
-                        alert('URL copied to clipboard!');
-                      }}
-                      className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                      title="Copy URL"
-                    >
-                      <Copy className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <button 
-                      onClick={() => window.open(selectedPage.url, '_blank')}
-                      className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                      title="Open in new tab"
-                    >
-                      <ExternalLink className="w-4 h-4 text-gray-600" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              {selectedPage.description && (
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-2">Description</h3>
-                  <p className="text-gray-700">{selectedPage.description}</p>
-                </div>
-              )}
-
-              {/* Components */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3">Page Components</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {selectedPage.components.map((comp, idx) => (
-                    <div key={idx} className="flex items-center gap-2 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                      <Layout className="w-4 h-4 text-indigo-600" />
-                      <span className="text-sm font-medium text-indigo-900">{comp}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* SEO */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200">
-                <h3 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5" />
-                  SEO Information
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs text-purple-600 mb-1">Title</p>
-                    <p className="font-semibold text-purple-900">{selectedPage.seoTitle}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-purple-600 mb-1">Description</p>
-                    <p className="text-sm text-purple-800">{selectedPage.seoDescription}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dates */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <p className="text-xs text-blue-600 mb-1">Created</p>
-                  <p className="font-semibold text-blue-900">{selectedPage.createdDate.toLocaleDateString()}</p>
-                </div>
-                <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-                  <p className="text-xs text-green-600 mb-1">Last Modified</p>
-                  <p className="font-semibold text-green-900">{selectedPage.lastModified.toLocaleDateString()}</p>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                <button 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setEditingPage(selectedPage);
-                    setShowEditModal(true);
-                    setSelectedPage(null);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 group"
-                >
-                  <Edit3 className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                  Edit Page
-                </button>
-                <button 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    console.log('Preview button clicked for:', selectedPage.url);
-                    const confirmed = confirm(`🔍 Preview Page\n\nOpening: ${selectedPage.title}\nURL: ${selectedPage.url}\n\nThis will open the live page in a new tab.`);
-                    if (confirmed) {
-                      window.open(selectedPage.url, '_blank');
-                    }
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 group"
-                >
-                  <Eye className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  Preview
-                </button>
-                <button 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    console.log('Share button clicked');
-                    if (navigator.share) {
-                      navigator.share({
-                        title: selectedPage.title,
-                        text: selectedPage.description || selectedPage.title,
-                        url: selectedPage.url,
-                      }).then(() => {
-                        alert('✅ Shared successfully!');
-                      }).catch((error) => {
-                        if (error.name !== 'AbortError') {
-                          navigator.clipboard.writeText(selectedPage.url);
-                          alert('📋 Link copied to clipboard!');
-                        }
-                      });
-                    } else {
-                      navigator.clipboard.writeText(selectedPage.url);
-                      alert('📋 Link copied to clipboard!\n\n' + selectedPage.url);
-                    }
-                  }}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 group"
-                >
-                  <Share2 className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                  Share
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Page Modal */}
-      {showEditModal && editingPage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Edit3 className="w-6 h-6 text-blue-600" />
-                Edit Page
-              </h2>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingPage(null);
-                }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Page Title</label>
-                  <input
-                    type="text"
-                    defaultValue={editingPage.title}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Slug</label>
-                  <input
-                    type="text"
-                    defaultValue={editingPage.slug}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                  <textarea
-                    defaultValue={editingPage.description}
-                    rows={3}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Template</label>
-                  <select
-                    defaultValue={editingPage.template}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    {templates.map((template) => (
-                      <option key={template.id} value={template.id}>{template.name}</option>
+           </div>
+        ) : (
+           <div className="bg-white/60 backdrop-blur-xl rounded-[3rem] border-2 border-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <table className="w-full">
+                 <thead className="bg-gray-900">
+                    <tr>
+                       <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Page Information</th>
+                       <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Performance</th>
+                       <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Status</th>
+                       <th className="px-8 py-6 text-right text-[10px] font-black text-white uppercase tracking-[0.2em]">Actions</th>
+                    </tr>
+                 </thead>
+                 <tbody className="divide-y divide-gray-100 bg-white/40">
+                    {filteredPages.map(page => (
+                       <tr key={page.id} className="group hover:bg-blue-50/30 transition-colors cursor-pointer" onClick={() => { setEditingPage(page); setShowEditModal(true); }}>
+                          <td className="px-8 py-6">
+                             <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                                   <Globe className="w-6 h-6" />
+                                </div>
+                                <div>
+                                   <p className="font-black text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">{page.title}</p>
+                                   <p className="text-[10px] font-bold text-gray-400 mt-1 flex items-center gap-1">
+                                      <Link className="w-3 h-3" /> /{page.slug}
+                                   </p>
+                                </div>
+                             </div>
+                          </td>
+                          <td className="px-8 py-6">
+                             <div className="flex items-center gap-6">
+                                <div>
+                                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Views</p>
+                                   <p className="font-bold text-gray-900">{page.views.toLocaleString()}</p>
+                                </div>
+                                <div>
+                                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Conv.</p>
+                                   <p className="font-bold text-green-600">{page.conversionRate.toFixed(1)}%</p>
+                                </div>
+                             </div>
+                          </td>
+                          <td className="px-8 py-6">
+                             <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusConfig(page.status).bg} ${getStatusConfig(page.status).text} border ${getStatusConfig(page.status).border}`}>
+                                {page.status}
+                             </div>
+                          </td>
+                          <td className="px-8 py-6 text-right">
+                             <div className="flex items-center justify-end gap-2">
+                                <button onClick={(e) => { e.stopPropagation(); setEditingPage(page); setShowEditModal(true); }} className="p-2 bg-white rounded-lg hover:bg-gray-100 transition-colors">
+                                   <Edit3 className="w-4 h-4 text-gray-600" />
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); window.open(page.url, '_blank'); }} className="p-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20">
+                                   <ExternalLink className="w-4 h-4 text-white" />
+                                </button>
+                             </div>
+                          </td>
+                       </tr>
                     ))}
-                  </select>
-                </div>
+                 </tbody>
+              </table>
+           </div>
+        )}
+      </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                  <select
-                    defaultValue={editingPage.status}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="published">Published</option>
-                    <option value="draft">Draft</option>
-                    <option value="archived">Archived</option>
-                  </select>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">SEO Title</label>
-                  <input
-                    type="text"
-                    defaultValue={editingPage.seoTitle}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">SEO Description</label>
-                  <textarea
-                    defaultValue={editingPage.seoDescription}
-                    rows={2}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  />
-                </div>
-              </div>
-
-              {/* Page Components Section */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200">
-                <h3 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
-                  <Layout className="w-5 h-5" />
-                  Page Components
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {editingPage.components.map((comp, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-white rounded-lg border border-purple-200">
-                      <span className="text-sm font-medium text-purple-900">{comp}</span>
-                      <button className="p-1 hover:bg-purple-100 rounded transition-colors">
-                        <X className="w-3 h-3 text-purple-600" />
-                      </button>
-                    </div>
-                  ))}
-                  <button className="p-3 border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-purple-700 font-medium text-sm">
-                    + Add Component
+      {/* Template Modal - Compact & Centered */}
+      {showTemplates && (
+         <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden scale-100 animate-in zoom-in-95 duration-300 border-4 border-white/20 relative">
+               
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-20">
+                  <div>
+                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">Design <span className="text-blue-600">Library</span></h2>
+                     <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-1">Select a framework</p>
+                  </div>
+                  <button onClick={() => setShowTemplates(false)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">
+                     <X className="w-5 h-5 text-gray-500" />
                   </button>
-                </div>
-              </div>
+               </div>
+               
+               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/50">
+                  {/* Categories */}
+                  <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+                     {categories.map((cat) => (
+                        <button
+                           key={cat.id}
+                           onClick={() => setSelectedCategory(cat.id)}
+                           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap border ${
+                              selectedCategory === cat.id
+                                 ? 'bg-gray-900 text-white border-gray-900 shadow-md'
+                                 : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                           }`}
+                        >
+                           {cat.name}
+                        </button>
+                     ))}
+                  </div>
 
-              {/* Analytics Preview */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                  <p className="text-xs text-blue-600 mb-1">Views</p>
-                  <p className="text-2xl font-bold text-blue-900">{editingPage.views.toLocaleString()}</p>
-                </div>
-                <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                  <p className="text-xs text-green-600 mb-1">Conversions</p>
-                  <p className="text-2xl font-bold text-green-900">{editingPage.conversions}</p>
-                </div>
-                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                  <p className="text-xs text-purple-600 mb-1">Rate</p>
-                  <p className="text-2xl font-bold text-purple-900">{editingPage.conversionRate.toFixed(1)}%</p>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditingPage(null);
-                  }}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    alert('✅ Page updated successfully!');
-                    setShowEditModal(false);
-                    setEditingPage(null);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
-                >
-                  <Check className="w-5 h-5" />
-                  Save Changes
-                </button>
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     {filteredTemplates.map((template) => {
+                        const Icon = template.icon;
+                        return (
+                           <button
+                              key={template.id}
+                              onClick={() => {
+                                 const newPage: MicroPage = {
+                                    id: Math.random().toString(36).substr(2, 9),
+                                    title: `${template.name} Draft`,
+                                    slug: `${template.id}-${new Date().getTime()}`,
+                                    url: `https://yourdomain.com/${template.id}-${new Date().getTime()}`,
+                                    template: template.id,
+                                    status: 'draft',
+                                    views: 0,
+                                    conversions: 0,
+                                    conversionRate: 0,
+                                    createdDate: new Date(),
+                                    lastModified: new Date(),
+                                    description: template.description,
+                                    components: template.components,
+                                    seoTitle: `New ${template.name} Page`,
+                                    seoDescription: 'Enter your page description here...'
+                                 };
+                                 setPages([newPage, ...pages]);
+                                 setEditingPage(newPage);
+                                 setShowTemplates(false);
+                                 setShowEditModal(true);
+                                 showNotify('New Page Created from Template', 'success');
+                              }}
+                              className="group relative bg-white border border-gray-100 rounded-[2rem] p-5 hover:border-blue-200 hover:shadow-xl transition-all duration-300 text-left flex flex-col h-full active:scale-95"
+                           >
+                              <div className={`w-full aspect-[2/1] rounded-2xl bg-gradient-to-br ${template.gradient} mb-4 flex items-center justify-center relative overflow-hidden shadow-sm`}>
+                                 <Icon className="w-10 h-10 text-white drop-shadow-md group-hover:scale-110 transition-transform duration-500" />
+                              </div>
+                              <div className="mt-auto">
+                                 <h3 className="text-sm font-black text-gray-900 mb-1">{template.name}</h3>
+                                 <p className="text-[10px] font-medium text-gray-500 mb-3 line-clamp-2 leading-relaxed">{template.description}</p>
+                                 <div className="flex flex-wrap gap-1">
+                                    {template.components.slice(0, 3).map((comp, i) => (
+                                       <span key={i} className="px-2 py-0.5 rounded-md bg-gray-50 text-[8px] font-bold text-gray-400 uppercase tracking-wider border border-gray-100">
+                                          {comp}
+                                       </span>
+                                    ))}
+                                 </div>
+                              </div>
+                           </button>
+                        );
+                     })}
+                  </div>
+               </div>
             </div>
-          </div>
-        </div>
+         </div>
       )}
 
-      {/* Copy URL Modal */}
-      {showCopyModal && copyingPage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-blue-500 to-cyan-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <Copy className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Copy Page URL</h2>
-                  <p className="text-blue-100 text-sm mt-0.5">{copyingPage.title}</p>
-                </div>
-              </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowCopyModal(false);
-                  setCopyingPage(null);
-                }}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-6 h-6 text-white" />
-              </button>
+      {/* Edit Modal - Command Center Style */}
+      {showEditModal && editingPage && (
+         <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
+            <div className="bg-white border border-gray-100 rounded-[2rem] w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden">
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                  <div className="flex items-center gap-4">
+                     <div className="p-3 bg-blue-50 rounded-xl">
+                        <Edit3 className="w-6 h-6 text-blue-600" />
+                     </div>
+                     <div>
+                        <h2 className="text-xl font-black text-gray-900 tracking-tight">Editor Console</h2>
+                        <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Modifying: {editingPage.slug}</p>
+                     </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <button onClick={() => setShowEditModal(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 hover:bg-gray-50 font-bold transition-all text-sm cursor-pointer">Cancel</button>
+                     <button onClick={() => { showNotify('Changes Saved Successfully', 'success'); setShowEditModal(false); }} className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer">Save Changes</button>
+                  </div>
+               </div>
+
+               <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 gap-6 custom-scrollbar bg-gray-50/50">
+                  <div className="space-y-6">
+                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2"><Globe className="w-5 h-5 text-blue-500" /> Core Configuration</h3>
+                        <div className="space-y-6">
+                           <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Page Title</label>
+                              <input type="text" defaultValue={editingPage.title} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" />
+                           </div>
+                           <div className="grid grid-cols-2 gap-6">
+                              <div>
+                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Slug</label>
+                                 <input type="text" defaultValue={editingPage.slug} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-mono text-sm focus:border-blue-500 focus:outline-none transition-colors" />
+                              </div>
+                              <div>
+                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Status</label>
+                                 <select defaultValue={editingPage.status} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-4 text-white font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
+                                    <option value="published">Published</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="archived">Archived</option>
+                                 </select>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2"><Sparkles className="w-5 h-5 text-purple-500" /> SEO Optimization</h3>
+                        <div className="space-y-6">
+                           <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Meta Title</label>
+                              <input type="text" defaultValue={editingPage.seoTitle} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-purple-500 focus:outline-none transition-colors" />
+                           </div>
+                           <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Meta Description</label>
+                              <textarea defaultValue={editingPage.seoDescription} rows={3} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-purple-500 focus:outline-none transition-colors resize-none" />
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="space-y-6">
+                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 h-full shadow-sm">
+                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2"><Layout className="w-5 h-5 text-green-500" /> Components</h3>
+                        <div className="space-y-3">
+                           {editingPage.components.map((comp, idx) => (
+                              <div key={idx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center justify-between group hover:border-blue-500/50 hover:bg-white transition-all cursor-move">
+                                 <span className="text-sm font-bold text-gray-700 group-hover:text-gray-900">{comp}</span>
+                                 <MousePointer className="w-4 h-4 text-gray-400 group-hover:text-blue-500" />
+                              </div>
+                           ))}
+                           <button className="w-full py-4 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-black uppercase tracking-widest hover:border-blue-500 hover:text-blue-500 transition-all mt-4 cursor-pointer">
+                              + Add Section
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
             </div>
-            
-            <div className="p-6 space-y-5">
-              {/* Page Info */}
-              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-lg">
-                    <Globe className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">{copyingPage.title}</p>
-                    <p className="text-sm text-gray-600">{copyingPage.slug}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* URL Display */}
-              <div className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
-                <p className="text-xs font-semibold text-gray-700 mb-2">Page URL:</p>
-                <div className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-300">
-                  <Link className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                  <p className="text-sm text-gray-900 truncate flex-1">{copyingPage.url}</p>
-                </div>
-              </div>
-
-              {/* Copy Options */}
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(copyingPage.url);
-                    alert('✓ URL copied to clipboard!');
-                    setShowCopyModal(false);
-                    setCopyingPage(null);
-                  }}
-                  className="w-full px-5 py-4 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl hover:shadow-xl transition-all flex items-center gap-3 font-semibold"
-                >
-                  <Copy className="w-6 h-6" />
-                  <div className="text-left">
-                    <p className="font-bold">Copy URL</p>
-                    <p className="text-xs text-blue-100">Copy to clipboard</p>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const shareText = `Check out this page: ${copyingPage.title}\n${copyingPage.url}`;
-                    navigator.clipboard.writeText(shareText);
-                    alert('✓ Shareable text copied!');
-                    setShowCopyModal(false);
-                    setCopyingPage(null);
-                  }}
-                  className="w-full px-5 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:shadow-xl transition-all flex items-center gap-3 font-semibold"
-                >
-                  <Share2 className="w-6 h-6" />
-                  <div className="text-left">
-                    <p className="font-bold">Copy with Title</p>
-                    <p className="text-xs text-purple-100">Copy formatted text</p>
-                  </div>
-                </button>
-              </div>
-
-              {/* Cancel Button */}
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowCopyModal(false);
-                  setCopyingPage(null);
-                }}
-                className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+         </div>
       )}
 
       {/* Analytics Modal */}
       {showAnalyticsModal && analyticsPage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <BarChart3 className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Page Analytics</h2>
-                  <p className="text-purple-100 text-sm mt-0.5">{analyticsPage.title}</p>
-                </div>
-              </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowAnalyticsModal(false);
-                  setAnalyticsPage(null);
-                }}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-6 h-6 text-white" />
-              </button>
+         <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[3rem] w-full max-w-4xl overflow-hidden shadow-2xl scale-100 animate-in zoom-in-95 duration-300 border-4 border-white/20">
+               <div className="p-10 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                  <div>
+                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">Performance <span className="text-purple-600">Analytics</span></h2>
+                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Real-time Insights for: {analyticsPage.title}</p>
+                  </div>
+                  <button onClick={() => setShowAnalyticsModal(false)} className="p-3 bg-white rounded-xl hover:bg-gray-200 transition-colors">
+                     <X className="w-6 h-6 text-gray-900" />
+                  </button>
+               </div>
+               <div className="p-10 grid grid-cols-3 gap-6">
+                  <div className="bg-blue-50 rounded-[2rem] p-8 text-center border-2 border-white shadow-lg">
+                     <p className="text-4xl font-black text-blue-600 mb-2">{analyticsPage.views.toLocaleString()}</p>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Views</p>
+                  </div>
+                  <div className="bg-green-50 rounded-[2rem] p-8 text-center border-2 border-white shadow-lg">
+                     <p className="text-4xl font-black text-green-600 mb-2">{analyticsPage.conversions}</p>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Conversions</p>
+                  </div>
+                  <div className="bg-purple-50 rounded-[2rem] p-8 text-center border-2 border-white shadow-lg">
+                     <p className="text-4xl font-black text-purple-600 mb-2">{analyticsPage.conversionRate.toFixed(1)}%</p>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Conv. Rate</p>
+                  </div>
+               </div>
+               <div className="px-10 pb-10">
+                  <div className="bg-gray-900 rounded-[2rem] p-6 flex flex-col items-center justify-center min-h-[200px] text-white">
+                     <BarChart3 className="w-12 h-12 text-gray-700 mb-4" />
+                     <p className="font-bold text-gray-500">Advanced Charts & Heatmaps Coming Soon</p>
+                  </div>
+               </div>
             </div>
-            
-            <div className="p-6 space-y-6">
-              {/* Key Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Eye className="w-6 h-6 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-600">Total Views</span>
-                  </div>
-                  <p className="text-4xl font-bold text-blue-900">{analyticsPage.views.toLocaleString()}</p>
-                  <p className="text-xs text-blue-600 mt-2">All time visitors</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-6 h-6 text-green-600" />
-                    <span className="text-sm font-medium text-green-600">Conversions</span>
-                  </div>
-                  <p className="text-4xl font-bold text-green-900">{analyticsPage.conversions}</p>
-                  <p className="text-xs text-green-600 mt-2">Total conversions</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border-2 border-purple-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-6 h-6 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-600">Conversion Rate</span>
-                  </div>
-                  <p className="text-4xl font-bold text-purple-900">{analyticsPage.conversionRate.toFixed(1)}%</p>
-                  <p className="text-xs text-purple-600 mt-2">Success rate</p>
-                </div>
-              </div>
-
-              {/* Page Info */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border-2 border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-gray-700" />
-                  Page Information
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Template</p>
-                    <p className="font-semibold text-gray-900 capitalize">{analyticsPage.template.replace('-', ' ')}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Status</p>
-                    <p className="font-semibold text-gray-900 capitalize">{analyticsPage.status}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Created</p>
-                    <p className="font-semibold text-gray-900">{analyticsPage.createdDate.toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Last Modified</p>
-                    <p className="font-semibold text-gray-900">{analyticsPage.lastModified.toLocaleDateString()}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Performance Insights */}
-              <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-5 border-2 border-orange-200">
-                <h3 className="font-bold text-orange-900 mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5" />
-                  Performance Insights
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg">
-                    <span className="text-sm text-gray-700">Average time on page</span>
-                    <span className="font-bold text-orange-900">2m 34s</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg">
-                    <span className="text-sm text-gray-700">Bounce rate</span>
-                    <span className="font-bold text-orange-900">32.5%</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg">
-                    <span className="text-sm text-gray-700">Return visitors</span>
-                    <span className="font-bold text-orange-900">18.2%</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Close Button */}
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowAnalyticsModal(false);
-                  setAnalyticsPage(null);
-                }}
-                className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer"
-              >
-                Close Analytics
-              </button>
-            </div>
-          </div>
-        </div>
+         </div>
       )}
 
       {/* Settings Modal */}
       {showSettingsModal && settingsPage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-6 py-5 flex items-center justify-between rounded-t-2xl">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <Settings className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Page Settings</h2>
-                  <p className="text-gray-300 text-sm mt-0.5">{settingsPage.title}</p>
-                </div>
+        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+           <div className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95">
+              <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+                 <h2 className="text-2xl font-black text-gray-900">Page <span className="text-gray-400">Settings</span></h2>
+                 <button onClick={() => setShowSettingsModal(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-6 h-6" /></button>
               </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowSettingsModal(false);
-                  setSettingsPage(null);
-                }}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-6 h-6 text-white" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              {/* General Settings */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-gray-700" />
-                  General Settings
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Page Title</label>
-                    <input
-                      type="text"
-                      defaultValue={settingsPage.title}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Slug</label>
-                    <input
-                      type="text"
-                      defaultValue={settingsPage.slug}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                    <select
-                      defaultValue={settingsPage.status}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-                    >
-                      <option value="published">Published</option>
-                      <option value="draft">Draft</option>
-                      <option value="archived">Archived</option>
-                    </select>
-                  </div>
-                </div>
+              <div className="p-8 space-y-6">
+                 <div className="space-y-4">
+                    <label className="flex items-center justify-between p-4 border border-gray-200 rounded-2xl cursor-pointer hover:border-blue-500 transition-colors">
+                       <span className="font-bold text-gray-700">Enable Analytics Tracking</span>
+                       <input type="checkbox" defaultChecked className="w-5 h-5 accent-blue-600" />
+                    </label>
+                    <label className="flex items-center justify-between p-4 border border-gray-200 rounded-2xl cursor-pointer hover:border-blue-500 transition-colors">
+                       <span className="font-bold text-gray-700">Search Engine Indexing</span>
+                       <input type="checkbox" defaultChecked className="w-5 h-5 accent-blue-600" />
+                    </label>
+                 </div>
+                 <button onClick={() => { showNotify('Settings Saved', 'success'); setShowSettingsModal(false); }} className="w-full py-4 bg-gray-900 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-black transition-colors">
+                    Save Configuration
+                 </button>
               </div>
-
-              {/* SEO Settings */}
-              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200">
-                <h3 className="font-bold text-blue-900 mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5" />
-                  SEO Settings
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-blue-700 mb-2">SEO Title</label>
-                    <input
-                      type="text"
-                      defaultValue={settingsPage.seoTitle}
-                      className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-blue-700 mb-2">SEO Description</label>
-                    <textarea
-                      defaultValue={settingsPage.seoDescription}
-                      rows={3}
-                      className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Advanced Settings */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border-2 border-purple-200">
-                <h3 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
-                  <Zap className="w-5 h-5" />
-                  Advanced Settings
-                </h3>
-                <div className="space-y-3">
-                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-purple-50 transition-colors">
-                    <span className="text-sm font-medium text-gray-900">Enable Analytics Tracking</span>
-                    <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                  </label>
-                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-purple-50 transition-colors">
-                    <span className="text-sm font-medium text-gray-900">Allow Search Engine Indexing</span>
-                    <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                  </label>
-                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-purple-50 transition-colors">
-                    <span className="text-sm font-medium text-gray-900">Enable Social Sharing</span>
-                    <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                  </label>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setShowSettingsModal(false);
-                    setSettingsPage(null);
-                  }}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => {
-                    alert('✓ Settings saved successfully!');
-                    setShowSettingsModal(false);
-                    setSettingsPage(null);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-900 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer"
-                >
-                  Save Settings
-                </button>
-              </div>
-            </div>
-          </div>
+           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Copy URL Modal using Notification for simplicity */}
+      {showCopyModal && copyingPage && (
+          // This logic is handled by the immediate action in the dropdown, 
+          // but if we needed a modal it would go here.
+          // For now, let's auto-close and notify.
+          (() => {
+             // Side-effect to copy and close would ideally be in the handler, 
+             // but if we want a UI confirmation:
+             return (
+               <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={() => setShowCopyModal(false)}>
+                  <div className="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+                     <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
+                     <h3 className="text-xl font-black text-gray-900 mb-2">Link Copied!</h3>
+                     <p className="text-gray-500 font-bold bg-gray-100 px-4 py-2 rounded-lg">{copyingPage.url}</p>
+                  </div>
+               </div>
+             )
+          })()
+      )}
+
+      {/* Delete Modal */}
       {deletingPage && (
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
@@ -1593,14 +781,32 @@ export default function MicroPagesPage() {
             setDeletingPage(null);
           }}
           onConfirm={() => {
-            setPages(pages.filter(page => page.id !== deletingPage.id));
-            alert('✓ Page deleted successfully!');
+            setPages(pages.filter(p => p.id !== deletingPage.id));
+            showNotify('Page Deleted Permanently', 'info');
           }}
-          title="Delete Micro Page"
+          title="Delete Page"
           itemName={deletingPage.title}
-          itemDetails={`${deletingPage.slug} - ${deletingPage.views.toLocaleString()} views`}
-          warningMessage="This will permanently remove this page and all its analytics data."
+          itemDetails={deletingPage.slug}
+          warningMessage="This action will unpublish the page and remove it from all servers."
         />
+      )}
+
+      {/* Toast Notification */}
+      {notification && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-bottom-8 duration-500">
+          <div className={`px-8 py-4 rounded-[2rem] shadow-2xl backdrop-blur-2xl border-2 flex items-center gap-4 ${
+            notification.type === 'success' ? 'bg-emerald-500/90 border-emerald-400/50 text-white' :
+            notification.type === 'error' ? 'bg-rose-500/90 border-rose-400/50 text-white' :
+            'bg-gray-900/90 border-gray-700 text-white'
+          }`}>
+            <div className={`p-2 rounded-xl bg-white/20`}>
+              {notification.type === 'success' ? <CheckCircle className="w-5 h-5" /> : 
+               notification.type === 'error' ? <XCircle className="w-5 h-5" /> : 
+               <Zap className="w-5 h-5" />}
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em]">{notification.message}</p>
+          </div>
+        </div>
       )}
     </div>
   );

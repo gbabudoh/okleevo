@@ -2,15 +2,11 @@
 
 import React, { useState } from 'react';
 import { 
-  Users, Plus, Search, Filter, Download, Upload, UserCheck,
-  Mail, Phone, MapPin, Calendar, Briefcase, DollarSign,
-  Award, TrendingUp, Clock, Edit3, Trash2, Eye, MoreVertical,
-  FileText, Star, Heart, Coffee, Cake, Gift, Target,
-  CheckCircle, XCircle, AlertCircle, User, Building2,
-  GraduationCap, Shield, Activity, BarChart3, PieChart,
-  Grid, List, ChevronRight, X, Check, Zap, MessageSquare,
-  Home, Car, Smartphone, Laptop, CreditCard, Wallet, Baby,
-  Plane, Umbrella, HeartPulse, BookOpen, Settings
+  Users, Plus, Search, Filter, Download, Upload,
+  DollarSign, Award, TrendingUp, Zap, Building2,
+  Grid, List, CheckCircle, XCircle, AlertCircle, Clock,
+  Mail, MessageSquare, Trash2, Eye, X,
+  Laptop, Target, Shield, Activity, FileText
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
@@ -266,17 +262,18 @@ export default function HRRecordsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
-  const [messagingEmployee, setMessagingEmployee] = useState<Employee | null>(null);
   const [messageSubject, setMessageSubject] = useState('');
   const [messageBody, setMessageBody] = useState('');
-  const [showDownloadModal, setShowDownloadModal] = useState(false);
-  const [downloadingEmployee, setDownloadingEmployee] = useState<Employee | null>(null);
+  const [messagePriority, setMessagePriority] = useState('normal');
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
+
+  const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch = emp.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -307,6 +304,47 @@ export default function HRRecordsPage() {
   const avgSalary = employees.reduce((acc, e) => acc + e.salary, 0) / employees.length;
   const avgRating = employees.reduce((acc, e) => acc + e.performance.rating, 0) / employees.length;
 
+  const handleExport = () => {
+    showNotify('Exporting Personnel Data...');
+    
+    // Create CSV content
+    const headers = ['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Position', 'Department', 'Employee ID', 'Start Date', 'Status', 'Employment Type', 'Salary', 'Location', 'Performance Rating', 'Manager'];
+    const rows = employees.map(e => [
+      e.id,
+      `"${e.firstName}"`,
+      `"${e.lastName}"`,
+      e.email,
+      e.phone,
+      `"${e.position}"`,
+      e.department,
+      e.employeeId,
+      e.hireDate.toISOString().split('T')[0],
+      e.status,
+      e.employmentType,
+      e.salary,
+      `"${e.city}, ${e.country}"`,
+      e.performance.rating,
+      `"${e.manager || ''}"`
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `personnel_manifest_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setTimeout(() => showNotify('Personnel Data Successfully Archived'), 1000);
+  };
+
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
@@ -318,1457 +356,581 @@ export default function HRRecordsPage() {
     return `${years} year${years > 1 ? 's' : ''}`;
   };
 
-  // Close dropdown when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = () => {
-      if (activeDropdown) {
-        setActiveDropdown(null);
-      }
-    };
-    
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [activeDropdown]);
-
   return (
-    <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
-              <Users className="w-8 h-8 text-white" />
-            </div>
-            HR Management
-          </h1>
-          <p className="text-gray-600 mt-2">Manage your team and employee records</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <Upload className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Import</span>
-          </button>
-          <button className="px-4 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <Download className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Export</span>
-          </button>
-          <button
-            onClick={() => setShowAddEmployee(true)}
-            className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Add Employee
-          </button>
-        </div>
+    <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 overflow-hidden">
+      {/* Background Layer */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-mesh" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-500/10 rounded-full blur-[140px] animate-mesh-delayed" />
+        <div className="absolute top-[30%] right-[20%] w-[30%] h-[30%] bg-blue-500/10 rounded-full blur-[100px] animate-mesh" />
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border-2 border-blue-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-blue-500 rounded-lg">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex items-center gap-1 text-blue-700 text-sm font-semibold">
-              <TrendingUp className="w-4 h-4" />
-              8%
-            </div>
-          </div>
-          <p className="text-sm text-blue-600 font-medium mb-1">Total Employees</p>
-          <p className="text-3xl font-bold text-blue-900">{totalEmployees}</p>
-          <p className="text-xs text-blue-600 mt-1">{activeEmployees} active</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-green-500 rounded-lg">
-              <DollarSign className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex items-center gap-1 text-green-700 text-sm font-semibold">
-              <TrendingUp className="w-4 h-4" />
-              5%
-            </div>
-          </div>
-          <p className="text-sm text-green-600 font-medium mb-1">Avg Salary</p>
-          <p className="text-3xl font-bold text-green-900">${(avgSalary / 1000).toFixed(0)}K</p>
-          <p className="text-xs text-green-600 mt-1">Per year</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border-2 border-purple-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-purple-500 rounded-lg">
-              <Award className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`w-3 h-3 ${i < Math.floor(avgRating) ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`} />
-              ))}
-            </div>
-          </div>
-          <p className="text-sm text-purple-600 font-medium mb-1">Avg Performance</p>
-          <p className="text-3xl font-bold text-purple-900">{avgRating.toFixed(1)}</p>
-          <p className="text-xs text-purple-600 mt-1">Out of 5.0</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-5 border-2 border-orange-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-orange-500 rounded-lg">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-1 rounded-full">
-              5 Depts
-            </span>
-          </div>
-          <p className="text-sm text-orange-600 font-medium mb-1">Departments</p>
-          <p className="text-3xl font-bold text-orange-900">{departments.length - 1}</p>
-          <p className="text-xs text-orange-600 mt-1">Active teams</p>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white rounded-xl border-2 border-gray-200 p-5">
-        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Zap className="w-5 h-5 text-yellow-500" />
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border-2 border-blue-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-blue-500 rounded-lg group-hover:scale-110 transition-transform">
-              <Calendar className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-blue-900">Time Off</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-green-500 rounded-lg group-hover:scale-110 transition-transform">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-green-900">Payroll</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-purple-500 rounded-lg group-hover:scale-110 transition-transform">
-              <BarChart3 className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-purple-900">Reports</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-xl border-2 border-orange-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-orange-500 rounded-lg group-hover:scale-110 transition-transform">
-              <Award className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-orange-900">Reviews</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-indigo-500 rounded-lg group-hover:scale-110 transition-transform">
-              <GraduationCap className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-indigo-900">Training</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border-2 border-pink-200 hover:shadow-lg transition-all group">
-            <div className="p-2 bg-pink-500 rounded-lg group-hover:scale-110 transition-transform">
-              <HeartPulse className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-pink-900">Benefits</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by name, email, or employee ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-          />
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Filters</span>
-          </button>
+      <div className="relative z-10 space-y-8 max-w-[1600px] mx-auto">
+        {/* Header / Command Center */}
+        <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 border-2 border-white shadow-2xl flex flex-col items-center text-center relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           
-          <div className="flex items-center gap-1 bg-white border-2 border-gray-200 rounded-xl p-1">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-purple-50 border border-purple-100 rounded-full mb-6">
+            <Users className="w-4 h-4 text-purple-600" />
+            <span className="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em]">Human Capital Command</span>
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tight mb-4">
+            Talent <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">Registry</span>
+          </h1>
+          <p className="text-gray-500 font-bold max-w-2xl mb-10 leading-relaxed uppercase text-[10px] tracking-[0.1em]">
+            Workforce Intelligence & Organizational Architect
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-purple-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => {
+                showNotify('Syncing HRIS Database...');
+              }}
+              className="px-8 py-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-purple-600 active:scale-95 transition-all duration-500 flex items-center gap-3 cursor-pointer"
             >
-              <Grid className="w-5 h-5" />
+              <Activity className="w-4 h-4" />
+              Sync Protocol
             </button>
             <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-purple-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setShowAddEmployee(true)}
+              className="px-8 py-4 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-purple-600 active:scale-95 transition-all duration-500 flex items-center gap-3 cursor-pointer shadow-xl shadow-purple-500/20"
             >
-              <List className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
+              Onboard Talent
             </button>
+            <div className="h-10 w-px bg-gray-200 mx-2 hidden md:block" />
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleExport}
+                className="p-4 bg-white border-2 border-gray-100 rounded-2xl hover:border-purple-500 hover:text-purple-500 active:scale-95 transition-all cursor-pointer group/btn" 
+                title="Export Data"
+              >
+                <Download className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => showNotify('Opening Import Wizard...')}
+                className="p-4 bg-white border-2 border-gray-100 rounded-2xl hover:border-purple-500 hover:text-purple-500 active:scale-95 transition-all cursor-pointer group/btn" 
+                title="Import Data"
+              >
+                <Upload className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Department Filter */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        {departments.map((dept) => {
-          const Icon = dept.icon;
-          return (
-            <button
-              key={dept.id}
-              onClick={() => setSelectedDepartment(dept.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
-                selectedDepartment === dept.id
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {dept.name}
-              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                selectedDepartment === dept.id ? 'bg-white bg-opacity-20' : 'bg-gray-100'
-              }`}>
-                {dept.count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Employees Grid/List */}
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredEmployees.map((employee) => {
-            const statusConfig = getStatusConfig(employee.status);
-            const StatusIcon = statusConfig.icon;
-            const tenure = calculateTenure(employee.hireDate);
-            
-            return (
-              <div
-                key={employee.id}
-                className="group relative bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-purple-300 hover:shadow-2xl transition-all cursor-pointer"
-                onClick={() => setSelectedEmployee(employee)}
-              >
-                {/* Status Badge */}
-                <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                  <StatusIcon className="w-3 h-3" />
-                  {statusConfig.label}
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[
+            { label: 'Total Workforce', val: totalEmployees, sub: `${activeEmployees} Active Nodes`, icon: Users, color: 'purple' },
+            { label: 'Avg Compensation', val: `$${(avgSalary / 1000).toFixed(0)}K`, sub: 'Per Annum', icon: DollarSign, color: 'emerald' },
+            { label: 'Performance Index', val: avgRating.toFixed(1), sub: 'Mean Rating', icon: Award, color: 'pink' },
+            { label: 'Divisions', val: departments.length - 1, sub: 'Active Units', icon: Building2, color: 'blue' },
+          ].map((stat, idx) => (
+            <div key={idx} className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-8 border-2 border-white shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden">
+              <div className={`absolute top-0 right-0 w-24 h-24 bg-${stat.color}-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700`} />
+              <div className="flex items-center justify-between mb-4">
+                <div className={`p-4 bg-${stat.color}-500 rounded-2xl shadow-lg shadow-${stat.color}-500/20`}>
+                  <stat.icon className="w-6 h-6 text-white" />
                 </div>
-
-                {/* Avatar */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
-                    {getInitials(employee.firstName, employee.lastName)}
-                  </div>
-                  <div className="flex-1 min-w-0 pr-16">
-                    <h3 className="font-bold text-gray-900 truncate group-hover:text-purple-600 transition-colors">
-                      {employee.firstName} {employee.lastName}
-                    </h3>
-                    <p className="text-sm text-gray-600 truncate">{employee.position}</p>
-                    <p className="text-xs text-gray-500">{employee.employeeId}</p>
-                  </div>
-                </div>
-
-                {/* Department & Type */}
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium capitalize">
-                    {employee.department}
-                  </span>
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium capitalize">
-                    {employee.employmentType.replace('-', ' ')}
-                  </span>
-                </div>
-
-                {/* Contact Info */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Mail className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">{employee.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Phone className="w-4 h-4 flex-shrink-0" />
-                    <span>{employee.phone}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">{employee.city}, {employee.country}</span>
-                  </div>
-                </div>
-
-                {/* Performance */}
-                <div className="mb-4 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-yellow-700">Performance</span>
-                    <div className="flex items-center gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-3 h-3 ${i < Math.floor(employee.performance.rating) ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`} />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-yellow-600">Rating: {employee.performance.rating}/5.0</span>
-                    <span className="text-yellow-600">{employee.performance.goals} goals</span>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-green-50 rounded-lg p-2 border border-green-200">
-                    <p className="text-xs text-green-600 mb-0.5">Salary</p>
-                    <p className="text-sm font-bold text-green-900">${(employee.salary / 1000).toFixed(0)}K</p>
-                  </div>
-                  <div className="bg-blue-50 rounded-lg p-2 border border-blue-200">
-                    <p className="text-xs text-blue-600 mb-0.5">Tenure</p>
-                    <p className="text-sm font-bold text-blue-900">{tenure}</p>
-                  </div>
-                </div>
-
-                {/* Skills */}
-                <div className="mb-4">
-                  <p className="text-xs font-semibold text-gray-700 mb-2">Skills:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {employee.skills.slice(0, 3).map((skill, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                        {skill}
-                      </span>
-                    ))}
-                    {employee.skills.length > 3 && (
-                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                        +{employee.skills.length - 3}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-                  <button className="flex-1 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium flex items-center justify-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    View
-                  </button>
-                  <button className="flex-1 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium flex items-center justify-center gap-1">
-                    <MessageSquare className="w-4 h-4" />
-                    Message
-                  </button>
-                  <div className="relative">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveDropdown(activeDropdown === employee.id ? null : employee.id);
-                      }}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <MoreVertical className="w-4 h-4 text-gray-600" />
-                    </button>
-                    
-                    {activeDropdown === employee.id && (
-                      <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 z-[100]">
-                        <div className="py-2">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedEmployee(employee);
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2"
-                          >
-                            <Eye className="w-4 h-4 text-purple-600" />
-                            View Details
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingEmployee(employee);
-                              setShowEditModal(true);
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2 cursor-pointer"
-                          >
-                            <Edit3 className="w-4 h-4 text-blue-600" />
-                            Edit Profile
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setMessagingEmployee(employee);
-                              setMessageSubject(`Message to ${employee.firstName} ${employee.lastName}`);
-                              setMessageBody('');
-                              setShowMessageModal(true);
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2 cursor-pointer"
-                          >
-                            <MessageSquare className="w-4 h-4 text-green-600" />
-                            Send Message
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDownloadingEmployee(employee);
-                              setShowDownloadModal(true);
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-cyan-50 flex items-center gap-2 cursor-pointer"
-                          >
-                            <Download className="w-4 h-4 text-cyan-600" />
-                            Download Data
-                          </button>
-                          <div className="border-t border-gray-200 my-1"></div>
-                          <button 
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeletingEmployee(employee);
-                              setShowDeleteModal(true);
-                              setActiveDropdown(null);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                            Delete Employee
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <TrendingUp className={`w-5 h-5 text-${stat.color}-500 opacity-50`} />
               </div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
+              <p className="text-3xl font-black text-gray-900 tracking-tight">{stat.val}</p>
+              <p className={`text-[9px] font-bold text-${stat.color}-600 mt-2 flex items-center gap-1`}>
+                <Zap className="w-3 h-3" />
+                {stat.sub}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Search and Filters Hub */}
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex-1 relative group">
+            <div className="absolute inset-0 bg-purple-500/5 rounded-3xl blur-xl group-focus-within:bg-purple-500/10 transition-all opacity-0 group-focus-within:opacity-100" />
+            <div className="relative flex items-center bg-white/60 backdrop-blur-xl border-2 border-white shadow-xl rounded-3xl p-2 pl-6 focus-within:border-purple-500/50 transition-all">
+              <Search className="w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Locate personnel by identity or ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 px-4 py-3 bg-transparent text-sm font-bold text-gray-900 outline-none placeholder:text-gray-400"
+              />
+              <div className="hidden md:flex items-center gap-2 pr-4">
+                <span className="px-2 py-1 bg-gray-100 text-[10px] font-black text-gray-400 rounded-lg">CMD</span>
+                <span className="px-2 py-1 bg-gray-100 text-[10px] font-black text-gray-400 rounded-lg">F</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button className="px-8 py-5 bg-white/60 backdrop-blur-xl border-2 border-white rounded-3xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-3 cursor-pointer group">
+              <Filter className="w-5 h-5 text-gray-600 group-hover:text-purple-500 transition-colors" />
+              <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.2em] group-hover:text-purple-500">Filters</span>
+            </button>
+            
+            <div className="flex items-center gap-1 bg-white/60 backdrop-blur-xl border-2 border-white shadow-xl rounded-2xl p-1.5">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-3 rounded-xl transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
+              >
+                <Grid className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-3 rounded-xl transition-all cursor-pointer ${viewMode === 'list' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Department Navigation */}
+        <div className="flex items-center gap-3 overflow-x-auto pb-4 custom-scrollbar">
+          {departments.map((category) => {
+            const Icon = category.icon;
+            const isActive = selectedDepartment === category.id;
+            return (
+              <button
+                key={category.id}
+                onClick={() => setSelectedDepartment(category.id)}
+                className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all duration-500 whitespace-nowrap cursor-pointer border-2 ${
+                  isActive
+                    ? 'bg-gray-900 border-gray-900 text-white shadow-xl shadow-gray-900/10 scale-105'
+                    : 'bg-white/60 backdrop-blur-md border-white text-gray-500 hover:border-purple-500/30 hover:text-purple-500'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {category.name}
+                <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black ${
+                  isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'
+                }`}>
+                  {category.count}
+                </span>
+              </button>
             );
           })}
         </div>
-      ) : (
-        <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b-2 border-gray-200">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Employee</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Position</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Department</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Contact</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Performance</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredEmployees.map((employee) => {
-                const statusConfig = getStatusConfig(employee.status);
-                const StatusIcon = statusConfig.icon;
-                
-                return (
-                  <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+
+        {/* Content Display */}
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredEmployees.map((employee, idx) => {
+              const statusConfig = getStatusConfig(employee.status);
+              const StatusIcon = statusConfig.icon;
+              const tenure = calculateTenure(employee.hireDate);
+              
+              return (
+                <div
+                  key={employee.id}
+                  onClick={() => setSelectedEmployee(employee)}
+                  className="group relative bg-white/60 backdrop-blur-xl rounded-[3rem] border-2 border-white p-8 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 cursor-pointer animate-in fade-in zoom-in-95 fill-mode-both"
+                  style={{ animationDelay: `${idx * 100}ms` }}
+                >
+                  {/* Status Float */}
+                  <div className={`absolute top-6 right-6 flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border} shadow-sm`}>
+                    <StatusIcon className="w-3 h-3" />
+                    {statusConfig.label}
+                  </div>
+
+                  {/* Identity Block */}
+                  <div className="flex items-center gap-5 mb-8">
+                     <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-[1.5rem] flex items-center justify-center border-2 border-white shadow-lg text-white font-black text-xl group-hover:scale-110 transition-transform duration-500">
+                       {getInitials(employee.firstName, employee.lastName)}
+                     </div>
+                     <div>
+                        <h3 className="text-xl font-black text-gray-900 tracking-tight leading-tight group-hover:text-purple-600 transition-colors">{employee.firstName} {employee.lastName}</h3>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{employee.position}</p>
+                     </div>
+                  </div>
+
+                  {/* Performance Matrix */}
+                  <div className="mb-8 p-5 bg-gray-50/50 rounded-[2rem] border border-white/50">
+                    <div className="flex items-center justify-between mb-3 text-[9px] font-black uppercase tracking-widest">
+                      <span className="text-gray-400">Perf. Index</span>
+                      <span className="text-gray-900">{employee.performance.rating}/5.0</span>
+                    </div>
+                    <div className="w-full h-2 bg-white rounded-full overflow-hidden shadow-inner mb-2">
+                       <div 
+                         className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                         style={{ width: `${(employee.performance.rating / 5) * 100}%` }}
+                       />
+                    </div>
+                    <div className="flex items-center gap-2 text-[9px] font-bold text-gray-500">
+                      <Target className="w-3 h-3" />
+                      <span>{employee.performance.goals} Goals Pending</span>
+                    </div>
+                  </div>
+
+                  {/* Operational Stats */}
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                     <div className="p-4 bg-white rounded-2xl border border-gray-50 shadow-sm group-hover:shadow-md transition-all">
+                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Tenure</p>
+                        <p className="text-sm font-black text-gray-900">{tenure}</p>
+                     </div>
+                     <div className="p-4 bg-white rounded-2xl border border-gray-50 shadow-sm group-hover:shadow-md transition-all">
+                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Department</p>
+                        <p className="text-sm font-black text-gray-900 capitalize">{employee.department}</p>
+                     </div>
+                  </div>
+
+                  {/* Contact Interface */}
+                  <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400">
+                      <Mail className="w-3 h-3" />
+                      {employee.email.split('@')[0]}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); showNotify('Initiating Secure Comms...'); }}
+                        className="p-3 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-500 hover:text-white transition-all cursor-pointer"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setDeletingEmployee(employee);
+                          setShowDeleteModal(true);
+                        }}
+                        className="p-3 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-white/60 backdrop-blur-xl rounded-[3rem] border-2 border-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <table className="w-full">
+              <thead className="bg-gray-900">
+                <tr>
+                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Personnel</th>
+                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Role</th>
+                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Status</th>
+                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Contact</th>
+                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Performance</th>
+                  <th className="px-8 py-6 text-right text-[10px] font-black text-white uppercase tracking-[0.2em]">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white/40">
+                {filteredEmployees.map((employee) => (
+                  <tr key={employee.id} className="group hover:bg-purple-50/50 transition-colors cursor-pointer" onClick={() => setSelectedEmployee(employee)}>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
                           {getInitials(employee.firstName, employee.lastName)}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{employee.firstName} {employee.lastName}</p>
-                          <p className="text-xs text-gray-500">{employee.employeeId}</p>
+                          <p className="font-black text-gray-900 group-hover:text-purple-600 transition-colors leading-tight">{employee.firstName} {employee.lastName}</p>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{employee.employeeId}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-medium text-gray-900">{employee.position}</p>
-                      <p className="text-xs text-gray-500 capitalize">{employee.employmentType.replace('-', ' ')}</p>
+                    <td className="px-8 py-6">
+                      <p className="text-sm font-bold text-gray-900">{employee.position}</p>
+                      <p className="text-[10px] text-gray-500 uppercase tracking-wider">{employee.department}</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-700 capitalize">{employee.department}</span>
+                    <td className="px-8 py-6">
+                       <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusConfig(employee.status).bg} ${getStatusConfig(employee.status).text} border ${getStatusConfig(employee.status).border}`}>
+                          {employee.status}
+                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm">
-                        <p className="text-gray-900">{employee.email}</p>
-                        <p className="text-gray-500">{employee.phone}</p>
-                      </div>
+                    <td className="px-8 py-6">
+                       <p className="text-sm font-bold text-gray-900">{employee.email}</p>
+                       <p className="text-[10px] text-gray-500">{employee.phone}</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-bold text-gray-900">{employee.performance.rating}</span>
-                      </div>
+                    <td className="px-8 py-6">
+                       <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-gray-100 h-1.5 rounded-full w-24">
+                             <div className="h-full bg-purple-500 rounded-full" style={{ width: `${(employee.performance.rating / 5) * 100}%` }} />
+                          </div>
+                          <span className="text-xs font-black text-gray-900">{employee.performance.rating}</span>
+                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                        <StatusIcon className="w-3 h-3" />
-                        {statusConfig.label}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedEmployee(employee);
-                          }}
-                          className="p-2 hover:bg-purple-50 rounded-lg transition-colors"
-                          title="View details"
-                        >
-                          <Eye className="w-4 h-4 text-purple-600" />
-                        </button>
-                        <div className="relative">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveDropdown(activeDropdown === `list-${employee.id}` ? null : `list-${employee.id}`);
-                            }}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors" 
-                            title="More options"
-                          >
-                            <MoreVertical className="w-4 h-4 text-gray-600" />
+                    <td className="px-8 py-6 text-right">
+                       <div className="flex items-center justify-end gap-2">
+                          <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-purple-500 hover:text-white transition-all cursor-pointer">
+                             <Eye className="w-4 h-4" />
                           </button>
-                          
-                          {activeDropdown === `list-${employee.id}` && (
-                            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 z-[100]">
-                              <div className="py-2">
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedEmployee(employee);
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2"
-                                >
-                                  <Eye className="w-4 h-4 text-purple-600" />
-                                  View Details
-                                </button>
-                                <button 
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingEmployee(employee);
-                                    setShowEditModal(true);
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2 cursor-pointer"
-                                >
-                                  <Edit3 className="w-4 h-4 text-blue-600" />
-                                  Edit Profile
-                                </button>
-                                <button 
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setMessagingEmployee(employee);
-                                    setMessageSubject(`Message to ${employee.firstName} ${employee.lastName}`);
-                                    setMessageBody('');
-                                    setShowMessageModal(true);
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2 cursor-pointer"
-                                >
-                                  <MessageSquare className="w-4 h-4 text-green-600" />
-                                  Send Message
-                                </button>
-                                <button 
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDownloadingEmployee(employee);
-                                    setShowDownloadModal(true);
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-cyan-50 flex items-center gap-2 cursor-pointer"
-                                >
-                                  <Download className="w-4 h-4 text-cyan-600" />
-                                  Download Data
-                                </button>
-                                <div className="border-t border-gray-200 my-1"></div>
-                                <button 
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeletingEmployee(employee);
-                                    setShowDeleteModal(true);
-                                    setActiveDropdown(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
-                                >
-                                  <Trash2 className="w-4 h-4 text-red-600" />
-                                  Delete Employee
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                          <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all cursor-pointer">
+                             <Trash2 className="w-4 h-4" />
+                          </button>
+                       </div>
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
       {/* Employee Detail Modal */}
       {selectedEmployee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-2xl">
-                  {getInitials(selectedEmployee.firstName, selectedEmployee.lastName)}
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedEmployee.firstName} {selectedEmployee.lastName}</h2>
-                  <p className="text-sm text-gray-600">{selectedEmployee.position}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedEmployee(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Briefcase className="w-5 h-5 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-600">Tenure</span>
-                  </div>
-                  <p className="text-2xl font-bold text-blue-900">{calculateTenure(selectedEmployee.hireDate)}</p>
-                  <p className="text-xs text-blue-600 mt-1">Since {selectedEmployee.hireDate.toLocaleDateString()}</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <DollarSign className="w-5 h-5 text-green-600" />
-                    <span className="text-sm font-medium text-green-600">Salary</span>
-                  </div>
-                  <p className="text-2xl font-bold text-green-900">${selectedEmployee.salary.toLocaleString()}</p>
-                  <p className="text-xs text-green-600 mt-1">Annual</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4 border border-yellow-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Star className="w-5 h-5 text-yellow-600" />
-                    <span className="text-sm font-medium text-yellow-600">Performance</span>
-                  </div>
-                  <p className="text-2xl font-bold text-yellow-900">{selectedEmployee.performance.rating}/5.0</p>
-                  <div className="flex items-center gap-0.5 mt-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`w-3 h-3 ${i < Math.floor(selectedEmployee.performance.rating) ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`} />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-5 h-5 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-600">Goals</span>
-                  </div>
-                  <p className="text-2xl font-bold text-purple-900">{selectedEmployee.performance.goals}</p>
-                  <p className="text-xs text-purple-600 mt-1">Active goals</p>
-                </div>
-              </div>
-
-              {/* Personal Information */}
-              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200">
-                <h3 className="font-bold text-blue-900 mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Personal Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-blue-600 mb-1">Employee ID</p>
-                    <p className="font-semibold text-blue-900">{selectedEmployee.employeeId}</p>
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
+             <div className="p-8 md:p-10 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
+               <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20 text-white font-black text-xl">
+                    {getInitials(selectedEmployee.firstName, selectedEmployee.lastName)}
                   </div>
                   <div>
-                    <p className="text-xs text-blue-600 mb-1">Date of Birth</p>
-                    <p className="font-semibold text-blue-900">{selectedEmployee.dateOfBirth.toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-blue-600 mb-1">Email</p>
-                    <p className="font-semibold text-blue-900">{selectedEmployee.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-blue-600 mb-1">Phone</p>
-                    <p className="font-semibold text-blue-900">{selectedEmployee.phone}</p>
-                  </div>
-                  <div className="md:col-span-2">
-                    <p className="text-xs text-blue-600 mb-1">Address</p>
-                    <p className="font-semibold text-blue-900">{selectedEmployee.address}, {selectedEmployee.city}, {selectedEmployee.country}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Employment Details */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200">
-                <h3 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
-                  <Briefcase className="w-5 h-5" />
-                  Employment Details
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-xs text-purple-600 mb-1">Department</p>
-                    <p className="font-semibold text-purple-900 capitalize">{selectedEmployee.department}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-purple-600 mb-1">Employment Type</p>
-                    <p className="font-semibold text-purple-900 capitalize">{selectedEmployee.employmentType.replace('-', ' ')}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-purple-600 mb-1">Manager</p>
-                    <p className="font-semibold text-purple-900">{selectedEmployee.manager || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-purple-600 mb-1">Education</p>
-                    <p className="font-semibold text-purple-900">{selectedEmployee.education}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-purple-600 mb-1">Last Review</p>
-                    <p className="font-semibold text-purple-900">{selectedEmployee.performance.lastReview.toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-purple-600 mb-1">Status</p>
-                    <p className="font-semibold text-purple-900 capitalize">{selectedEmployee.status.replace('-', ' ')}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Emergency Contact */}
-              <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-5 border border-red-200">
-                <h3 className="font-bold text-red-900 mb-4 flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Emergency Contact
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-xs text-red-600 mb-1">Name</p>
-                    <p className="font-semibold text-red-900">{selectedEmployee.emergencyContact.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-red-600 mb-1">Relationship</p>
-                    <p className="font-semibold text-red-900">{selectedEmployee.emergencyContact.relationship}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-red-600 mb-1">Phone</p>
-                    <p className="font-semibold text-red-900">{selectedEmployee.emergencyContact.phone}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Skills */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-indigo-600" />
-                  Skills & Expertise
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedEmployee.skills.map((skill, idx) => (
-                    <span key={idx} className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium border border-indigo-200">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Benefits */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <HeartPulse className="w-5 h-5 text-green-600" />
-                  Benefits & Perks
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {selectedEmployee.benefits.map((benefit, idx) => (
-                    <div key={idx} className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200">
-                      <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                      <span className="text-sm font-medium text-green-900">{benefit}</span>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">{selectedEmployee.firstName} {selectedEmployee.lastName}</h2>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusConfig(selectedEmployee.status).bg} ${getStatusConfig(selectedEmployee.status).text} border ${getStatusConfig(selectedEmployee.status).border}`}>
+                        {selectedEmployee.status}
+                      </span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-2 border-l border-gray-300">
+                        {selectedEmployee.position}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
+               </div>
+               <button
+                 onClick={() => setSelectedEmployee(null)}
+                 className="p-4 bg-gray-100/50 hover:bg-gray-200/50 rounded-2xl transition-all cursor-pointer group"
+               >
+                 <X className="w-5 h-5 text-gray-500 group-hover:rotate-90 transition-transform duration-500" />
+               </button>
+             </div>
 
-              {/* Documents */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" />
-                  Documents
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {selectedEmployee.documents.map((doc, idx) => (
-                    <button key={idx} className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors text-left">
-                      <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                      <span className="text-sm font-medium text-blue-900">{doc}</span>
-                    </button>
-                  ))}
+             <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-10 custom-scrollbar">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="p-6 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-[2rem] border border-purple-100">
+                      <p className="text-[9px] font-black text-purple-500 uppercase tracking-widest mb-2">Comp. Package</p>
+                      <p className="text-3xl font-black text-purple-900">${(selectedEmployee.salary / 1000).toFixed(0)}K</p>
+                   </div>
+                   <div className="p-6 bg-gradient-to-br from-pink-50 to-pink-100/50 rounded-[2rem] border border-pink-100">
+                      <p className="text-[9px] font-black text-pink-500 uppercase tracking-widest mb-2">Performance</p>
+                      <p className="text-3xl font-black text-pink-900">{selectedEmployee.performance.rating}</p>
+                   </div>
                 </div>
-              </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
+                {/* Info Grid */}
+                <div>
+                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-gray-400" />
+                      Personnel Dossier
+                   </h3>
+                   <div className="bg-white/50 border-2 border-gray-100 rounded-[2rem] p-6 grid grid-cols-2 gap-y-6">
+                      <div>
+                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Department</p>
+                         <p className="font-bold text-gray-900 capitalize">{selectedEmployee.department}</p>
+                      </div>
+                      <div>
+                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Employment Type</p>
+                         <p className="font-bold text-gray-900 capitalize">{selectedEmployee.employmentType.replace('-', ' ')}</p>
+                      </div>
+                      <div>
+                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Email</p>
+                         <p className="font-bold text-gray-900 text-sm">{selectedEmployee.email}</p>
+                      </div>
+                      <div>
+                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Phone</p>
+                         <p className="font-bold text-gray-900">{selectedEmployee.phone}</p>
+                      </div>
+                      <div>
+                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Location</p>
+                         <p className="font-bold text-gray-900">{selectedEmployee.city}, {selectedEmployee.country}</p>
+                      </div>
+                      <div>
+                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Joined</p>
+                         <p className="font-bold text-gray-900">{selectedEmployee.hireDate.toLocaleDateString()}</p>
+                      </div>
+                   </div>
+                </div>
+                
+                {/* Skills */}
+                <div>
+                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      Competencies
+                   </h3>
+                   <div className="flex flex-wrap gap-2">
+                      {selectedEmployee.skills.map(skill => (
+                        <span key={skill} className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 shadow-sm">
+                           {skill}
+                        </span>
+                      ))}
+                   </div>
+                </div>
+             </div>
+
+             <div className="p-8 md:p-10 bg-white/60 border-t border-gray-100 flex items-center gap-3 sticky bottom-0">
                 <button 
-                  type="button"
-                  onClick={() => {
-                    setEditingEmployee(selectedEmployee);
-                    setShowEditModal(true);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={() => setShowMessageModal(true)}
+                  className="flex-1 px-8 py-5 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-3 cursor-pointer"
                 >
-                  <Edit3 className="w-5 h-5" />
-                  Edit Profile
+                  <MessageSquare className="w-4 h-4" />
+                  Dispatch Info
                 </button>
                 <button 
-                  type="button"
                   onClick={() => {
-                    setMessagingEmployee(selectedEmployee);
-                    setMessageSubject(`Message to ${selectedEmployee.firstName} ${selectedEmployee.lastName}`);
-                    setMessageBody('');
-                    setShowMessageModal(true);
+                     setDeletingEmployee(selectedEmployee);
+                     setShowDeleteModal(true);
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="p-5 border-2 border-rose-100 text-rose-500 rounded-2xl hover:bg-rose-50 transition-all cursor-pointer"
                 >
-                  <MessageSquare className="w-5 h-5" />
-                  Send Message
+                  <Trash2 className="w-5 h-5" />
                 </button>
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setDownloadingEmployee(selectedEmployee);
-                    setShowDownloadModal(true);
-                  }}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Download className="w-5 h-5" />
-                  Export
-                </button>
-              </div>
-            </div>
+             </div>
           </div>
         </div>
       )}
 
       {/* Add Employee Modal */}
       {showAddEmployee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
-              <h2 className="text-2xl font-bold text-gray-900">Add New Employee</h2>
-              <button
-                onClick={() => setShowAddEmployee(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
-                  <input
-                    type="text"
-                    placeholder="John"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
+             <div className="p-8 md:p-10 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
+               <h2 className="text-2xl font-black tracking-tight">Onboard <span className="text-purple-600">Talent</span></h2>
+               <button onClick={() => setShowAddEmployee(false)} className="p-4 bg-gray-100/50 hover:bg-gray-200/50 rounded-2xl transition-all cursor-pointer">
+                 <X className="w-5 h-5" />
+               </button>
+             </div>
+             
+             <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-8 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div>
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">First Name</label>
+                      <input type="text" placeholder="John" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                   </div>
+                   <div>
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Last Name</label>
+                      <input type="text" placeholder="Doe" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                   </div>
+                   <div className="md:col-span-2">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Email Address</label>
+                      <input type="email" placeholder="john.doe@company.com" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                   </div>
+                   <div>
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Department</label>
+                      <select className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold">
+                        {departments.filter(d => d.id !== 'all').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                      </select>
+                   </div>
+                   <div>
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Role / Title</label>
+                      <input type="text" placeholder="Software Engineer" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    placeholder="Doe"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
+                <div className="bg-purple-50/50 rounded-[2.5rem] p-8 border border-purple-100">
+                   <h3 className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-6 flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Administrative Details
+                   </h3>
+                   <div className="grid grid-cols-2 gap-6">
+                      <div>
+                         <label className="block text-[9px] font-black text-purple-400 uppercase mb-2">Start Date</label>
+                         <input type="date" className="w-full px-5 py-4 bg-white border-2 border-purple-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold text-gray-700" />
+                      </div>
+                      <div>
+                         <label className="block text-[9px] font-black text-purple-400 uppercase mb-2">Base Salary</label>
+                         <input type="number" placeholder="0.00" className="w-full px-5 py-4 bg-white border-2 border-purple-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-purple-200" />
+                      </div>
+                   </div>
                 </div>
+             </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                  <input
-                    type="email"
-                    placeholder="john.doe@company.com"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
-                  <input
-                    type="tel"
-                    placeholder="+1 (555) 123-4567"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Position</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Software Engineer"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Department</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <option value="">Select department...</option>
-                    <option value="engineering">Engineering</option>
-                    <option value="design">Design</option>
-                    <option value="marketing">Marketing</option>
-                    <option value="sales">Sales</option>
-                    <option value="hr">Human Resources</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Employment Type</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <option value="full-time">Full-time</option>
-                    <option value="part-time">Part-time</option>
-                    <option value="contract">Contract</option>
-                    <option value="intern">Intern</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
-                  <input
-                    type="date"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Salary</label>
-                  <input
-                    type="number"
-                    placeholder="75000"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <option value="active">Active</option>
-                    <option value="probation">Probation</option>
-                    <option value="on-leave">On Leave</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
-                  <input
-                    type="text"
-                    placeholder="Street address"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">City</label>
-                  <input
-                    type="text"
-                    placeholder="City"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Country</label>
-                  <input
-                    type="text"
-                    placeholder="Country"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setShowAddEmployee(false)}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all"
-                >
+             <div className="p-8 md:p-10 bg-white/60 border-t border-gray-100 flex items-center gap-3">
+                <button onClick={() => setShowAddEmployee(false)} className="flex-1 px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-all cursor-pointer">
                   Cancel
                 </button>
-                <button className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all">
-                  Add Employee
+                <button 
+                  onClick={() => {
+                     showNotify('Talent Successfully Registered');
+                     setShowAddEmployee(false);
+                  }}
+                  className="flex-[2] px-8 py-5 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 cursor-pointer"
+                >
+                  Confirm Registry
                 </button>
-              </div>
-            </div>
+             </div>
           </div>
         </div>
       )}
 
-      {/* Edit Profile Modal */}
-      {showEditModal && editingEmployee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white bg-opacity-20 rounded-lg">
-                  <Edit3 className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Edit Employee Profile</h2>
-                  <p className="text-blue-100 text-sm">{editingEmployee.firstName} {editingEmployee.lastName}</p>
-                </div>
+      {/* Message Modal */}
+      {showMessageModal && selectedEmployee && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4 animate-in fade-in duration-500">
+           <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] max-w-xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
+              <div className="p-8 border-b border-gray-100 bg-white/40 sticky top-0 z-10 flex items-center justify-between">
+                 <div>
+                    <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
+                       <MessageSquare className="w-6 h-6 text-purple-600" />
+                       Internal Comms
+                    </h2>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Recipient: {selectedEmployee.firstName} {selectedEmployee.lastName}</p>
+                 </div>
+                 <button onClick={() => setShowMessageModal(false)} className="p-4 bg-gray-100/50 rounded-2xl cursor-pointer">
+                   <X className="w-5 h-5" />
+                 </button>
               </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingEmployee(null);
-                }}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-6 h-6 text-white" />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
-                  <input
-                    type="text"
-                    value={editingEmployee.firstName}
-                    onChange={(e) => setEditingEmployee({...editingEmployee, firstName: e.target.value})}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    value={editingEmployee.lastName}
-                    onChange={(e) => setEditingEmployee({...editingEmployee, lastName: e.target.value})}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Position</label>
-                <input
-                  type="text"
-                  value={editingEmployee.position}
-                  onChange={(e) => setEditingEmployee({...editingEmployee, position: e.target.value})}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={editingEmployee.email}
-                  onChange={(e) => setEditingEmployee({...editingEmployee, email: e.target.value})}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
-                <input
-                  type="tel"
-                  value={editingEmployee.phone}
-                  onChange={(e) => setEditingEmployee({...editingEmployee, phone: e.target.value})}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setEmployees(employees.map(emp => emp.id === editingEmployee.id ? editingEmployee : emp));
-                    setShowEditModal(false);
-                    setEditingEmployee(null);
-                    alert('✓ Employee profile updated successfully!');
-                  }}
-                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer"
-                >
-                  Save Changes
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditingEmployee(null);
-                  }}
-                  className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Send Message Modal */}
-      {showMessageModal && messagingEmployee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white bg-opacity-20 rounded-lg">
-                  <MessageSquare className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Send Message</h2>
-                  <p className="text-green-100 text-sm">To: {messagingEmployee.email}</p>
-                </div>
-              </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowMessageModal(false);
-                  setMessagingEmployee(null);
-                }}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-6 h-6 text-white" />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
-                <input
-                  type="text"
-                  value={messageSubject}
-                  onChange={(e) => setMessageSubject(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Enter message subject"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Message</label>
-                <textarea
-                  value={messageBody}
-                  onChange={(e) => setMessageBody(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                  rows={8}
-                  placeholder="Type your message here..."
-                />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => {
-                    window.location.href = `mailto:${messagingEmployee.email}?subject=${encodeURIComponent(messageSubject)}&body=${encodeURIComponent(messageBody)}`;
-                    setShowMessageModal(false);
-                    setMessagingEmployee(null);
-                    alert('✓ Email client opened!');
-                  }}
-                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Mail className="w-5 h-5" />
-                  Send Message
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setShowMessageModal(false);
-                    setMessagingEmployee(null);
-                  }}
-                  className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Download Modal */}
-      {showDownloadModal && downloadingEmployee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <Download className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Download Employee Data</h2>
-                  <p className="text-cyan-100 text-sm mt-0.5">{downloadingEmployee.firstName} {downloadingEmployee.lastName} • {downloadingEmployee.employeeId}</p>
-                </div>
-              </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowDownloadModal(false);
-                  setDownloadingEmployee(null);
-                }}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-6 h-6 text-white" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-5">
-              {/* Employee Preview Card */}
-              <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-200 rounded-xl p-5">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-                    {downloadingEmployee.firstName.charAt(0)}{downloadingEmployee.lastName.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-gray-900 text-lg">{downloadingEmployee.firstName} {downloadingEmployee.lastName}</p>
-                    <p className="text-sm text-gray-600">{downloadingEmployee.position}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded text-xs font-medium capitalize">
-                        {downloadingEmployee.department}
-                      </span>
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium capitalize">
-                        {downloadingEmployee.employmentType?.replace('-', ' ')}
-                      </span>
+              <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+                 <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Urgency Level</label>
+                    <div className="grid grid-cols-3 gap-2">
+                       {['normal', 'high', 'critical'].map((p) => (
+                         <button
+                           key={p}
+                           onClick={() => setMessagePriority(p)}
+                           className={`py-3 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+                             messagePriority === p 
+                             ? (p === 'critical' ? 'bg-rose-500 text-white' : 'bg-purple-500 text-white')
+                             : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                           }`}
+                         >
+                           {p}
+                         </button>
+                       ))}
                     </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-cyan-600" />
-                    <span className="truncate">{downloadingEmployee.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-cyan-600" />
-                    <span>{downloadingEmployee.phone}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-cyan-600" />
-                    <span>{downloadingEmployee.city}, {downloadingEmployee.country}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-cyan-600" />
-                    <span className="font-semibold">${downloadingEmployee.salary.toLocaleString()}/year</span>
-                  </div>
-                </div>
+                 </div>
+
+                 <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Subject Vector</label>
+                    <input 
+                       type="text" 
+                       value={messageSubject}
+                       onChange={(e) => setMessageSubject(e.target.value)}
+                       placeholder="Enter brief subject..." 
+                       className="w-full px-6 py-4 bg-white border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-purple-500" 
+                    />
+                 </div>
+
+                 <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Message Body</label>
+                    <textarea 
+                       rows={6}
+                       value={messageBody}
+                       onChange={(e) => setMessageBody(e.target.value)}
+                       placeholder="Type your message..." 
+                       className="w-full px-6 py-4 bg-white border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-purple-500 resize-none" 
+                    />
+                 </div>
               </div>
 
-              {/* Download Format Options */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm font-bold text-gray-900">Choose Download Format:</p>
-                  <span className="text-xs text-gray-500">Select your preferred file type</span>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Excel/CSV Option */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const csv = `First Name,Last Name,Employee ID,Position,Department,Email,Phone,Salary,Hire Date,Status,Employment Type,City,Country,Manager,Education,Performance Rating\n${downloadingEmployee.firstName},${downloadingEmployee.lastName},${downloadingEmployee.employeeId},${downloadingEmployee.position},${downloadingEmployee.department},${downloadingEmployee.email},${downloadingEmployee.phone},$${downloadingEmployee.salary},${downloadingEmployee.hireDate.toLocaleDateString()},${downloadingEmployee.status},${downloadingEmployee.employmentType},${downloadingEmployee.city},${downloadingEmployee.country},${downloadingEmployee.manager || 'N/A'},${downloadingEmployee.education},${downloadingEmployee.performance.rating}`;
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `${downloadingEmployee.firstName}_${downloadingEmployee.lastName}_${downloadingEmployee.employeeId}_data.csv`;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                      setShowDownloadModal(false);
-                      setDownloadingEmployee(null);
-                    }}
-                    className="group relative px-5 py-4 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
-                      <FileText className="w-8 h-8" />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-bold">Excel / CSV</p>
-                      <p className="text-xs text-green-100 mt-0.5">Spreadsheet format</p>
-                    </div>
-                  </button>
-
-                  {/* JSON Option */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const jsonData = {
-                        personalInfo: {
-                          firstName: downloadingEmployee.firstName,
-                          lastName: downloadingEmployee.lastName,
-                          employeeId: downloadingEmployee.employeeId,
-                          email: downloadingEmployee.email,
-                          phone: downloadingEmployee.phone,
-                          dateOfBirth: downloadingEmployee.dateOfBirth.toISOString(),
-                          address: downloadingEmployee.address,
-                          city: downloadingEmployee.city,
-                          country: downloadingEmployee.country
-                        },
-                        employment: {
-                          position: downloadingEmployee.position,
-                          department: downloadingEmployee.department,
-                          employmentType: downloadingEmployee.employmentType,
-                          hireDate: downloadingEmployee.hireDate.toISOString(),
-                          status: downloadingEmployee.status,
-                          salary: downloadingEmployee.salary,
-                          manager: downloadingEmployee.manager
-                        },
-                        performance: downloadingEmployee.performance,
-                        skills: downloadingEmployee.skills,
-                        education: downloadingEmployee.education,
-                        benefits: downloadingEmployee.benefits,
-                        emergencyContact: downloadingEmployee.emergencyContact,
-                        exportedAt: new Date().toISOString()
-                      };
-                      const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `${downloadingEmployee.firstName}_${downloadingEmployee.lastName}_${downloadingEmployee.employeeId}_data.json`;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                      setShowDownloadModal(false);
-                      setDownloadingEmployee(null);
-                    }}
-                    className="group relative px-5 py-4 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
-                      <FileText className="w-8 h-8" />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-bold">JSON</p>
-                      <p className="text-xs text-blue-100 mt-0.5">Structured data format</p>
-                    </div>
-                  </button>
-
-                  {/* PDF Option */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const pdfContent = `
-EMPLOYEE PROFILE REPORT
-${'='.repeat(80)}
-
-PERSONAL INFORMATION
-${'-'.repeat(80)}
-Name:              ${downloadingEmployee.firstName} ${downloadingEmployee.lastName}
-Employee ID:       ${downloadingEmployee.employeeId}
-Date of Birth:     ${downloadingEmployee.dateOfBirth.toLocaleDateString()}
-Email:             ${downloadingEmployee.email}
-Phone:             ${downloadingEmployee.phone}
-Address:           ${downloadingEmployee.address}, ${downloadingEmployee.city}, ${downloadingEmployee.country}
-
-EMPLOYMENT DETAILS
-${'-'.repeat(80)}
-Position:          ${downloadingEmployee.position}
-Department:        ${downloadingEmployee.department}
-Employment Type:   ${downloadingEmployee.employmentType}
-Hire Date:         ${downloadingEmployee.hireDate.toLocaleDateString()}
-Status:            ${downloadingEmployee.status}
-Manager:           ${downloadingEmployee.manager || 'N/A'}
-Tenure:            ${Math.floor((new Date().getTime() - downloadingEmployee.hireDate.getTime()) / (1000 * 60 * 60 * 24 * 365))} years
-
-COMPENSATION & PERFORMANCE
-${'-'.repeat(80)}
-Annual Salary:     $${downloadingEmployee.salary.toLocaleString()}
-Performance:       ${downloadingEmployee.performance.rating}/5.0
-Last Review:       ${downloadingEmployee.performance.lastReview.toLocaleDateString()}
-Active Goals:      ${downloadingEmployee.performance.goals}
-
-SKILLS & EDUCATION
-${'-'.repeat(80)}
-Education:         ${downloadingEmployee.education}
-Skills:            ${downloadingEmployee.skills.join(', ')}
-
-BENEFITS
-${'-'.repeat(80)}
-${downloadingEmployee.benefits.map(b => `• ${b}`).join('\n')}
-
-EMERGENCY CONTACT
-${'-'.repeat(80)}
-Name:              ${downloadingEmployee.emergencyContact.name}
-Relationship:      ${downloadingEmployee.emergencyContact.relationship}
-Phone:             ${downloadingEmployee.emergencyContact.phone}
-
-${'='.repeat(80)}
-Report Generated:  ${new Date().toLocaleString()}
-Confidential - For Internal Use Only
-`;
-                      const blob = new Blob([pdfContent], { type: 'text/plain' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `${downloadingEmployee.firstName}_${downloadingEmployee.lastName}_${downloadingEmployee.employeeId}_profile.txt`;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                      setShowDownloadModal(false);
-                      setDownloadingEmployee(null);
-                    }}
-                    className="group relative px-5 py-4 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
-                      <FileText className="w-8 h-8" />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-bold">PDF Report</p>
-                      <p className="text-xs text-red-100 mt-0.5">Formatted document</p>
-                    </div>
-                  </button>
-
-                  {/* Plain Text Option */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const data = `EMPLOYEE DATA EXPORT\n${'='.repeat(60)}\n\nPERSONAL INFORMATION:\n  Name: ${downloadingEmployee.firstName} ${downloadingEmployee.lastName}\n  Employee ID: ${downloadingEmployee.employeeId}\n  Email: ${downloadingEmployee.email}\n  Phone: ${downloadingEmployee.phone}\n  Address: ${downloadingEmployee.address}, ${downloadingEmployee.city}, ${downloadingEmployee.country}\n\nEMPLOYMENT DETAILS:\n  Position: ${downloadingEmployee.position}\n  Department: ${downloadingEmployee.department}\n  Employment Type: ${downloadingEmployee.employmentType}\n  Hire Date: ${downloadingEmployee.hireDate.toLocaleDateString()}\n  Status: ${downloadingEmployee.status}\n  Manager: ${downloadingEmployee.manager || 'N/A'}\n\nCOMPENSATION:\n  Annual Salary: $${downloadingEmployee.salary.toLocaleString()}\n\nPERFORMANCE:\n  Rating: ${downloadingEmployee.performance.rating}/5.0\n  Last Review: ${downloadingEmployee.performance.lastReview.toLocaleDateString()}\n  Active Goals: ${downloadingEmployee.performance.goals}\n\nSKILLS:\n  ${downloadingEmployee.skills.join(', ')}\n\nEDUCATION:\n  ${downloadingEmployee.education}\n\nExported: ${new Date().toLocaleString()}\n`;
-                      const blob = new Blob([data], { type: 'text/plain' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `${downloadingEmployee.firstName}_${downloadingEmployee.lastName}_${downloadingEmployee.employeeId}_data.txt`;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                      setShowDownloadModal(false);
-                      setDownloadingEmployee(null);
-                    }}
-                    className="group relative px-5 py-4 bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                    <div className="p-3 bg-white bg-opacity-20 rounded-lg">
-                      <FileText className="w-8 h-8" />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-bold">Plain Text</p>
-                      <p className="text-xs text-gray-200 mt-0.5">Simple text file</p>
-                    </div>
-                  </button>
-                </div>
+              <div className="p-8 bg-white/60 border-t border-gray-100">
+                 <button 
+                   disabled={!messageSubject || !messageBody}
+                   onClick={() => {
+                     showNotify(`Message Dispatched to ${selectedEmployee.firstName}`);
+                     setShowMessageModal(false);
+                   }}
+                   className="w-full py-5 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-purple-600 transition-all shadow-xl disabled:opacity-30 cursor-pointer"
+                 >
+                   Send Transmission
+                 </button>
               </div>
-
-              {/* Info Banner */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-xs text-blue-800">
-                  <p className="font-semibold mb-1">Data Privacy Notice</p>
-                  <p>Downloaded files contain sensitive employee information. Handle with care and follow company data protection policies.</p>
-                </div>
-              </div>
-
-              {/* Cancel Button */}
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowDownloadModal(false);
-                  setDownloadingEmployee(null);
-                }}
-                className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+           </div>
         </div>
       )}
 
@@ -1781,15 +943,34 @@ Confidential - For Internal Use Only
             setDeletingEmployee(null);
           }}
           onConfirm={() => {
-            setEmployees(employees.filter(emp => emp.id !== deletingEmployee.id));
-            alert('✓ Employee deleted successfully!');
+            setEmployees(employees.filter(e => e.id !== deletingEmployee.id));
+            showNotify('Personnel Record Terminated');
           }}
-          title="Delete Employee"
+          title="Disconnect Node"
           itemName={`${deletingEmployee.firstName} ${deletingEmployee.lastName}`}
           itemDetails={`${deletingEmployee.position} - ${deletingEmployee.department}`}
-          warningMessage="This will permanently remove this employee and all their records."
+          warningMessage="This action will permanently remove this employee record from the registry."
         />
       )}
+
+      {/* Global Toast Notification */}
+      {notification && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-bottom-8 duration-500">
+          <div className={`px-8 py-4 rounded-[2rem] shadow-2xl backdrop-blur-2xl border-2 flex items-center gap-4 ${
+            notification.type === 'success' ? 'bg-emerald-500/90 border-emerald-400/50 text-white' :
+            notification.type === 'error' ? 'bg-rose-500/90 border-rose-400/50 text-white' :
+            'bg-gray-900/90 border-gray-700 text-white'
+          }`}>
+            <div className={`p-2 rounded-xl bg-white/20`}>
+              {notification.type === 'success' ? <CheckCircle className="w-5 h-5" /> : 
+               notification.type === 'error' ? <XCircle className="w-5 h-5" /> : 
+               <Zap className="w-5 h-5" />}
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em]">{notification.message}</p>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 }

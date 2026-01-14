@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Building2, 
@@ -13,7 +14,9 @@ import {
   Users, 
   CheckCircle2,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Briefcase,
+  LayoutGrid
 } from "lucide-react";
 
 export default function OnboardingPage() {
@@ -92,53 +95,57 @@ export default function OnboardingPage() {
 
       // Success - move to success step
       setStep(5);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
-      setSubmitError(error.message || 'Failed to create account. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create account. Please try again.';
+      setSubmitError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 flex items-center justify-center px-6 py-12">
-      {/* Logo */}
-      <Link href="/" className="absolute top-6 left-6">
-        <img src="/logo.png" alt="Okleevo" className="h-10 w-auto" />
-      </Link>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Dynamic Background */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[100px] animate-blob mix-blend-multiply" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-orange-400/20 rounded-full blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply" />
+        <div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] bg-purple-400/20 rounded-full blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply" />
+      </div>
 
-      <div className="w-full max-w-2xl">
+      <motion.div
+        className="w-full max-w-3xl bg-white/80 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl border border-white/50 p-8 md:p-12 relative z-10"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Logo */}
+        <div className="absolute top-8 left-8 md:top-12 md:left-12">
+           <Link href="/" className="hover:opacity-80 transition-opacity">
+            <Image src="/logo.png" alt="Okleevo" width={140} height={36} className="h-9 w-auto" />
+           </Link>
+        </div>
+
         {step <= totalSteps && (
-          <>
-            {/* Progress Bar */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-600">
-                  Step {step} of {totalSteps}
-                </span>
-                <span className="text-sm font-medium text-gray-600">
-                  {Math.round((step / totalSteps) * 100)}% Complete
-                </span>
-              </div>
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="flex justify-end mb-12">
+            <div className="bg-gray-100/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200/50 flex items-center gap-3">
+              <span className="text-sm font-semibold text-gray-500">
+                Step {step} of {totalSteps}
+              </span>
+              <div className="h-1.5 w-24 bg-gray-200 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full rounded-full"
-                  style={{ backgroundColor: '#fc6813' }}
+                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
                   initial={{ width: 0 }}
                   animate={{ width: `${(step / totalSteps) * 100}%` }}
                   transition={{ duration: 0.3 }}
                 />
               </div>
             </div>
-          </>
+          </div>
         )}
 
-        {/* Form Card */}
-        <motion.div
-          className="bg-white rounded-2xl shadow-xl p-8 md:p-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        {/* Content Container */}
+        <div className="mt-8 md:mt-4">
           <AnimatePresence mode="wait">
             {/* Step 1: Business Information */}
             {step === 1 && (
@@ -149,90 +156,99 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#fc6813' }}>
-                    <Building2 className="w-8 h-8 text-white" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                    Tell us about your business
-                  </h2>
-                  <p className="text-gray-600">
-                    Let's start with some basic information
-                  </p>
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Tell us about your business</h2>
+                  <p className="text-gray-500 font-medium">Let&apos;s start with some basic information</p>
                 </div>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Business Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="businessName"
-                      value={formData.businessName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      placeholder="Enter your business name"
-                      required
-                    />
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Business Name *</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Building2 className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                      </div>
+                      <input
+                        type="text"
+                        name="businessName"
+                        value={formData.businessName}
+                        onChange={handleInputChange}
+                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300 placeholder:text-gray-400"
+                        placeholder="Enter your business name"
+                        autoFocus
+                        required
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Industry *
-                    </label>
-                    <select
-                      name="industry"
-                      value={formData.industry}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      required
-                    >
-                      <option value="">Select your industry</option>
-                      <option value="retail">Retail</option>
-                      <option value="hospitality">Hospitality</option>
-                      <option value="professional-services">Professional Services</option>
-                      <option value="construction">Construction</option>
-                      <option value="healthcare">Healthcare</option>
-                      <option value="technology">Technology</option>
-                      <option value="manufacturing">Manufacturing</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Industry *</label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <Briefcase className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                        </div>
+                        <select
+                          name="industry"
+                          value={formData.industry}
+                          onChange={handleInputChange}
+                          className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 appearance-none hover:bg-white hover:border-gray-300 cursor-pointer"
+                          required
+                        >
+                          <option value="">Select industry</option>
+                          <option value="retail">Retail</option>
+                          <option value="hospitality">Hospitality</option>
+                          <option value="professional-services">Professional Services</option>
+                          <option value="construction">Construction</option>
+                          <option value="healthcare">Healthcare</option>
+                          <option value="technology">Technology</option>
+                          <option value="manufacturing">Manufacturing</option>
+                          <option value="other">Other</option>
+                        </select>
+                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                            <LayoutGrid className="h-4 w-4 text-gray-400" />
+                        </div>
+                      </div>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Business Size *
-                    </label>
-                    <select
-                      name="businessSize"
-                      value={formData.businessSize}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      required
-                    >
-                      <option value="">Select number of employees</option>
-                      <option value="1-5">1 - 5 employees</option>
-                      <option value="6-10">6 - 10 employees</option>
-                      <option value="11-25">11 - 25 employees</option>
-                      <option value="26-50">26 - 50 employees</option>
-                      <option value="50+">50+ employees</option>
-                    </select>
-                    <p className="text-sm text-gray-500 mt-2">
-                      This helps us set up the right plan for your team size
-                    </p>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Business Size *</label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <Users className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                        </div>
+                        <select
+                          name="businessSize"
+                          value={formData.businessSize}
+                          onChange={handleInputChange}
+                          className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 appearance-none hover:bg-white hover:border-gray-300 cursor-pointer"
+                          required
+                        >
+                          <option value="">Number of employees</option>
+                          <option value="1-5">1 - 5 employees</option>
+                          <option value="6-10">6 - 10 employees</option>
+                          <option value="11-25">11 - 25 employees</option>
+                          <option value="26-50">26 - 50 employees</option>
+                          <option value="50+">50+ employees</option>
+                        </select>
+                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                            <LayoutGrid className="h-4 w-4 text-gray-400" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <button
-                  onClick={nextStep}
-                  className="w-full mt-8 px-6 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2"
-                  style={{ backgroundColor: '#fc6813' }}
-                  disabled={!formData.businessName || !formData.industry || !formData.businessSize}
-                >
-                  Continue
-                  <ArrowRight className="w-5 h-5" />
-                </button>
+                <div className="mt-10 flex justify-end">
+                   <button
+                    onClick={nextStep}
+                    className="group flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all bg-gradient-to-r from-orange-500 to-[#ff8c42] disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!formData.businessName || !formData.industry || !formData.businessSize}
+                  >
+                    Continue
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
               </motion.div>
             )}
 
@@ -245,98 +261,101 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#fc6813' }}>
-                    <User className="w-8 h-8 text-white" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                    Your contact details
-                  </h2>
-                  <p className="text-gray-600">
-                    How should we reach you?
-                  </p>
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Your contact details</h2>
+                  <p className="text-gray-500 font-medium">How should we reach you?</p>
                 </div>
 
                 <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        First Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="John"
-                        required
-                      />
+                      <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">First Name *</label>
+                      <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <User className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                          </div>
+                          <input
+                            type="text"
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleInputChange}
+                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300"
+                            placeholder="John"
+                            required
+                          />
+                      </div>
                     </div>
-
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Last Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="Smith"
-                        required
-                      />
+                      <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Last Name *</label>
+                      <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <User className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                          </div>
+                          <input
+                            type="text"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleInputChange}
+                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300"
+                            placeholder="Smith"
+                            required
+                          />
+                      </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      placeholder="john@business.com"
-                      required
-                    />
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Email Address *</label>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                        </div>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300"
+                          placeholder="john@business.com"
+                          required
+                        />
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      placeholder="07XXX XXXXXX"
-                      required
-                    />
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Phone Number *</label>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <Phone className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                        </div>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300"
+                          placeholder="07XXX XXXXXX"
+                          required
+                        />
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-4 mt-8">
+                <div className="flex gap-4 mt-10">
                   <button
                     onClick={prevStep}
-                    className="flex-1 px-6 py-4 rounded-full border-2 border-gray-300 text-gray-700 font-semibold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 px-6 py-4 rounded-xl border-2 border-transparent hover:border-gray-200 text-gray-500 hover:text-gray-700 font-bold text-lg transition-all flex items-center justify-center gap-2"
                   >
                     <ArrowLeft className="w-5 h-5" />
                     Back
                   </button>
                   <button
                     onClick={nextStep}
-                    className="flex-1 px-6 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2"
-                    style={{ backgroundColor: '#fc6813' }}
+                    className="flex-[2] group flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all bg-gradient-to-r from-orange-500 to-[#ff8c42] disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone}
                   >
                     Continue
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
               </motion.div>
@@ -351,73 +370,75 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#fc6813' }}>
-                    <Lock className="w-8 h-8 text-white" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                    Secure your account
-                  </h2>
-                  <p className="text-gray-600">
-                    Create a strong password
-                  </p>
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Secure your account</h2>
+                  <p className="text-gray-500 font-medium">Create a strong password</p>
                 </div>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Password *
-                    </label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      placeholder="Enter password"
-                      required
-                    />
-                    <p className="text-sm text-gray-500 mt-2">
-                      Must be at least 8 characters long
-                    </p>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Password *</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                      </div>
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300"
+                        placeholder="Enter password"
+                        required
+                      />
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2 ml-1">Must be at least 8 characters long</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Confirm Password *
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      placeholder="Confirm password"
-                      required
-                    />
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Confirm Password *</label>
+                     <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                      </div>
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300"
+                        placeholder="Confirm password"
+                        required
+                      />
+                    </div>
                   </div>
 
                   {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                    <p className="text-sm text-red-600">Passwords do not match</p>
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="p-3 bg-red-50 text-red-600 text-sm font-medium rounded-xl border border-red-100"
+                    >
+                        Passwords do not match
+                    </motion.div>
                   )}
                 </div>
 
-                <div className="flex gap-4 mt-8">
+                <div className="flex gap-4 mt-10">
                   <button
                     onClick={prevStep}
-                    className="flex-1 px-6 py-4 rounded-full border-2 border-gray-300 text-gray-700 font-semibold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                     className="flex-1 px-6 py-4 rounded-xl border-2 border-transparent hover:border-gray-200 text-gray-500 hover:text-gray-700 font-bold text-lg transition-all flex items-center justify-center gap-2"
                   >
                     <ArrowLeft className="w-5 h-5" />
                     Back
                   </button>
                   <button
                     onClick={nextStep}
-                    className="flex-1 px-6 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2"
-                    style={{ backgroundColor: '#fc6813' }}
-                    disabled={!formData.password || !formData.confirmPassword || formData.password !== formData.confirmPassword}
+                    className="flex-[2] group flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all bg-gradient-to-r from-orange-500 to-[#ff8c42] disabled:opacity-50 disabled:cursor-not-allowed"
+                     disabled={!formData.password || !formData.confirmPassword || formData.password !== formData.confirmPassword}
                   >
                     Continue
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
               </motion.div>
@@ -432,78 +453,84 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#fc6813' }}>
-                    <MapPin className="w-8 h-8 text-white" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                    Business address
-                  </h2>
-                  <p className="text-gray-600">
-                    Where is your business located?
-                  </p>
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Business address</h2>
+                  <p className="text-gray-500 font-medium">Where is your business located?</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Street Address *
-                    </label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      placeholder="123 High Street"
-                      required
-                    />
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Street Address *</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <MapPin className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                      </div>
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300"
+                        placeholder="123 High Street"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        City *
-                      </label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="London"
-                        required
-                      />
+                      <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">City *</label>
+                      <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <MapPin className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                          </div>
+                          <input
+                            type="text"
+                            name="city"
+                            value={formData.city}
+                            onChange={handleInputChange}
+                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300"
+                            placeholder="London"
+                            required
+                          />
+                      </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Postcode *
-                      </label>
-                      <input
-                        type="text"
-                        name="postcode"
-                        value={formData.postcode}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="SW1A 1AA"
-                        required
-                      />
+                      <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Postcode *</label>
+                      <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <MapPin className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                          </div>
+                          <input
+                            type="text"
+                            name="postcode"
+                            value={formData.postcode}
+                            onChange={handleInputChange}
+                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 hover:bg-white hover:border-gray-300"
+                            placeholder="SW1A 1AA"
+                            required
+                          />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Error Message */}
                   {submitError && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-sm text-red-600">{submitError}</p>
-                    </div>
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="p-4 bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-2xl flex items-center gap-3"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                      <p className="text-sm font-medium text-red-700">{submitError}</p>
+                    </motion.div>
                   )}
 
-                  <div className="flex gap-4 mt-8">
+                  <div className="flex gap-4 mt-10">
                     <button
                       type="button"
                       onClick={prevStep}
-                      className="flex-1 px-6 py-4 rounded-full border-2 border-gray-300 text-gray-700 font-semibold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                      className="flex-1 px-6 py-4 rounded-xl border-2 border-transparent hover:border-gray-200 text-gray-500 hover:text-gray-700 font-bold text-lg transition-all flex items-center justify-center gap-2"
                       disabled={isSubmitting}
                     >
                       <ArrowLeft className="w-5 h-5" />
@@ -511,12 +538,11 @@ export default function OnboardingPage() {
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-6 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: '#fc6813' }}
+                       className="flex-[2] group flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all bg-gradient-to-r from-orange-500 to-[#ff8c42] disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={!formData.address || !formData.city || !formData.postcode || isSubmitting}
                     >
                       {isSubmitting ? 'Creating Account...' : 'Complete Setup'}
-                      {!isSubmitting && <CheckCircle2 className="w-5 h-5" />}
+                      {!isSubmitting && <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />}
                     </button>
                   </div>
                 </form>
@@ -532,43 +558,45 @@ export default function OnboardingPage() {
                 transition={{ duration: 0.5 }}
                 className="text-center py-8"
               >
-                <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center bg-emerald-100">
-                  <CheckCircle2 className="w-12 h-12 text-emerald-600" />
+                <div className="w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center bg-emerald-50 border-4 border-emerald-100">
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500" strokeWidth={3} />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">
                   Welcome to Okleevo!
                 </h2>
-                <p className="text-xl text-gray-600 mb-8">
+                <p className="text-xl text-gray-500 mb-10 font-medium">
                   Your account has been created successfully
                 </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
-                  <p className="text-gray-700 mb-2">
+                <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 mb-10 inline-block w-full max-w-sm">
+                  <p className="text-gray-600 mb-2 font-medium">
                     You can now sign in with:
                   </p>
-                  <p className="font-semibold text-gray-900">{formData.email}</p>
+                  <p className="font-bold text-gray-900 text-lg">{formData.email}</p>
                 </div>
-                <Link
-                  href="/access"
-                  className="inline-block px-12 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-                  style={{ backgroundColor: '#fc6813' }}
-                >
-                  Sign In to Continue
-                </Link>
+                <div>
+                   <Link
+                    href="/access"
+                    className="group inline-flex items-center justify-center gap-2 px-10 py-5 rounded-2xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all bg-gradient-to-r from-orange-500 to-[#ff8c42]"
+                   >
+                    Sign In to Continue
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
 
         {/* Sign In Link */}
         {step <= totalSteps && (
-          <p className="text-center mt-6 text-gray-600">
+          <p className="text-center mt-10 text-gray-400 text-sm font-medium">
             Already have an account?{" "}
-            <Link href="/access" className="font-semibold hover:underline" style={{ color: '#fc6813' }}>
+            <Link href="/access" className="font-bold text-gray-900 hover:text-orange-500 transition-colors ml-1">
               Sign In
             </Link>
           </p>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

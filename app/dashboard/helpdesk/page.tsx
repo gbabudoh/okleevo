@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MessageSquare, Clock, User, Plus, X, Mail, AlertCircle, CheckCircle, Timer, Search, Filter, Send, Paperclip, Tag, Eye, Edit, Trash2, MessageCircle, TrendingUp, Users, BarChart3, Zap } from 'lucide-react';
+import { MessageSquare, Clock, Plus, X, AlertCircle, CheckCircle, Timer, Search, Send, Eye, Edit, Trash2, TrendingUp, Zap } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Ticket {
@@ -40,814 +40,196 @@ export default function HelpdeskPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [replyMessage, setReplyMessage] = useState('');
-  const [newTicket, setNewTicket] = useState({
-    subject: '',
-    customer: '',
-    email: '',
-    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
-    category: 'Support',
-    description: ''
-  });
+  const [newTicket, setNewTicket] = useState<{
+    subject: string;
+    customer: string;
+    email: string;
+    priority: Ticket['priority'];
+    category: string;
+    description: string;
+  }>({ subject: '', customer: '', email: '', priority: 'medium', category: 'Support', description: '' });
 
-  const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         ticket.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus;
-    const matchesPriority = filterPriority === 'all' || ticket.priority === filterPriority;
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+  const filteredTickets = tickets.filter(t => (t.subject.toLowerCase().includes(searchTerm.toLowerCase()) || t.id.toLowerCase().includes(searchTerm.toLowerCase())) && (filterStatus === 'all' || t.status === filterStatus) && (filterPriority === 'all' || t.priority === filterPriority));
 
-  const stats = {
-    total: tickets.length,
-    open: tickets.filter(t => t.status === 'open').length,
-    inProgress: tickets.filter(t => t.status === 'in-progress').length,
-    resolved: tickets.filter(t => t.status === 'resolved').length,
-    avgResponseTime: '2.5 hrs',
-    satisfaction: '94%'
-  };
+  const stats = { total: tickets.length, open: tickets.filter(t => t.status === 'open').length, inProgress: tickets.filter(t => t.status === 'in-progress').length, resolved: tickets.filter(t => t.status === 'resolved').length, avgTime: '2.5h', satisfaction: '94%' };
 
-  const getStatusColor = (status: string) => {
+  const getStatusConfig = (status: string) => {
     switch(status) {
-      case 'open': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'in-progress': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'resolved': return 'bg-green-100 text-green-800 border-green-200';
-      case 'closed': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'open': return { color: 'text-blue-600', bg: 'bg-blue-500', label: 'Open' };
+      case 'pending': return { color: 'text-amber-600', bg: 'bg-amber-500', label: 'Pending' };
+      case 'in-progress': return { color: 'text-purple-600', bg: 'bg-purple-500', label: 'In Progress' };
+      case 'resolved': return { color: 'text-emerald-600', bg: 'bg-emerald-500', label: 'Resolved' };
+      default: return { color: 'text-gray-600', bg: 'bg-gray-500', label: 'Closed' };
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityConfig = (priority: string) => {
     switch(priority) {
-      case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'urgent': return { color: 'text-rose-600', bg: 'bg-rose-500', icon: Zap };
+      case 'high': return { color: 'text-orange-600', bg: 'bg-orange-500', icon: AlertCircle };
+      case 'medium': return { color: 'text-amber-600', bg: 'bg-amber-500', icon: Timer };
+      default: return { color: 'text-blue-600', bg: 'bg-blue-500', icon: Clock };
     }
-  };
-
-  const getPriorityIcon = (priority: string) => {
-    switch(priority) {
-      case 'urgent': return <Zap className="w-4 h-4" />;
-      case 'high': return <AlertCircle className="w-4 h-4" />;
-      case 'medium': return <Timer className="w-4 h-4" />;
-      case 'low': return <Clock className="w-4 h-4" />;
-      default: return <Clock className="w-4 h-4" />;
-    }
-  };
-
-  const handleDeleteTicket = (ticket: Ticket) => {
-    setDeletingTicket(ticket);
-    setShowDeleteModal(true);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <div className="space-y-8 p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen relative overflow-hidden bg-[#F8FAFC]">
+      <div className="fixed inset-0 z-0">
+         <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-indigo-200/20 rounded-full blur-[120px] mix-blend-multiply animate-pulse" />
+         <div className="absolute top-[20%] right-[-20%] w-[60%] h-[60%] bg-purple-200/20 rounded-full blur-[120px] mix-blend-multiply animate-pulse delay-1000" />
+         <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] bg-blue-100/30 rounded-full blur-[100px] mix-blend-multiply animate-pulse delay-700" />
+      </div>
+
+      <div className="relative z-10 p-8 max-w-[1600px] mx-auto space-y-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <MessageSquare className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Support Helpdesk
-                </h1>
-                <p className="text-gray-600 mt-1 text-lg">Manage customer support tickets and inquiries</p>
-              </div>
-            </div>
+            <h1 className="text-4xl font-black text-gray-900 tracking-tight flex items-center gap-3">Helpdesk<span className="text-lg font-medium text-gray-400 bg-white/50 px-3 py-1 rounded-full border border-gray-100 backdrop-blur-sm">Support</span></h1>
+            <p className="text-gray-500 font-medium text-lg">Manage and track customer support tickets properly.</p>
           </div>
-          <button 
-            onClick={() => setShowCreateModal(true)}
-            className="px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer bg-gradient-to-r from-indigo-600 to-purple-600"
-          >
-            <Plus className="w-5 h-5" />
-            New Ticket
+          <button onClick={() => setShowCreateModal(true)} className="group px-6 py-4 bg-gray-900 text-white rounded-2xl font-bold flex items-center gap-3 shadow-xl hover:bg-black transition-all cursor-pointer">
+            New Ticket<Plus className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-6 gap-4">
-          <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-blue-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
-                <MessageSquare className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent">{stats.total}</span>
-            </div>
-            <p className="text-gray-600 font-medium text-sm">Total Tickets</p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-green-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-3xl font-bold bg-gradient-to-br from-green-600 to-green-700 bg-clip-text text-transparent">{stats.open}</span>
-            </div>
-            <p className="text-gray-600 font-medium text-sm">Open</p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-md">
-                <Timer className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-3xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 bg-clip-text text-transparent">{stats.inProgress}</span>
-            </div>
-            <p className="text-gray-600 font-medium text-sm">In Progress</p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-teal-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-md">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-3xl font-bold bg-gradient-to-br from-teal-600 to-teal-700 bg-clip-text text-transparent">{stats.resolved}</span>
-            </div>
-            <p className="text-gray-600 font-medium text-sm">Resolved</p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-orange-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md">
-                <Clock className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-br from-orange-600 to-orange-700 bg-clip-text text-transparent">{stats.avgResponseTime}</span>
-            </div>
-            <p className="text-gray-600 font-medium text-sm">Avg Response</p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-pink-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center shadow-md">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-br from-pink-600 to-pink-700 bg-clip-text text-transparent">{stats.satisfaction}</span>
-            </div>
-            <p className="text-gray-600 font-medium text-sm">Satisfaction</p>
-          </div>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search tickets by ID, subject, or customer..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm"
-            />
-          </div>
-          <div className="relative">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="pl-12 pr-8 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer appearance-none bg-white shadow-sm font-medium"
-            >
-              <option value="all">All Status</option>
-              <option value="open">Open</option>
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
-              <option value="resolved">Resolved</option>
-              <option value="closed">Closed</option>
-            </select>
-          </div>
-          <div className="relative">
-            <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-            <select
-              value={filterPriority}
-              onChange={(e) => setFilterPriority(e.target.value)}
-              className="pl-12 pr-8 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer appearance-none bg-white shadow-sm font-medium"
-            >
-              <option value="all">All Priority</option>
-              <option value="urgent">Urgent</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Tickets List */}
-        <div className="grid gap-6">
-          {filteredTickets.map((ticket) => (
-            <div key={ticket.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.01] border border-gray-100 overflow-hidden">
-              <div className="flex items-start p-6">
-                <div className="flex gap-5 flex-1">
-                  {/* Ticket Icon */}
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white flex-shrink-0 shadow-md">
-                    <MessageSquare className="w-8 h-8" />
-                  </div>
-
-                  {/* Ticket Info */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm font-mono font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">{ticket.id}</span>
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${
-                        ticket.status === 'open' ? 'bg-blue-500 text-white' :
-                        ticket.status === 'pending' ? 'bg-yellow-500 text-white' :
-                        ticket.status === 'in-progress' ? 'bg-purple-500 text-white' :
-                        ticket.status === 'resolved' ? 'bg-green-500 text-white' :
-                        'bg-gray-500 text-white'
-                      }`}>
-                        {ticket.status.replace('-', ' ').toUpperCase()}
-                      </span>
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm flex items-center gap-1 ${
-                        ticket.priority === 'urgent' ? 'bg-red-500 text-white' :
-                        ticket.priority === 'high' ? 'bg-orange-500 text-white' :
-                        ticket.priority === 'medium' ? 'bg-yellow-500 text-white' :
-                        'bg-blue-500 text-white'
-                      }`}>
-                        {getPriorityIcon(ticket.priority)}
-                        {ticket.priority.toUpperCase()}
-                      </span>
-                      <span className="px-3 py-1 text-xs font-semibold bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-full border border-gray-300">
-                        {ticket.category}
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">{ticket.subject}</h3>
-
-                    {ticket.description && (
-                      <p className="text-sm text-gray-600 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-200">{ticket.description}</p>
-                    )}
-
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm">
-                          <User className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="overflow-hidden">
-                          <p className="text-xs text-blue-600 font-medium">Customer</p>
-                          <p className="text-sm font-bold text-blue-700 truncate">{ticket.customer}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-3 border border-green-200">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-sm">
-                          <Mail className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="overflow-hidden">
-                          <p className="text-xs text-green-600 font-medium">Email</p>
-                          <p className="text-sm font-bold text-green-700 truncate">{ticket.email}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-3 border border-purple-200">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm">
-                          <Clock className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-purple-600 font-medium">Created</p>
-                          <p className="text-sm font-bold text-purple-700">{ticket.createdAt}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {ticket.assignedTo && (
-                      <div className="mt-4 flex items-center gap-3 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-3 border border-orange-200">
-                        <Tag className="w-5 h-5 text-orange-600" />
-                        <span className="text-sm text-orange-700">Assigned to: <strong>{ticket.assignedTo}</strong></span>
-                      </div>
-                    )}
-
-                    {ticket.responses !== undefined && ticket.responses > 0 && (
-                      <div className="mt-3 flex items-center gap-2 text-sm">
-                        <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-100 to-purple-100 px-3 py-1.5 rounded-full border border-indigo-200">
-                          <MessageCircle className="w-4 h-4 text-indigo-600" />
-                          <span className="font-semibold text-indigo-700">{ticket.responses} response{ticket.responses !== 1 ? 's' : ''}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col gap-2 ml-4">
-                  <button 
-                    onClick={() => {
-                      setSelectedTicket(ticket);
-                      setShowDetailModal(true);
-                    }}
-                    className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg hover:scale-105 cursor-pointer"
-                    title="View Details"
-                  >
-                    <Eye className="w-5 h-5" />
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setEditTicket(ticket);
-                      setShowEditModal(true);
-                    }}
-                    className="p-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all shadow-md hover:shadow-lg hover:scale-105 cursor-pointer"
-                    title="Edit"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => handleDeleteTicket(ticket)}
-                    className="p-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg hover:scale-105 cursor-pointer"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+           {[ { l: 'Total', v: stats.total, i: MessageSquare, c: 'indigo' }, { l: 'Open', v: stats.open, i: AlertCircle, c: 'blue' }, { l: 'Working', v: stats.inProgress, i: Timer, c: 'purple' }, { l: 'Success', v: stats.resolved, i: CheckCircle, c: 'emerald' }, { l: 'Avg Time', v: stats.avgTime, i: Clock, c: 'orange' }, { l: 'Rating', v: stats.satisfaction, i: TrendingUp, c: 'pink' } ].map((s, i) => (
+            <div key={i} className="relative overflow-hidden bg-white/60 backdrop-blur-2xl rounded-[2rem] p-6 border border-white/80 shadow-sm hover:shadow-xl transition-all group">
+              <div className={`absolute -right-6 -top-6 w-32 h-32 bg-${s.c}-500/10 rounded-full blur-3xl`} />
+              <div className="relative z-10">
+                <div className={`w-12 h-12 rounded-2xl bg-${s.c}-50 flex items-center justify-center mb-4 border border-${s.c}-100`}><s.i className={`w-6 h-6 text-${s.c}-600`} /></div>
+                <span className="text-3xl font-black text-gray-900 block">{s.v}</span>
+                <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mt-1">{s.l}</p>
               </div>
             </div>
           ))}
         </div>
+
+        <div className="bg-white/60 backdrop-blur-2xl p-2 rounded-[1.5rem] border border-white/60 shadow-sm flex flex-col lg:flex-row gap-2">
+          <div className="flex-1 relative group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input type="text" placeholder="Search tickets..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-transparent outline-none font-medium text-gray-900" />
+          </div>
+          <div className="flex gap-2">
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="px-6 py-4 bg-transparent outline-none font-medium text-gray-700 appearance-none cursor-pointer"><option value="all">Status</option><option value="open">Open</option><option value="in-progress">In Progress</option><option value="resolved">Resolved</option></select>
+            <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)} className="px-6 py-4 bg-transparent outline-none font-medium text-gray-700 appearance-none cursor-pointer"><option value="all">Priority</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          {filteredTickets.map((t, idx) => {
+            const sc = getStatusConfig(t.status);
+            const pc = getPriorityConfig(t.priority);
+            return (
+              <div key={t.id} className="group bg-white/70 backdrop-blur-xl rounded-[20px] p-5 shadow-sm border border-white/60 hover:shadow-xl transition-all animate-in slide-in-from-bottom-2 fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
+                <div className="flex flex-col xl:flex-row items-center gap-6">
+                  <div className="flex items-center gap-5 xl:w-[35%]">
+                    <div className="relative">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white"><MessageSquare className="w-7 h-7" /></div>
+                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center`}><div className={`w-3 h-3 rounded-full ${sc.bg}`} /></div>
+                    </div>
+                    <div className="overflow-hidden">
+                      <div className="flex items-center gap-2 mb-1"><span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">{t.id}</span><span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{t.category}</span></div>
+                      <h3 className="text-lg font-bold text-gray-900 truncate">{t.subject}</h3>
+                      <p className="text-sm font-medium text-gray-500 truncate">{t.customer}</p>
+                    </div>
+                  </div>
+                  <div className="xl:w-[25%] flex flex-wrap gap-2">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white border border-gray-100 ${pc.color}`}><pc.icon className="w-3 h-3" />{t.priority.toUpperCase()}</span>
+                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-white border border-gray-100 ${sc.color}`}>{sc.label.toUpperCase()}</span>
+                  </div>
+                  <div className="xl:w-[20%] text-xs text-gray-400 flex items-center gap-2"><Clock className="w-3 h-3" />Updated {t.updatedAt}</div>
+                  <div className="xl:ml-auto flex items-center gap-2">
+                    <button onClick={() => { setSelectedTicket(t); setShowDetailModal(true); }} className="p-2 text-gray-400 hover:text-blue-600 transition-all cursor-pointer"><Eye className="w-5 h-5" /></button>
+                    <button onClick={() => { setSelectedTicket(t); setShowReplyModal(true); }} className="p-2 text-gray-400 hover:text-purple-600 transition-all cursor-pointer"><Send className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditTicket(t); setShowEditModal(true); }} className="p-2 text-gray-400 hover:text-gray-900 transition-all cursor-pointer"><Edit className="w-4 h-4" /></button>
+                    <button onClick={() => { setDeletingTicket(t); setShowDeleteModal(true); }} className="p-2 text-gray-400 hover:text-red-600 transition-all cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Create Ticket Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full">
-            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-500 to-accent-500">
-              <h2 className="text-xl font-bold text-white">Create New Ticket</h2>
-              <button onClick={() => setShowCreateModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-white" />
-              </button>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[2rem] max-w-2xl w-full shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 bounce-in duration-300">
+            <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+              <div><h2 className="text-2xl font-black text-gray-900 tracking-tight">New Ticket</h2><p className="text-gray-500 text-sm font-medium">Create support ticket.</p></div>
+              <button onClick={() => setShowCreateModal(false)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
             </div>
-            
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                <input
-                  type="text"
-                  value={newTicket.subject}
-                  onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  placeholder="Brief description of the issue"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
-                  <input
-                    type="text"
-                    value={newTicket.customer}
-                    onChange={(e) => setNewTicket({...newTicket, customer: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                    placeholder="John Smith"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={newTicket.email}
-                    onChange={(e) => setNewTicket({...newTicket, email: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                    placeholder="john@email.com"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                  <select
-                    value={newTicket.priority}
-                    onChange={(e) => setNewTicket({...newTicket, priority: e.target.value as any})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select
-                    value={newTicket.category}
-                    onChange={(e) => setNewTicket({...newTicket, category: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="Support">Support</option>
-                    <option value="Technical">Technical</option>
-                    <option value="Billing">Billing</option>
-                    <option value="Feature">Feature Request</option>
-                    <option value="Bug">Bug Report</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea
-                  value={newTicket.description}
-                  onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 h-24"
-                  placeholder="Detailed description of the issue..."
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
-                    const ticket: Ticket = {
-                      id: `TKT-${String(tickets.length + 1).padStart(3, '0')}`,
-                      ...newTicket,
-                      status: 'open',
-                      createdAt: now,
-                      updatedAt: now,
-                      responses: 0
-                    };
-                    setTickets([ticket, ...tickets]);
-                    setShowCreateModal(false);
-                    setNewTicket({
-                      subject: '',
-                      customer: '',
-                      email: '',
-                      priority: 'medium',
-                      category: 'Support',
-                      description: ''
-                    });
-                  }}
-                  disabled={!newTicket.subject || !newTicket.customer || !newTicket.email}
-                  className="flex-1 px-4 py-2 rounded-lg text-white font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" 
-                  style={{ backgroundColor: '#fc6813' }}
-                >
-                  Create Ticket
-                </button>
-              </div>
+            <div className="p-8 space-y-6 overflow-y-auto">
+              <div className="space-y-1.5"><label className="text-xs font-bold text-gray-500 uppercase">Subject</label><input type="text" value={newTicket.subject} onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})} className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-gray-900 border-2 border-transparent focus:border-indigo-100 transition-all" /></div>
+              <div className="grid grid-cols-2 gap-4"><div className="space-y-1.5"><label className="text-xs font-bold text-gray-500 uppercase">Customer</label><input type="text" value={newTicket.customer} onChange={(e) => setNewTicket({...newTicket, customer: e.target.value})} className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-gray-900" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-gray-500 uppercase">Email</label><input type="email" value={newTicket.email} onChange={(e) => setNewTicket({...newTicket, email: e.target.value})} className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-gray-900" /></div></div>
+              <div className="grid grid-cols-2 gap-4"><div className="space-y-1.5"><label className="text-xs font-bold text-gray-500 uppercase">Priority</label><select value={newTicket.priority} onChange={(e) => setNewTicket({...newTicket, priority: e.target.value as Ticket['priority']})} className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-gray-900"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select></div><div className="space-y-1.5"><label className="text-xs font-bold text-gray-500 uppercase">Category</label><select value={newTicket.category} onChange={(e) => setNewTicket({...newTicket, category: e.target.value})} className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-gray-900"><option value="Support">Support</option><option value="Billing">Billing</option></select></div></div>
+              <div className="space-y-1.5"><label className="text-xs font-bold text-gray-500 uppercase">Description</label><textarea value={newTicket.description} onChange={(e) => setNewTicket({...newTicket, description: e.target.value})} className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-medium text-gray-900 h-32" /></div>
+            </div>
+            <div className="p-6 border-t border-gray-100 flex gap-4 bg-gray-50 rounded-b-[2rem]">
+              <button onClick={() => setShowCreateModal(false)} className="flex-1 px-6 py-4 rounded-xl font-bold text-gray-600 hover:bg-white transition-all cursor-pointer">Cancel</button>
+              <button onClick={() => { const now = new Date().toISOString(); setTickets([{...newTicket, id: `TKT-${tickets.length+1}`, status: 'open', createdAt: now, updatedAt: now}, ...tickets]); setShowCreateModal(false); }} className="flex-[2] px-6 py-4 bg-gray-900 text-white rounded-xl font-bold shadow-lg hover:bg-black transition-all cursor-pointer">Create</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Edit Ticket Modal */}
       {showEditModal && editTicket && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full">
-            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-500 to-accent-500">
-              <h2 className="text-xl font-bold text-white">Edit Ticket</h2>
-              <button onClick={() => {
-                setShowEditModal(false);
-                setEditTicket(null);
-              }} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-white" />
-              </button>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[2rem] max-w-2xl w-full shadow-2xl flex flex-col max-h-[85vh]">
+            <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-2xl font-black text-gray-900">Edit Ticket</h2>
+              <button onClick={() => setShowEditModal(false)} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer"><X className="w-5 h-5" /></button>
             </div>
-            
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                <input
-                  type="text"
-                  value={editTicket.subject}
-                  onChange={(e) => setEditTicket({...editTicket, subject: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <select
-                    value={editTicket.status}
-                    onChange={(e) => setEditTicket({...editTicket, status: e.target.value as any})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="open">Open</option>
-                    <option value="pending">Pending</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                  <select
-                    value={editTicket.priority}
-                    onChange={(e) => setEditTicket({...editTicket, priority: e.target.value as any})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select
-                    value={editTicket.category}
-                    onChange={(e) => setEditTicket({...editTicket, category: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="Support">Support</option>
-                    <option value="Technical">Technical</option>
-                    <option value="Billing">Billing</option>
-                    <option value="Feature">Feature Request</option>
-                    <option value="Bug">Bug Report</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
-                  <input
-                    type="text"
-                    value={editTicket.assignedTo || ''}
-                    onChange={(e) => setEditTicket({...editTicket, assignedTo: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                    placeholder="Team or person"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea
-                  value={editTicket.description || ''}
-                  onChange={(e) => setEditTicket({...editTicket, description: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 h-24"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditTicket(null);
-                  }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    setTickets(tickets.map(t => t.id === editTicket.id ? {
-                      ...editTicket,
-                      updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
-                    } : t));
-                    setShowEditModal(false);
-                    setEditTicket(null);
-                  }}
-                  className="flex-1 px-4 py-2 rounded-lg text-white font-medium cursor-pointer" 
-                  style={{ backgroundColor: '#fc6813' }}
-                >
-                  Save Changes
-                </button>
-              </div>
+            <div className="p-8 space-y-6 overflow-y-auto">
+               <div className="space-y-1.5"><label className="text-xs font-bold text-gray-500 uppercase">Status</label><select value={editTicket.status} onChange={(e) => setEditTicket({...editTicket, status: e.target.value as Ticket['status']})} className="w-full px-4 py-3 bg-gray-50 rounded-xl font-bold text-gray-900"><option value="open">Open</option><option value="in-progress">In Progress</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select></div>
+               <div className="space-y-1.5"><label className="text-xs font-bold text-gray-500 uppercase">Assigned To</label><input type="text" value={editTicket.assignedTo || ''} onChange={(e) => setEditTicket({...editTicket, assignedTo: e.target.value})} className="w-full px-4 py-3 bg-gray-50 rounded-xl font-bold text-gray-900" /></div>
+            </div>
+            <div className="p-6 border-t flex gap-4 bg-gray-50 rounded-b-[2rem]">
+              <button onClick={() => setShowEditModal(false)} className="flex-1 py-4 font-bold text-gray-600 cursor-pointer">Cancel</button>
+              <button onClick={() => { setTickets(tickets.map(t => t.id === editTicket.id ? editTicket : t)); setShowEditModal(false); }} className="flex-[2] py-4 bg-gray-900 text-white rounded-xl font-bold cursor-pointer">Save</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Reply Modal */}
       {showReplyModal && selectedTicket && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-3xl w-full">
-            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-500 to-accent-500">
-              <h2 className="text-xl font-bold text-white">Reply to Ticket</h2>
-              <button onClick={() => {
-                setShowReplyModal(false);
-                setReplyMessage('');
-              }} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-white" />
-              </button>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[2rem] max-w-2xl w-full shadow-2xl flex flex-col max-h-[85vh]">
+            <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-2xl font-black text-gray-900">Reply</h2>
+              <button onClick={() => setShowReplyModal(false)} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer"><X className="w-5 h-5" /></button>
             </div>
-            
-            <div className="p-6 space-y-4">
-              {/* Ticket Info */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-mono text-gray-500">{selectedTicket.id}</span>
-                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${getPriorityColor(selectedTicket.priority)}`}>
-                    {selectedTicket.priority}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-1">{selectedTicket.subject}</h3>
-                <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <User className="w-4 h-4" />
-                    {selectedTicket.customer}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Mail className="w-4 h-4" />
-                    {selectedTicket.email}
-                  </div>
-                </div>
-              </div>
-
-              {/* Reply Form */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Your Reply</label>
-                <textarea
-                  value={replyMessage}
-                  onChange={(e) => setReplyMessage(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 h-48"
-                  placeholder={`Hi ${selectedTicket.customer},\n\nThank you for contacting us. I'm here to help you with "${selectedTicket.subject}".\n\n[Your response here]\n\nBest regards,\nSupport Team`}
-                />
-                <p className="text-xs text-gray-500 mt-2">This message will be sent to {selectedTicket.email}</p>
-              </div>
-
-              {/* Email Preview */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm font-medium text-blue-900 mb-2">Email Preview:</p>
-                <div className="text-sm text-blue-800 space-y-1">
-                  <p><strong>To:</strong> {selectedTicket.email}</p>
-                  <p><strong>Subject:</strong> Re: {selectedTicket.subject} [{selectedTicket.id}]</p>
-                  <p><strong>From:</strong> support@yourcompany.com</p>
-                </div>
-              </div>
-
-              {/* Quick Templates */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quick Templates</label>
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => setReplyMessage(`Hi ${selectedTicket.customer},\n\nThank you for reaching out. I've reviewed your ticket and I'm working on a solution. I'll update you shortly.\n\nBest regards,\nSupport Team`)}
-                    className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full cursor-pointer"
-                  >
-                    Working on it
-                  </button>
-                  <button
-                    onClick={() => setReplyMessage(`Hi ${selectedTicket.customer},\n\nI'm happy to inform you that your issue has been resolved. Please let me know if you need any further assistance.\n\nBest regards,\nSupport Team`)}
-                    className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full cursor-pointer"
-                  >
-                    Issue Resolved
-                  </button>
-                  <button
-                    onClick={() => setReplyMessage(`Hi ${selectedTicket.customer},\n\nTo better assist you, could you please provide more details about the issue you're experiencing?\n\nBest regards,\nSupport Team`)}
-                    className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full cursor-pointer"
-                  >
-                    Need More Info
-                  </button>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-4">
-                <button 
-                  onClick={() => {
-                    setShowReplyModal(false);
-                    setReplyMessage('');
-                  }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    // Update ticket with response count
-                    setTickets(tickets.map(t => 
-                      t.id === selectedTicket.id 
-                        ? { ...t, responses: (t.responses || 0) + 1, status: 'in-progress' as const, updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' ') }
-                        : t
-                    ));
-                    setShowReplyModal(false);
-                    setReplyMessage('');
-                    alert(`Reply sent successfully to ${selectedTicket.email}!\n\nIn production, this would:\n- Send an email to the customer\n- Log the response in the ticket history\n- Update the ticket status`);
-                  }}
-                  disabled={!replyMessage.trim()}
-                  className="flex-1 px-4 py-2 rounded-lg text-white font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" 
-                  style={{ backgroundColor: '#fc6813' }}
-                >
-                  <Send className="w-4 h-4" />
-                  Send Reply
-                </button>
-              </div>
+            <div className="p-8 space-y-6 overflow-y-auto">
+               <textarea value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} className="w-full h-48 px-4 py-3 bg-gray-50 rounded-xl outline-none font-medium text-gray-900 border-2 border-transparent focus:border-indigo-100" placeholder="Type message..." />
+            </div>
+            <div className="p-6 border-t flex gap-4 bg-gray-50 rounded-b-[2rem]">
+              <button onClick={() => setShowReplyModal(false)} className="flex-1 py-4 font-bold text-gray-600 cursor-pointer">Cancel</button>
+              <button onClick={() => { alert('Reply sent!'); setShowReplyModal(false); setReplyMessage(''); }} className="flex-[2] py-4 bg-indigo-600 text-white rounded-xl font-bold cursor-pointer transition-all hover:bg-indigo-700">Send</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Ticket Detail Modal */}
       {showDetailModal && selectedTicket && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-500 to-accent-500">
-              <h2 className="text-xl font-bold text-white">Ticket Details</h2>
-              <button onClick={() => setShowDetailModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-white" />
-              </button>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[2rem] max-w-2xl w-full shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 flex justify-between items-center text-white">
+              <h2 className="text-xl font-bold tracking-widest uppercase">Ticket Details</h2>
+              <button onClick={() => setShowDetailModal(false)} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all cursor-pointer"><X className="w-5 h-5" /></button>
             </div>
-            
-            <div className="p-6 space-y-6">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-mono text-gray-500">{selectedTicket.id}</span>
-                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${getStatusColor(selectedTicket.status)}`}>
-                    {selectedTicket.status.replace('-', ' ')}
-                  </span>
-                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full border flex items-center gap-1 ${getPriorityColor(selectedTicket.priority)}`}>
-                    {getPriorityIcon(selectedTicket.priority)}
-                    {selectedTicket.priority}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900">{selectedTicket.subject}</h3>
+            <div className="p-8 overflow-y-auto bg-gray-50/50">
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6 text-gray-900 font-bold">
+                <div className="flex justify-between items-start"><div><p className="text-3xl font-black">{selectedTicket.id}</p><h3 className="text-xl text-gray-500">{selectedTicket.subject}</h3></div><span className={`${getStatusConfig(selectedTicket.status).bg} text-white px-3 py-1 rounded-full text-xs`}>{selectedTicket.status}</span></div>
+                <div className="grid grid-cols-2 gap-4 text-sm font-bold border-t pt-4"><div><p className="text-gray-400">Customer</p><p>{selectedTicket.customer}</p></div><div><p className="text-gray-400">Category</p><p>{selectedTicket.category}</p></div></div>
+                <div className="border-t pt-4 p-4 bg-gray-50 rounded-xl font-medium text-gray-600 leading-relaxed italic">{"\""}{selectedTicket.description}{"\""}</div>
+                <button onClick={() => setShowDetailModal(false)} className="w-full py-4 bg-gray-900 text-white rounded-xl hover:bg-black transition-all cursor-pointer">Close</button>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Customer</p>
-                  <p className="font-medium text-gray-900">{selectedTicket.customer}</p>
-                  <p className="text-sm text-gray-600 mt-1">{selectedTicket.email}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Category</p>
-                  <p className="font-medium text-gray-900">{selectedTicket.category}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Created</p>
-                  <p className="font-medium text-gray-900">{selectedTicket.createdAt}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Last Updated</p>
-                  <p className="font-medium text-gray-900">{selectedTicket.updatedAt}</p>
-                </div>
-              </div>
-
-              {selectedTicket.assignedTo && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm font-medium text-blue-900">Assigned to: {selectedTicket.assignedTo}</p>
-                </div>
-              )}
-
-              {selectedTicket.description && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm font-medium text-gray-900 mb-2">Description:</p>
-                  <p className="text-gray-700">{selectedTicket.description}</p>
-                </div>
-              )}
-
-              <div className="border-t pt-4">
-                <h4 className="font-semibold text-gray-900 mb-3">Quick Actions</h4>
-                <div className="flex gap-3">
-                  <button 
-                    onClick={() => {
-                      setTickets(tickets.map(t => 
-                        t.id === selectedTicket.id ? { ...t, status: 'resolved' as const } : t
-                      ));
-                      setShowDetailModal(false);
-                      alert('Ticket marked as resolved!');
-                    }}
-                    className="flex-1 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    Mark Resolved
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setShowDetailModal(false);
-                      setShowReplyModal(true);
-                    }}
-                    className="flex-1 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <Send className="w-4 h-4" />
-                    Send Reply
-                  </button>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => setShowDetailModal(false)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium cursor-pointer"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {deletingTicket && (
-        <DeleteConfirmationModal
-          isOpen={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setDeletingTicket(null);
-          }}
-          onConfirm={() => {
-            setTickets(tickets.filter(t => t.id !== deletingTicket.id));
-            alert('✓ Ticket deleted successfully!');
-          }}
-          title="Delete Ticket"
-          itemName={deletingTicket.subject}
-          itemDetails={`${deletingTicket.customer} - Priority: ${deletingTicket.priority}`}
-          warningMessage="This will permanently remove this support ticket and all its messages."
-        />
+        <DeleteConfirmationModal isOpen={showDeleteModal} onClose={() => { setShowDeleteModal(false); setDeletingTicket(null); }} onConfirm={() => { setTickets(tickets.filter(t => t.id !== deletingTicket.id)); setShowDeleteModal(false); }} title="Delete Ticket" itemName={deletingTicket.id} itemDetails={deletingTicket.subject} warningMessage="This action cannot be undone." />
       )}
     </div>
   );

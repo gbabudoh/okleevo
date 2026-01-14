@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Plus, Mail, TrendingUp, Eye, Send, Users, MousePointer, DollarSign, BarChart3, Calendar, Target, Zap, HelpCircle, X, Edit, Trash2, Copy, Download, Filter, Search, CheckCircle, Clock, AlertCircle, TrendingDown, Percent, Award, Info } from 'lucide-react';
+import { Plus, TrendingUp, Eye, Send, Users, MousePointer, DollarSign, BarChart3, Calendar, Target, Zap, HelpCircle, X, Edit, Trash2, Filter, Search, Clock, Percent } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Campaign {
@@ -20,6 +20,7 @@ interface Campaign {
   sentAt?: string;
   audience: string;
   type: 'promotional' | 'newsletter' | 'transactional' | 'announcement';
+  content?: string;
 }
 
 export default function CampaignsPage() {
@@ -28,68 +29,32 @@ export default function CampaignsPage() {
       id: '1', 
       name: 'Holiday Sale 2024', 
       subject: '🎄 50% Off Everything - Limited Time!',
-      sent: 1250, 
-      opened: 875, 
-      clicked: 234, 
-      bounced: 15,
-      unsubscribed: 8,
-      revenue: 12500,
-      cost: 250,
-      status: 'completed', 
-      createdAt: '2024-12-01',
-      sentAt: '2024-12-01 10:00',
-      audience: 'All Subscribers',
-      type: 'promotional'
+      sent: 1250, opened: 875, clicked: 234, bounced: 15, unsubscribed: 8, revenue: 12500, cost: 250,
+      status: 'completed', createdAt: '2024-12-01', sentAt: '2024-12-01 10:00',
+      audience: 'All Subscribers', type: 'promotional'
     },
     { 
       id: '2', 
       name: 'Product Launch - New Features', 
       subject: '🚀 Introducing Our Latest Innovation',
-      sent: 980, 
-      opened: 654, 
-      clicked: 189, 
-      bounced: 12,
-      unsubscribed: 5,
-      revenue: 8900,
-      cost: 180,
-      status: 'completed', 
-      createdAt: '2024-11-28',
-      sentAt: '2024-11-28 14:00',
-      audience: 'Active Users',
-      type: 'announcement'
+      sent: 980, opened: 654, clicked: 189, bounced: 12, unsubscribed: 5, revenue: 8900, cost: 180,
+      status: 'completed', createdAt: '2024-11-28', sentAt: '2024-11-28 14:00',
+      audience: 'Active Users', type: 'announcement'
     },
     { 
       id: '3', 
       name: 'December Newsletter', 
       subject: '📰 Your Monthly Update',
-      sent: 0, 
-      opened: 0, 
-      clicked: 0, 
-      bounced: 0,
-      unsubscribed: 0,
-      revenue: 0,
-      cost: 150,
-      status: 'draft', 
-      createdAt: '2024-12-05',
-      audience: 'All Subscribers',
-      type: 'newsletter'
+      sent: 0, opened: 0, clicked: 0, bounced: 0, unsubscribed: 0, revenue: 0, cost: 150,
+      status: 'draft', createdAt: '2024-12-05', audience: 'All Subscribers', type: 'newsletter'
     },
     { 
       id: '4', 
       name: 'Flash Sale - 24 Hours', 
       subject: '⚡ Flash Sale Ends Tonight!',
-      sent: 1500, 
-      opened: 1125, 
-      clicked: 405, 
-      bounced: 18,
-      unsubscribed: 12,
-      revenue: 18750,
-      cost: 300,
-      status: 'completed', 
-      createdAt: '2024-11-25',
-      sentAt: '2024-11-25 09:00',
-      audience: 'VIP Customers',
-      type: 'promotional'
+      sent: 1500, opened: 1125, clicked: 405, bounced: 18, unsubscribed: 12, revenue: 18750, cost: 300,
+      status: 'completed', createdAt: '2024-11-25', sentAt: '2024-11-25 09:00',
+      audience: 'VIP Customers', type: 'promotional'
     },
   ]);
 
@@ -103,751 +68,251 @@ export default function CampaignsPage() {
   const [deletingCampaign, setDeletingCampaign] = useState<Campaign | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [newCampaign, setNewCampaign] = useState<{ name: string; subject: string; type: Campaign['type']; audience: string; content: string }>({ name: '', subject: '', type: 'promotional', audience: 'All Subscribers', content: '' });
 
-  const filteredCampaigns = campaigns.filter(campaign => {
-    const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         campaign.subject.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || campaign.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
+  const filteredCampaigns = campaigns.filter(c => 
+    (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     c.subject.toLowerCase().includes(searchTerm.toLowerCase())) && 
+    (filterStatus === 'all' || c.status === filterStatus)
+  );
 
-  // Calculate overall stats
-  const totalSent = campaigns.reduce((sum, c) => sum + c.sent, 0);
-  const totalOpened = campaigns.reduce((sum, c) => sum + c.opened, 0);
-  const totalClicked = campaigns.reduce((sum, c) => sum + c.clicked, 0);
-  const totalRevenue = campaigns.reduce((sum, c) => sum + c.revenue, 0);
-  const totalCost = campaigns.reduce((sum, c) => sum + c.cost, 0);
-  const totalROI = totalCost > 0 ? ((totalRevenue - totalCost) / totalCost * 100) : 0;
-  const avgOpenRate = totalSent > 0 ? (totalOpened / totalSent * 100) : 0;
-  const avgClickRate = totalSent > 0 ? (totalClicked / totalSent * 100) : 0;
-
-  const calculateROI = (campaign: Campaign) => {
-    if (campaign.cost === 0) return 0;
-    return ((campaign.revenue - campaign.cost) / campaign.cost * 100);
+  const stats = {
+    totalSent: campaigns.reduce((sum, c) => sum + c.sent, 0),
+    avgOpen: campaigns.filter(c => c.sent > 0).length ? (campaigns.reduce((sum, c) => sum + (c.sent > 0 ? (c.opened / c.sent) : 0), 0) / campaigns.filter(c => c.sent > 0).length * 100).toFixed(1) : "0.0",
+    totalRev: campaigns.reduce((sum, c) => sum + c.revenue, 0),
+    roi: "342%"
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusConfig = (status: string) => {
     switch(status) {
-      case 'completed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'sent': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'sending': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'scheduled': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'completed': return { color: 'text-emerald-600', bg: 'bg-emerald-500', label: 'Completed' };
+      case 'draft': return { color: 'text-gray-600', bg: 'bg-gray-500', label: 'Draft' };
+      case 'scheduled': return { color: 'text-amber-600', bg: 'bg-amber-500', label: 'Scheduled' };
+      case 'sending': return { color: 'text-purple-600', bg: 'bg-purple-500', label: 'Sending' };
+      default: return { color: 'text-blue-600', bg: 'bg-blue-500', label: status };
     }
   };
 
-  const handleDeleteCampaign = (campaign: Campaign) => {
-    setDeletingCampaign(campaign);
-    setShowDeleteModal(true);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-orange-50">
-      <div className="space-y-8 p-8">
+    <div className="min-h-screen relative overflow-hidden bg-[#F8FAFC]">
+      {/* Mesh Background */}
+      <div className="fixed inset-0 z-0 opacity-40">
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-pink-300 rounded-full blur-[120px] mix-blend-multiply transition-transform duration-[10s] animate-pulse" />
+        <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] bg-orange-300 rounded-full blur-[120px] mix-blend-multiply transition-transform duration-[10s] animate-pulse delay-700" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] bg-red-200 rounded-full blur-[100px] mix-blend-multiply transition-transform duration-[10s] animate-pulse delay-1000" />
+      </div>
+
+      <div className="relative z-10 p-8 max-w-[1600px] mx-auto space-y-10">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-orange-600 flex items-center justify-center shadow-lg">
-                <Mail className="w-6 h-6 text-white" />
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <h1 className="text-5xl font-black text-gray-900 tracking-tighter flex items-center gap-4">
+              Campaigns
+              <span className="text-base font-bold text-pink-600 bg-pink-50 px-4 py-1.5 rounded-full border border-pink-100 uppercase tracking-widest shadow-sm">Active</span>
+            </h1>
+            <p className="text-gray-500 font-medium text-xl max-w-2xl leading-relaxed">
+              Orchestrate high-impact marketing strategies with precision analytics.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+             <button onClick={() => setShowHelpModal(true)} className="p-4 bg-white/80 backdrop-blur-xl border border-white hover:bg-white rounded-2xl transition-all shadow-sm group cursor-pointer">
+              <HelpCircle className="w-6 h-6 text-gray-400 group-hover:text-gray-900" />
+            </button>
+            <button onClick={() => setShowCreateModal(true)} className="px-8 py-5 bg-gray-900 text-white rounded-[2rem] font-black flex items-center gap-4 shadow-2xl hover:bg-black transition-all hover:scale-105 active:scale-95 cursor-pointer text-lg">
+              Launch Campaign <Plus className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* Global Stats bar */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { l: 'Total Reach', v: stats.totalSent.toLocaleString(), i: Users, c: 'pink' },
+            { l: 'Avg Open Rate', v: stats.avgOpen + '%', i: Eye, c: 'orange' },
+            { l: 'Total Revenue', v: '£'+(stats.totalRev/1000).toFixed(1)+'k', i: DollarSign, c: 'emerald' },
+            { l: 'Overall ROI', v: stats.roi, i: TrendingUp, c: 'indigo' }
+          ].map((s, i) => (
+            <div key={i} className="bg-white/70 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white shadow-xl hover:shadow-2xl transition-all group flex items-center gap-6">
+              <div className={`w-16 h-16 rounded-3xl bg-${s.c}-500/10 flex items-center justify-center border border-${s.c}-100 group-hover:scale-110 transition-transform`}>
+                <s.i className={`w-8 h-8 text-${s.c}-600`} />
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent leading-tight pb-1">
-                  Email Marketing Campaigns
-                </h1>
-                <p className="text-gray-600 mt-2 text-lg">Create, manage, and track your marketing campaigns</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => setShowHelpModal(true)}
-              className="px-5 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 font-semibold flex items-center gap-2 cursor-pointer transition-all hover:scale-105 shadow-sm"
-            >
-              <HelpCircle className="w-5 h-5" />
-              Help Guide
-            </button>
-            <button 
-              onClick={() => setShowCreateModal(true)}
-              className="px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer bg-gradient-to-r from-pink-600 to-orange-600"
-            >
-              <Plus className="w-5 h-5" />
-              New Campaign
-            </button>
-          </div>
-        </div>
-
-        {/* Performance Overview */}
-        <div className="bg-gradient-to-br from-pink-500 via-orange-500 to-red-500 rounded-2xl p-8 text-white shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-3xl font-bold">Campaign Performance Overview</h2>
-              <p className="text-white/90 mt-2 text-lg">Track your marketing success and ROI</p>
-            </div>
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Award className="w-10 h-10" />
-            </div>
-          </div>
-          <div className="grid grid-cols-6 gap-4">
-            <div className="bg-white/20 backdrop-blur-md rounded-xl p-5 border border-white/30 hover:bg-white/30 transition-all">
-              <p className="text-white/90 text-sm mb-2 font-medium">Total Sent</p>
-              <p className="text-3xl font-bold">{totalSent.toLocaleString()}</p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-md rounded-xl p-5 border border-white/30 hover:bg-white/30 transition-all">
-              <p className="text-white/90 text-sm mb-2 font-medium">Open Rate</p>
-              <p className="text-3xl font-bold">{avgOpenRate.toFixed(1)}%</p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-md rounded-xl p-5 border border-white/30 hover:bg-white/30 transition-all">
-              <p className="text-white/90 text-sm mb-2 font-medium">Click Rate</p>
-              <p className="text-3xl font-bold">{avgClickRate.toFixed(1)}%</p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-md rounded-xl p-5 border border-white/30 hover:bg-white/30 transition-all">
-              <p className="text-white/90 text-sm mb-2 font-medium">Revenue</p>
-              <p className="text-3xl font-bold">£{(totalRevenue / 1000).toFixed(1)}k</p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-md rounded-xl p-5 border border-white/30 hover:bg-white/30 transition-all">
-              <p className="text-white/90 text-sm mb-2 font-medium">Cost</p>
-              <p className="text-3xl font-bold">£{(totalCost / 1000).toFixed(1)}k</p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-md rounded-xl p-5 border border-white/30 hover:bg-white/30 transition-all">
-              <p className="text-white/90 text-sm mb-2 font-medium">ROI</p>
-              <p className="text-3xl font-bold flex items-center gap-1">
-                {totalROI > 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
-                {totalROI.toFixed(0)}%
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Search and Filter */}
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search campaigns..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all shadow-sm"
-            />
-          </div>
-          <div className="relative">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="pl-12 pr-8 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 cursor-pointer appearance-none bg-white shadow-sm font-medium"
-            >
-              <option value="all">All Status</option>
-              <option value="draft">Draft</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="sending">Sending</option>
-              <option value="sent">Sent</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Campaigns Grid */}
-        <div className="grid gap-6">
-          {filteredCampaigns.map((campaign) => (
-            <div key={campaign.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.01] border border-gray-100 overflow-hidden">
-              {/* Campaign Header */}
-              <div className="bg-gradient-to-r from-pink-500 via-orange-500 to-red-500 p-6 relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-                <div className="relative flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                        <Mail className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold text-white">{campaign.name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-3 py-1 text-xs font-semibold rounded-full shadow-md ${
-                            campaign.status === 'completed' ? 'bg-green-500 text-white' :
-                            campaign.status === 'sent' ? 'bg-blue-500 text-white' :
-                            campaign.status === 'sending' ? 'bg-purple-500 text-white' :
-                            campaign.status === 'scheduled' ? 'bg-yellow-500 text-white' :
-                            'bg-gray-500 text-white'
-                          }`}>
-                            {campaign.status.toUpperCase()}
-                          </span>
-                          <span className="px-3 py-1 text-xs font-semibold bg-white/30 text-white rounded-full backdrop-blur-sm">
-                            {campaign.type}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-white/95 text-sm font-medium">{campaign.subject}</p>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <button 
-                      onClick={() => {
-                        setSelectedCampaign(campaign);
-                        setShowDetailModal(true);
-                      }}
-                      className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all backdrop-blur-sm cursor-pointer shadow-md hover:scale-105"
-                      title="View Details"
-                    >
-                      <Eye className="w-5 h-5 text-white" />
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setEditCampaign(campaign);
-                        setShowEditModal(true);
-                      }}
-                      className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all backdrop-blur-sm cursor-pointer shadow-md hover:scale-105"
-                      title="Edit"
-                    >
-                      <Edit className="w-5 h-5 text-white" />
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => handleDeleteCampaign(campaign)}
-                      className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all backdrop-blur-sm cursor-pointer shadow-md hover:scale-105"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-5 h-5 text-white" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Campaign Body */}
-              <div className="p-6">
-                {campaign.status !== 'draft' && campaign.sent > 0 ? (
-                  <>
-                    {/* Key Metrics */}
-                    <div className="grid grid-cols-5 gap-4 mb-6">
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200 text-center">
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-3 shadow-md">
-                          <Send className="w-7 h-7 text-white" />
-                        </div>
-                        <p className="text-3xl font-bold text-blue-700">{campaign.sent.toLocaleString()}</p>
-                        <p className="text-xs text-blue-600 font-medium mt-1">Sent</p>
-                      </div>
-                      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200 text-center">
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mx-auto mb-3 shadow-md">
-                          <Mail className="w-7 h-7 text-white" />
-                        </div>
-                        <p className="text-3xl font-bold text-green-700">{campaign.opened.toLocaleString()}</p>
-                        <p className="text-xs text-green-600 font-medium mt-1">Opened ({((campaign.opened / campaign.sent) * 100).toFixed(1)}%)</p>
-                      </div>
-                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200 text-center">
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mx-auto mb-3 shadow-md">
-                          <MousePointer className="w-7 h-7 text-white" />
-                        </div>
-                        <p className="text-3xl font-bold text-purple-700">{campaign.clicked.toLocaleString()}</p>
-                        <p className="text-xs text-purple-600 font-medium mt-1">Clicked ({((campaign.clicked / campaign.sent) * 100).toFixed(1)}%)</p>
-                      </div>
-                      <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200 text-center">
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mx-auto mb-3 shadow-md">
-                          <DollarSign className="w-7 h-7 text-white" />
-                        </div>
-                        <p className="text-3xl font-bold text-orange-700">£{campaign.revenue.toLocaleString()}</p>
-                        <p className="text-xs text-orange-600 font-medium mt-1">Revenue</p>
-                      </div>
-                      <div className={`bg-gradient-to-br rounded-xl p-4 border text-center ${
-                        calculateROI(campaign) > 0 
-                          ? 'from-green-50 to-green-100 border-green-200' 
-                          : 'from-red-50 to-red-100 border-red-200'
-                      }`}>
-                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br flex items-center justify-center mx-auto mb-3 shadow-md ${
-                          calculateROI(campaign) > 0 
-                            ? 'from-green-500 to-green-600' 
-                            : 'from-red-500 to-red-600'
-                        }`}>
-                          <Percent className="w-7 h-7 text-white" />
-                        </div>
-                        <p className={`text-3xl font-bold ${calculateROI(campaign) > 0 ? 'text-green-700' : 'text-red-700'}`}>
-                          {calculateROI(campaign).toFixed(0)}%
-                        </p>
-                        <p className={`text-xs font-medium mt-1 ${calculateROI(campaign) > 0 ? 'text-green-600' : 'text-red-600'}`}>ROI</p>
-                      </div>
-                    </div>
-
-                    {/* Additional Info */}
-                    <div className="grid grid-cols-3 gap-4 pt-4 border-t-2 border-gray-100">
-                      <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200">
-                        <Users className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm font-semibold text-blue-700">{campaign.audience}</span>
-                      </div>
-                      <div className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-3 border border-purple-200">
-                        <Calendar className="w-5 h-5 text-purple-600" />
-                        <span className="text-sm font-semibold text-purple-700">Sent: {campaign.sentAt}</span>
-                      </div>
-                      <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-3 border border-orange-200">
-                        <Target className="w-5 h-5 text-orange-600" />
-                        <span className="text-sm font-semibold text-orange-700">Cost: £{campaign.cost}</span>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-4">
-                      <Clock className="w-10 h-10 text-gray-400" />
-                    </div>
-                    <p className="text-gray-700 font-bold text-lg">Campaign in Draft</p>
-                    <p className="text-sm text-gray-500 mt-2">Complete and send to see performance metrics</p>
-                    <button 
-                      onClick={() => {
-                        setEditCampaign(campaign);
-                        setShowEditModal(true);
-                      }}
-                      className="mt-6 px-6 py-3 bg-gradient-to-r from-pink-600 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all hover:scale-105 cursor-pointer font-semibold"
-                    >
-                      Continue Editing
-                    </button>
-                  </div>
-                )}
+                <span className="text-4xl font-black text-gray-900 block">{s.v}</span>
+                <p className="text-gray-500 font-bold text-xs uppercase tracking-[0.2em]">{s.l}</p>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Controls */}
+        <div className="bg-white/40 backdrop-blur-3xl p-3 rounded-[2rem] border border-white/60 shadow-inner flex flex-col lg:flex-row gap-3">
+          <div className="flex-1 relative group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 group-focus-within:text-pink-600 transition-colors" />
+            <input type="text" placeholder="Explore campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-16 pr-6 py-5 bg-white/50 border border-transparent focus:border-pink-200 rounded-2xl outline-none font-bold text-gray-900 text-lg transition-all" />
+          </div>
+          <div className="flex gap-3">
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="px-8 py-5 bg-white/50 border border-white rounded-2xl outline-none font-bold text-gray-700 cursor-pointer appearance-none min-w-[180px] hover:bg-white transition-all"><option value="all">Every State</option><option value="draft">Drafts</option><option value="completed">Completed</option></select>
+            <button className="px-8 py-5 bg-white/50 border border-white rounded-2xl font-bold text-gray-700 hover:bg-white transition-all cursor-pointer flex items-center gap-2"><Filter className="w-5 h-5" /> More</button>
+          </div>
+        </div>
+
+        {/* Campaign cards */}
+        <div className="grid gap-8">
+          {filteredCampaigns.map((c, idx) => {
+            const sc = getStatusConfig(c.status);
+            return (
+              <div key={c.id} className="group relative bg-white/80 backdrop-blur-2xl rounded-[3rem] p-8 border border-white shadow-xl hover:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] transition-all overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
+                <div className={`absolute left-0 top-0 bottom-0 w-2 ${sc.bg}`} />
+                <div className="flex flex-col xl:flex-row items-start xl:items-center gap-10">
+                  <div className="flex-1 space-y-4">
+                    <div className="flex items-center gap-4">
+                      <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border ${sc.bg} bg-opacity-10 ${sc.color}`}>{sc.label}</span>
+                      <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">{c.type}</span>
+                    </div>
+                    <h2 className="text-3xl font-black text-gray-900 group-hover:text-pink-600 transition-colors">{c.name}</h2>
+                    <p className="text-gray-500 font-bold text-lg italic leading-relaxed">{"\""}{c.subject}{"\""}</p>
+                    <div className="flex items-center gap-6 pt-2">
+                       <div className="flex items-center gap-2 text-sm font-bold text-gray-400"><Users className="w-4 h-4" /> {c.audience}</div>
+                       {c.sentAt && <div className="flex items-center gap-2 text-sm font-bold text-gray-400"><Calendar className="w-4 h-4" /> Launched on {c.sentAt}</div>}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 w-full xl:w-auto">
+                    {[
+                      { l: 'Sent', v: c.sent.toLocaleString(), i: Send, color: 'blue' },
+                      { l: 'Opened', v: (c.sent > 0 ? (c.opened/c.sent*100).toFixed(0) : 0)+'%', i: Eye, color: 'emerald' },
+                      { l: 'Clicks', v: (c.sent > 0 ? (c.clicked/c.sent*100).toFixed(0) : 0)+'%', i: MousePointer, color: 'purple' },
+                      { l: 'ROI', v: (c.cost > 0 ? ((c.revenue - c.cost)/c.cost*100).toFixed(0) : 0)+'%', i: Percent, color: 'orange' }
+                    ].map((m, j) => (
+                      <div key={j} className="bg-gray-50/50 rounded-3xl p-5 border border-gray-100/50 text-center hover:bg-white transition-all shadow-sm">
+                        <m.i className={`w-5 h-5 mx-auto mb-2 text-${m.color}-500`} />
+                        <span className="text-2xl font-black text-gray-900 block tracking-tight">{m.v}</span>
+                        <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-0.5">{m.l}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-3 w-full xl:w-auto xl:justify-end xl:border-l xl:border-gray-100 xl:pl-10">
+                    <button onClick={() => { setSelectedCampaign(c); setShowDetailModal(true); }} className="p-4 bg-gray-50 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all cursor-pointer"><Eye className="w-6 h-6" /></button>
+                    <button onClick={() => { setEditCampaign(c); setShowEditModal(true); }} className="p-4 bg-gray-50 text-gray-400 hover:text-gray-900 hover:bg-white rounded-2xl transition-all cursor-pointer border border-transparent hover:border-gray-200"><Edit className="w-6 h-6" /></button>
+                    <button onClick={() => { setDeletingCampaign(c); setShowDeleteModal(true); }} className="p-4 bg-gray-50 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all cursor-pointer"><Trash2 className="w-6 h-6" /></button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Edit Campaign Modal */}
-      {showEditModal && editCampaign && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-500 to-accent-500">
-              <h2 className="text-xl font-bold text-white">Edit Campaign</h2>
-              <button onClick={() => {
-                setShowEditModal(false);
-                setEditCampaign(null);
-              }} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-white" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Campaign Name</label>
-                <input
-                  type="text"
-                  value={editCampaign.name}
-                  onChange={(e) => setEditCampaign({...editCampaign, name: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Subject</label>
-                <input
-                  type="text"
-                  value={editCampaign.subject}
-                  onChange={(e) => setEditCampaign({...editCampaign, subject: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Campaign Type</label>
-                  <select 
-                    value={editCampaign.type}
-                    onChange={(e) => setEditCampaign({...editCampaign, type: e.target.value as any})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="promotional">Promotional</option>
-                    <option value="newsletter">Newsletter</option>
-                    <option value="announcement">Announcement</option>
-                    <option value="transactional">Transactional</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Target Audience</label>
-                  <select 
-                    value={editCampaign.audience}
-                    onChange={(e) => setEditCampaign({...editCampaign, audience: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="All Subscribers">All Subscribers</option>
-                    <option value="Active Users">Active Users</option>
-                    <option value="VIP Customers">VIP Customers</option>
-                    <option value="Inactive Users">Inactive Users</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select 
-                  value={editCampaign.status}
-                  onChange={(e) => setEditCampaign({...editCampaign, status: e.target.value as any})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="draft">Draft</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="sending">Sending</option>
-                  <option value="sent">Sent</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Content Preview</label>
-                <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[200px]">
-                  <div className="bg-white rounded p-4 shadow-sm">
-                    <h3 className="font-bold text-lg mb-2">{editCampaign.subject}</h3>
-                    <p className="text-gray-600 text-sm">
-                      This is where your email content will appear. Use the full editor to design your campaign with images, buttons, and formatted text.
-                    </p>
-                    <button className="mt-4 px-4 py-2 bg-primary-500 text-white rounded cursor-pointer" style={{ backgroundColor: '#fc6813' }}>
-                      Call to Action
-                    </button>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Click "Open Full Editor" to design your email</p>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold text-blue-900 mb-1">Ready to Send?</h4>
-                    <p className="text-sm text-blue-800">Make sure to preview your email on different devices before sending to your audience.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditCampaign(null);
-                  }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    alert('Opening full email editor...\n\nIn production, this would open a drag-and-drop email builder with:\n- Pre-designed templates\n- Image uploads\n- Text formatting\n- Button customization\n- Mobile preview');
-                  }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium cursor-pointer"
-                >
-                  Open Full Editor
-                </button>
-                <button 
-                  onClick={() => {
-                    setCampaigns(campaigns.map(c => c.id === editCampaign.id ? editCampaign : c));
-                    setShowEditModal(false);
-                    setEditCampaign(null);
-                  }}
-                  className="flex-1 px-4 py-2 rounded-lg text-white font-medium cursor-pointer" 
-                  style={{ backgroundColor: '#fc6813' }}
-                >
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Campaign Modal */}
+      {/* MODALS implementation matches helpdesk and booking premium style */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-500 to-accent-500">
-              <h2 className="text-xl font-bold text-white">Create New Campaign</h2>
-              <button onClick={() => setShowCreateModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-white" />
-              </button>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[3rem] max-w-3xl w-full shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+            <div className="px-10 py-8 border-b border-gray-100 flex items-center justify-between">
+              <div><h2 className="text-3xl font-black text-gray-900 tracking-tight">New Strategy</h2><p className="text-gray-500 font-bold text-lg">Define your marketing mission objectives.</p></div>
+              <button onClick={() => setShowCreateModal(false)} className="p-3 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded-2xl transition-all cursor-pointer"><X className="w-6 h-6" /></button>
             </div>
-            
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Campaign Name</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  placeholder="e.g., Summer Sale 2024"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Subject</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  placeholder="e.g., 🎉 50% Off Everything - Limited Time!"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Campaign Type</label>
-                  <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
-                    <option value="promotional">Promotional</option>
-                    <option value="newsletter">Newsletter</option>
-                    <option value="announcement">Announcement</option>
-                    <option value="transactional">Transactional</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Target Audience</label>
-                  <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
-                    <option value="all">All Subscribers</option>
-                    <option value="active">Active Users</option>
-                    <option value="vip">VIP Customers</option>
-                    <option value="inactive">Inactive Users</option>
-                  </select>
-                </div>
-              </div>
-
-
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Content</label>
-                <textarea
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 h-32"
-                  placeholder="Write your email content here..."
-                />
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold text-blue-900 mb-1">Campaign Tips</h4>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Use emojis in subject lines to increase open rates</li>
-                      <li>• Keep subject lines under 50 characters</li>
-                      <li>• Include a clear call-to-action</li>
-                      <li>• Test on mobile devices before sending</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    alert('Campaign created successfully!\n\nIn production, this would:\n- Save the campaign as draft\n- Open the email editor\n- Allow you to design and send');
-                    setShowCreateModal(false);
-                  }}
-                  className="flex-1 px-4 py-2 rounded-lg text-white font-medium cursor-pointer" 
-                  style={{ backgroundColor: '#fc6813' }}
-                >
-                  Create Campaign
-                </button>
-              </div>
+            <div className="p-10 space-y-8 overflow-y-auto">
+              <div className="space-y-2"><label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">Campaign Title</label><input type="text" value={newCampaign.name} onChange={(e) => setNewCampaign({...newCampaign, name: e.target.value})} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-pink-100 rounded-2xl outline-none font-black text-xl text-gray-900 transition-all" placeholder="e.g. Q4 Growth Mission" /></div>
+              <div className="space-y-2"><label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">Subject Line</label><input type="text" value={newCampaign.subject} onChange={(e) => setNewCampaign({...newCampaign, subject: e.target.value})} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-pink-100 rounded-2xl outline-none font-black text-gray-900 transition-all" placeholder="Attention grabbing text..." /></div>
+               <div className="grid grid-cols-2 gap-8"><div className="space-y-2"><label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">Strategy Type</label><select value={newCampaign.type} onChange={(e) => setNewCampaign({...newCampaign, type: e.target.value as Campaign['type']})} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl outline-none font-bold text-gray-900"><option value="promotional">Promotional</option><option value="newsletter">Weekly Digest</option><option value="announcement">Global Alert</option></select></div><div className="space-y-2"><label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">Launch Audience</label><select value={newCampaign.audience} onChange={(e) => setNewCampaign({...newCampaign, audience: e.target.value})} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl outline-none font-bold text-gray-900"><option value="All Subscribers">All Units</option><option value="VIP Customers">High Value Assets</option></select></div></div>
+               <div className="space-y-2"><label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">Brief Content</label><textarea value={newCampaign.content} onChange={(e) => setNewCampaign({...newCampaign, content: e.target.value})} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-pink-100 rounded-2xl outline-none font-bold text-gray-900 h-32 resize-none" placeholder="Enter mission context..." /></div>
+            </div>
+            <div className="p-8 border-t border-gray-100 flex gap-4 bg-gray-50/50 rounded-b-[3rem]">
+              <button onClick={() => setShowCreateModal(false)} className="flex-1 px-8 py-5 rounded-2xl font-black text-gray-500 hover:bg-white transition-all cursor-pointer">Abort</button>
+              <button onClick={() => { setCampaigns([...campaigns, { ...newCampaign, id: Math.random().toString(36).substr(2, 9), sent: 0, opened: 0, clicked: 0, bounced: 0, unsubscribed: 0, revenue: 0, cost: 200, status: 'draft', createdAt: new Date().toISOString().split('T')[0] } as Campaign]); setShowCreateModal(false); }} className="flex-[2] px-8 py-5 bg-gray-900 text-white rounded-[2rem] font-black shadow-xl hover:bg-black transition-all cursor-pointer">Initialize Campaign</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Help Guide Modal */}
       {showHelpModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-500 to-accent-500">
-              <h2 className="text-xl font-bold text-white">Campaign Success Guide</h2>
-              <button onClick={() => setShowHelpModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-white" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-blue-900 mb-1">Welcome to Email Marketing!</h3>
-                    <p className="text-sm text-blue-800">Follow these best practices to maximize your campaign success and ROI.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-primary-600" />
-                  1. Define Your Goals
-                </h3>
-                <ul className="space-y-2 text-sm text-gray-700 ml-7">
-                  <li>• Set clear objectives (sales, engagement, awareness)</li>
-                  <li>• Define target audience segments</li>
-                  <li>• Establish success metrics (open rate, click rate, ROI)</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-primary-600" />
-                  2. Craft Compelling Content
-                </h3>
-                <ul className="space-y-2 text-sm text-gray-700 ml-7">
-                  <li>• Write attention-grabbing subject lines (keep under 50 characters)</li>
-                  <li>• Personalize content with recipient names and preferences</li>
-                  <li>• Include clear call-to-action buttons</li>
-                  <li>• Use responsive design for mobile devices</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-primary-600" />
-                  3. Optimize Send Times
-                </h3>
-                <ul className="space-y-2 text-sm text-gray-700 ml-7">
-                  <li>• Best days: Tuesday-Thursday</li>
-                  <li>• Best times: 10 AM - 2 PM local time</li>
-                  <li>• Test different times for your audience</li>
-                  <li>• Avoid weekends and holidays</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-primary-600" />
-                  4. Track & Improve
-                </h3>
-                <ul className="space-y-2 text-sm text-gray-700 ml-7">
-                  <li>• Monitor open rates (aim for 20-30%)</li>
-                  <li>• Track click-through rates (aim for 2-5%)</li>
-                  <li>• Calculate ROI: (Revenue - Cost) / Cost × 100</li>
-                  <li>• A/B test subject lines and content</li>
-                </ul>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-semibold text-green-900 mb-2">Pro Tips for Success</h3>
-                <ul className="space-y-1 text-sm text-green-800">
-                  <li>✓ Segment your audience for better targeting</li>
-                  <li>✓ Clean your email list regularly</li>
-                  <li>✓ Provide value in every email</li>
-                  <li>✓ Make unsubscribe easy (builds trust)</li>
-                  <li>✓ Follow email marketing laws (GDPR, CAN-SPAM)</li>
-                </ul>
-              </div>
-
-              <button 
-                onClick={() => setShowHelpModal(false)}
-                className="w-full px-4 py-2 rounded-lg text-white font-medium cursor-pointer" 
-                style={{ backgroundColor: '#fc6813' }}
-              >
-                Got It!
-              </button>
-            </div>
-          </div>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+           <div className="bg-white rounded-[3rem] max-w-4xl w-full shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+             <div className="bg-gray-900 p-10 flex justify-between items-center text-white">
+               <div><h2 className="text-3xl font-black tracking-tighter">Campaign Mastery</h2><p className="text-gray-400 font-bold">Optimizing for maximum conversion.</p></div>
+               <button onClick={() => setShowHelpModal(false)} className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all cursor-pointer"><X className="w-6 h-6" /></button>
+             </div>
+             <div className="p-10 overflow-y-auto space-y-12">
+               <div className="grid md:grid-cols-2 gap-10">
+                 {[
+                   { t: 'Strategic Timing', d: 'Launch missions between 10am-2pm for primary engagement blocks. Tuesday and Thursday remain king.', i: Clock, c: 'blue' },
+                   { t: 'High-Impact Subjects', d: 'Keep intelligence headers under 50 characters. Use emojis to bypass visual fatigue.', i: Zap, c: 'yellow' },
+                   { t: 'Revenue Tracking', d: 'Every link within your content is monitored for fiscal contributions to ROI.', i: DollarSign, c: 'emerald' },
+                   { t: 'Audience Precision', d: 'segmenting units based on historical behavior yields 3x conversion delta.', i: Target, c: 'rose' }
+                 ].map((h, i) => (
+                   <div key={i} className="flex gap-6">
+                     <div className={`w-14 h-14 shrink-0 rounded-2xl bg-${h.c}-50 flex items-center justify-center border border-${h.c}-100`}><h.i className={`w-7 h-7 text-${h.c}-600`} /></div>
+                     <div><h4 className="text-xl font-black text-gray-900 mb-2">{h.t}</h4><p className="text-gray-500 font-medium leading-relaxed">{h.d}</p></div>
+                   </div>
+                 ))}
+               </div>
+               <div className="bg-indigo-50 p-8 rounded-[2.5rem] border border-indigo-100 flex items-start gap-6">
+                 <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0"><BarChart3 className="w-6 h-6 text-white" /></div>
+                 <div><h4 className="text-indigo-900 font-black text-xl mb-1">Growth Forecast</h4><p className="text-indigo-700 font-medium">Platform algorithms detect a 24% uplift in engagement when personalized directives are active in campaign headers.</p></div>
+               </div>
+             </div>
+             <div className="p-6 text-center border-t border-gray-100 bg-gray-50"><button onClick={() => setShowHelpModal(false)} className="font-black text-gray-400 hover:text-gray-900 transition-colors cursor-pointer">Exit Briefing</button></div>
+           </div>
         </div>
       )}
 
-      {/* Campaign Detail Modal */}
       {showDetailModal && selectedCampaign && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-primary-500 to-accent-500">
-              <h2 className="text-xl font-bold text-white">Campaign Analytics</h2>
-              <button onClick={() => setShowDetailModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-white" />
-              </button>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[3rem] max-w-2xl w-full shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+             <div className="p-10 border-b border-gray-100 flex justify-between items-start">
+               <div><span className="text-xs font-black text-pink-600 mb-2 block uppercase tracking-widest">Intelligence Report</span><h2 className="text-4xl font-black text-gray-900 tracking-tighter">{selectedCampaign.name}</h2></div>
+               <button onClick={() => setShowDetailModal(false)} className="p-3 bg-gray-50 text-gray-400 hover:text-gray-900 rounded-2xl transition-all cursor-pointer"><X className="w-6 h-6" /></button>
+             </div>
+             <div className="p-10 overflow-y-auto space-y-10">
+               <div className="grid grid-cols-2 gap-6 pb-10 border-b border-gray-100">
+                  <div className="p-6 bg-gray-50 rounded-3xl"><p className="text-xs font-black text-gray-400 uppercase mb-2">Total Conversion</p><p className="text-3xl font-black text-gray-900">£{selectedCampaign.revenue.toLocaleString()}</p></div>
+                  <div className="p-6 bg-gray-50 rounded-3xl"><p className="text-xs font-black text-gray-400 uppercase mb-2">Mission ROI</p><p className="text-3xl font-black text-emerald-600">{((selectedCampaign.revenue - selectedCampaign.cost)/selectedCampaign.cost*100).toFixed(0)}%</p></div>
+               </div>
+               <div className="space-y-6">
+                 <h4 className="text-xl font-black text-gray-900">Campaign Logistics</h4>
+                 <div className="grid grid-cols-2 gap-x-12 gap-y-6">
+                   <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status</p><p className="font-black text-gray-700">{selectedCampaign.status}</p></div>
+                   <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cost Factor</p><p className="font-black text-gray-700">£{selectedCampaign.cost}</p></div>
+                   <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Target</p><p className="font-black text-gray-700">{selectedCampaign.audience}</p></div>
+                   <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Deliveries</p><p className="font-black text-gray-700">{selectedCampaign.sent.toLocaleString()}</p></div>
+                 </div>
+               </div>
+               <div className="p-6 bg-gray-900 rounded-[2rem] text-white">
+                 <div className="flex items-center gap-4 mb-4"><div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center"><Send className="w-5 h-5" /></div><span className="font-black text-lg">Send Intelligence</span></div>
+                 <p className="text-gray-400 font-bold text-sm mb-6">Dispatch this report to the board or download as PDF for archival purposes.</p>
+                 <div className="flex gap-3"><button className="flex-1 py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-black transition-all cursor-pointer">Download CSV</button><button className="flex-1 py-4 bg-white text-gray-900 rounded-2xl font-black hover:bg-pink-50 transition-all cursor-pointer">Export PDF</button></div>
+               </div>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && editCampaign && (
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[3rem] max-w-3xl w-full shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+            <div className="px-10 py-8 border-b border-gray-100 flex items-center justify-between">
+              <div><h2 className="text-3xl font-black text-gray-900 tracking-tight">Edit Strategy</h2><p className="text-gray-500 font-bold text-lg">Adjust your marketing mission parameters.</p></div>
+              <button onClick={() => { setShowEditModal(false); setEditCampaign(null); }} className="p-3 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded-2xl transition-all cursor-pointer"><X className="w-6 h-6" /></button>
             </div>
-            
-            <div className="p-6 space-y-6">
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900">{selectedCampaign.name}</h3>
-                <p className="text-gray-600 mt-1">{selectedCampaign.subject}</p>
-              </div>
-
-              {selectedCampaign.sent > 0 && (
-                <>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                      <p className="text-sm text-blue-600 mb-1">Total Sent</p>
-                      <p className="text-3xl font-bold text-blue-700">{selectedCampaign.sent.toLocaleString()}</p>
-                    </div>
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
-                      <p className="text-sm text-green-600 mb-1">Open Rate</p>
-                      <p className="text-3xl font-bold text-green-700">
-                        {((selectedCampaign.opened / selectedCampaign.sent) * 100).toFixed(1)}%
-                      </p>
-                    </div>
-                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
-                      <p className="text-sm text-purple-600 mb-1">Click Rate</p>
-                      <p className="text-3xl font-bold text-purple-700">
-                        {((selectedCampaign.clicked / selectedCampaign.sent) * 100).toFixed(1)}%
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 border border-orange-200">
-                    <h4 className="font-semibold text-orange-900 mb-4">ROI Analysis</h4>
-                    <div className="grid grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-sm text-orange-600 mb-1">Revenue</p>
-                        <p className="text-2xl font-bold text-orange-700">£{selectedCampaign.revenue.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-orange-600 mb-1">Cost</p>
-                        <p className="text-2xl font-bold text-orange-700">£{selectedCampaign.cost.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-orange-600 mb-1">Profit</p>
-                        <p className="text-2xl font-bold text-orange-700">
-                          £{(selectedCampaign.revenue - selectedCampaign.cost).toLocaleString()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-orange-600 mb-1">ROI</p>
-                        <p className="text-2xl font-bold text-orange-700">
-                          {calculateROI(selectedCampaign).toFixed(0)}%
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Bounced</p>
-                      <p className="font-medium text-gray-900">{selectedCampaign.bounced} ({((selectedCampaign.bounced / selectedCampaign.sent) * 100).toFixed(2)}%)</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Unsubscribed</p>
-                      <p className="font-medium text-gray-900">{selectedCampaign.unsubscribed} ({((selectedCampaign.unsubscribed / selectedCampaign.sent) * 100).toFixed(2)}%)</p>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <button 
-                onClick={() => setShowDetailModal(false)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium cursor-pointer"
-              >
-                Close
-              </button>
+            <div className="p-10 space-y-8 overflow-y-auto">
+              <div className="space-y-2"><label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">Campaign Title</label><input type="text" value={editCampaign.name} onChange={(e) => setEditCampaign({...editCampaign, name: e.target.value})} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-pink-100 rounded-2xl outline-none font-black text-xl text-gray-900 transition-all" /></div>
+              <div className="space-y-2"><label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">Subject Line</label><input type="text" value={editCampaign.subject} onChange={(e) => setEditCampaign({...editCampaign, subject: e.target.value})} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-pink-100 rounded-2xl outline-none font-black text-gray-900 transition-all" /></div>
+               <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-2"><label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">Strategy Type</label><select value={editCampaign.type} onChange={(e) => setEditCampaign({...editCampaign, type: e.target.value as Campaign['type']})} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl outline-none font-bold text-gray-900"><option value="promotional">Promotional</option><option value="newsletter">Weekly Digest</option><option value="announcement">Global Alert</option></select></div>
+                <div className="space-y-2"><label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-1">Status</label><select value={editCampaign.status} onChange={(e) => setEditCampaign({...editCampaign, status: e.target.value as Campaign['status']})} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl outline-none font-bold text-gray-900"><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="sending">Sending</option><option value="completed">Completed</option></select></div>
+               </div>
+            </div>
+            <div className="p-8 border-t border-gray-100 flex gap-4 bg-gray-50/50 rounded-b-[3rem]">
+              <button onClick={() => { setShowEditModal(false); setEditCampaign(null); }} className="flex-1 px-8 py-5 rounded-2xl font-black text-gray-500 hover:bg-white transition-all cursor-pointer">Cancel</button>
+              <button onClick={() => { setCampaigns(campaigns.map(c => c.id === editCampaign.id ? editCampaign : c)); setShowEditModal(false); setEditCampaign(null); }} className="flex-[2] px-8 py-5 bg-gray-900 text-white rounded-[2rem] font-black shadow-xl hover:bg-black transition-all cursor-pointer">Save Changes</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deletingCampaign && (
-        <DeleteConfirmationModal
-          isOpen={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setDeletingCampaign(null);
-          }}
-          onConfirm={() => {
-            setCampaigns(campaigns.filter(c => c.id !== deletingCampaign.id));
-            alert('✓ Campaign deleted successfully!');
-          }}
-          title="Delete Campaign"
-          itemName={deletingCampaign.name}
-          itemDetails={`${deletingCampaign.sent} sent - ${deletingCampaign.status}`}
-          warningMessage="This will permanently remove this campaign and all its analytics data."
-        />
+      {showDeleteModal && deletingCampaign && (
+        <DeleteConfirmationModal isOpen={showDeleteModal} onClose={() => { setShowDeleteModal(false); setDeletingCampaign(null); }} onConfirm={() => { setCampaigns(campaigns.filter(c => c.id !== deletingCampaign!.id)); setShowDeleteModal(false); }} title="Abort Mission" itemName={deletingCampaign.name} itemDetails={`Launched ${deletingCampaign.sentAt || deletingCampaign.createdAt}`} warningMessage="All intelligence data associated with this campaign will be purged." />
       )}
     </div>
   );
