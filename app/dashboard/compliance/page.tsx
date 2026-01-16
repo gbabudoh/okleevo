@@ -10,8 +10,9 @@ import {
   AlertCircle, XCircle, Link, Share2,
   Grid, List,
   BarChart3, PieChart, Activity, FileCheck,
-  Server, Workflow
+  Server, Workflow, FileSpreadsheet
 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 
 interface ComplianceItem {
   id: string;
@@ -374,6 +375,17 @@ export default function CompliancePage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [sharingItem, setSharingItem] = useState<ComplianceItem | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'PDF' | 'Excel' | 'CSV'>('PDF');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const showNotification = (message: string) => {
+    setSuccessMessage(message);
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 4000);
+  };
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -440,7 +452,7 @@ export default function CompliancePage() {
       title: `${item.title} (Copy)`,
     };
     setItems([...items, newItem]);
-    alert(`✓ Duplicated: ${item.title}`);
+    showNotification(`✓ Duplicated: ${item.title}`);
   };
 
   const handleExport = (item: ComplianceItem) => {
@@ -459,7 +471,7 @@ export default function CompliancePage() {
     link.download = `${item.title.replace(/\s+/g, '_')}_compliance.json`;
     link.click();
     URL.revokeObjectURL(url);
-    alert(`✓ Exported: ${item.title}`);
+    showNotification(`✓ Exported: ${item.title}`);
   };
 
   const handleShare = (item: ComplianceItem) => {
@@ -470,7 +482,7 @@ export default function CompliancePage() {
   const handleDelete = (item: ComplianceItem) => {
     if (confirm(`⚠️ Are you sure you want to delete "${item.title}"?\n\nThis action cannot be undone.`)) {
       setItems(items.filter(i => i.id !== item.id));
-      alert(`✓ Deleted: ${item.title}`);
+      showNotification(`✓ Deleted: ${item.title}`);
     }
   };
 
@@ -482,7 +494,88 @@ export default function CompliancePage() {
     );
     setItems(updatedItems);
     setSelectedItem(null);
-    alert(`✓ Marked as complete: ${item.title}`);
+    showNotification(`✓ Marked as complete: ${item.title}`);
+  };
+
+  const handleGenerateReport = () => {
+    // Collect data based on exportFormat
+    const reportData = items.map(item => ({
+      Title: item.title,
+      Status: item.status,
+      Priority: item.priority,
+      DueDate: item.dueDate.toLocaleDateString(),
+      Category: item.category,
+      Framework: item.framework || 'N/A',
+      Description: item.description
+    }));
+
+    let content = '';
+    let mimeType = '';
+    let extension = '';
+
+    if (exportFormat === 'CSV' || exportFormat === 'Excel') {
+      const headers = Object.keys(reportData[0]).join(',');
+      const rows = reportData.map(row => Object.values(row).map(v => `"${v}"`).join(','));
+      content = [headers, ...rows].join('\n');
+      mimeType = exportFormat === 'CSV' ? 'text/csv' : 'application/vnd.ms-excel';
+      extension = exportFormat === 'CSV' ? 'csv' : 'xls';
+
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `compliance_report_${new Date().toISOString().split('T')[0]}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else if (exportFormat === 'PDF') {
+      // Professional PDF Generation
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(30, 41, 59); // gray-900
+      doc.text("Compliance Center Report", 14, 22);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139); // gray-500
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+      doc.text(`Total Items: ${items.length}`, 14, 35);
+      
+      doc.setDrawColor(226, 232, 240); // gray-200
+      doc.line(14, 40, 196, 40);
+      
+      // Content
+      let yOffset = 50;
+      reportData.forEach((item, index) => {
+        if (yOffset > 270) {
+          doc.addPage();
+          yOffset = 20;
+        }
+        
+        doc.setFontSize(12);
+        doc.setTextColor(30, 41, 59);
+        doc.setFont("helvetica", "bold");
+        doc.text(`${index + 1}. ${item.Title}`, 14, yOffset);
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(71, 85, 105); // gray-600
+        doc.text(`Status: ${item.Status} | Priority: ${item.Priority} | Due: ${item.DueDate}`, 14, yOffset + 6);
+        doc.text(`Category: ${item.Category} | Framework: ${item.Framework}`, 14, yOffset + 11);
+        
+        const descriptionLines = doc.splitTextToSize(item.Description, 170);
+        doc.text(descriptionLines, 14, yOffset + 16);
+        
+        yOffset += 22 + (descriptionLines.length * 5);
+      });
+      
+      doc.save(`compliance_report_${new Date().toISOString().split('T')[0]}.pdf`);
+    }
+
+    setShowExportModal(false);
+    showNotification(`✓ ${exportFormat} report generated and download started!`);
   };
 
   // Dropdown Menu Component
@@ -510,7 +603,7 @@ export default function CompliancePage() {
             e.stopPropagation();
             setOpenDropdown(isOpen ? null : id);
           }}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors" 
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer" 
           title="More options"
         >
           <MoreVertical className="w-4 h-4 text-gray-600" />
@@ -522,7 +615,7 @@ export default function CompliancePage() {
               className="fixed inset-0 z-40" 
               onClick={() => setOpenDropdown(null)}
             />
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 z-50 overflow-hidden">
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 z-50">
               {onEdit && (
                 <button
                   onClick={(e) => {
@@ -530,7 +623,7 @@ export default function CompliancePage() {
                     onEdit();
                     setOpenDropdown(null);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors text-left cursor-pointer"
                 >
                   <Edit3 className="w-4 h-4 text-blue-600" />
                   <span className="text-sm font-medium text-gray-900">Edit</span>
@@ -543,7 +636,7 @@ export default function CompliancePage() {
                     onDuplicate();
                     setOpenDropdown(null);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-purple-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-purple-50 transition-colors text-left cursor-pointer"
                 >
                   <ClipboardCheck className="w-4 h-4 text-purple-600" />
                   <span className="text-sm font-medium text-gray-900">Duplicate</span>
@@ -556,7 +649,7 @@ export default function CompliancePage() {
                     onShare();
                     setOpenDropdown(null);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors text-left cursor-pointer"
                 >
                   <Share2 className="w-4 h-4 text-green-600" />
                   <span className="text-sm font-medium text-gray-900">Share</span>
@@ -569,7 +662,7 @@ export default function CompliancePage() {
                     onExport();
                     setOpenDropdown(null);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-indigo-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-indigo-50 transition-colors text-left cursor-pointer"
                 >
                   <Download className="w-4 h-4 text-indigo-600" />
                   <span className="text-sm font-medium text-gray-900">Export</span>
@@ -584,7 +677,7 @@ export default function CompliancePage() {
                       onDelete();
                       setOpenDropdown(null);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4 text-red-600" />
                     <span className="text-sm font-medium text-red-600">Delete</span>
@@ -704,7 +797,10 @@ export default function CompliancePage() {
             </div>
 
             {/* Total Frameworks */}
-            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+            <div 
+              onClick={() => setActiveTab('frameworks')}
+              className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+            >
                <div className="flex items-center justify-between mb-8">
                   <div className="p-3 bg-purple-50 rounded-2xl group-hover:bg-purple-100 transition-colors duration-300">
                      <Award className="w-6 h-6 text-purple-600" />
@@ -721,7 +817,10 @@ export default function CompliancePage() {
             </div>
 
             {/* Risk Level */}
-            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+            <div 
+              onClick={() => setActiveTab('risks')}
+              className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+            >
                <div className="flex items-center justify-between mb-8">
                   <div className="p-3 bg-red-50 rounded-2xl group-hover:bg-red-100 transition-colors duration-300">
                      <AlertTriangle className="w-6 h-6 text-red-500" />
@@ -741,7 +840,7 @@ export default function CompliancePage() {
             </div>
 
             {/* Compliance Cost */}
-            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer">
                <div className="flex items-center justify-between mb-8">
                   <div className="p-3 bg-emerald-50 rounded-2xl group-hover:bg-emerald-100 transition-colors duration-300">
                      <DollarSign className="w-6 h-6 text-emerald-600" />
@@ -892,7 +991,7 @@ export default function CompliancePage() {
               </h3>
               <button 
                 onClick={() => setActiveTab('frameworks')}
-                className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 cursor-pointer"
               >
                 View All
                 <ChevronRight className="w-4 h-4" />
@@ -957,7 +1056,7 @@ export default function CompliancePage() {
             </div>
             
             <div className="flex items-center gap-3">
-              <button className="px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
+              <button className="px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm cursor-pointer">
                 <Filter className="w-5 h-5 text-gray-600" />
                 <span className="font-medium text-gray-700">Filters</span>
               </button>
@@ -965,13 +1064,13 @@ export default function CompliancePage() {
               <div className="flex items-center gap-1 bg-white border-2 border-gray-200 rounded-xl p-1 shadow-sm">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-blue-500 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
+                  className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-blue-500 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
                 >
                   <Grid className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-blue-500 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
+                  className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-blue-500 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -987,7 +1086,7 @@ export default function CompliancePage() {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium whitespace-nowrap transition-all shadow-sm ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium whitespace-nowrap transition-all shadow-sm cursor-pointer ${
                     selectedCategory === category.id
                       ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105'
                       : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200'
@@ -1017,7 +1116,7 @@ export default function CompliancePage() {
                 return (
                   <div
                     key={item.id}
-                    className="group relative bg-white rounded-[2.5rem] border border-gray-100 p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
+                    className="group relative bg-white rounded-[2.5rem] border border-gray-100 p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                     onClick={() => setSelectedItem(item)}
                   >
                      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -1100,13 +1199,13 @@ export default function CompliancePage() {
    
                           <div onClick={(e) => e.stopPropagation()} className="opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
                              <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow-lg p-1">
-                                <button onClick={() => handleEdit(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-blue-600 transition-colors tooltip" title="Edit">
+                                <button onClick={() => handleEdit(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-blue-600 transition-colors tooltip cursor-pointer" title="Edit">
                                    <Edit3 className="w-3.5 h-3.5" />
                                 </button>
-                                <button onClick={() => handleShare(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-green-600 transition-colors tooltip" title="Share">
+                                <button onClick={() => handleShare(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-green-600 transition-colors tooltip cursor-pointer" title="Share">
                                    <Share2 className="w-3.5 h-3.5" />
                                 </button>
-                                <button onClick={() => handleDelete(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-red-600 transition-colors tooltip" title="Delete">
+                                <button onClick={() => handleDelete(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-red-600 transition-colors tooltip cursor-pointer" title="Delete">
                                    <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                              </div>
@@ -1141,11 +1240,11 @@ export default function CompliancePage() {
                         <div 
                            key={item.id} 
                            onClick={() => setSelectedItem(item)}
-                           className="group grid grid-cols-12 gap-4 items-center bg-white p-5 rounded-[1.5rem] border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-x-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
+                           className={`group grid grid-cols-12 gap-4 items-center bg-white p-5 rounded-[1.5rem] border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-x-1 transition-all duration-300 cursor-pointer relative ${openDropdown === `list-item-${item.id}` ? 'z-50' : ''}`}
                         >
-                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-50/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-[1.5rem]"></div>
                            
-                           <div className="col-span-4 relative z-10">
+                           <div className="col-span-4 relative">
                               <div className="flex items-center gap-4">
                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${statusConfig.bg} border ${statusConfig.border} shadow-sm group-hover:scale-105 transition-transform`}>
                                     <StatusIcon className={`w-6 h-6 ${statusConfig.text}`} />
@@ -1164,13 +1263,13 @@ export default function CompliancePage() {
                               </div>
                            </div>
 
-                           <div className="col-span-2 relative z-10">
+                           <div className="col-span-2 relative">
                               <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${priorityConfig.bg} ${priorityConfig.text} shadow-sm`}>
                                  {priorityConfig.label}
                               </span>
                            </div>
 
-                           <div className="col-span-2 relative z-10">
+                           <div className="col-span-2 relative">
                               <div className="flex flex-col gap-1.5">
                                  <div className="flex items-center justify-between text-[10px] font-bold">
                                     <span className="text-gray-500">Risk Level</span>
@@ -1189,21 +1288,21 @@ export default function CompliancePage() {
                               </div>
                            </div>
 
-                           <div className="col-span-2 relative z-10">
+                           <div className="col-span-2 relative">
                               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border w-fit ${isOverdue ? 'bg-red-50 border-red-100 text-red-700' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
                                  <Calendar className="w-3.5 h-3.5" />
                                  <span className="text-xs font-bold">{item.dueDate.toLocaleDateString()}</span>
                               </div>
                            </div>
 
-                           <div className="col-span-1 relative z-10">
+                           <div className="col-span-1 relative">
                               <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
                                  {statusConfig.icon === CheckCircle && <CheckCircle className="w-3 h-3" />}
                                  {statusConfig.label}
                               </div>
                            </div>
 
-                           <div className="col-span-1 relative z-10 text-right">
+                           <div className="col-span-1 relative text-right">
                               <div onClick={(e) => e.stopPropagation()} className="inline-block">
                                  <DropdownMenu
                                     id={`list-item-${item.id}`}
@@ -1234,7 +1333,7 @@ export default function CompliancePage() {
               const daysUntilExpiry = framework.expiryDate ? Math.ceil((framework.expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
               
               return (
-                <div key={framework.id} className="bg-white rounded-2xl border-2 border-gray-200 p-6 hover:shadow-2xl transition-all">
+                <div key={framework.id} className={`bg-white rounded-2xl border-2 border-gray-200 p-6 hover:shadow-2xl transition-all relative ${openDropdown === `framework-${framework.id}` ? 'z-50' : ''}`}>
                   <div className="flex items-start justify-between mb-4">
                     <div className={`p-4 rounded-xl bg-gradient-to-br ${framework.gradient} shadow-lg`}>
                       <Icon className="w-8 h-8 text-white" />
@@ -1291,7 +1390,7 @@ export default function CompliancePage() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <button className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+                    <button className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer">
                       View Details
                     </button>
                     <DropdownMenu
@@ -1472,7 +1571,7 @@ export default function CompliancePage() {
                 const Icon = config.icon;
                 
                 return (
-                  <div key={idx} className={`p-4 rounded-xl border-2 ${config.border} ${config.bg} hover:shadow-md transition-all`}>
+                  <div key={idx} className={`p-4 rounded-xl border-2 ${config.border} ${config.bg} hover:shadow-md transition-all relative ${openDropdown === `audit-${idx}` ? 'z-50' : ''}`}>
                     <div className="flex items-center gap-4">
                       <div className={`p-2 bg-white rounded-lg ${config.iconColor}`}>
                         <Icon className="w-5 h-5" />
@@ -1494,7 +1593,7 @@ export default function CompliancePage() {
                       <div className="flex items-center gap-2">
                         <button 
                           onClick={() => alert(`View details: ${log.item}`)}
-                          className="p-2 hover:bg-white rounded-lg transition-colors"
+                          className="p-2 hover:bg-white rounded-lg transition-colors cursor-pointer"
                         >
                           <Eye className="w-5 h-5 text-blue-600" />
                         </button>
@@ -1522,7 +1621,7 @@ export default function CompliancePage() {
                 const daysUntil = item.nextReview ? Math.ceil((item.nextReview.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
                 
                 return (
-                  <div key={item.id} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-lg transition-all">
+                  <div key={item.id} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-lg transition-all cursor-pointer">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h4 className="font-bold text-gray-900 mb-1">{item.title}</h4>
@@ -1805,7 +1904,7 @@ export default function CompliancePage() {
                         setItems(items.map(i => i.id === editingItem.id ? editingItem : i));
                         setShowEditModal(false);
                         setEditingItem(null);
-                        alert(`✓ Updated: ${editingItem.title}`);
+                        showNotification(`✓ Updated: ${editingItem.title}`);
                      }} 
                      className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
                   >
@@ -1873,7 +1972,7 @@ export default function CompliancePage() {
                         onClick={() => {
                            setShowShareModal(false);
                            setSharingItem(null);
-                           alert(`✓ Shared: ${sharingItem.title}`);
+                           showNotification(`✓ Shared: ${sharingItem.title}`);
                         }} 
                         className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-600/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                      >
@@ -1883,7 +1982,7 @@ export default function CompliancePage() {
                      <button 
                         onClick={() => {
                            navigator.clipboard.writeText(`${window.location.origin}/compliance/${sharingItem.id}`);
-                           alert('✓ Link copied!');
+                           showNotification('✓ Link copied!');
                         }} 
                         className="px-6 py-3 border-2 border-gray-100 hover:border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
                      >
@@ -1949,7 +2048,7 @@ export default function CompliancePage() {
 
                <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
                   <button onClick={() => setShowAddItem(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
-                  <button onClick={() => { alert('Added Successfully'); setShowAddItem(false); }} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer">
+                  <button onClick={() => { showNotification('✓ Added Successfully'); setShowAddItem(false); }} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer">
                      Create Item
                   </button>
                </div>
@@ -1974,59 +2073,124 @@ export default function CompliancePage() {
                   </button>
                </div>
                
-               <div className="p-8 space-y-6">
-                  {/* Format Selection */}
+               <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh] custom-scrollbar bg-gray-50/30">
+                  {/* Format Selection - Card Based */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Report Format</label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {['PDF', 'Excel', 'CSV'].map((format) => (
-                        <button key={format} className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${format === 'PDF' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-600'}`}>
-                          <div className="text-center font-bold text-lg">{format}</div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Report Format</label>
+                    <div className="grid grid-cols-3 gap-4">
+                      {[
+                        { id: 'PDF', icon: FileText, label: 'Standard PDF', desc: 'Secure & Ready' },
+                        { id: 'Excel', icon: FileSpreadsheet, label: 'Excel Sheet', desc: 'Data Analysis' },
+                        { id: 'CSV', icon: FileSpreadsheet, label: 'CSV Format', desc: 'System Import' }
+                      ].map((format) => (
+                        <button 
+                          key={format.id} 
+                          onClick={() => setExportFormat(format.id as 'PDF' | 'Excel' | 'CSV')}
+                          className={`group p-4 rounded-[2rem] border-2 transition-all duration-300 text-left relative overflow-hidden cursor-pointer ${
+                            exportFormat === format.id 
+                              ? 'border-indigo-600 bg-white shadow-xl shadow-indigo-500/10 scale-[1.02]' 
+                              : 'border-white bg-white/60 hover:border-gray-200 hover:bg-white'
+                          }`}
+                        >
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-110 ${
+                            exportFormat === format.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            <format.icon className="w-6 h-6" />
+                          </div>
+                          <h4 className={`font-black text-sm mb-1 ${exportFormat === format.id ? 'text-gray-900' : 'text-gray-500'}`}>{format.id}</h4>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{format.desc}</p>
+                          {exportFormat === format.id && (
+                            <div className="absolute top-4 right-4 animate-in zoom-in-0 duration-300">
+                              <CheckCircle className="w-4 h-4 text-indigo-600" />
+                            </div>
+                          )}
                         </button>
                       ))}
                     </div>
                   </div>
 
                   {/* Scope Selection */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Report Scope</label>
-                    <select className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-indigo-500 focus:outline-none transition-colors appearance-none">
-                      <option value="all">Full Compliance Report</option>
-                      <option value="summary">Executive Summary</option>
-                      <option value="critical">Critical Issues Only</option>
+                  <div className="bg-white/80 backdrop-blur-md p-6 rounded-[2rem] border border-white shadow-sm ring-1 ring-black/[0.03]">
+                    <div className="flex items-center gap-3 mb-4">
+                       <div className="p-2 bg-indigo-50 rounded-xl">
+                          <Activity className="w-4 h-4 text-indigo-600" />
+                       </div>
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Report Scope</label>
+                    </div>
+                    <select className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 text-gray-900 font-black text-sm focus:border-indigo-600 focus:bg-white focus:outline-none transition-all appearance-none cursor-pointer">
+                      <option value="all">Full Compliance Inventory (All Active Modules)</option>
+                      <option value="summary">Executive Summary (Critical KPI Data)</option>
+                      <option value="critical">Critical Vulnerability Report (High Alert Only)</option>
                     </select>
                   </div>
 
-                  {/* Include Sections */}
+                  {/* Include Sections - Mini Cards */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Include Sections</label>
-                    <div className="space-y-3">
-                      {['Risk Analysis', 'Audit Trail', 'Framework Status'].map((section) => (
-                        <label key={section} className="flex items-center gap-3 cursor-pointer group p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                            <input type="checkbox" defaultChecked className="w-5 h-5 text-indigo-600 rounded-lg border-2 border-gray-200 focus:ring-indigo-500 cursor-pointer" />
-                            <span className="text-sm font-bold text-gray-700 group-hover:text-indigo-700 transition-colors">{section}</span>
+                    <div className="flex items-center gap-3 mb-4">
+                       <div className="p-2 bg-purple-50 rounded-xl">
+                          <PieChart className="w-4 h-4 text-purple-600" />
+                       </div>
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Augment Sections</label>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {[
+                        { id: 'risk', label: 'Risk Analysis Vectors', icon: AlertTriangle, color: 'text-orange-500' },
+                        { id: 'audit', label: 'Historical Audit Trail', icon: FileCheck, color: 'text-blue-500' },
+                        { id: 'framework', label: 'Framework Compliance Status', icon: Award, color: 'text-purple-500' }
+                      ].map((section) => (
+                        <label key={section.id} className="flex items-center justify-between p-4 bg-white/60 hover:bg-white border-2 border-transparent hover:border-indigo-100 rounded-2xl transition-all cursor-pointer group shadow-sm">
+                            <div className="flex items-center gap-4">
+                               <div className={`p-2 rounded-xl bg-gray-50 group-hover:bg-indigo-50 transition-colors`}>
+                                  <section.icon className={`w-4 h-4 ${section.color}`} />
+                               </div>
+                               <span className="text-sm font-black text-gray-700 group-hover:text-gray-900">{section.label}</span>
+                            </div>
+                            <div className="relative inline-flex items-center cursor-pointer">
+                               <input type="checkbox" defaultChecked className="sr-only peer" />
+                               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </div>
                         </label>
                       ))}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                     <button onClick={() => setShowExportModal(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
+                  <div className="flex items-center gap-3 pt-6">
+                     <button onClick={() => setShowExportModal(false)} className="flex-1 px-6 py-4 rounded-2xl text-gray-500 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-white border-2 border-transparent hover:border-gray-100">Decline</button>
                      <button 
-                        onClick={() => { 
-                           setShowExportModal(false); 
-                           alert('✓ Report generated successfully!'); 
-                        }} 
-                        className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                        onClick={handleGenerateReport} 
+                        className="flex-[2] px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer flex items-center justify-center gap-2 group"
                      >
-                        <Download className="w-5 h-5" />
-                        Generate Report
+                        <Download className="w-5 h-5 group-hover:animate-bounce" />
+                        Initiate Node Export
                      </button>
                   </div>
                </div>
             </div>
          </div>
       )}
+
+    {showSuccess && (
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-bottom-5 fade-in duration-500">
+        <div className="bg-gray-900/90 backdrop-blur-2xl border border-white/20 px-8 py-5 rounded-[2rem] shadow-2xl flex items-center gap-5 ring-4 ring-black/5">
+          <div className="relative">
+             <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full animate-pulse"></div>
+             <div className="relative w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/20">
+                <CheckCircle className="w-7 h-7 text-white" />
+             </div>
+          </div>
+          <div>
+            <p className="text-white font-black text-sm tracking-tight leading-none mb-1.5 uppercase">Success Protocol Active</p>
+            <p className="text-gray-300 text-xs font-bold">{successMessage}</p>
+          </div>
+          <button 
+            onClick={() => setShowSuccess(false)}
+            className="ml-4 p-2 hover:bg-white/10 rounded-xl transition-colors group cursor-pointer"
+          >
+            <X className="w-4 h-4 text-gray-500 group-hover:text-white" />
+          </button>
+        </div>
+      </div>
+    )}
     </div>
   );
 }

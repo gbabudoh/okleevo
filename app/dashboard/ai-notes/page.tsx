@@ -6,7 +6,7 @@ import {
   Calendar, Clock, Users, Brain,
   Sparkles, Download, Share2, Pin,
   CheckSquare, List, Grid, TrendingUp,
-  Lightbulb, X, Check, ChevronRight, Copy,
+  Lightbulb, X, ChevronRight, Copy,
   Mic, Video, BookOpen
 } from 'lucide-react';
 
@@ -297,11 +297,11 @@ export default function AINotesPage() {
         </div>
 
       {showNewNoteModal && (
-        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] max-w-5xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col md:flex-row shadow-indigo-500/20">
+        <div className="fixed inset-0 lg:left-64 bg-gray-900/40 backdrop-blur-xl flex items-center justify-center z-[100] p-12 animate-in fade-in duration-300">
+          <div className="bg-white/95 backdrop-blur-3xl rounded-[2.5rem] max-w-5xl w-full max-h-[78vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col md:flex-row shadow-indigo-500/20 animate-in zoom-in-95 duration-500">
             {/* Sidebar for Note Types */}
-            <div className="w-full md:w-80 bg-gray-50/50 p-8 border-r border-gray-100 overflow-y-auto">
-              <h2 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-8">Synthesis Type</h2>
+            <div className="w-full md:w-80 bg-gray-50/50 p-8 border-r border-gray-100 overflow-y-auto custom-scrollbar">
+              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8">Synthesis Type</h2>
               <div className="space-y-3">
                 {noteTypes.map((type) => {
                   const Icon = type.icon;
@@ -321,14 +321,9 @@ export default function AINotesPage() {
                           <Icon className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <h3 className="font-black text-gray-900 text-xs uppercase tracking-widest">{type.name}</h3>
-                          <p className="text-[10px] text-gray-400 font-bold mt-1 line-clamp-1">{type.description}</p>
+                          <h3 className="font-black text-gray-900 text-[10px] uppercase tracking-widest">{type.name}</h3>
+                          <p className="text-[9px] text-gray-400 font-bold mt-1 line-clamp-2 leading-relaxed">{type.description}</p>
                         </div>
-                        {isSelected && (
-                          <div className="ml-auto">
-                            <Check className="w-4 h-4 text-indigo-600" />
-                          </div>
-                        )}
                       </div>
                     </button>
                   );
@@ -337,11 +332,12 @@ export default function AINotesPage() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0">
-              <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/50">
+            <div className="flex-1 flex flex-col min-w-0 bg-white/50 backdrop-blur-sm">
+              {/* Header */}
+              <div className="p-8 border-b border-gray-100 flex items-center justify-between">
                 <div>
                   <h2 className="text-3xl font-black text-gray-900 tracking-tight">Create <span className="text-indigo-600">Note</span></h2>
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Forging new intelligence...</p>
+                  <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mt-1">Forging new intelligence...</p>
                 </div>
                 <button
                   onClick={() => setShowNewNoteModal(false)}
@@ -351,7 +347,7 @@ export default function AINotesPage() {
                 </button>
               </div>
               
-              <div className="p-8 overflow-y-auto space-y-8 flex-1">
+              <div className="p-8 overflow-y-auto space-y-8 flex-1 custom-scrollbar">
                 <div className="space-y-6">
                   <div className="relative group">
                     <label className="absolute -top-3 left-6 px-2 bg-white text-[10px] font-black text-indigo-600 uppercase tracking-widest z-10 rounded-full border border-indigo-100">Note Title</label>
@@ -372,7 +368,7 @@ export default function AINotesPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="relative group">
                     <label className="absolute -top-3 left-6 px-2 bg-white text-[10px] font-black text-indigo-600 uppercase tracking-widest z-10 rounded-full border border-indigo-100">Metadata Tags</label>
                     <input
@@ -413,11 +409,11 @@ export default function AINotesPage() {
                   </div>
                   <div className="flex-1 relative z-10">
                     <h4 className="font-black text-gray-900 text-sm uppercase tracking-widest">Synthesis Core</h4>
-                    <p className="text-xs font-medium text-gray-500 mt-1 max-w-md">Enable neural assistance to automatically generate summaries and extract action items.</p>
+                    <p className="text-[10px] font-medium text-gray-500 mt-1 max-w-md">Enable neural assistance to automatically generate summaries and extract action items.</p>
                   </div>
                   <button 
                     onClick={() => setShowAIAssist(!showAIAssist)}
-                    className={`px-6 py-3 font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${
+                    className={`px-6 py-3 font-black text-[10px] uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${
                       showAIAssist 
                         ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20' 
                         : 'bg-indigo-600 text-white hover:bg-gray-900 shadow-xl shadow-indigo-500/30'
@@ -428,7 +424,7 @@ export default function AINotesPage() {
                 </div>
               </div>
 
-              <div className="p-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/50">
+              <div className="p-8 border-t border-gray-100 flex items-center justify-between gap-6 bg-white/50 backdrop-blur-md">
                 <div className="flex items-center gap-2">
                   <button className="p-4 bg-gray-50 hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 rounded-2xl transition-all duration-300 cursor-pointer group" title="Voice Input">
                     <Mic className="w-6 h-6 group-hover:scale-110" />
@@ -438,14 +434,14 @@ export default function AINotesPage() {
                   </button>
                 </div>
                 
-                <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="flex items-center gap-4">
                   <button
                     onClick={() => setShowNewNoteModal(false)}
-                    className="flex-1 md:flex-none px-8 py-4 text-gray-400 font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-100 transition-all duration-300 cursor-pointer"
+                    className="px-8 py-4 text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-100 transition-all duration-300 cursor-pointer"
                   >
                     Discard
                   </button>
-                  <button className="flex-1 md:flex-none px-10 py-4 bg-gray-900 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-indigo-600 hover:shadow-2xl hover:shadow-indigo-500/40 transition-all duration-500 cursor-pointer">
+                  <button className="px-10 py-4 bg-gray-900 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-indigo-600 hover:shadow-2xl hover:shadow-indigo-500/40 transition-all duration-500 cursor-pointer">
                     Commit Note
                   </button>
                 </div>
@@ -456,167 +452,141 @@ export default function AINotesPage() {
       )}
 
       {selectedNote && (
-        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] max-w-5xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col md:flex-row shadow-indigo-500/20 animate-in zoom-in-95 duration-500">
-            {/* Metadata Sidebar */}
-            <div className="w-full md:w-80 bg-gray-50/50 p-8 border-r border-gray-100 overflow-y-auto">
-              <div className="space-y-8">
+        <div className="fixed inset-0 lg:left-64 bg-gray-900/40 backdrop-blur-xl flex items-center justify-center z-[100] p-12 animate-in fade-in duration-300">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2.5rem] max-w-2xl w-full max-h-[78vh] overflow-y-auto border-2 border-white shadow-2xl flex flex-col shadow-indigo-500/20 animate-in zoom-in-95 duration-500 custom-scrollbar">
+            
+            {/* Header Row */}
+            <div className="p-8 pb-4 flex items-center justify-between sticky top-0 bg-white/50 backdrop-blur-md z-20">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-2xl bg-gradient-to-br ${getTypeConfig(selectedNote.type).color} shadow-lg shadow-indigo-500/20`}>
+                  {React.createElement(getTypeConfig(selectedNote.type).icon, { className: 'w-5 h-5 text-white' })}
+                </div>
                 <div>
-                  <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Note Identity</h2>
-                  <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${getTypeConfig(selectedNote.type).color} shadow-lg mb-4`}>
-                    {React.createElement(getTypeConfig(selectedNote.type).icon, { className: 'w-6 h-6 text-white' })}
-                  </div>
-                  <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">{getTypeConfig(selectedNote.type).name}</h3>
+                  <h2 className="text-xs font-black text-gray-900 uppercase tracking-[0.2em]">{getTypeConfig(selectedNote.type).name}</h2>
+                  <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-0.5">Note Entity</p>
                 </div>
+              </div>
+              <button
+                onClick={() => setSelectedNote(null)}
+                className="p-3 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all duration-300 group cursor-pointer"
+              >
+                <X className="w-5 h-5 text-gray-400 group-hover:rotate-90 transition-transform duration-500" />
+              </button>
+            </div>
 
-                <div className="space-y-4">
+            <div className="px-8 space-y-8 pb-10">
+              {/* Telemetry & Metadata Section */}
+              <div className="grid grid-cols-2 gap-8 border-t border-gray-100 pt-8">
+                <div className="space-y-3">
                   <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Telemetry</h2>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-xs font-bold text-gray-600">
-                      <Calendar className="w-4 h-4 text-indigo-500" />
-                      {selectedNote.date.toLocaleDateString()}
-                    </div>
-                    {selectedNote.duration && (
-                      <div className="flex items-center gap-3 text-xs font-bold text-gray-600">
-                        <Clock className="w-4 h-4 text-indigo-500" />
-                        {selectedNote.duration}
-                      </div>
-                    )}
-                    {selectedNote.participants && (
-                      <div className="flex items-center gap-3 text-xs font-bold text-gray-600">
-                        <Users className="w-4 h-4 text-indigo-500" />
-                        {selectedNote.participants.length} Entities
-                      </div>
-                    )}
+                  <div className="flex items-center gap-3 text-xs font-bold text-gray-600 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 italic">
+                    <Calendar className="w-4 h-4 text-indigo-500" />
+                    {selectedNote.date.toLocaleDateString()}
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Classification</h2>
                   <div className="flex flex-wrap gap-2">
                     {selectedNote.tags.map((tag, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-white text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100 shadow-sm">
+                      <span key={idx} className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100 shadow-sm">
                         #{tag}
                       </span>
                     ))}
                   </div>
                 </div>
+              </div>
 
-                <div className="pt-8 space-y-4">
-                  <button className="w-full px-6 py-4 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer group shadow-sm">
-                    <Share2 className="w-4 h-4 group-hover:scale-110" />
-                    Archive Entity
-                  </button>
-                  <button 
-                    onClick={() => {
-                      handleDeleteNote(selectedNote.id);
-                      setSelectedNote(null);
-                    }}
-                    className="w-full px-6 py-4 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer group shadow-sm"
-                  >
-                    <Pin className="w-4 h-4 group-hover:scale-110" />
-                    Destroy Data
-                  </button>
+              {/* Data Operations - Danger Zone */}
+              <div className="flex gap-4">
+                <button className="flex-1 px-6 py-4 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-500 flex items-center justify-center gap-3 cursor-pointer group shadow-sm">
+                  <Share2 className="w-4 h-4 group-hover:scale-110" />
+                  Archive Entity
+                </button>
+                <button 
+                  onClick={() => {
+                    handleDeleteNote(selectedNote.id);
+                    setSelectedNote(null);
+                  }}
+                  className="flex-1 px-6 py-4 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all duration-500 flex items-center justify-center gap-3 cursor-pointer group shadow-sm"
+                >
+                  <Pin className="w-4 h-4 group-hover:scale-110" />
+                  Destroy Data
+                </button>
+              </div>
+
+              {/* Identity & Status */}
+              <div className="space-y-3 pt-4 border-t border-gray-100">
+                <h2 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">{selectedNote.title}</h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Inspecting synchronized data...</p>
                 </div>
               </div>
+
+              {/* AI Summary Section */}
+              {selectedNote.aiSummary && (
+                <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 rounded-[2rem] p-8 text-white relative overflow-hidden group shadow-2xl shadow-indigo-500/20">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-700">
+                    <Brain className="w-24 h-24" />
+                  </div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-4 bg-white/20 w-fit px-3 py-1 rounded-full backdrop-blur-sm border border-white/20">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-200" />
+                      <span className="text-[10px] font-black text-purple-100 uppercase tracking-widest leading-none">Neural Synthesis Output</span>
+                    </div>
+                    <p className="text-lg font-bold leading-relaxed opacity-95">{selectedNote.aiSummary}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Main Content Area */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
+                  <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Core Narrative</h3>
+                </div>
+                <div className="prose prose-indigo max-w-none text-gray-600 font-bold leading-loose text-lg italic border-l-4 border-gray-50 pl-6">
+                  &ldquo;{selectedNote.content}&rdquo;
+                </div>
+              </div>
+
+              {/* Action Matrix Section */}
+              {selectedNote.actionItems && selectedNote.actionItems.length > 0 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                    <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Action Matrix</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {selectedNote.actionItems.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-4 p-5 bg-gray-50/80 rounded-2xl border border-gray-100 group/item hover:bg-emerald-50 hover:border-emerald-100 transition-all duration-300 cursor-pointer">
+                        <div className="p-2.5 bg-white rounded-xl shadow-sm group-hover/item:scale-110 group-hover/item:bg-emerald-500 group-hover/item:text-white transition-all">
+                          <CheckSquare className="w-4 h-4 text-emerald-600 group-hover/item:text-white" />
+                        </div>
+                        <span className="text-sm font-black text-gray-700 leading-snug">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0">
-              <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/50">
-                <div className="flex-1 min-w-0 pr-8">
-                  <h2 className="text-3xl font-black text-gray-900 tracking-tight truncate">{selectedNote.title}</h2>
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Inspecting synchronized data...</p>
-                </div>
-                <button
-                  onClick={() => setSelectedNote(null)}
-                  className="p-4 hover:bg-gray-100 rounded-2xl transition-all duration-300 group cursor-pointer flex-shrink-0"
-                >
-                  <X className="w-6 h-6 text-gray-400 group-hover:rotate-90 transition-transform duration-500" />
+            {/* Modal Footer */}
+            <div className="p-8 border-t border-gray-100 flex items-center justify-between bg-white/50 sticky bottom-0 backdrop-blur-md z-20">
+              <div className="flex items-center gap-3">
+                <button className="p-4 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-indigo-600 rounded-2xl transition-all duration-300 cursor-pointer group shadow-sm">
+                  <Copy className="w-6 h-6 group-hover:scale-110" />
+                </button>
+                <button className="p-4 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-indigo-600 rounded-2xl transition-all duration-300 cursor-pointer group shadow-sm">
+                  <Download className="w-6 h-6 group-hover:scale-110" />
                 </button>
               </div>
               
-              <div className="p-8 overflow-y-auto space-y-8 flex-1">
-                {/* AI Summary Highlight */}
-                {selectedNote.aiSummary && (
-                  <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-[2rem] p-8 text-white relative overflow-hidden group shadow-2xl shadow-indigo-500/20">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-700">
-                      <Brain className="w-32 h-32" />
-                    </div>
-                    <div className="relative z-10">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Sparkles className="w-5 h-5 text-purple-200" />
-                        <span className="text-[10px] font-black text-purple-100 uppercase tracking-widest">Neural Synthesis Output</span>
-                      </div>
-                      <p className="text-lg font-bold leading-relaxed opacity-90">{selectedNote.aiSummary}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
-                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Core Narrative</h3>
-                  </div>
-                  <div className="prose prose-indigo max-w-none text-gray-600 font-medium leading-[2] text-lg">
-                    {selectedNote.content}
-                  </div>
-                </div>
-
-                {selectedNote.actionItems && selectedNote.actionItems.length > 0 && (
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                      <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Action Matrix</h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {selectedNote.actionItems.map((item, idx) => (
-                        <div key={idx} className="flex items-start gap-4 p-5 bg-emerald-50/50 rounded-2xl border border-emerald-100 group/item hover:bg-emerald-50 transition-colors">
-                          <div className="p-2 bg-white rounded-lg shadow-sm group-hover/item:scale-110 transition-transform">
-                            <CheckSquare className="w-4 h-4 text-emerald-600" />
-                          </div>
-                          <span className="text-sm font-bold text-gray-700 leading-relaxed">{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedNote.participants && selectedNote.participants.length > 0 && (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
-                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Network Entities</h3>
-                      </div>
-                      <div className="flex flex-wrap gap-4">
-                        {selectedNote.participants.map((participant, idx) => (
-                          <div key={idx} className="flex items-center gap-4 px-4 py-3 bg-blue-50/50 rounded-2xl border border-blue-100 group/entity hover:bg-blue-50 transition-colors">
-                            <div className="w-10 h-10 bg-white shadow-sm border border-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-black text-xs group-hover/entity:scale-110 transition-transform">
-                              {participant.split(' ').map(n => n[0]).join('')}
-                            </div>
-                            <span className="text-sm font-bold text-gray-700">{participant}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-              </div>
-
-              <div className="p-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/50">
-                <div className="flex items-center gap-2">
-                  <button className="p-4 bg-gray-50 hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 rounded-2xl transition-all duration-300 cursor-pointer group" title="Copy Synthesis">
-                    <Copy className="w-6 h-6 group-hover:scale-110" />
-                  </button>
-                  <button className="p-4 bg-gray-50 hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 rounded-2xl transition-all duration-300 cursor-pointer group" title="Download Matrix">
-                    <Download className="w-6 h-6 group-hover:scale-110" />
-                  </button>
-                </div>
-                
-                <button className="w-full md:w-auto px-10 py-5 bg-gray-900 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-indigo-600 hover:shadow-2xl hover:shadow-indigo-500/40 transition-all duration-500 flex items-center justify-center gap-3 cursor-pointer group">
-                  <Edit3 className="w-5 h-5 group-hover:rotate-12" />
-                  Request Adjustment
-                </button>
-              </div>
+              <button className="px-10 py-5 bg-gray-900 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-indigo-600 hover:shadow-2xl hover:shadow-indigo-500/40 transition-all duration-500 flex items-center justify-center gap-3 cursor-pointer group">
+                <Edit3 className="w-5 h-5 group-hover:rotate-12" />
+                Request Adjustment
+              </button>
             </div>
           </div>
         </div>

@@ -69,10 +69,10 @@ export default function TasksPage() {
 
   const getPriorityConfig = (priority: string) => {
     switch(priority) {
-      case 'urgent': return { color: 'text-rose-600', bg: 'bg-rose-500', label: 'Urgent', icon: Flag };
-      case 'high': return { color: 'text-orange-600', bg: 'bg-orange-500', label: 'High', icon: AlertCircle };
-      case 'medium': return { color: 'text-amber-600', bg: 'bg-amber-500', label: 'Medium', icon: Circle };
-      default: return { color: 'text-blue-600', bg: 'bg-blue-500', label: 'Low', icon: Circle };
+      case 'urgent': return { color: 'text-white', bg: 'bg-rose-600', label: 'Urgent', icon: Flag };
+      case 'high': return { color: 'text-white', bg: 'bg-orange-600', label: 'High', icon: AlertCircle };
+      case 'medium': return { color: 'text-white', bg: 'bg-amber-500', label: 'Medium', icon: Circle };
+      default: return { color: 'text-white', bg: 'bg-blue-600', label: 'Low', icon: Circle };
     }
   };
 
@@ -191,7 +191,7 @@ export default function TasksPage() {
                           )}
                           
                           <div className="flex items-center gap-2 pt-1 flex-wrap">
-                            <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border ${pc.bg} bg-opacity-10 ${pc.color} uppercase tracking-widest flex items-center gap-2 shadow-sm`}>
+                            <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border ${pc.bg} ${pc.color} uppercase tracking-widest flex items-center gap-2 shadow-sm`}>
                               <pc.icon className="w-3 h-3" />
                               {pc.label}
                             </span>

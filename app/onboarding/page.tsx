@@ -225,11 +225,11 @@ export default function OnboardingPage() {
                           required
                         >
                           <option value="">Number of employees</option>
-                          <option value="1-5">1 - 5 employees</option>
-                          <option value="6-10">6 - 10 employees</option>
-                          <option value="11-25">11 - 25 employees</option>
-                          <option value="26-50">26 - 50 employees</option>
-                          <option value="50+">50+ employees</option>
+                           <option value="1-5">1 - 5 employees</option>
+                           <option value="1-10">1 - 10 employees</option>
+                           <option value="1-25">1 - 25 employees</option>
+                           <option value="1-50">1 - 50 employees</option>
+                           <option value="50+">50+ employees</option>
                         </select>
                         <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                             <LayoutGrid className="h-4 w-4 text-gray-400" />

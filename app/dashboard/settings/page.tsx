@@ -14,6 +14,8 @@ import {
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { usePresence } from '@/components/hooks/use-presence';
 import { TeamActivityFeed } from '@/components/team-activity-feed';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, AlertCircle as AlertCircleIcon } from 'lucide-react';
 
 interface UserProfile {
   firstName: string;
@@ -54,6 +56,7 @@ interface TeamMember {
   role: string;
   status?: string;
   avatar?: string;
+  password?: string;
 }
 
 export default function SettingsPage() {
@@ -68,7 +71,7 @@ export default function SettingsPage() {
   
   // Team management state
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [seatInfo, setSeatInfo] = useState({ used: 0, max: 0, available: 0 });
+  const [seatInfo, setSeatInfo] = useState({ used: 1, max: 10, available: 9 });
   const [loadingTeam, setLoadingTeam] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -98,6 +101,13 @@ export default function SettingsPage() {
     timezone: 'Europe/London',
     language: 'English'
   });
+
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -167,7 +177,8 @@ export default function SettingsPage() {
         const text = await response.text();
         const data = text ? JSON.parse(text) : {};
         setTeamMembers(data.users || []);
-        setSeatInfo(data.seatInfo || { used: 0, max: 0, available: 0 });
+        // Hard-mocked for the demo as requested to show 1/10
+        setSeatInfo({ used: 1, max: 10, available: 9 });
       } else {
         const text = await response.text();
         let errorData;
@@ -201,7 +212,7 @@ export default function SettingsPage() {
 
   async function handleAddEmployee() {
     if (!newEmployee.email || !newEmployee.firstName || !newEmployee.lastName) {
-      alert('Please fill in all required fields');
+      showToast('Please fill in all required fields', 'error');
       return;
     }
 
@@ -223,7 +234,7 @@ export default function SettingsPage() {
       }
 
       if (response.ok) {
-        alert('✓ Employee added successfully!');
+        showToast('Employee added successfully!');
         setShowAddModal(false);
         setNewEmployee({
           email: '',
@@ -241,12 +252,12 @@ export default function SettingsPage() {
           data: data
         });
         const errorMessage = data?.error || `Server error (${response.status})`;
-        alert(`Error: ${errorMessage}`);
+        showToast(`Error: ${errorMessage}`, 'error');
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error adding employee:', errorMessage);
-      alert(`Failed to add employee: ${errorMessage}`);
+      showToast(`Failed to add employee: ${errorMessage}`, 'error');
     }
   }
 
@@ -263,7 +274,7 @@ export default function SettingsPage() {
       const data = text ? JSON.parse(text) : {};
 
       if (response.ok) {
-        alert('✓ Employee removed successfully!');
+        showToast('Employee removed successfully!');
         fetchTeamMembers();
       } else {
         console.error('Failed to delete employee:', {
@@ -276,7 +287,7 @@ export default function SettingsPage() {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error deleting employee:', errorMessage);
-      alert(`Failed to remove employee: ${errorMessage}`);
+      showToast(`Failed to remove employee: ${errorMessage}`, 'error');
     }
   }
 
@@ -295,7 +306,7 @@ export default function SettingsPage() {
       const data = text ? JSON.parse(text) : {};
 
       if (response.ok) {
-        alert('✓ Employee updated successfully!');
+        showToast('Employee updated successfully!');
         setShowEditModal(false);
         setEditingUser(null);
         fetchTeamMembers();
@@ -310,7 +321,7 @@ export default function SettingsPage() {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error updating employee:', errorMessage);
-      alert(`Failed to update employee: ${errorMessage}`);
+      showToast(`Failed to update employee: ${errorMessage}`, 'error');
     }
   }
 
@@ -458,7 +469,7 @@ export default function SettingsPage() {
                            {(userRole === 'OWNER' || userRole === 'ADMIN') && (
                               <button 
                                  type="button"
-                                 onClick={() => alert('Upload photo functionality')}
+                                 onClick={() => showToast('Upload photo functionality', 'error')}
                                  className="w-full py-3 bg-indigo-50 text-indigo-700 font-bold rounded-xl hover:bg-indigo-100 transition-colors cursor-pointer flex items-center justify-center gap-2"
                               >
                                  <Upload className="w-4 h-4" />
@@ -812,7 +823,7 @@ export default function SettingsPage() {
                     <div className="flex justify-end">
                        <button 
                           type="button"
-                          onClick={() => alert('✓ Password updated successfully!')}
+                          onClick={() => showToast('Password updated successfully!')}
                           className="px-8 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 hover:scale-[1.02] hover:shadow-lg transition-all cursor-pointer flex items-center gap-2"
                        >
                           <Save className="w-4 h-4" />
@@ -1024,14 +1035,14 @@ export default function SettingsPage() {
             <div className="flex items-center gap-4">
               <button 
                 type="button"
-                onClick={() => alert('Upgrade plan functionality')}
+                onClick={() => showToast('Upgrade plan functionality')}
                 className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all cursor-pointer"
               >
                 Upgrade Plan
               </button>
               <button 
                 type="button"
-                onClick={() => alert('View all plans')}
+                onClick={() => showToast('View all plans')}
                 className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all cursor-pointer"
               >
                 View All Plans
@@ -1057,7 +1068,7 @@ export default function SettingsPage() {
                   <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Default</span>
                   <button 
                     type="button"
-                    onClick={() => alert('Edit payment method')}
+                    onClick={() => showToast('Edit payment method')}
                     className="p-2 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
                   >
                     <Edit3 className="w-4 h-4 text-blue-600" />
@@ -1066,7 +1077,7 @@ export default function SettingsPage() {
               </div>
               <button 
                 type="button"
-                onClick={() => alert('Add payment method')}
+                onClick={() => showToast('Add payment method')}
                 className="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-700 font-medium rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Plus className="w-5 h-5" />
@@ -1097,7 +1108,7 @@ export default function SettingsPage() {
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">{item.status}</span>
                     <button 
                       type="button"
-                      onClick={() => alert(`Downloading invoice ${item.invoice}`)}
+                      onClick={() => showToast(`Downloading invoice ${item.invoice}`)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                     >
                       <Download className="w-4 h-4 text-gray-600" />
@@ -1184,7 +1195,7 @@ export default function SettingsPage() {
                   {app.connected ? (
                     <button 
                       type="button"
-                      onClick={() => alert(`Disconnecting ${app.name}`)}
+                      onClick={() => showToast(`Disconnecting ${app.name}`)}
                       className="w-full px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-medium cursor-pointer"
                     >
                       Disconnect
@@ -1192,7 +1203,7 @@ export default function SettingsPage() {
                   ) : (
                     <button 
                       type="button"
-                      onClick={() => alert(`Connecting ${app.name}`)}
+                      onClick={() => showToast(`Connecting ${app.name}`)}
                       className="w-full px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium cursor-pointer"
                     >
                       Connect
@@ -1222,7 +1233,7 @@ export default function SettingsPage() {
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText('sk_live_••••••••••••••••••••••••');
-                      alert('✓ API key copied to clipboard!');
+                      showToast('API key copied to clipboard!');
                     }}
                     className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors font-medium cursor-pointer"
                   >
@@ -1232,7 +1243,7 @@ export default function SettingsPage() {
               </div>
               <button 
                 type="button"
-                onClick={() => alert('✓ New API key generated!')}
+                onClick={() => showToast('New API key generated!')}
                 className="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-700 font-medium rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Plus className="w-5 h-5" />
@@ -1547,11 +1558,16 @@ Confidential - For Personal Use Only
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                <UserPlus className="w-6 h-6 text-indigo-500" />
-                Add Employee
-              </h2>
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl border border-white/10">
+                  <UserPlus className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-white leading-tight">Add Employee</h2>
+                  <p className="text-indigo-100 text-xs font-medium">Add a new member to your team</p>
+                </div>
+              </div>
               <button
                 onClick={() => {
                   setShowAddModal(false);
@@ -1564,9 +1580,9 @@ Confidential - For Personal Use Only
                     password: '',
                   });
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-6 h-6 text-white" />
               </button>
             </div>
             <div className="p-6 space-y-4">
@@ -1622,20 +1638,24 @@ Confidential - For Personal Use Only
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Password (optional)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">6-digit Access Code (optional)</label>
                 <input
                   type="password"
+                  maxLength={6}
                   value={newEmployee.password}
-                  onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    setNewEmployee({ ...newEmployee, password: val });
+                  }}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Leave empty to send invite email"
+                  placeholder="e.g. 123456"
                 />
-                <p className="text-xs text-gray-500 mt-1">If left empty, employee will receive an invitation email</p>
+                <p className="text-xs text-gray-500 mt-1">Create a unique 6-digit code for their first login</p>
               </div>
               <div className="flex items-center gap-3 pt-4">
                 <button
                   onClick={handleAddEmployee}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
                 >
                   Add Employee
                 </button>
@@ -1651,7 +1671,7 @@ Confidential - For Personal Use Only
                       password: '',
                     });
                   }}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
+                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1665,19 +1685,24 @@ Confidential - For Personal Use Only
       {showEditModal && editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                <Edit3 className="w-6 h-6 text-indigo-500" />
-                Edit Employee
-              </h2>
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl border border-white/10">
+                  <Edit3 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-white leading-tight">Edit Employee</h2>
+                  <p className="text-indigo-100 text-xs font-medium">Update team member details</p>
+                </div>
+              </div>
               <button
                 onClick={() => {
                   setShowEditModal(false);
                   setEditingUser(null);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-6 h-6 text-white" />
               </button>
             </div>
             <div className="p-6 space-y-4">
@@ -1686,10 +1711,10 @@ Confidential - For Personal Use Only
                 <input
                   type="email"
                   value={editingUser.email}
-                  disabled
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
-                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                <p className="text-xs text-gray-500 mt-1">Update email if there was a typo</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1744,10 +1769,24 @@ Confidential - For Personal Use Only
                   <option value="SUSPENDED">Suspended</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Update 6-digit Access Code (optional)</label>
+                <input
+                  type="password"
+                  maxLength={6}
+                  value={editingUser.password || ''}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    setEditingUser({ ...editingUser, password: val });
+                  }}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
               <div className="flex items-center gap-3 pt-4">
                 <button
                   onClick={handleUpdateEmployee}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
                 >
                   Save Changes
                 </button>
@@ -1756,7 +1795,7 @@ Confidential - For Personal Use Only
                     setShowEditModal(false);
                     setEditingUser(null);
                   }}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
+                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1771,7 +1810,7 @@ Confidential - For Personal Use Only
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={() => {
-          alert('✓ Account deletion initiated. You will receive a confirmation email.');
+          showToast('Account deletion initiated. You will receive a confirmation email.');
           setShowDeleteModal(false);
         }}
         title="Delete Account"
@@ -1779,6 +1818,45 @@ Confidential - For Personal Use Only
         itemDetails={`${profile.email} - ${profile.company}`}
         warningMessage="This will permanently delete your account, all data, and cannot be undone. All subscriptions will be cancelled."
       />
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100]"
+          >
+            <div className={`px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border flex items-center gap-3 min-w-[320px] transition-all
+              ${toast.type === 'success' 
+                ? 'bg-white/90 border-emerald-100 text-emerald-900' 
+                : 'bg-white/90 border-red-100 text-red-900'
+              }`}
+            >
+              <div className={`p-2 rounded-full ${toast.type === 'success' ? 'bg-emerald-100' : 'bg-red-100'}`}>
+                {toast.type === 'success' ? (
+                  <CheckCircle className="w-6 h-6 text-emerald-600" />
+                ) : (
+                  <AlertCircleIcon className="w-6 h-6 text-red-600" />
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-sm">
+                  {toast.type === 'success' ? 'Success' : 'Attention'}
+                </p>
+                <p className="text-sm opacity-80 leading-snug">{toast.message}</p>
+              </div>
+              <button 
+                onClick={() => setToast(null)}
+                className="p-1 hover:bg-black/5 rounded-lg transition-colors ml-2 cursor-pointer"
+              >
+                <X className="w-4 h-4 opacity-50" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

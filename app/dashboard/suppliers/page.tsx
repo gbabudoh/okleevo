@@ -9,7 +9,7 @@ import {
   Trash2, MoreVertical, MessageSquare,
   ShoppingCart, Zap, 
   RefreshCw, Settings, Grid, List, ChevronRight, X,
-  Handshake, Factory, Box, Info
+  Handshake, Factory, Box, Info, ShieldCheck
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
@@ -259,6 +259,10 @@ export default function SuppliersPage() {
   const [messageSubject, setMessageSubject] = useState('');
   const [messageBody, setMessageBody] = useState('');
   const [messagePriority, setMessagePriority] = useState('normal');
+  const [isOrdering, setIsOrdering] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
 
   const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
@@ -556,7 +560,10 @@ export default function SuppliersPage() {
             return (
               <div
                 key={supplier.id}
-                onClick={() => setSelectedSupplier(supplier)}
+                onClick={() => {
+                  setSelectedSupplier(supplier);
+                  setShowDetailModal(true);
+                }}
                 className="group relative bg-white/60 backdrop-blur-xl rounded-[3rem] border-2 border-white p-8 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 cursor-pointer animate-in fade-in zoom-in-95 fill-mode-both"
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
@@ -611,7 +618,7 @@ export default function SuppliersPage() {
                 </div>
 
                 {/* Contact Interface */}
-                <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                 <div className="flex items-center justify-between pt-6 border-t border-gray-100">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-black text-gray-500 uppercase">
                       {supplier.contactPerson.charAt(0)}
@@ -622,17 +629,74 @@ export default function SuppliersPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <button 
-                      onClick={(e) => { e.stopPropagation(); showNotify(`Contacting ${supplier.name}...`); }}
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setSelectedSupplier(supplier);
+                        setShowMessageModal(true); 
+                        showNotify(`Contacting ${supplier.name}...`); 
+                      }}
                       className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-500 hover:text-white transition-all cursor-pointer"
                     >
                       <MessageSquare className="w-4 h-4" />
                     </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); showNotify(`Initializing order with ${supplier.name}...`); }}
-                      className="p-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-500 hover:text-white transition-all cursor-pointer"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                    </button>
+                    <div className="relative">
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setActiveMenu(activeMenu === supplier.id ? null : supplier.id);
+                        }}
+                        className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-900 hover:text-white transition-all cursor-pointer"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      {activeMenu === supplier.id && (
+                        <>
+                          <div className="fixed inset-0 z-[60]" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
+                          <div className="absolute right-0 bottom-full mb-4 w-48 bg-white/80 backdrop-blur-2xl rounded-2xl shadow-2xl border-2 border-white py-2 z-[70] animate-in fade-in zoom-in duration-300">
+                            {[
+                              { 
+                                label: 'Registry Order', 
+                                icon: ShoppingCart, 
+                                onClick: () => {
+                                  setSelectedSupplier(supplier);
+                                  setShowOrderModal(true);
+                                }
+                              },
+                              { 
+                                label: 'Direct Comms', 
+                                icon: MessageSquare, 
+                                onClick: () => {
+                                  setSelectedSupplier(supplier);
+                                  setShowMessageModal(true);
+                                }
+                              },
+                              { 
+                                label: 'Terminate Node', 
+                                icon: Trash2, 
+                                danger: true, 
+                                onClick: () => {
+                                  setDeletingSupplier(supplier);
+                                  setShowDeleteModal(true);
+                                }
+                              }
+                            ].map((opt, i) => (
+                              <button
+                                key={i}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  opt.onClick?.();
+                                  setActiveMenu(null);
+                                }}
+                                className={`w-full px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest hover:bg-white flex items-center gap-3 transition-colors cursor-pointer ${opt.danger ? 'text-rose-500' : 'text-gray-600'}`}
+                              >
+                                <opt.icon className="w-4 h-4" />
+                                {opt.label}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -654,8 +718,17 @@ export default function SuppliersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white/40">
-              {filteredSuppliers.map((supplier) => (
-                <tr key={supplier.id} className="group hover:bg-blue-50/50 transition-colors cursor-pointer" onClick={() => setSelectedSupplier(supplier)}>
+              {filteredSuppliers.map((supplier) => {
+                const isActiveRow = activeMenu === supplier.id;
+                return (
+                  <tr 
+                    key={supplier.id} 
+                    className={`group hover:bg-blue-50/50 transition-colors cursor-pointer ${isActiveRow ? 'relative z-50 bg-blue-50/50' : ''}`} 
+                    onClick={() => {
+                      setSelectedSupplier(supplier);
+                      setShowDetailModal(true);
+                    }}
+                  >
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center border border-gray-200 group-hover:bg-white transition-colors">
@@ -689,34 +762,97 @@ export default function SuppliersPage() {
                        {supplier.status}
                     </div>
                   </td>
-                  <td className="px-8 py-6 text-right">
+                   <td className="px-8 py-6 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all cursor-pointer">
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setSelectedSupplier(supplier);
+                          setShowMessageModal(true); 
+                        }}
+                        className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all cursor-pointer"
+                      >
                          <MessageSquare className="w-4 h-4" />
                       </button>
-                      <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-900 hover:text-white transition-all cursor-pointer">
-                         <MoreVertical className="w-4 h-4" />
-                      </button>
+                      <div className="relative">
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setActiveMenu(activeMenu === supplier.id ? null : supplier.id);
+                          }}
+                          className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-900 hover:text-white transition-all cursor-pointer"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                        {activeMenu === supplier.id && (
+                          <>
+                            <div className="fixed inset-0 z-[60]" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
+                            <div className="absolute right-full top-0 mr-2 w-48 bg-white/80 backdrop-blur-2xl rounded-2xl shadow-2xl border-2 border-white py-2 z-[70] animate-in fade-in zoom-in slide-in-from-right-2 duration-300">
+                              {[
+                                { 
+                                  label: 'Registry Order', 
+                                  icon: ShoppingCart, 
+                                  onClick: () => {
+                                    setSelectedSupplier(supplier);
+                                    setShowOrderModal(true);
+                                  }
+                                },
+                                { 
+                                  label: 'Direct Comms', 
+                                  icon: MessageSquare, 
+                                  onClick: () => {
+                                    setSelectedSupplier(supplier);
+                                    setShowMessageModal(true);
+                                  }
+                                },
+                                { 
+                                  label: 'Terminate Node', 
+                                  icon: Trash2, 
+                                  danger: true, 
+                                  onClick: () => {
+                                    setDeletingSupplier(supplier);
+                                    setShowDeleteModal(true);
+                                  }
+                                }
+                              ].map((opt, i) => (
+                                <button
+                                  key={i}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    opt.onClick?.();
+                                    setActiveMenu(null);
+                                  }}
+                                  className={`w-full px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest hover:bg-white flex items-center gap-3 transition-colors cursor-pointer ${opt.danger ? 'text-rose-500' : 'text-gray-600'}`}
+                                >
+                                  <opt.icon className="w-4 h-4" />
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         </div>
       )}
 
-      {/* Supplier Detail Modal */}
-      {selectedSupplier && (
+       {/* Supplier Detail Modal */}
+      {showDetailModal && selectedSupplier && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
             {/* Header Interface */}
-             <div className="p-8 md:p-10 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
-               <div className="flex items-center gap-6">
+             <div className="p-8 md:p-10 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10 text-gray-900">
+               <div className="flex items-center gap-6 text-gray-900">
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                     <Building2 className="w-8 h-8 text-white" />
                   </div>
-                  <div>
+                  <div className="text-gray-900">
                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">{selectedSupplier.name}</h2>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusConfig(selectedSupplier.status).bg} ${getStatusConfig(selectedSupplier.status).text} border ${getStatusConfig(selectedSupplier.status).border}`}>
@@ -730,8 +866,11 @@ export default function SuppliersPage() {
                   </div>
                </div>
                <button
-                 onClick={() => setSelectedSupplier(null)}
-                 className="p-4 bg-gray-100/50 hover:bg-gray-200/50 rounded-2xl transition-all cursor-pointer group"
+                 onClick={() => {
+                  setShowDetailModal(false);
+                  setSelectedSupplier(null);
+                 }}
+                 className="p-4 bg-gray-100/50 hover:bg-gray-200/50 rounded-2xl transition-all cursor-pointer group text-gray-900"
                >
                  <X className="w-5 h-5 text-gray-500 group-hover:rotate-90 transition-transform duration-500" />
                </button>
@@ -831,9 +970,9 @@ export default function SuppliersPage() {
                   <MessageSquare className="w-4 h-4" />
                   Initiate Comms
                 </button>
-                <button 
-                  onClick={() => showNotify('Opening Logistics Interface...')}
-                  className="hidden md:flex flex-1 px-8 py-5 bg-gray-100 text-gray-900 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-200 transition-all flex items-center justify-center gap-3 cursor-pointer"
+                 <button 
+                  onClick={() => setShowOrderModal(true)}
+                  className="flex-1 px-8 py-5 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-600 transition-all flex items-center justify-center gap-3 cursor-pointer"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   Registry Order
@@ -996,6 +1135,108 @@ export default function SuppliersPage() {
                   className="w-full py-5 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-blue-600 transition-all shadow-xl disabled:opacity-30 cursor-pointer"
                 >
                   Confirm Dispatch
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Registry Order Modal */}
+      {showOrderModal && selectedSupplier && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4 animate-in fade-in duration-500">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
+             <div className="p-8 border-b border-gray-100 bg-white/40 flex items-center justify-between">
+                <div>
+                   <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
+                      <ShoppingCart className="w-6 h-6 text-blue-600" />
+                      Registry Order
+                   </h2>
+                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Provider: {selectedSupplier.name}</p>
+                </div>
+                <button onClick={() => setShowOrderModal(false)} className="p-4 bg-gray-100/50 rounded-2xl cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
+             </div>
+
+             <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                {/* Product/Service Context */}
+                <div className="bg-blue-50/50 border border-blue-100 rounded-[2rem] p-6">
+                   <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                         <Building2 className="w-6 h-6 text-blue-500" />
+                      </div>
+                      <div>
+                         <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Classification</p>
+                         <p className="text-sm font-bold text-gray-900">{selectedSupplier.category.replace('-', ' ')}</p>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Magnitude Selector */}
+                <div>
+                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Procurement Magnitude</label>
+                   <div className="grid grid-cols-2 gap-4">
+                      <input 
+                         type="number" 
+                         placeholder="Quantity / Volume" 
+                         className="px-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-blue-500 transition-all"
+                      />
+                      <div className="px-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl font-bold text-gray-400 flex items-center justify-center text-sm">
+                         MIN: ${selectedSupplier.minimumOrder.toLocaleString()}
+                      </div>
+                   </div>
+                </div>
+
+                {/* Priority Selection */}
+                <div>
+                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Urgency Vector</label>
+                   <div className="grid grid-cols-3 gap-3">
+                      {['Standard', 'Expedited', 'Critical'].map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setMessagePriority(p.toLowerCase())}
+                          className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer border-2 ${
+                            messagePriority === p.toLowerCase()
+                            ? 'bg-gray-900 text-white border-gray-900'
+                            : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                   </div>
+                </div>
+
+                {/* Temporal Projection */}
+                <div className="flex items-center gap-4 text-emerald-600 bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+                   <Clock className="w-5 h-5" />
+                   <p className="text-[10px] font-bold uppercase tracking-widest">
+                      Estimated Fulfillment Latency: <span className="font-black underline">{selectedSupplier.leadTime}</span>
+                   </p>
+                </div>
+             </div>
+
+             <div className="p-8 bg-white/60 border-t border-gray-100 flex gap-4">
+                <button 
+                  onClick={() => setShowOrderModal(false)}
+                  className="flex-1 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  disabled={isOrdering}
+                  onClick={() => {
+                    setIsOrdering(true);
+                    setTimeout(() => {
+                      setIsOrdering(false);
+                      setShowOrderModal(false);
+                      showNotify(`✓ Order Node Registered: Procurement Manifest #ORD-${Math.floor(Math.random() * 10000)} Synchronized`);
+                    }, 2500);
+                  }}
+                  className="flex-[2] py-5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50"
+                >
+                  {isOrdering ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                  {isOrdering ? 'Registering...' : 'Registry Node Order'}
                 </button>
              </div>
           </div>

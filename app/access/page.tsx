@@ -127,7 +127,7 @@ export default function AccessPage() {
                 value={formData.password}
                 onChange={handleInputChange}
                 className="w-full pl-12 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 placeholder:text-gray-400 hover:bg-white hover:border-gray-300"
-                placeholder="Enter your password"
+                placeholder="Password or 6-digit Code"
                 required
               />
               <button

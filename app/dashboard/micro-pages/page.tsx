@@ -209,6 +209,13 @@ export default function MicroPagesPage() {
     setTimeout(() => setNotification(null), 3000);
   };
 
+  const handleSave = () => {
+    if (!editingPage) return;
+    setPages(prevPages => prevPages.map(p => p.id === editingPage.id ? editingPage : p));
+    showNotify('Changes Saved Successfully', 'success');
+    setShowEditModal(false);
+  };
+
   const filteredPages = pages.filter(page => {
     const matchesSearch = page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          page.slug.toLowerCase().includes(searchQuery.toLowerCase());
@@ -397,8 +404,8 @@ export default function MicroPagesPage() {
                           {page.title}
                        </h3>
                        <div className="flex items-center gap-2 mb-6">
-                           <Link className="w-3 h-3 text-gray-400" />
-                           <p className="text-[10px] font-bold text-gray-400 truncate">{page.slug}</p>
+                            <Link className="w-3 h-3 text-blue-400" />
+                            <p className="text-[10px] font-bold text-blue-500/60 truncate italic">{page.url}</p>
                        </div>
                        
                        {/* Mini Stats */}
@@ -475,12 +482,12 @@ export default function MicroPagesPage() {
                                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                                    <Globe className="w-6 h-6" />
                                 </div>
-                                <div>
-                                   <p className="font-black text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">{page.title}</p>
-                                   <p className="text-[10px] font-bold text-gray-400 mt-1 flex items-center gap-1">
-                                      <Link className="w-3 h-3" /> /{page.slug}
-                                   </p>
-                                </div>
+                                 <div>
+                                    <p className="font-black text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">{page.title}</p>
+                                    <p className="text-[10px] font-bold text-blue-500/60 mt-1 flex items-center gap-1 italic">
+                                       <Link className="w-3 h-3" /> {page.url}
+                                    </p>
+                                 </div>
                              </div>
                           </td>
                           <td className="px-8 py-6">
@@ -622,7 +629,7 @@ export default function MicroPagesPage() {
                   </div>
                   <div className="flex items-center gap-3">
                      <button onClick={() => setShowEditModal(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 hover:bg-gray-50 font-bold transition-all text-sm cursor-pointer">Cancel</button>
-                     <button onClick={() => { showNotify('Changes Saved Successfully', 'success'); setShowEditModal(false); }} className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer">Save Changes</button>
+                     <button onClick={handleSave} className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer">Save Changes</button>
                   </div>
                </div>
 
@@ -631,38 +638,76 @@ export default function MicroPagesPage() {
                      <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
                         <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2"><Globe className="w-5 h-5 text-blue-500" /> Core Configuration</h3>
                         <div className="space-y-6">
-                           <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Page Title</label>
-                              <input type="text" defaultValue={editingPage.title} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" />
-                           </div>
+                            <div>
+                               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Page Title</label>
+                               <input 
+                                 type="text" 
+                                 value={editingPage.title} 
+                                 onChange={(e) => setEditingPage({ ...editingPage, title: e.target.value })}
+                                 className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" 
+                               />
+                            </div>
                            <div className="grid grid-cols-2 gap-6">
-                              <div>
-                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Slug</label>
-                                 <input type="text" defaultValue={editingPage.slug} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-mono text-sm focus:border-blue-500 focus:outline-none transition-colors" />
-                              </div>
-                              <div>
-                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Status</label>
-                                 <select defaultValue={editingPage.status} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-4 text-white font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
+                               <div>
+                                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Slug</label>
+                                  <input 
+                                    type="text" 
+                                    value={editingPage.slug} 
+                                    onChange={(e) => setEditingPage({ ...editingPage, slug: e.target.value })}
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-mono text-sm focus:border-blue-500 focus:outline-none transition-colors" 
+                                  />
+                               </div>
+                               <div>
+                                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Public URL</label>
+                                  <div className="relative group/url">
+                                     <input 
+                                        type="text" 
+                                        value={editingPage.url} 
+                                        onChange={(e) => setEditingPage({ ...editingPage, url: e.target.value })}
+                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 pr-12 text-blue-600 font-bold text-xs focus:border-blue-500 focus:outline-none transition-colors" 
+                                     />
+                                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                        <Copy className="w-4 h-4 text-blue-400 group-hover/url:text-blue-600 transition-colors" />
+                                     </div>
+                                  </div>
+                               </div>
+                           </div>
+                            <div>
+                               <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Status</label>
+                                 <select 
+                                   value={editingPage.status} 
+                                   onChange={(e) => setEditingPage({ ...editingPage, status: e.target.value as 'published' | 'draft' | 'archived' })}
+                                   className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-4 text-white font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                                 >
                                     <option value="published">Published</option>
                                     <option value="draft">Draft</option>
                                     <option value="archived">Archived</option>
                                  </select>
-                              </div>
-                           </div>
+                            </div>
                         </div>
                      </div>
 
                      <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
                         <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2"><Sparkles className="w-5 h-5 text-purple-500" /> SEO Optimization</h3>
                         <div className="space-y-6">
-                           <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Meta Title</label>
-                              <input type="text" defaultValue={editingPage.seoTitle} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-purple-500 focus:outline-none transition-colors" />
-                           </div>
-                           <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Meta Description</label>
-                              <textarea defaultValue={editingPage.seoDescription} rows={3} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-purple-500 focus:outline-none transition-colors resize-none" />
-                           </div>
+                            <div>
+                               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Meta Title</label>
+                               <input 
+                                 type="text" 
+                                 value={editingPage.seoTitle || ''} 
+                                 onChange={(e) => setEditingPage({ ...editingPage, seoTitle: e.target.value })}
+                                 className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-purple-500 focus:outline-none transition-colors" 
+                               />
+                            </div>
+                            <div>
+                               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Meta Description</label>
+                               <textarea 
+                                 value={editingPage.seoDescription || ''} 
+                                 onChange={(e) => setEditingPage({ ...editingPage, seoDescription: e.target.value })}
+                                 rows={3} 
+                                 className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-purple-500 focus:outline-none transition-colors resize-none" 
+                               />
+                            </div>
                         </div>
                      </div>
                   </div>

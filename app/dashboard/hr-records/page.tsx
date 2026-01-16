@@ -6,7 +6,8 @@ import {
   DollarSign, Award, TrendingUp, Zap, Building2,
   Grid, List, CheckCircle, XCircle, AlertCircle, Clock,
   Mail, MessageSquare, Trash2, Eye, X,
-  Laptop, Target, Shield, Activity, FileText
+  Laptop, Target, Shield, Activity, FileText,
+  Database, RefreshCw
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
@@ -269,6 +270,9 @@ export default function HRRecordsPage() {
   const [messageBody, setMessageBody] = useState('');
   const [messagePriority, setMessagePriority] = useState('normal');
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState({ payroll: 0, attendance: 0, benefits: 0, performance: 0 });
 
   const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
     setNotification({ message, type });
@@ -385,7 +389,7 @@ export default function HRRecordsPage() {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => {
-                showNotify('Syncing HRIS Database...');
+                setShowSyncModal(true);
               }}
               className="px-8 py-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-purple-600 active:scale-95 transition-all duration-500 flex items-center gap-3 cursor-pointer"
             >
@@ -780,6 +784,110 @@ export default function HRRecordsPage() {
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sync Protocol Modal */}
+      {showSyncModal && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4 animate-in fade-in duration-500">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] max-w-lg w-full border-2 border-white shadow-2xl flex flex-col relative text-gray-900 overflow-hidden">
+             {/* Modal Header */}
+             <div className="p-6 border-b border-gray-100 bg-white/40 flex items-center justify-between relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-pulse" />
+                <div className="relative">
+                   <h2 className="text-xl font-black tracking-tight flex items-center gap-3">
+                      <RefreshCw className={`w-5 h-5 text-purple-600 ${isSyncing ? 'animate-spin' : ''}`} />
+                      Sync Protocol
+                   </h2>
+                   <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">HRIS Database Reconciliation</p>
+                </div>
+                {!isSyncing && (
+                  <button onClick={() => setShowSyncModal(false)} className="p-3 bg-gray-100/50 rounded-xl cursor-pointer hover:bg-gray-200 transition-all">
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+             </div>
+
+             <div className="p-6 space-y-6">
+                {/* Sync Reactor / Central Visual */}
+                <div className="flex flex-col items-center justify-center py-6 relative">
+                   <div className={`w-24 h-24 rounded-full border-4 border-purple-100 flex items-center justify-center relative ${isSyncing ? 'animate-pulse' : ''}`}>
+                      <div className={`absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent ${isSyncing ? 'animate-spin' : 'opacity-20'}`} />
+                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30">
+                         <Database className="w-6 h-6 text-white" />
+                      </div>
+                   </div>
+                   <div className="mt-4 text-center">
+                      <p className="text-[9px] font-black text-purple-500 uppercase tracking-[0.3em] mb-1">{isSyncing ? 'Synchronizing Nodes' : 'Protocol Ready'}</p>
+                      <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest opacity-60">Auth: OKLEEVO-HR-v2.4</p>
+                   </div>
+                </div>
+
+                {/* Progress Grid */}
+                <div className="space-y-4">
+                   {[
+                      { id: 'payroll', label: 'Payroll Reconciliation', icon: DollarSign, progress: syncProgress.payroll },
+                      { id: 'attendance', label: 'Attendance Manifests', icon: Clock, progress: syncProgress.attendance },
+                      { id: 'benefits', label: 'Benefit Structures', icon: Zap, progress: syncProgress.benefits },
+                      { id: 'performance', label: 'Performance Nodes', icon: Activity, progress: syncProgress.performance },
+                   ].map((module) => (
+                     <div key={module.id} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[8px] font-black pointer-events-none">
+                           <div className="flex items-center gap-2 text-gray-400">
+                              <module.icon className="w-2.5 h-2.5" />
+                              <span className="uppercase tracking-[0.15em]">{module.label}</span>
+                           </div>
+                           <span className="text-purple-600 font-black tracking-widest">{module.progress}%</span>
+                        </div>
+                        <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner">
+                           <div 
+                              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300"
+                              style={{ width: `${module.progress}%` }}
+                           />
+                        </div>
+                     </div>
+                   ))}
+                </div>
+             </div>
+
+             <div className="p-6 bg-white/60 border-t border-gray-100">
+                {!isSyncing ? (
+                   <button 
+                     onClick={() => {
+                        setIsSyncing(true);
+                        // Simulate sync process
+                        const startSync = async () => {
+                           const modules = ['payroll', 'attendance', 'benefits', 'performance'];
+                           for (const m of modules) {
+                              for (let i = 0; i <= 100; i += Math.floor(Math.random() * 15) + 5) {
+                                 const progress = Math.min(i, 100);
+                                 setSyncProgress(prev => ({ ...prev, [m]: progress }));
+                                 await new Promise(r => setTimeout(r, 150));
+                              }
+                              setSyncProgress(prev => ({ ...prev, [m]: 100 }));
+                           }
+                           setIsSyncing(false);
+                           showNotify('✓ HRIS Database Successfully Reconciled', 'success');
+                           setTimeout(() => {
+                              setShowSyncModal(false);
+                              setSyncProgress({ payroll: 0, attendance: 0, benefits: 0, performance: 0 });
+                           }, 1500);
+                        };
+                        startSync();
+                     }}
+                     className="w-full py-5 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-3 cursor-pointer"
+                   >
+                     <Zap className="w-4 h-4" />
+                     Initialize Sync Protocol
+                   </button>
+                ) : (
+                   <div className="py-5 bg-purple-50 border border-purple-100 rounded-2xl flex items-center justify-center gap-3">
+                      <RefreshCw className="w-4 h-4 text-purple-600 animate-spin" />
+                      <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest">Protocol Active...</span>
+                   </div>
+                )}
              </div>
           </div>
         </div>

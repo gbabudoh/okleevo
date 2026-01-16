@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Plus, Search, Edit, Trash2, Eye, Building2, Users } from "lucide-react";
 import Link from "next/link";
 
@@ -14,7 +14,10 @@ interface Business {
   seatCount: number;
   maxSeats: number;
   userCount: number;
-  subscription: any;
+  subscription?: {
+    status: string;
+    [key: string]: unknown;
+  } | null;
   createdAt: string;
 }
 
@@ -31,18 +34,14 @@ export default function BusinessesPage() {
   const [formData, setFormData] = useState({
     name: "",
     industry: "",
-    size: "1-5",
+    size: "1-10",
     country: "UK",
     city: "",
     address: "",
     maxSeats: 10,
   });
 
-  useEffect(() => {
-    fetchBusinesses();
-  }, [page, searchTerm]);
-
-  const fetchBusinesses = async () => {
+  const fetchBusinesses = useCallback(async () => {
     try {
       setLoading(true);
       const url = `/api/admin/businesses?page=${page}&limit=20&search=${encodeURIComponent(searchTerm)}`;
@@ -58,7 +57,11 @@ export default function BusinessesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, searchTerm]);
+
+  useEffect(() => {
+    fetchBusinesses();
+  }, [fetchBusinesses]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +78,7 @@ export default function BusinessesPage() {
         setFormData({
           name: "",
           industry: "",
-          size: "1-5",
+          size: "1-10",
           country: "UK",
           city: "",
           address: "",
@@ -153,7 +156,7 @@ export default function BusinessesPage() {
               setFormData({
                 name: "",
                 industry: "",
-                size: "1-5",
+                size: "1-10",
                 country: "UK",
                 city: "",
                 address: "",
@@ -381,10 +384,10 @@ export default function BusinessesPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="1-5">1-5</option>
-                    <option value="6-10">6-10</option>
-                    <option value="11-20">11-20</option>
-                    <option value="21-50">21-50</option>
-                    <option value="51+">51+</option>
+                    <option value="1-10">1-10</option>
+                    <option value="1-25">1-25</option>
+                    <option value="1-50">1-50</option>
+                    <option value="50+">50+</option>
                   </select>
                 </div>
                 <div>
@@ -475,10 +478,10 @@ export default function BusinessesPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="1-5">1-5</option>
-                    <option value="6-10">6-10</option>
-                    <option value="11-20">11-20</option>
-                    <option value="21-50">21-50</option>
-                    <option value="51+">51+</option>
+                    <option value="1-10">1-10</option>
+                    <option value="1-25">1-25</option>
+                    <option value="1-50">1-50</option>
+                    <option value="50+">50+</option>
                   </select>
                 </div>
                 <div>

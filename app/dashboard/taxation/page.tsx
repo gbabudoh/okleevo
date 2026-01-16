@@ -6,6 +6,7 @@ import {
   Clock, Building2, User, Users, Briefcase, BarChart3, Shield, Send, X, Receipt, Home, History
 } from 'lucide-react';
 import jsPDF from 'jspdf';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TaxObligation {
   id: string;
@@ -106,6 +107,12 @@ export default function TaxationPage() {
   };
 
   const [activeTab, setActiveTab] = useState('overview');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }
   const [showCalculatorModal, setShowCalculatorModal] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
@@ -332,28 +339,31 @@ export default function TaxationPage() {
   return (
     <div className="space-y-6 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between relative z-10">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl shadow-lg shadow-green-500/20">
-              <FileText className="w-8 h-8 text-white" />
-            </div>
-            UK Taxation Management
-          </h1>
-          <p className="text-gray-600 mt-2">Complete tax management system for UK businesses</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer">
-            <Download className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Export</span>
-          </button>
-          <button 
-            onClick={() => setShowNewReturnModal(true)}
-            className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2 shadow-lg cursor-pointer"
-          >
-            <Plus className="w-5 h-5" />
-            New Return
-          </button>
+      <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 shadow-lg border border-white/50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+        <div className="flex items-center justify-between relative z-10">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
+              <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg ring-4 ring-green-500/10">
+                <FileText className="w-8 h-8 text-white" />
+              </div>
+              UK Taxation Management
+            </h1>
+            <p className="text-gray-600 text-lg">Complete tax management system for UK businesses</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="px-6 py-3 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-all flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer font-semibold text-gray-700">
+              <Download className="w-5 h-5" />
+              <span>Export Reports</span>
+            </button>
+            <button 
+              onClick={() => setShowNewReturnModal(true)}
+              className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg cursor-pointer"
+            >
+              <Plus className="w-5 h-5" />
+              New Return
+            </button>
+          </div>
         </div>
       </div>
 
@@ -424,7 +434,16 @@ export default function TaxationPage() {
       </div>
 
       {/* Content Area */}
-      {activeTab === 'overview' && (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="min-h-[400px]"
+        >
+          {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Upcoming Tax Obligations */}
           <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
@@ -984,10 +1003,12 @@ export default function TaxationPage() {
       {showCalculatorModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-5 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-5 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Calculator className="w-6 h-6" />
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                    <Calculator className="w-6 h-6" />
+                  </div>
                   Self Assessment Tax Calculator
                 </h2>
                 <button 
@@ -1018,7 +1039,7 @@ export default function TaxationPage() {
                 onClick={() => {
                   const income = parseFloat(taxableIncome);
                   if (isNaN(income) || income <= 0) {
-                    alert('Please enter a valid income amount');
+                    showToast('Please enter a valid income amount', 'error');
                     return;
                   }
 
@@ -1094,10 +1115,12 @@ export default function TaxationPage() {
       {showDownloadModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-5 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Download className="w-6 h-6" />
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                    <Download className="w-6 h-6" />
+                  </div>
                   Download SA100 Tax Return
                 </h2>
                 <button 
@@ -1573,10 +1596,12 @@ Total Tax Due,£${totalTaxDueValue}`;
       {showSubmitModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md w-full border border-white/50">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Send className="w-6 h-6" />
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                    <Send className="w-6 h-6" />
+                  </div>
                   Submit to HMRC
                 </h2>
                 <button 
@@ -2378,19 +2403,23 @@ Total Tax Due,£${totalTaxDueValue}`;
         </div>
         );
       })()}
+        </motion.div>
+      </AnimatePresence>
       {/* New Return Modal */}
       {showNewReturnModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
           <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50 relative">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-t-2xl sticky top-0 z-10">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl sticky top-0 z-10 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Plus className="w-6 h-6" />
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                      <Plus className="w-6 h-6" />
+                    </div>
                     Create New Tax Return
                   </h2>
-                  <p className="text-green-100 text-sm mt-1">Step {newReturnStep} of 4: {
+                  <p className="text-green-50 text-sm mt-1 font-medium italic opacity-90">Step {newReturnStep} of 4: {
                     newReturnStep === 1 ? 'Select Return Type' :
                     newReturnStep === 2 ? 'Period & Reference' :
                     newReturnStep === 3 ? 'Financial Details' :
@@ -2411,7 +2440,7 @@ Total Tax Due,£${totalTaxDueValue}`;
               {/* Progress Bar */}
               <div className="mt-4 w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
                 <div 
-                  className="bg-white h-full transition-all duration-500 ease-out"
+                  className="bg-white h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(255,255,255,0.8)]"
                   style={{ width: `${(newReturnStep / 4) * 100}%` }}
                 />
               </div>
@@ -2628,14 +2657,16 @@ Total Tax Due,£${totalTaxDueValue}`;
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
           <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50 relative">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-t-2xl sticky top-0 z-10">
+            <div className="bg-gradient-to-r from-blue-700 to-indigo-700 p-6 rounded-t-2xl sticky top-0 z-10 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Building2 className="w-6 h-6" />
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                      <Building2 className="w-6 h-6" />
+                    </div>
                     Corporation Tax Return (CT600)
                   </h2>
-                  <p className="text-blue-100 text-sm mt-1">{ctPeriod}</p>
+                  <p className="text-blue-50 text-sm mt-1 font-medium italic opacity-90">{ctPeriod}</p>
                 </div>
                 <button 
                   onClick={() => setShowCT600Modal(false)}
@@ -2772,10 +2803,12 @@ Total Tax Due,£${totalTaxDueValue}`;
       {showEditIncomeModal && editingSource && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
           <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md w-full border border-white/50">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-5 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-5 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <DollarSign className="w-6 h-6" />
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                    <DollarSign className="w-6 h-6" />
+                  </div>
                   Edit {editingSource.name}
                 </h2>
                 <button 
@@ -2830,10 +2863,12 @@ Total Tax Due,£${totalTaxDueValue}`;
       {showHistoryModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
           <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
-            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-5 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-indigo-700 to-purple-800 p-5 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Clock className="w-6 h-6" />
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                    <Clock className="w-6 h-6" />
+                  </div>
                   Self Assessment History
                 </h2>
                 <button 
@@ -3667,6 +3702,51 @@ Total Tax Due,£${totalTaxDueValue}`;
           </div>
         </div>
       )}
+      {/* Premium Toast Notification System */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-8 right-8 z-[110]"
+          >
+            <div className={`backdrop-blur-xl border p-5 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[320px] ${
+              toast.type === 'success' 
+                ? 'bg-emerald-500/10 border-emerald-500/50' 
+                : 'bg-rose-500/10 border-rose-500/50'
+            }`}>
+              <div className={`p-3 rounded-xl ${
+                toast.type === 'success' 
+                  ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30' 
+                  : 'bg-rose-500 shadow-lg shadow-rose-500/30'
+              }`}>
+                {toast.type === 'success' ? (
+                  <CheckCircle className="w-6 h-6 text-white" />
+                ) : (
+                  <AlertCircle className="w-6 h-6 text-white" />
+                )}
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm font-bold ${
+                  toast.type === 'success' ? 'text-emerald-900' : 'text-rose-900'
+                }`}>
+                  {toast.type === 'success' ? 'Success' : 'Error'}
+                </p>
+                <p className="text-gray-600 text-xs mt-0.5 font-medium leading-relaxed">
+                  {toast.message}
+                </p>
+              </div>
+              <button 
+                onClick={() => setToast(null)}
+                className="p-2 hover:bg-black/5 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

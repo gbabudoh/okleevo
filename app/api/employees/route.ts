@@ -3,13 +3,14 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { syncSubscriptionWithSeats } from '@/lib/stripe/per-seat-billing';
 import { getAuthenticatedUserId } from '@/lib/multi-tenancy';
+import { UserRole, UserStatus } from '@prisma/client';
 
 export const runtime = 'nodejs';
 
 /**
  * GET - List all employees/users for the current business
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const userId = await getAuthenticatedUserId();
 
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
         available: (business?.maxSeats || 0) - (business?.seatCount || 0),
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching employees:', error);
     return NextResponse.json(
       { error: 'Failed to fetch employees' },
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
     let body;
     try {
       body = await request.json();
-    } catch (parseError) {
+    } catch {
       return NextResponse.json(
         { error: 'Invalid request body. Expected JSON.' },
         { status: 400 }
@@ -166,6 +167,7 @@ export async function POST(request: NextRequest) {
     // Hash password if provided (otherwise user will need to set password via invite)
     let hashedPassword = null;
     if (password) {
+      // If it's a 6-digit code, we'll use it as the password
       hashedPassword = await bcrypt.hash(password, 10);
     }
 
@@ -178,11 +180,11 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         password: hashedPassword,
         businessId: business.id,
-        role: role || 'MEMBER',
-        status: 'ACTIVE',
+        role: (role as UserRole) || UserRole.MEMBER,
+        status: UserStatus.ACTIVE,
         emailVerified: password ? new Date() : null, // Auto-verify if password provided
         timezone: 'Europe/London',
-      } as any,
+      },
     });
 
     // Update seat count
@@ -219,10 +221,11 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error adding employee:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to add employee';
     return NextResponse.json(
-      { error: error.message || 'Failed to add employee' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

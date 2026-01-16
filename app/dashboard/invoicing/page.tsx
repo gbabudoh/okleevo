@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { motion, AnimatePresence } from 'framer-motion';
+// Toast imports merged into main lucide-react block above
 
 interface Invoice {
   id: string;
@@ -209,6 +211,13 @@ export default function InvoicingPage() {
     },
   ]);
 
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -281,7 +290,7 @@ export default function InvoicingPage() {
       ));
     }
     
-    alert(`✓ Invoice sent successfully to ${emailData.to}!`);
+    showToast(`Invoice sent successfully to ${emailData.to}!`);
     setShowEmailModal(false);
     setEmailInvoice(null);
   };
@@ -329,15 +338,15 @@ export default function InvoicingPage() {
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                alert('✓ All invoices exported successfully!');
+                 URL.revokeObjectURL(url);
+                showToast('All invoices exported successfully!');
               }}
               className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl rounded-xl transition-all font-semibold flex items-center gap-2 cursor-pointer"
             >
               <Download className="w-5 h-5" />
               <span>Export All</span>
             </button>
-            <button 
+            <button
               type="button"
               onClick={() => setShowNewInvoiceModal(true)}
               className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer"
@@ -437,7 +446,7 @@ export default function InvoicingPage() {
           />
         </div>
         <div className="relative">
-          <button 
+          <button
             type="button"
             onClick={() => setShowFilterMenu(!showFilterMenu)}
             className="px-6 py-3 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 flex items-center gap-2 font-medium shadow-sm transition-all cursor-pointer backdrop-blur-sm"
@@ -535,7 +544,7 @@ export default function InvoicingPage() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => handleViewInvoice(invoice)}
                       className="p-2 hover:bg-blue-50 rounded-lg transition-colors group/btn cursor-pointer"
@@ -544,10 +553,10 @@ export default function InvoicingPage() {
                       <Eye className="w-5 h-5 text-gray-600 group-hover/btn:text-blue-600" />
                     </button>
                     <div className="relative">
-                      <button 
+                      <button
                         type="button"
                         onClick={() => setDownloadMenuOpen(downloadMenuOpen === invoice.id ? null : invoice.id)}
-                        className="p-2 hover:bg-green-50 rounded-lg transition-colors group/btn cursor-pointer" 
+                        className="p-2 hover:bg-green-50 rounded-lg transition-colors group/btn cursor-pointer"
                         title="Download"
                       >
                         <Download className="w-5 h-5 text-gray-600 group-hover/btn:text-green-600" />
@@ -556,7 +565,7 @@ export default function InvoicingPage() {
                         <>
                           <div className="fixed inset-0 z-40" onClick={() => setDownloadMenuOpen(null)} />
                           <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
-                            <button 
+                            <button
                               type="button"
                               onClick={() => {
                                 downloadAsPDF(invoice);
@@ -567,7 +576,7 @@ export default function InvoicingPage() {
                               <FileText className="w-4 h-4 text-red-600" />
                               <span className="font-medium">Download PDF</span>
                             </button>
-                            <button 
+                            <button
                               type="button"
                               onClick={() => {
                                 downloadAsExcel(invoice);
@@ -582,16 +591,16 @@ export default function InvoicingPage() {
                         </>
                       )}
                     </div>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => handleSendEmail(invoice)}
-                      className="p-2 hover:bg-purple-50 rounded-lg transition-colors group/btn cursor-pointer" 
+                      className="p-2 hover:bg-purple-50 rounded-lg transition-colors group/btn cursor-pointer"
                       title="Send"
                     >
                       <Send className="w-5 h-5 text-gray-600 group-hover/btn:text-purple-600" />
                     </button>
                     <div className="relative">
-                      <button 
+                      <button
                         type="button"
                         onClick={() => setActiveMenu(activeMenu === invoice.id ? null : invoice.id)}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
@@ -602,7 +611,7 @@ export default function InvoicingPage() {
                         <>
                           <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
                           <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
-                            <button 
+                            <button
                               type="button"
                               onClick={() => {
                                 setSelectedInvoice(invoice);
@@ -611,22 +620,22 @@ export default function InvoicingPage() {
                               }}
                               className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer transition-colors"
                             >
-                              <Edit className="w-4 h-4 text-blue-600" /> 
+                              <Edit className="w-4 h-4 text-blue-600" />
                               <span className="font-medium">Edit</span>
                             </button>
-                            <button 
+                            <button
                               type="button"
-                              onClick={() => {
+                               onClick={() => {
                                 navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}`);
-                                alert('✓ Invoice link copied!');
+                                showToast('Invoice link copied!');
                                 setActiveMenu(null);
                               }}
                               className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 flex items-center gap-2 cursor-pointer transition-colors"
                             >
-                              <Copy className="w-4 h-4 text-green-600" /> 
+                              <Copy className="w-4 h-4 text-green-600" />
                               <span className="font-medium">Copy Link</span>
                             </button>
-                            <button 
+                            <button
                               type="button"
                               onClick={() => {
                                 handleSendEmail(invoice);
@@ -634,11 +643,11 @@ export default function InvoicingPage() {
                               }}
                               className="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 flex items-center gap-2 cursor-pointer transition-colors"
                             >
-                              <Mail className="w-4 h-4 text-purple-600" /> 
+                              <Mail className="w-4 h-4 text-purple-600" />
                               <span className="font-medium">Email</span>
                             </button>
                             <div className="border-t border-gray-200 my-1" />
-                            <button 
+                            <button
                               type="button"
                               onClick={() => {
                                 setDeletingInvoice(invoice);
@@ -647,7 +656,7 @@ export default function InvoicingPage() {
                               }}
                               className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
                             >
-                              <Trash2 className="w-4 h-4" /> 
+                              <Trash2 className="w-4 h-4" />
                               <span className="font-medium">Delete</span>
                             </button>
                           </div>
@@ -671,12 +680,12 @@ export default function InvoicingPage() {
                 <Plus className="w-6 h-6 text-blue-600" />
                 Create New Invoice
               </h2>
-              <button
+               <button
                 type="button"
                 onClick={() => setShowNewInvoiceModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
               >
-                <X className="w-6 h-6 text-gray-600" />
+                <X className="w-6 h-6 text-white" />
               </button>
             </div>
             <div className="p-6 space-y-6">
@@ -722,7 +731,7 @@ export default function InvoicingPage() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <label className="block text-sm font-semibold text-gray-700">Invoice Items</label>
@@ -792,13 +801,13 @@ export default function InvoicingPage() {
                       </div>
                       <div className="col-span-1">
                         {newInvoice.items.length > 1 && (
-                          <button
+                           <button
                             type="button"
                             onClick={() => {
                               const items = newInvoice.items.filter((_, i) => i !== index);
                               setNewInvoice({ ...newInvoice, items });
                             }}
-                            className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4 text-red-600" />
                           </button>
@@ -843,16 +852,16 @@ export default function InvoicingPage() {
                       dueDate: '',
                       items: [{ description: '', quantity: 1, rate: 0 }]
                     });
-                    alert('✓ Invoice created successfully!');
+                    showToast('Invoice created successfully!');
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-bold"
+                   className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-bold cursor-pointer"
                 >
                   Create Invoice
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowNewInvoiceModal(false)}
-                  className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-semibold"
+                  className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -871,13 +880,13 @@ export default function InvoicingPage() {
                 <FileText className="w-6 h-6 text-blue-600" />
                 Invoice {selectedInvoice.id}
               </h2>
-              <button
+               <button
                 type="button"
                 onClick={() => {
                   setShowInvoiceModal(false);
                   setSelectedInvoice(null);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-gray-600" />
               </button>
@@ -946,7 +955,7 @@ export default function InvoicingPage() {
                 <button
                   type="button"
                   onClick={() => downloadAsPDF(selectedInvoice)}
-                  className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl hover:shadow-lg transition-all font-bold flex items-center justify-center gap-2"
+                   className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl hover:shadow-lg transition-all font-bold flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Download className="w-5 h-5" />
                   Download PDF
@@ -957,7 +966,7 @@ export default function InvoicingPage() {
                     handleSendEmail(selectedInvoice);
                     setShowInvoiceModal(false);
                   }}
-                  className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-bold flex items-center justify-center gap-2"
+                   className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-bold flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Send className="w-5 h-5" />
                   Send Email
@@ -977,13 +986,13 @@ export default function InvoicingPage() {
                 <Mail className="w-6 h-6 text-purple-600" />
                 Send Invoice via Email
               </h2>
-              <button
+               <button
                 type="button"
                 onClick={() => {
                   setShowEmailModal(false);
                   setEmailInvoice(null);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-gray-600" />
               </button>
@@ -1020,7 +1029,7 @@ export default function InvoicingPage() {
                 <button
                   type="button"
                   onClick={sendInvoiceEmail}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all font-bold flex items-center justify-center gap-2"
+                   className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all font-bold flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Send className="w-5 h-5" />
                   Send Invoice
@@ -1031,7 +1040,7 @@ export default function InvoicingPage() {
                     setShowEmailModal(false);
                     setEmailInvoice(null);
                   }}
-                  className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-semibold"
+                  className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1051,14 +1060,55 @@ export default function InvoicingPage() {
           }}
           onConfirm={() => {
             setInvoices(invoices.filter(inv => inv.id !== deletingInvoice.id));
-            alert('✓ Invoice deleted successfully');
+            showToast('Invoice deleted successfully');
           }}
           title="Delete Invoice"
           itemName={deletingInvoice.id}
           itemDetails={`${deletingInvoice.client} - £${deletingInvoice.amount.toLocaleString()}`}
           warningMessage="This will permanently remove this invoice and all associated records."
         />
-      )}
+       )}
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 100, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 100, x: '-50%' }}
+            className="fixed bottom-10 left-1/2 z-[100] min-w-[320px]"
+          >
+            <div className={`backdrop-blur-xl bg-white/90 border-2 shadow-2xl rounded-2xl p-4 flex items-center gap-4 ${
+              toast.type === 'success' ? 'border-green-100' : 'border-red-100'
+            }`}>
+              <div className={`p-3 rounded-xl ${
+                toast.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+              }`}>
+                {toast.type === 'success' ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-gray-900 font-bold leading-tight">{toast.message}</p>
+                <p className="text-gray-500 text-xs font-medium mt-0.5">Notification</p>
+              </div>
+              <button
+                onClick={() => setToast(null)}
+                className="p-2 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+            <div className={`absolute bottom-0 left-4 right-4 h-1 rounded-full overflow-hidden ${
+              toast.type === 'success' ? 'bg-green-100/50' : 'bg-red-100/50'
+            }`}>
+              <motion.div
+                initial={{ width: "100%" }}
+                animate={{ width: "0%" }}
+                transition={{ duration: 3, ease: "linear" }}
+                className={`h-full ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

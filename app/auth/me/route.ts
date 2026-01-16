@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       lastName: 'Smith',
       businessName: 'ABC Ltd',
       industry: 'professional-services',
-      businessSize: '6-10',
+      businessSize: '1-10',
       role: 'owner',
       status: 'active',
       emailVerified: true,

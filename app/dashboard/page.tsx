@@ -383,11 +383,11 @@ export default function DashboardPage() {
             )
           ) : (
             renderCompanyInfo(
-              'Egobas Limited',
-              'technology',
-              1,
-              5,
-              'godwinbabs@egobas.com'
+              'Business Name',
+              'industry',
+              0,
+              0,
+              'email@example.com'
             )
           )}
         </div>

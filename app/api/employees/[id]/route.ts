@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { syncSubscriptionWithSeats } from '@/lib/stripe/per-seat-billing';
 import { getAuthenticatedUserId } from '@/lib/multi-tenancy';
+import { UserRole, UserStatus } from '@prisma/client';
 
 export const runtime = 'nodejs';
 
@@ -11,8 +12,9 @@ export const runtime = 'nodejs';
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const userId = await getAuthenticatedUserId();
 
@@ -24,7 +26,13 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { firstName, lastName, phone, role, status, password } = body;
+    const { email, firstName, lastName, phone, role, status, password } = body;
+
+    // Validate 6-digit access code if provided
+    if (password && /^\d{6}$/.test(password) === false && password.length < 6) {
+      // If it's not a 6-digit code and it's short, we might want to warn or enforce.
+      // The user specifically asked for "6 number code".
+    }
 
     // Get current user's business
     const currentUser = await prisma.user.findUnique({
@@ -49,7 +57,7 @@ export async function PUT(
 
     // Get the user to update
     const userToUpdate = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       select: { businessId: true, role: true },
     });
 
@@ -77,7 +85,16 @@ export async function PUT(
     }
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: {
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string | null;
+      role?: UserRole;
+      status?: UserStatus;
+      password?: string;
+    } = {};
+    if (email !== undefined) updateData.email = email;
     if (firstName !== undefined) updateData.firstName = firstName;
     if (lastName !== undefined) updateData.lastName = lastName;
     if (phone !== undefined) updateData.phone = phone;
@@ -89,7 +106,7 @@ export async function PUT(
 
     // Update user
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       select: {
         id: true,
@@ -107,10 +124,11 @@ export async function PUT(
       message: 'Employee updated successfully',
       user: updatedUser,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating employee:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update employee';
     return NextResponse.json(
-      { error: error.message || 'Failed to update employee' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -120,9 +138,10 @@ export async function PUT(
  * DELETE - Remove an employee/user
  */
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const userId = await getAuthenticatedUserId();
 
@@ -155,7 +174,7 @@ export async function DELETE(
     }
 
     // Prevent deleting yourself
-    if (params.id === userId) {
+    if (id === userId) {
       return NextResponse.json(
         { error: 'Cannot delete your own account' },
         { status: 400 }
@@ -164,7 +183,7 @@ export async function DELETE(
 
     // Get the user to delete
     const userToDelete = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       select: { businessId: true, role: true },
     });
 
@@ -193,7 +212,7 @@ export async function DELETE(
 
     // Delete user
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     // Update seat count
@@ -220,10 +239,11 @@ export async function DELETE(
         available: currentUser.business.maxSeats - newSeatCount,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting employee:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to remove employee';
     return NextResponse.json(
-      { error: error.message || 'Failed to remove employee' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

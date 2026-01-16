@@ -10,8 +10,10 @@ import {
   ShoppingBag, CreditCard, MousePointer, 
   ChevronRight, Minus,
   Gauge, Layers, Grid, List, MoreVertical,
-  X, Sparkles, Brain, CheckSquare, LucideIcon
+  X, Sparkles, Brain, CheckSquare, LucideIcon,
+  Edit3, Trash2, ExternalLink
 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 interface KPI {
   id: string;
@@ -313,6 +315,27 @@ export default function KPIDashboardPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [timeRange, setTimeRange] = useState('month');
   const [showAddKPI, setShowAddKPI] = useState(false);
+  const [activeMenuKPId, setActiveMenuKPId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setActiveMenuKPId(null);
+      }
+    };
+
+    if (activeMenuKPId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeMenuKPId]);
 
   const filteredKPIs = selectedCategory === 'all' 
     ? kpis 
@@ -524,7 +547,7 @@ export default function KPIDashboardPage() {
             return (
               <div
                 key={kpi.id}
-                className="group relative bg-white/60 backdrop-blur-md rounded-[2rem] border-2 border-white p-6 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 overflow-hidden animate-in fade-in slide-in-from-bottom-4 fill-mode-both"
+                className={`group relative bg-white/60 backdrop-blur-md rounded-[2rem] border-2 p-6 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 fill-mode-both ${activeMenuKPId === kpi.id ? 'z-[60] border-blue-200' : 'z-10 bg-white/60 border-white'}`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${kpi.gradient} opacity-[0.03] rounded-bl-[4rem] group-hover:scale-110 transition-transform duration-700`} />
@@ -535,12 +558,54 @@ export default function KPIDashboardPage() {
                     <div className={`p-4 rounded-2xl bg-gradient-to-br ${kpi.gradient} shadow-lg shadow-blue-500/10 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
                       <Icon className="w-6 h-6 text-white" />
                     </div>
-                    <button 
-                      onClick={() => showNotification(`Context Menu: ${kpi.name}`, 'info')}
-                      className="p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100 cursor-pointer"
-                    >
-                      <MoreVertical className="w-5 h-5 text-gray-400" />
-                    </button>
+                    <div className="relative">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenuKPId(activeMenuKPId === kpi.id ? null : kpi.id);
+                        }}
+                        className={`p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 cursor-pointer ${activeMenuKPId === kpi.id ? 'opacity-100 bg-gray-100' : 'opacity-0 group-hover:opacity-100'}`}
+                      >
+                        <MoreVertical className="w-5 h-5 text-gray-400" />
+                      </button>
+                      
+                      {activeMenuKPId === kpi.id && (
+                        <div 
+                          ref={menuRef}
+                          className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 z-50 py-2 animate-in fade-in zoom-in-95 duration-200"
+                        >
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Editing KPI: ${kpi.name}`, 'info'); }}
+                            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                          >
+                            <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Edit3 className="w-4 h-4" /></div>
+                            <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Edit Node</span>
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Synchronizing Data for ${kpi.name}...`, 'success'); }}
+                            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                          >
+                            <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><RefreshCw className="w-4 h-4" /></div>
+                            <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Sync Data</span>
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Generating Analysis for ${kpi.name}`, 'info'); }}
+                            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                          >
+                            <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><ExternalLink className="w-4 h-4" /></div>
+                            <span className="text-xs font-black text-gray-900 uppercase tracking-widest">View Analysis</span>
+                          </button>
+                          <div className="my-1 border-t border-gray-100" />
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Deleting Stream: ${kpi.name}`, 'info'); }}
+                            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left text-red-600 cursor-pointer"
+                          >
+                            <div className="p-2 bg-red-50 rounded-lg text-red-600"><Trash2 className="w-4 h-4" /></div>
+                            <span className="text-xs font-black uppercase tracking-widest">Delete Stream</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* KPI Identity */}
@@ -613,7 +678,7 @@ export default function KPIDashboardPage() {
             return (
               <div
                 key={kpi.id}
-                className="bg-white/60 backdrop-blur-md rounded-3xl border-2 border-white p-5 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 group animate-in fade-in slide-in-from-left-4 fill-mode-both"
+                className={`bg-white/60 backdrop-blur-md rounded-3xl border-2 p-5 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 group animate-in fade-in slide-in-from-left-4 fill-mode-both ${activeMenuKPId === kpi.id ? 'z-[60] relative border-blue-200 shadow-2xl' : 'z-10 border-white'}`}
                 style={{ animationDelay: `${index * 30}ms` }}
               >
                 <div className="flex items-center gap-6">
@@ -680,12 +745,54 @@ export default function KPIDashboardPage() {
                   )}
 
                   {/* Control Node */}
-                  <button 
-                    onClick={() => showNotification(`Context Menu: ${kpi.name}`, 'info')}
-                    className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-300 flex-shrink-0 group/btn cursor-pointer"
-                  >
-                    <MoreVertical className="w-5 h-5 text-gray-400 group-hover/btn:text-blue-600" />
-                  </button>
+                  <div className="relative">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenuKPId(activeMenuKPId === kpi.id ? null : kpi.id);
+                      }}
+                      className={`p-3 hover:bg-gray-100 rounded-xl transition-all duration-300 flex-shrink-0 group/btn cursor-pointer ${activeMenuKPId === kpi.id ? 'bg-gray-100' : ''}`}
+                    >
+                      <MoreVertical className={`w-5 h-5 transition-colors ${activeMenuKPId === kpi.id ? 'text-blue-600' : 'text-gray-400 group-hover/btn:text-blue-600'}`} />
+                    </button>
+
+                    {activeMenuKPId === kpi.id && (
+                      <div 
+                        ref={menuRef}
+                        className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 z-50 py-2 animate-in fade-in zoom-in-95 duration-200"
+                      >
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Editing KPI: ${kpi.name}`, 'info'); }}
+                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                        >
+                          <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Edit3 className="w-4 h-4" /></div>
+                          <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Edit Node</span>
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Synchronizing Data for ${kpi.name}...`, 'success'); }}
+                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                        >
+                          <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><RefreshCw className="w-4 h-4" /></div>
+                          <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Sync Data</span>
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Generating Analysis for ${kpi.name}`, 'info'); }}
+                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                        >
+                          <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><ExternalLink className="w-4 h-4" /></div>
+                          <span className="text-xs font-black text-gray-900 uppercase tracking-widest">View Analysis</span>
+                        </button>
+                        <div className="my-1 border-t border-gray-100" />
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Deleting Stream: ${kpi.name}`, 'info'); }}
+                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left text-red-600 cursor-pointer"
+                        >
+                          <div className="p-2 bg-red-50 rounded-lg text-red-600"><Trash2 className="w-4 h-4" /></div>
+                          <span className="text-xs font-black uppercase tracking-widest">Delete Stream</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -927,8 +1034,8 @@ export default function KPIDashboardPage() {
 
               <div className="relative z-10 space-y-6">
                 <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                    <Brain className="w-5 h-5 text-blue-400" />
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center cursor-pointer group/icon">
+                    <Brain className="w-5 h-5 text-blue-400 group-hover/icon:scale-110 transition-transform" />
                   </div>
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">AI Synthesis</p>
@@ -936,8 +1043,8 @@ export default function KPIDashboardPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                    <CheckSquare className="w-5 h-5 text-purple-400" />
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center cursor-pointer group/icon">
+                    <CheckSquare className="w-5 h-5 text-purple-400 group-hover/icon:scale-110 transition-transform" />
                   </div>
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-purple-400">Validation</p>

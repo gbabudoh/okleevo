@@ -574,14 +574,16 @@ export default function InventoryPage() {
                     <button className="flex-1 py-3 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-indigo-600 hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 group/btn cursor-pointer">
                       Adjust Stock
                     </button>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveMenu(activeMenu === item.id ? null : item.id);
-                      }}
-                      className="p-3 bg-white hover:bg-gray-50 rounded-xl border-2 border-white shadow-sm transition-all duration-300 group/ctx cursor-pointer relative"
-                    >
-                      <MoreVertical className="w-4 h-4 text-gray-400 group-hover/ctx:text-indigo-600" />
+                    <div className="relative">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenu(activeMenu === item.id ? null : item.id);
+                        }}
+                        className="p-3 bg-white hover:bg-gray-50 rounded-xl border-2 border-white shadow-sm transition-all duration-300 group/ctx cursor-pointer"
+                      >
+                        <MoreVertical className="w-4 h-4 text-gray-400 group-hover/ctx:text-indigo-600" />
+                      </button>
                       {activeMenu === item.id && (
                         <>
                           <div className="fixed inset-0 z-[60]" onClick={() => setActiveMenu(null)} />
@@ -608,7 +610,7 @@ export default function InventoryPage() {
                           </div>
                         </>
                       )}
-                    </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -616,10 +618,10 @@ export default function InventoryPage() {
           </div>
         ) : (
           <div className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] border-2 border-white shadow-2xl shadow-indigo-500/5 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-white/60">
+            <div className="overflow-auto max-h-[70vh] custom-scrollbar">
+              <table className="min-w-[1200px] w-full text-left border-collapse">
+                <thead className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl">
+                  <tr className="border-b-2 border-gray-100">
                     <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Asset Identity</th>
                     <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Allocation</th>
                     <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Operational Status</th>
@@ -629,11 +631,12 @@ export default function InventoryPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/60">
-                  {filteredItems.map((item) => {
-                    const statusConfig = getStatusConfig(item.status);
-                    const StatusIcon = statusConfig.icon;
-                    return (
-                      <tr key={item.id} className="group hover:bg-white/40 transition-all duration-500">
+                    {filteredItems.map((item) => {
+                      const statusConfig = getStatusConfig(item.status);
+                      const StatusIcon = statusConfig.icon;
+                      const isActive = activeMenu === item.id;
+                      return (
+                        <tr key={item.id} className={`group hover:bg-white/40 transition-all duration-500 ${isActive ? 'relative z-50 bg-white/40' : ''}`}>
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-4">
                             <div className="p-3 bg-white rounded-2xl shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
@@ -690,7 +693,7 @@ export default function InventoryPage() {
                               {activeMenu === item.id && (
                                 <>
                                   <div className="fixed inset-0 z-[60]" onClick={() => setActiveMenu(null)} />
-                                  <div className="absolute right-0 top-full mt-2 w-48 bg-white/80 backdrop-blur-2xl rounded-2xl shadow-2xl border-2 border-white py-2 z-[70] animate-in fade-in zoom-in duration-300">
+                                  <div className="absolute right-full top-0 mr-2 w-48 bg-white/80 backdrop-blur-2xl rounded-2xl shadow-2xl border-2 border-white py-2 z-[70] animate-in fade-in zoom-in slide-in-from-right-2 duration-300">
                                     {[
                                       { label: 'Deep Analysis', icon: Eye, color: 'blue', onClick: () => { setSelectedItem(item); showNotify('Deep Analysis Engine Online'); } },
                                       { label: 'Stock History', icon: History, color: 'orange', onClick: () => { setShowStockMovement(true); showNotify('Temporal Audit Synchronized', 'info'); } },
