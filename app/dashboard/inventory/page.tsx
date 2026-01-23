@@ -731,67 +731,67 @@ export default function InventoryPage() {
       {/* Item Detail Modal */}
       {selectedItem && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
+          <div className="bg-white/90 backdrop-blur-2xl rounded-[2.5rem] max-w-lg w-full max-h-[85vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
             <button
               onClick={() => setSelectedItem(null)}
-              className="absolute top-6 right-6 p-3 bg-white hover:bg-gray-50 rounded-2xl shadow-lg border-2 border-gray-100 transition-all z-20 cursor-pointer"
+              className="absolute top-4 right-4 p-2 bg-white hover:bg-gray-50 rounded-xl shadow-lg border-2 border-gray-100 transition-all z-20 cursor-pointer"
             >
-              <X className="w-6 h-6 text-gray-400" />
+              <X className="w-5 h-5 text-gray-400" />
             </button>
 
-            <div className="p-8 overflow-y-auto custom-scrollbar">
+            <div className="p-5 overflow-y-auto custom-scrollbar">
               {/* Header Visual */}
-              <div className="flex flex-col items-center mb-8">
-                <div className="mb-4">
-                  <span className="px-4 py-1.5 bg-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-indigo-200">
+              <div className="flex flex-col items-center mb-6">
+                <div className="mb-3">
+                  <span className="px-3 py-1 bg-indigo-100 text-indigo-600 text-[11px] font-black uppercase tracking-[0.2em] rounded-full border border-indigo-200">
                     {selectedItem.category} Node
                   </span>
                 </div>
                 
-                <div className="w-32 h-32 bg-white rounded-[2rem] shadow-xl shadow-indigo-500/10 flex items-center justify-center mb-6 group overflow-hidden border-2 border-white">
-                  <Package className="w-16 h-16 text-gray-200 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700" />
+                <div className="w-20 h-20 bg-white rounded-2xl shadow-xl shadow-indigo-500/10 flex items-center justify-center mb-4 group overflow-hidden border-2 border-white">
+                  <Package className="w-10 h-10 text-gray-200 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700" />
                 </div>
 
-                <div className="text-center mb-6">
-                  <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-2">Asset detailed view</p>
-                  <h2 className="text-3xl font-black text-gray-900 tracking-tight leading-tight mb-2">
+                <div className="text-center mb-5">
+                  <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-1">Asset detailed view</p>
+                  <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight mb-1">
                     {selectedItem.name}
                   </h2>
-                  <p className="text-sm font-bold text-gray-400 max-w-md mx-auto">
+                  <p className="text-sm font-bold text-gray-400 max-w-sm mx-auto">
                     {selectedItem.description || "High-fidelity asset monitoring and logistical synchronization."}
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 w-full">
-                  <div className="p-4 bg-white/60 rounded-3xl border-2 border-white shadow-sm flex flex-col items-center text-center">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stock Identity</p>
+                <div className="grid grid-cols-2 gap-3 w-full">
+                  <div className="p-3 bg-white/60 rounded-2xl border-2 border-white shadow-sm flex flex-col items-center text-center">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Stock Identity</p>
                     <p className="text-xs font-black text-gray-900 font-mono italic">ID: {selectedItem.id}</p>
                     <p className="text-xs font-black text-indigo-600 font-mono uppercase tracking-tighter">SKU: {selectedItem.sku}</p>
                   </div>
                   <button 
                     onClick={() => showNotify('QR Matrix Generated Successfully')}
-                    className="p-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-indigo-600 hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-1"
+                    className="p-3 bg-gray-900 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-indigo-600 hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-0.5"
                   >
-                    <QrCode className="w-5 h-5 mb-1" />
-                    Export QR
+                    <QrCode className="w-4 h-4 mb-0.5" />
+                    <span className="text-[10px]">Export QR</span>
                   </button>
                 </div>
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-2 gap-3 mb-6">
                 {[
                   { label: 'Current Level', value: `${selectedItem.quantity} ${selectedItem.unit}`, icon: Boxes, color: 'indigo' },
                   { label: 'Net Valuation', value: `$${selectedItem.totalValue.toLocaleString()}`, icon: DollarSign, color: 'emerald' },
                   { label: 'Min/Max Buff', value: `${selectedItem.minStock}/${selectedItem.maxStock}`, icon: Activity, color: 'blue' },
                   { label: 'Reorder At', value: selectedItem.reorderPoint, icon: Target, color: 'orange' }
                 ].map((stat, i) => (
-                  <div key={i} className="p-5 bg-gray-50/50 rounded-3xl border-2 border-white shadow-sm flex items-center gap-4">
-                    <div className={`w-10 h-10 bg-${stat.color}-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-${stat.color}-500/20`}>
-                      <stat.icon className="w-5 h-5 text-white" />
+                  <div key={i} className="p-3.5 bg-gray-50/50 rounded-2xl border-2 border-white shadow-sm flex items-center gap-3">
+                    <div className={`w-8 h-8 bg-${stat.color}-500 rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-${stat.color}-500/20`}>
+                      <stat.icon className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
                       <p className="text-sm font-black text-gray-900">{stat.value}</p>
                     </div>
                   </div>
@@ -799,54 +799,54 @@ export default function InventoryPage() {
               </div>
 
               {/* Details List */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-5 bg-white rounded-3xl border-2 border-gray-100 shadow-sm">
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5" />
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-4 bg-white rounded-2xl border-2 border-gray-100 shadow-sm">
+                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <MapPin className="w-3 h-3" />
                       Logistical Footprint
                     </h4>
-                    <p className="text-sm font-black text-gray-900 mb-1">{selectedItem.location}</p>
+                    <p className="text-sm font-black text-gray-900 mb-0.5">{selectedItem.location}</p>
                     <p className="text-[9px] font-bold text-gray-400 uppercase">Primary Storage Node</p>
                   </div>
-                  <div className="p-5 bg-white rounded-3xl border-2 border-gray-100 shadow-sm">
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <User className="w-3.5 h-3.5" />
+                  <div className="p-4 bg-white rounded-2xl border-2 border-gray-100 shadow-sm">
+                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <User className="w-3 h-3" />
                       Vendor Network
                     </h4>
-                    <p className="text-sm font-black text-gray-900 mb-1">{selectedItem.supplier}</p>
+                    <p className="text-sm font-black text-gray-900 mb-0.5">{selectedItem.supplier}</p>
                     <p className="text-[9px] font-bold text-gray-400 uppercase">Certified Partner</p>
                   </div>
                 </div>
 
-                <div className="p-5 bg-white rounded-3xl border-2 border-gray-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                       <History className="w-3.5 h-3.5" />
+                <div className="p-4 bg-white rounded-2xl border-2 border-gray-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                       <History className="w-3 h-3" />
                        Temporal History
                     </h4>
                     <span className="text-xs font-black text-indigo-600 tracking-tighter">{selectedItem.lastRestocked.toLocaleDateString()}</span>
                   </div>
-                  <p className="text-[10px] font-bold text-gray-500 leading-relaxed italic">
+                  <p className="text-xs font-bold text-gray-500 leading-relaxed italic">
                     Asset movement has been stable over the last 30 business days with zero fulfillment anomalies reported.
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {selectedItem.tags?.map((tag, i) => (
-                    <span key={i} className="px-4 py-2 bg-gray-50 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded-xl border border-gray-100">
+                    <span key={i} className="px-3 py-1.5 bg-gray-50 text-gray-500 text-[10px] font-black uppercase tracking-widest rounded-lg border border-gray-100">
                       #{tag}
                     </span>
                   ))}
                 </div>
 
-                <div className="pt-6 flex gap-3">
+                <div className="pt-4 flex gap-2">
                   <button 
                     onClick={() => {
                       showNotify('Asset Configuration Node Synchronized');
                       setSelectedItem(null);
                     }}
-                    className="flex-1 py-5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-[2rem] hover:bg-black transition-all duration-500 cursor-pointer active:scale-95 shadow-xl shadow-indigo-500/10"
+                    className="flex-1 py-4 bg-indigo-600 text-white text-xs font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-black transition-all duration-500 cursor-pointer active:scale-95 shadow-xl shadow-indigo-500/10"
                   >
                     Adjust Asset Node
                   </button>
@@ -855,9 +855,9 @@ export default function InventoryPage() {
                       setDeletingItem(selectedItem);
                       setShowDeleteModal(true);
                     }}
-                    className="p-5 bg-white text-rose-500 rounded-[1.5rem] border-2 border-white shadow-lg hover:bg-rose-50 transition-all cursor-pointer"
+                    className="p-4 bg-white text-rose-500 rounded-xl border-2 border-white shadow-lg hover:bg-rose-50 transition-all cursor-pointer"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>

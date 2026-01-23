@@ -68,7 +68,7 @@ interface AuditLog {
   type: 'success' | 'info' | 'error' | 'warning';
 }
 
-const frameworks: ComplianceFramework[] = [
+const initialFrameworks: ComplianceFramework[] = [
   {
     id: 'gdpr',
     name: 'GDPR',
@@ -362,7 +362,7 @@ export default function CompliancePage() {
       impact: 'Regulatory fines and brand reputation'
     }
   ]);
-
+  const [frameworksState, setFrameworksState] = useState<ComplianceFramework[]>(initialFrameworks);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -378,6 +378,27 @@ export default function CompliancePage() {
   const [exportFormat, setExportFormat] = useState<'PDF' | 'Excel' | 'CSV'>('PDF');
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // Additional state for full activation
+  const [selectedFramework, setSelectedFramework] = useState<ComplianceFramework | null>(null);
+  const [newItemData, setNewItemData] = useState({
+    title: '',
+    description: '',
+    category: 'data-privacy',
+    priority: 'medium' as ComplianceItem['priority'],
+    assignedTo: 'General Team'
+  });
+  const [reportScope, setReportScope] = useState('all');
+  const [reportAugmentations, setReportAugmentations] = useState({
+    risk: true,
+    audit: true,
+    framework: true
+  });
+
+  const [editingFramework, setEditingFramework] = useState<ComplianceFramework | null>(null);
+  const [showEditFrameworkModal, setShowEditFrameworkModal] = useState(false);
+  const [sharingFramework, setSharingFramework] = useState<ComplianceFramework | null>(null);
+  const [showShareFrameworkModal, setShowShareFrameworkModal] = useState(false);
 
   const showNotification = (message: string) => {
     setSuccessMessage(message);
@@ -494,7 +515,59 @@ export default function CompliancePage() {
     );
     setItems(updatedItems);
     setSelectedItem(null);
-    showNotification(`✓ Marked as complete: ${item.title}`);
+    showNotification(`\u2713 Marked as complete: ${item.title}`);
+  };
+
+  const handleCreateItem = () => {
+    if (!newItemData.title) return;
+    
+    const newItem: ComplianceItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: newItemData.title,
+      description: newItemData.description,
+      category: newItemData.category,
+      priority: newItemData.priority,
+      status: 'pending',
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      assignedTo: newItemData.assignedTo,
+      documents: [],
+      requirements: ['Initial review required'],
+      frequency: 'annually',
+      riskLevel: 25
+    };
+    
+    setItems([newItem, ...items]);
+    setShowAddItem(false);
+    setNewItemData({
+        title: '',
+        description: '',
+        category: 'data-privacy',
+        priority: 'medium',
+        assignedTo: 'General Team'
+    });
+    showNotification(`\u2713 Created New Item: ${newItem.title}`);
+  };
+
+  const handleEditFramework = (framework: ComplianceFramework) => {
+    setEditingFramework(framework);
+    setShowEditFrameworkModal(true);
+  };
+
+  const handleShareFramework = (framework: ComplianceFramework) => {
+    setSharingFramework(framework);
+    setShowShareFrameworkModal(true);
+  };
+
+  const handleExportFramework = (framework: ComplianceFramework) => {
+    // Simulate export of specific framework data
+    const data = JSON.stringify(framework, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${framework.name}_data.json`;
+    link.click();
+    showNotification(`\u2713 Exported framework data for ${framework.name}`);
   };
 
   const handleGenerateReport = () => {
@@ -809,9 +882,9 @@ export default function CompliancePage() {
                </div>
                <div>
                   <p className="text-sm font-bold text-gray-500 mb-1 tracking-wide uppercase text-[10px]">Active Frameworks</p>
-                  <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-2">{frameworks.length}</h3>
+                  <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-2">{frameworksState.length}</h3>
                   <p className="text-xs font-medium text-green-600 bg-green-50 inline-block px-2 py-1 rounded-lg">
-                     {frameworks.filter(f => (f.compliant / f.requirements) === 1).length} fully compliant
+                     {frameworksState.filter((f: ComplianceFramework) => (f.compliant / f.requirements) === 1).length} fully compliant
                   </p>
                </div>
             </div>
@@ -998,12 +1071,24 @@ export default function CompliancePage() {
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {frameworks.slice(0, 4).map((framework) => {
+              {frameworksState.slice(0, 4).map((framework: ComplianceFramework) => {
                 const Icon = framework.icon;
                 const percentage = (framework.compliant / framework.requirements) * 100;
                 
                 return (
-                  <div key={framework.id} className="p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-xl transition-all cursor-pointer">
+                  <div 
+                    key={framework.id} 
+                    onClick={() => setSelectedFramework(framework)} 
+                    className="group/card p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-xl transition-all cursor-pointer relative"
+                  >
+                    <div className="absolute top-4 right-4 z-10 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                      <DropdownMenu
+                        id={`overview-framework-${framework.id}`}
+                        onEdit={() => handleEditFramework(framework)}
+                        onShare={() => handleShareFramework(framework)}
+                        onExport={() => handleExportFramework(framework)}
+                      />
+                    </div>
                     <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${framework.gradient} mb-4 shadow-lg`}>
                       <Icon className="w-6 h-6 text-white" />
                     </div>
@@ -1327,13 +1412,17 @@ export default function CompliancePage() {
       {activeTab === 'frameworks' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {frameworks.map((framework) => {
+            {frameworksState.map((framework: ComplianceFramework) => {
               const Icon = framework.icon;
               const percentage = (framework.compliant / framework.requirements) * 100;
               const daysUntilExpiry = framework.expiryDate ? Math.ceil((framework.expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
               
               return (
-                <div key={framework.id} className={`bg-white rounded-2xl border-2 border-gray-200 p-6 hover:shadow-2xl transition-all relative ${openDropdown === `framework-${framework.id}` ? 'z-50' : ''}`}>
+                <div 
+                  key={framework.id} 
+                  onClick={() => setSelectedFramework(framework)}
+                  className={`bg-white rounded-2xl border-2 border-gray-200 p-6 hover:shadow-2xl transition-all relative ${openDropdown === `framework-${framework.id}` ? 'z-50' : ''}`}
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className={`p-4 rounded-xl bg-gradient-to-br ${framework.gradient} shadow-lg`}>
                       <Icon className="w-8 h-8 text-white" />
@@ -1390,14 +1479,20 @@ export default function CompliancePage() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <button className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer">
+                    <button 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setSelectedFramework(framework); 
+                      }} 
+                      className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
+                    >
                       View Details
                     </button>
                     <DropdownMenu
                       id={`framework-${framework.id}`}
-                      onEdit={() => alert(`Edit Framework: ${framework.name}`)}
-                      onExport={() => alert(`Export Framework: ${framework.name}`)}
-                      onShare={() => alert(`Share Framework: ${framework.name}`)}
+                      onEdit={() => handleEditFramework(framework)}
+                      onExport={() => handleExportFramework(framework)}
+                      onShare={() => handleShareFramework(framework)}
                     />
                   </div>
                 </div>
@@ -1592,15 +1687,15 @@ export default function CompliancePage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <button 
-                          onClick={() => alert(`View details: ${log.item}`)}
+                          onClick={() => showNotification(`Opening Audit Node: ${log.item}`)}
                           className="p-2 hover:bg-white rounded-lg transition-colors cursor-pointer"
                         >
                           <Eye className="w-5 h-5 text-blue-600" />
                         </button>
                         <DropdownMenu
                           id={`audit-${idx}`}
-                          onExport={() => alert(`Export audit log: ${log.item}`)}
-                          onShare={() => alert(`Share audit log: ${log.item}`)}
+                          onExport={() => showNotification(`Compliance Audit Export Initiated: ${log.item}`)}
+                          onShare={() => showNotification(`Sharing Audit Evidence: ${log.item}`)}
                         />
                       </div>
                     </div>
@@ -2018,22 +2113,22 @@ export default function CompliancePage() {
                         <div className="space-y-6">
                            <div>
                               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Item Title</label>
-                              <input type="text" className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" placeholder="e.g. Annual Audit" />
+                              <input type="text" className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" value={newItemData.title} onChange={(e) => setNewItemData({...newItemData, title: e.target.value})} placeholder="e.g. Annual Audit" />
                            </div>
                            <div>
                               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Description</label>
-                              <textarea rows={3} className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-blue-500 focus:outline-none transition-colors resize-none" placeholder="Enter details..." />
+                              <textarea rows={3} className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-blue-500 focus:outline-none transition-colors resize-none" value={newItemData.description} onChange={(e) => setNewItemData({...newItemData, description: e.target.value})} placeholder="Enter details..." />
                            </div>
                            <div className="grid grid-cols-2 gap-6">
                               <div>
                                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Category</label>
-                                 <select className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
+                                  <select value={newItemData.category} onChange={(e) => setNewItemData({...newItemData, category: e.target.value})} className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
                                     {categories.filter(c => c.id !== 'all').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                  </select>
                               </div>
                               <div>
                                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Priority</label>
-                                 <select className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
+                                  <select value={newItemData.priority} onChange={(e) => setNewItemData({...newItemData, priority: e.target.value as ComplianceItem['priority']})} className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
                                     <option value="low">Low</option>
                                     <option value="medium">Medium</option>
                                     <option value="high">High</option>
@@ -2048,7 +2143,7 @@ export default function CompliancePage() {
 
                <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
                   <button onClick={() => setShowAddItem(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
-                  <button onClick={() => { showNotification('✓ Added Successfully'); setShowAddItem(false); }} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer">
+                   <button onClick={handleCreateItem} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer">
                      Create Item
                   </button>
                </div>
@@ -2117,7 +2212,7 @@ export default function CompliancePage() {
                        </div>
                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Report Scope</label>
                     </div>
-                    <select className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 text-gray-900 font-black text-sm focus:border-indigo-600 focus:bg-white focus:outline-none transition-all appearance-none cursor-pointer">
+                    <select value={reportScope} onChange={(e) => setReportScope(e.target.value)} className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 text-gray-900 font-black text-sm focus:border-indigo-600 focus:bg-white focus:outline-none transition-all appearance-none cursor-pointer">
                       <option value="all">Full Compliance Inventory (All Active Modules)</option>
                       <option value="summary">Executive Summary (Critical KPI Data)</option>
                       <option value="critical">Critical Vulnerability Report (High Alert Only)</option>
@@ -2146,7 +2241,7 @@ export default function CompliancePage() {
                                <span className="text-sm font-black text-gray-700 group-hover:text-gray-900">{section.label}</span>
                             </div>
                             <div className="relative inline-flex items-center cursor-pointer">
-                               <input type="checkbox" defaultChecked className="sr-only peer" />
+                               <input type="checkbox" checked={reportAugmentations[section.id as keyof typeof reportAugmentations]} onChange={(e) => setReportAugmentations({...reportAugmentations, [section.id]: e.target.checked})} className="sr-only peer" />
                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                             </div>
                         </label>
@@ -2162,6 +2257,232 @@ export default function CompliancePage() {
                      >
                         <Download className="w-5 h-5 group-hover:animate-bounce" />
                         Initiate Node Export
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      )}
+
+      {/* Framework Detail Modal */}
+      {selectedFramework && (
+         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
+            <div className={`bg-white rounded-[2.5rem] w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden border border-gray-100`}>
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                  <div className="flex items-center gap-4">
+                     <div className={`p-4 rounded-2xl bg-gradient-to-br ${selectedFramework.gradient} shadow-lg text-white`}>
+                        {React.createElement(selectedFramework.icon, { className: "w-8 h-8" })}
+                     </div>
+                     <div>
+                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">{selectedFramework.name} Protocol</h2>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">{selectedFramework.category} Framework</p>
+                     </div>
+                  </div>
+                  <button onClick={() => setSelectedFramework(null)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
+                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
+                  </button>
+               </div>
+               
+               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/50">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                     <div className="p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Requirements</p>
+                        <p className="text-3xl font-black text-gray-900">{selectedFramework.requirements}</p>
+                     </div>
+                     <div className="p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Compliant Nodes</p>
+                        <p className="text-3xl font-black text-green-600">{selectedFramework.compliant}</p>
+                     </div>
+                     <div className="p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Integrity Score</p>
+                        <p className="text-3xl font-black text-blue-600">{((selectedFramework.compliant / selectedFramework.requirements) * 100).toFixed(0)}%</p>
+                     </div>
+                  </div>
+
+                  <div className="space-y-6">
+                     <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-black text-gray-900 mb-4">Framework Description</h3>
+                        <p className="text-gray-600 leading-relaxed font-medium">{selectedFramework.description}. This framework governs our {selectedFramework.category.toLowerCase()} posture and ensures full regulatory alignment across all operational nodes.</p>
+                     </div>
+
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+                           <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-widest">Certification Timeline</h3>
+                           <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                 <span className="text-sm text-gray-500 font-medium">Issued Date</span>
+                                 <span className="text-sm font-bold text-gray-900">{selectedFramework.certificationDate?.toLocaleDateString() || 'Pending'}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                 <span className="text-sm text-gray-500 font-medium">Expiration</span>
+                                 <span className="text-sm font-bold text-red-600">{selectedFramework.expiryDate?.toLocaleDateString() || 'Non-Expiring'}</span>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+                           <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-widest">Critical Controls</h3>
+                           <div className="flex flex-wrap gap-2">
+                              {['DLP', 'Access Control', 'TLS 1.3', 'Audit Trails', 'Encryption'].map(tag => (
+                                 <span key={tag} className="px-3 py-1 bg-gray-50 border border-gray-100 rounded-lg text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                    {tag}
+                                 </span>
+                              ))}
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
+                   <button 
+                     onClick={() => {
+                        showNotification(`\u2713 Full Framework Audit Initiated for ${selectedFramework.name}`);
+                        setSelectedFramework(null);
+                     }}
+                     className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg transition-all active:scale-95 cursor-pointer"
+                   >
+                     Trigger Detailed Audit
+                   </button>
+               </div>
+            </div>
+         </div>
+      )}
+
+      {/* Edit Framework Modal */}
+      {showEditFrameworkModal && editingFramework && (
+         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[110] p-4 animate-in zoom-in-95 duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-2xl flex flex-col shadow-2xl relative overflow-hidden border border-gray-100">
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                  <div>
+                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        <Edit3 className="w-6 h-6 text-purple-600" />
+                        Edit Framework
+                     </h2>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Update Protocol: {editingFramework.name}</p>
+                  </div>
+                  <button onClick={() => setShowEditFrameworkModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
+                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
+                  </button>
+               </div>
+               
+               <div className="p-8 space-y-6">
+                  <div className="space-y-4">
+                     <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Framework Name</label>
+                        <input 
+                           type="text" 
+                           value={editingFramework.name} 
+                           onChange={(e) => setEditingFramework({...editingFramework, name: e.target.value})}
+                           className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-900 focus:border-purple-500 focus:outline-none transition-all"
+                        />
+                     </div>
+                     <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Description</label>
+                        <textarea 
+                           rows={3}
+                           value={editingFramework.description} 
+                           onChange={(e) => setEditingFramework({...editingFramework, description: e.target.value})}
+                           className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 font-medium text-gray-700 focus:border-purple-500 focus:outline-none transition-all resize-none"
+                        />
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div>
+                           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Required Nodes</label>
+                           <input 
+                              type="number" 
+                              value={editingFramework.requirements} 
+                              onChange={(e) => setEditingFramework({...editingFramework, requirements: parseInt(e.target.value)})}
+                              className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-900 focus:border-purple-500 focus:outline-none transition-all"
+                           />
+                        </div>
+                        <div>
+                           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Compliant Nodes</label>
+                           <input 
+                              type="number" 
+                              value={editingFramework.compliant} 
+                              onChange={(e) => setEditingFramework({...editingFramework, compliant: parseInt(e.target.value)})}
+                              className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-900 focus:border-purple-500 focus:outline-none transition-all"
+                           />
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-6 border-t border-gray-100">
+                     <button onClick={() => setShowEditFrameworkModal(false)} className="flex-1 px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
+                     <button 
+                        onClick={() => {
+                           setFrameworksState(frameworksState.map((f: ComplianceFramework) => f.id === editingFramework.id ? editingFramework : f));
+                           setShowEditFrameworkModal(false);
+                           showNotification(`\u2713 Protocol Updated: ${editingFramework.name}`);
+                        }}
+                        className="flex-[2] px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-purple-600/20 transition-all active:scale-95 cursor-pointer"
+                     >
+                        Confirm Protocol Update
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      )}
+
+      {/* Share Framework Modal */}
+      {showShareFrameworkModal && sharingFramework && (
+         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[110] p-4 animate-in zoom-in-95 duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl relative overflow-hidden border border-gray-100">
+               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                  <div>
+                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        <Share2 className="w-6 h-6 text-indigo-600" />
+                        Share Protocol
+                     </h2>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Distribute: {sharingFramework.name}</p>
+                  </div>
+                  <button onClick={() => setShowShareFrameworkModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
+                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
+                  </button>
+               </div>
+               
+               <div className="p-8 space-y-6">
+                  <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-center gap-4">
+                     <div className={`p-3 rounded-xl bg-gradient-to-br ${sharingFramework.gradient} text-white`}>
+                        {React.createElement(sharingFramework.icon, { className: "w-6 h-6" })}
+                     </div>
+                     <div>
+                        <p className="font-bold text-gray-900">{sharingFramework.name}</p>
+                        <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{sharingFramework.category}</p>
+                     </div>
+                  </div>
+
+                  <div>
+                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Auditor / Team Email</label>
+                     <input 
+                        type="email" 
+                        placeholder="auditor@regulator.gov" 
+                        className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-indigo-500 focus:outline-none transition-colors" 
+                     />
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                     <button 
+                        onClick={() => {
+                           setShowShareFrameworkModal(false);
+                           showNotification(`\u2713 Shared Protocol: ${sharingFramework.name}`);
+                        }} 
+                        className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                     >
+                        <Share2 className="w-5 h-5" />
+                        Share Now
+                     </button>
+                     <button 
+                        onClick={() => {
+                           navigator.clipboard.writeText(`${window.location.origin}/compliance/framework/${sharingFramework.id}`);
+                           showNotification('\u2713 Protocol Link copied!');
+                        }} 
+                        className="px-6 py-3 border-2 border-gray-100 hover:border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
+                     >
+                        <Link className="w-5 h-5" />
+                        Copy Link
                      </button>
                   </div>
                </div>

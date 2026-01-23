@@ -420,7 +420,8 @@ export default function CRMPage() {
                         <div className="text-sm font-black text-gray-900">£{client.revenue.toLocaleString()}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-2">
+
                           <button 
                             onClick={() => {
                               setSelectedClient(client);

@@ -268,8 +268,8 @@ export default function DashboardLayout({
               } catch (error) {
                 console.error('Error deleting session:', error);
               }
-              // Sign out and redirect
-              await signOut({ callbackUrl: '/access' });
+              // Sign out and redirect to homepage
+              await signOut({ callbackUrl: '/' });
             }}
             className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors w-full text-left cursor-pointer"
           >

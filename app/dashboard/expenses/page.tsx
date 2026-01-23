@@ -202,7 +202,7 @@ export default function ExpensesPage() {
                 <h1 className="text-3xl font-black text-gray-900 tracking-tight">
                   Expense <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Pulse</span>
                 </h1>
-                <p className="text-gray-500 font-medium">Track and optimize your business spending</p>
+                <p className="text-gray-500 font-medium">Track and optimise your business spending</p>
               </div>
             </div>
             
@@ -458,7 +458,8 @@ export default function ExpensesPage() {
                       </span>
                     </td>
                     <td className="px-8 py-5">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-2">
+
                         <button
                           type="button"
                           onClick={() => {

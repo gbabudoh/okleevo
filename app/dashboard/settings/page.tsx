@@ -922,39 +922,41 @@ export default function SettingsPage() {
                   </div>
                </div>
 
-               {/* Danger Zone */}
-               <div className="bg-red-50/50 rounded-[2.5rem] p-8 border border-red-100">
-                  <h3 className="text-lg font-black text-red-900 mb-6 flex items-center gap-2">
-                     <AlertCircle className="w-5 h-5" />
-                     Danger Zone
-                  </h3>
-                  
-                  <div className="space-y-4">
-                     <div className="p-5 bg-white rounded-2xl border border-red-100 shadow-sm">
-                        <h4 className="font-bold text-gray-900 text-sm mb-1">Export Data</h4>
-                        <p className="text-xs text-gray-500 mb-4">Download a copy of all your data.</p>
-                        <button 
-                           onClick={() => setShowExportModal(true)}
-                           className="w-full py-2 bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-bold rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
-                        >
-                           <Download className="w-3 h-3" />
-                           Export JSON
-                        </button>
-                     </div>
+               {/* Danger Zone - Restricted to Owner */}
+               {userRole === 'OWNER' && (
+                 <div className="bg-red-50/50 rounded-[2.5rem] p-8 border border-red-100">
+                    <h3 className="text-lg font-black text-red-900 mb-6 flex items-center gap-2">
+                       <AlertCircle className="w-5 h-5" />
+                       Danger Zone
+                    </h3>
+                    
+                    <div className="space-y-4">
+                       <div className="p-5 bg-white rounded-2xl border border-red-100 shadow-sm">
+                          <h4 className="font-bold text-gray-900 text-sm mb-1">Export Data</h4>
+                          <p className="text-xs text-gray-500 mb-4">Download a copy of all your data.</p>
+                          <button 
+                             onClick={() => setShowExportModal(true)}
+                             className="w-full py-2 bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-bold rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
+                          >
+                             <Download className="w-3 h-3" />
+                             Export JSON
+                          </button>
+                       </div>
 
-                     <div className="p-5 bg-white rounded-2xl border border-red-100 shadow-sm">
-                        <h4 className="font-bold text-gray-900 text-sm mb-1">Delete Account</h4>
-                        <p className="text-xs text-gray-500 mb-4">Permanently remove your account.</p>
-                        <button 
-                           onClick={() => setShowDeleteModal(true)}
-                           className="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
-                        >
-                           <Trash2 className="w-3 h-3" />
-                           Delete Account
-                        </button>
-                     </div>
-                  </div>
-               </div>
+                       <div className="p-5 bg-white rounded-2xl border border-red-100 shadow-sm">
+                          <h4 className="font-bold text-gray-900 text-sm mb-1">Delete Account</h4>
+                          <p className="text-xs text-gray-500 mb-4">Permanently remove your account.</p>
+                          <button 
+                             onClick={() => setShowDeleteModal(true)}
+                             className="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
+                          >
+                             <Trash2 className="w-3 h-3" />
+                             Delete Account
+                          </button>
+                       </div>
+                    </div>
+                 </div>
+               )}
             </div>
           </div>
         </div>
@@ -1254,44 +1256,46 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Danger Zone */}
-      <div className="bg-white rounded-xl border-2 border-red-200 p-6">
-        <h2 className="text-xl font-bold text-red-900 mb-4 flex items-center gap-2">
-          <AlertCircle className="w-6 h-6" />
-          Danger Zone
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl">
-            <div>
-              <h3 className="font-semibold text-red-900">Export Your Data</h3>
-              <p className="text-sm text-red-700">Download all your account data</p>
+      {/* Danger Zone - Global Restricted to Owner */}
+      {userRole === 'OWNER' && (
+        <div className="bg-white rounded-xl border-2 border-red-200 p-6">
+          <h2 className="text-xl font-bold text-red-900 mb-4 flex items-center gap-2">
+            <AlertCircle className="w-6 h-6" />
+            Danger Zone
+          </h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl">
+              <div>
+                <h3 className="font-semibold text-red-900">Export Your Data</h3>
+                <p className="text-sm text-red-700">Download all your account data</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowExportModal(true)}
+                className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium flex items-center gap-2 cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                Export
+              </button>
             </div>
-            <button 
-              type="button"
-              onClick={() => setShowExportModal(true)}
-              className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium flex items-center gap-2 cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-          </div>
 
-          <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl">
-            <div>
-              <h3 className="font-semibold text-red-900">Delete Account</h3>
-              <p className="text-sm text-red-700">Permanently delete your account and all data</p>
+            <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl">
+              <div>
+                <h3 className="font-semibold text-red-900">Delete Account</h3>
+                <p className="text-sm text-red-700">Permanently delete your account and all data</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
             </div>
-            <button 
-              type="button"
-              onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 cursor-pointer"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Export Data Modal */}
       {showExportModal && (

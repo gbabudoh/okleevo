@@ -442,19 +442,19 @@ export default function MicroPagesPage() {
                           </button>
                           
                           {activeDropdown === page.id && (
-                            <div className="absolute right-8 bottom-20 w-48 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white p-2 z-50 flex flex-col gap-1 anime-in fade-in slide-in-from-bottom-2">
-                               <button onClick={(e) => { e.stopPropagation(); setCopyingPage(page); setShowCopyModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2 rounded-xl hover:bg-blue-50 text-[10px] font-bold text-gray-600 flex items-center gap-2">
-                                  <Copy className="w-3 h-3" /> Copy URL
+                            <div className="absolute right-8 bottom-20 w-52 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white p-2.5 z-50 flex flex-col gap-1 anime-in fade-in slide-in-from-bottom-2">
+                               <button onClick={(e) => { e.stopPropagation(); setCopyingPage(page); setShowCopyModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2.5 rounded-xl hover:bg-blue-50 text-[13px] font-bold text-gray-600 flex items-center gap-2.5">
+                                  <Copy className="w-4 h-4" /> Copy URL
                                </button>
-                               <button onClick={(e) => { e.stopPropagation(); setAnalyticsPage(page); setShowAnalyticsModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2 rounded-xl hover:bg-purple-50 text-[10px] font-bold text-gray-600 flex items-center gap-2">
-                                  <BarChart3 className="w-3 h-3" /> Analytics
+                               <button onClick={(e) => { e.stopPropagation(); setAnalyticsPage(page); setShowAnalyticsModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2.5 rounded-xl hover:bg-purple-50 text-[13px] font-bold text-gray-600 flex items-center gap-2.5">
+                                  <BarChart3 className="w-4 h-4" /> Analytics
                                </button>
-                               <button onClick={(e) => { e.stopPropagation(); setSettingsPage(page); setShowSettingsModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2 rounded-xl hover:bg-gray-50 text-[10px] font-bold text-gray-600 flex items-center gap-2">
-                                  <Settings className="w-3 h-3" /> Settings
+                               <button onClick={(e) => { e.stopPropagation(); setSettingsPage(page); setShowSettingsModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2.5 rounded-xl hover:bg-gray-50 text-[13px] font-bold text-gray-600 flex items-center gap-2.5">
+                                  <Settings className="w-4 h-4" /> Settings
                                </button>
                                <div className="h-px bg-gray-100 my-1" />
-                               <button onClick={(e) => { e.stopPropagation(); setDeletingPage(page); setShowDeleteModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2 rounded-xl hover:bg-red-50 text-[10px] font-bold text-red-500 flex items-center gap-2">
-                                  <Trash2 className="w-3 h-3" /> Delete
+                               <button onClick={(e) => { e.stopPropagation(); setDeletingPage(page); setShowDeleteModal(true); setActiveDropdown(null); }} className="w-full text-left px-4 py-2.5 rounded-xl hover:bg-red-50 text-[13px] font-bold text-red-500 flex items-center gap-2.5">
+                                  <Trash2 className="w-4 h-4" /> Delete
                                </button>
                             </div>
                           )}

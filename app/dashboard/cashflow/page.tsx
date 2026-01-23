@@ -444,20 +444,22 @@ export default function CashflowPage() {
                       setEditingTransaction(transaction);
                       setShowEditModal(true);
                     }}
-                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 transition-colors"
+                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setDeletingTransaction(transaction);
                       setShowDeleteModal(true);
                     }}
-                    className="p-2 bg-rose-50 hover:bg-rose-100 rounded-lg text-rose-600 hover:text-rose-700 transition-colors"
+                    className="p-2 bg-rose-50 hover:bg-rose-100 rounded-lg text-rose-600 hover:text-rose-700 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
+
                 </div>
               </div>
             </div>
@@ -512,10 +514,11 @@ export default function CashflowPage() {
               </div>
               <button 
                 onClick={() => setShowAddModal(false)} 
-                className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/70 hover:text-white"
+                className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/70 hover:text-white cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
+
             </div>
             
             <div className="p-8 overflow-y-auto space-y-6">
@@ -524,7 +527,7 @@ export default function CashflowPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => setNewTransaction({...newTransaction, type: 'income'})}
-                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 ${
+                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 cursor-pointer ${
                       newTransaction.type === 'income'
                         ? 'bg-green-50 border-green-500 text-green-700 shadow-sm'
                         : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
@@ -535,7 +538,7 @@ export default function CashflowPage() {
                   </button>
                   <button
                     onClick={() => setNewTransaction({...newTransaction, type: 'expense'})}
-                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 ${
+                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 cursor-pointer ${
                       newTransaction.type === 'expense'
                         ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
                         : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
@@ -544,6 +547,7 @@ export default function CashflowPage() {
                     <ArrowUpRight className="w-5 h-5" />
                     Expense
                   </button>
+
                 </div>
               </div>
 
@@ -663,10 +667,11 @@ export default function CashflowPage() {
                   setShowViewModal(false);
                   setViewingTransaction(null);
                 }} 
-                className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white/80 hover:text-white"
+                className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white/80 hover:text-white cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
+
             </div>
             
             <div className="p-8 space-y-8 overflow-y-auto">
@@ -762,10 +767,11 @@ export default function CashflowPage() {
                   setShowEditModal(false);
                   setEditingTransaction(null);
                 }} 
-                className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white/80 hover:text-white"
+                className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white/80 hover:text-white cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
+
             </div>
             
             <div className="p-8 overflow-y-auto space-y-6">
@@ -774,7 +780,7 @@ export default function CashflowPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => setEditingTransaction({...editingTransaction!, type: 'income'})}
-                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 ${
+                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 cursor-pointer ${
                       editingTransaction!.type === 'income'
                         ? 'bg-green-50 border-green-500 text-green-700 shadow-sm'
                         : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
@@ -785,7 +791,7 @@ export default function CashflowPage() {
                   </button>
                   <button
                     onClick={() => setEditingTransaction({...editingTransaction!, type: 'expense'})}
-                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 ${
+                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 cursor-pointer ${
                       editingTransaction!.type === 'expense'
                         ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
                         : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
@@ -794,6 +800,7 @@ export default function CashflowPage() {
                     <ArrowUpRight className="w-5 h-5" />
                     Expense
                   </button>
+
                 </div>
               </div>
 

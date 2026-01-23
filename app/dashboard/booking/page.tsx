@@ -230,7 +230,8 @@ export default function BookingPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="xl:ml-auto flex items-center gap-2 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 focus-within:opacity-100 transition-all duration-200">
+                  <div className="xl:ml-auto flex items-center gap-2 opacity-100 transition-all duration-200">
+
                      <button 
                       onClick={() => { setSelectedBooking(booking); setShowDetailModal(true); }}
                       className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer"

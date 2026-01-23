@@ -678,16 +678,16 @@ export default function HRRecordsPage() {
       {/* Employee Detail Modal */}
       {selectedEmployee && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
-             <div className="p-8 md:p-10 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
-               <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20 text-white font-black text-xl">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] max-w-lg w-full max-h-[85vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
+             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
+               <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20 text-white font-black text-lg">
                     {getInitials(selectedEmployee.firstName, selectedEmployee.lastName)}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">{selectedEmployee.firstName} {selectedEmployee.lastName}</h2>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusConfig(selectedEmployee.status).bg} ${getStatusConfig(selectedEmployee.status).text} border ${getStatusConfig(selectedEmployee.status).border}`}>
+                    <h2 className="text-xl font-black text-gray-900 tracking-tight">{selectedEmployee.firstName} {selectedEmployee.lastName}</h2>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusConfig(selectedEmployee.status).bg} ${getStatusConfig(selectedEmployee.status).text} border ${getStatusConfig(selectedEmployee.status).border}`}>
                         {selectedEmployee.status}
                       </span>
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-2 border-l border-gray-300">
@@ -704,48 +704,48 @@ export default function HRRecordsPage() {
                </button>
              </div>
 
-             <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-10 custom-scrollbar">
+             <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 gap-4">
-                   <div className="p-6 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-[2rem] border border-purple-100">
-                      <p className="text-[9px] font-black text-purple-500 uppercase tracking-widest mb-2">Comp. Package</p>
-                      <p className="text-3xl font-black text-purple-900">${(selectedEmployee.salary / 1000).toFixed(0)}K</p>
+                   <div className="p-5 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl border border-purple-100">
+                      <p className="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-1.5">Comp. Package</p>
+                      <p className="text-2xl font-black text-purple-900">${(selectedEmployee.salary / 1000).toFixed(0)}K</p>
                    </div>
-                   <div className="p-6 bg-gradient-to-br from-pink-50 to-pink-100/50 rounded-[2rem] border border-pink-100">
-                      <p className="text-[9px] font-black text-pink-500 uppercase tracking-widest mb-2">Performance</p>
-                      <p className="text-3xl font-black text-pink-900">{selectedEmployee.performance.rating}</p>
+                   <div className="p-5 bg-gradient-to-br from-pink-50 to-pink-100/50 rounded-2xl border border-pink-100">
+                      <p className="text-[10px] font-black text-pink-500 uppercase tracking-widest mb-1.5">Performance</p>
+                      <p className="text-2xl font-black text-pink-900">{selectedEmployee.performance.rating}</p>
                    </div>
                 </div>
 
                 {/* Info Grid */}
                 <div>
-                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
                       <FileText className="w-4 h-4 text-gray-400" />
                       Personnel Dossier
                    </h3>
-                   <div className="bg-white/50 border-2 border-gray-100 rounded-[2rem] p-6 grid grid-cols-2 gap-y-6">
+                   <div className="bg-white/50 border-2 border-gray-100 rounded-2xl p-5 grid grid-cols-2 gap-y-4">
                       <div>
-                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Department</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Department</p>
                          <p className="font-bold text-gray-900 capitalize">{selectedEmployee.department}</p>
                       </div>
                       <div>
-                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Employment Type</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Employment Type</p>
                          <p className="font-bold text-gray-900 capitalize">{selectedEmployee.employmentType.replace('-', ' ')}</p>
                       </div>
                       <div>
-                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Email</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Email</p>
                          <p className="font-bold text-gray-900 text-sm">{selectedEmployee.email}</p>
                       </div>
                       <div>
-                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Phone</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Phone</p>
                          <p className="font-bold text-gray-900">{selectedEmployee.phone}</p>
                       </div>
                       <div>
-                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Location</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Location</p>
                          <p className="font-bold text-gray-900">{selectedEmployee.city}, {selectedEmployee.country}</p>
                       </div>
                       <div>
-                         <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Joined</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Joined</p>
                          <p className="font-bold text-gray-900">{selectedEmployee.hireDate.toLocaleDateString()}</p>
                       </div>
                    </div>
@@ -753,13 +753,13 @@ export default function HRRecordsPage() {
                 
                 {/* Skills */}
                 <div>
-                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
                       <Zap className="w-4 h-4 text-amber-500" />
                       Competencies
                    </h3>
-                   <div className="flex flex-wrap gap-2">
+                   <div className="flex flex-wrap gap-1.5">
                       {selectedEmployee.skills.map(skill => (
-                        <span key={skill} className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 shadow-sm">
+                        <span key={skill} className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-700 shadow-sm">
                            {skill}
                         </span>
                       ))}
@@ -767,10 +767,10 @@ export default function HRRecordsPage() {
                 </div>
              </div>
 
-             <div className="p-8 md:p-10 bg-white/60 border-t border-gray-100 flex items-center gap-3 sticky bottom-0">
+             <div className="p-6 bg-white/60 border-t border-gray-100 flex items-center gap-3 sticky bottom-0">
                 <button 
                   onClick={() => setShowMessageModal(true)}
-                  className="flex-1 px-8 py-5 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-3 cursor-pointer"
+                  className="flex-1 px-4 py-4 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-3 cursor-pointer"
                 >
                   <MessageSquare className="w-4 h-4" />
                   Dispatch Info
@@ -780,7 +780,7 @@ export default function HRRecordsPage() {
                      setDeletingEmployee(selectedEmployee);
                      setShowDeleteModal(true);
                   }}
-                  className="p-5 border-2 border-rose-100 text-rose-500 rounded-2xl hover:bg-rose-50 transition-all cursor-pointer"
+                  className="p-4 border-2 border-rose-100 text-rose-500 rounded-xl hover:bg-rose-50 transition-all cursor-pointer"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
@@ -957,7 +957,7 @@ export default function HRRecordsPage() {
                      showNotify('Talent Successfully Registered');
                      setShowAddEmployee(false);
                   }}
-                  className="flex-[2] px-8 py-5 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 cursor-pointer"
+                  className="flex-[2] px-4 py-4 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 cursor-pointer"
                 >
                   Confirm Registry
                 </button>

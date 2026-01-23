@@ -25,23 +25,6 @@ interface ContentTemplate {
   }>;
 }
 
-interface AIModel {
-  id: string;
-  name: string;
-  provider: 'Groq' | 'Gemini';
-  description: string;
-}
-
-const availableModels: AIModel[] = [
-  { id: 'mistral-saba-24b', name: 'Mistral Saba', provider: 'Groq', description: 'Fast, efficient 24B parameter model' },
-  { id: 'gemma2-9b-it', name: 'Gemma 2', provider: 'Groq', description: 'Google\'s lightweight instruction-tuned model' },
-  { id: 'qwen-qwq-32b', name: 'Qwen 2', provider: 'Groq', description: 'Advanced model from Alibaba Cloud' },
-  { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1', provider: 'Groq', description: 'Reasoning-focused model' },
-  { id: 'falcon-2-11b', name: 'Falcon 2', provider: 'Groq', description: 'High-performance open-source model' },
-  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', provider: 'Gemini', description: 'Google\'s most capable multimodal model' },
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', provider: 'Gemini', description: 'Fast and cost-efficient multimodal model' },
-];
-
 const contentTemplates: ContentTemplate[] = [
   {
     id: 'blog-post',
@@ -216,7 +199,6 @@ const contentTemplates: ContentTemplate[] = [
 export default function AIContentPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [formData, setFormData] = useState<Record<string, string>>({});
-  const [selectedModel, setSelectedModel] = useState<AIModel>(availableModels[0]);
   const [generatedContent, setGeneratedContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<Array<{ template: string; content: string; timestamp: Date }>>([]);
@@ -228,15 +210,45 @@ export default function AIContentPage() {
     ? contentTemplates 
     : contentTemplates.filter(t => t.category === activeCategory);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    if (!selectedTemplate) return;
     setLoading(true);
-    // Simulate AI generation
-    setTimeout(() => {
-      const mockContent = `# Generated ${selectedTemplate?.name}\n\n**Engine**: ${selectedModel.name} (${selectedModel.provider})\n\nThis is a sample generated content based on your inputs:\n\n${Object.entries(formData).map(([key, value]) => `**${key}**: ${value}`).join('\n')}\n\n{"\""}[Your synthesized intelligence, forged via ${selectedModel.name}, would appear here with full formatting, engaging copy, and professional structure based on the template and inputs provided.]{"\""}`;
-      setGeneratedContent(mockContent);
-      setHistory([{ template: selectedTemplate?.name || '', content: mockContent, timestamp: new Date() }, ...history]);
+    setGeneratedContent('');
+    
+    try {
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          template: { id: selectedTemplate.id, name: selectedTemplate.name },
+          formData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate content');
+      }
+
+      const data = await response.json();
+      
+      if (data.content) {
+        setGeneratedContent(data.content);
+        setHistory([{ 
+          template: selectedTemplate.name, 
+          content: data.content, 
+          timestamp: new Date() 
+        }, ...history]);
+      } else {
+        throw new Error('Intelligence package was empty');
+      }
+    } catch (error) {
+      console.error('Synthesis Error:', error);
+      setGeneratedContent('## Operational Failure\n\nThe neural gateway was unable to synthesize the requested intelligence package. Please verify operational parameters and attempt re-initialization.');
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const handleCopy = () => {
@@ -429,37 +441,16 @@ export default function AIContentPage() {
                   </div>
                 </div>
 
-                {/* Model Selection */}
+                {/* Synthesis Engine Info */}
                 <div className="mb-10 p-6 bg-slate-50 rounded-[2rem] border-2 border-slate-100 relative z-10">
-                  <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-4">
                     <div className="p-2 bg-purple-500/10 rounded-xl">
                       <Zap className="w-5 h-5 text-purple-600" />
                     </div>
-                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Synthesis Engine</h3>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="relative">
-                      <select
-                        value={selectedModel.id}
-                        onChange={(e) => {
-                          const model = availableModels.find(m => m.id === e.target.value);
-                          if (model) setSelectedModel(model);
-                        }}
-                        className="w-full px-6 py-4 bg-white border-2 border-transparent focus:border-purple-500 rounded-2xl transition-all duration-300 font-bold text-gray-900 shadow-sm appearance-none cursor-pointer"
-                      >
-                        {availableModels.map((model) => (
-                          <option key={model.id} value={model.id}>
-                            {model.name} — {model.provider}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <ChevronRight className="w-5 h-5 text-gray-400 rotate-90" />
-                      </div>
+                    <div>
+                      <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-none">Automated Intelligence</h3>
+                      <p className="text-[10px] font-bold text-gray-400 mt-1 italic uppercase tracking-wider">Neural orchestration active via Groq & Gemini API</p>
                     </div>
-                    <p className="text-xs font-bold text-gray-400 ml-2 italic">
-                      {selectedModel.description}
-                    </p>
                   </div>
                 </div>
 
@@ -552,7 +543,7 @@ export default function AIContentPage() {
                     <div className="p-2 bg-yellow-100 rounded-lg">
                       <Star className="w-5 h-5 text-yellow-600" />
                     </div>
-                    Synthesized Intelligence
+                    Synthesised Intelligence
                   </h3>
                   {generatedContent && (
                     <div className="flex items-center gap-3">

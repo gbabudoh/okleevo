@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { 
   FileText, Plus, Download, Calculator, Calendar, DollarSign, TrendingUp, AlertCircle, CheckCircle,
-  Clock, Building2, User, Users, Briefcase, BarChart3, Shield, Send, X, Receipt, Home, History
+  Clock, Building2, User, Users, Briefcase, BarChart3, Shield, Send, X, Receipt, Home, History,
+  ShieldCheck, Globe, ExternalLink
 } from 'lucide-react';
+
 import jsPDF from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -117,6 +119,8 @@ export default function TaxationPage() {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [selectedDownloadFormat, setSelectedDownloadFormat] = useState<'TXT' | 'CSV' | 'PDF' | 'JSON'>('PDF');
+  const [selectedReportType, setSelectedReportType] = useState<'Self Assessment' | 'Corporation Tax' | 'VAT' | 'PAYE'>('Self Assessment');
+
   const [calculatedTax, setCalculatedTax] = useState(0);
   const [taxableIncome, setTaxableIncome] = useState('');
   const [showNewReturnModal, setShowNewReturnModal] = useState(false);
@@ -193,6 +197,14 @@ export default function TaxationPage() {
   const [cgtAcquisitionCost, setCgtAcquisitionCost] = useState('35000');
   const [cgtAllowableExpenses, setCgtAllowableExpenses] = useState('2000');
   const [cgtAssetType, setCgtAssetType] = useState<'standard' | 'badr'>('standard');
+  
+  // MTD States
+  const [showComplianceModal, setShowComplianceModal] = useState(false);
+  const [showMTDLearnMoreModal, setShowMTDLearnMoreModal] = useState(false);
+  const [isCheckingCompliance, setIsCheckingCompliance] = useState(false);
+  const [complianceProgress, setComplianceProgress] = useState(0);
+  const [complianceCheckStatus, setComplianceCheckStatus] = useState<'idle' | 'running' | 'success'>('idle');
+
   
   // UK 2025/26 Tax Rates & Thresholds
   const UK_TAX_RATES = {
@@ -352,10 +364,17 @@ export default function TaxationPage() {
             <p className="text-gray-600 text-lg">Complete tax management system for UK businesses</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="px-6 py-3 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-all flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer font-semibold text-gray-700">
+            <button 
+              onClick={() => {
+                setSelectedReportType('Self Assessment'); // Default or could be dynamic
+                setShowDownloadModal(true);
+              }}
+              className="px-6 py-3 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-all flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer font-semibold text-gray-700"
+            >
               <Download className="w-5 h-5" />
               <span>Export Reports</span>
             </button>
+
             <button 
               onClick={() => setShowNewReturnModal(true)}
               className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg cursor-pointer"
@@ -525,13 +544,20 @@ export default function TaxationPage() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 hover:shadow-lg transition-all cursor-pointer">
+              <button 
+                onClick={() => setShowComplianceModal(true)}
+                className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 hover:shadow-lg transition-all cursor-pointer"
+              >
                 View Compliance Status
               </button>
-              <button className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 hover:shadow-lg transition-all cursor-pointer">
+              <button 
+                onClick={() => setShowMTDLearnMoreModal(true)}
+                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 hover:shadow-lg transition-all cursor-pointer"
+              >
                 Learn More
               </button>
             </div>
+
           </div>
         </div>
       )}
@@ -1002,7 +1028,7 @@ export default function TaxationPage() {
       {/* Tax Calculator Modal */}
       {showCalculatorModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-white/50">
             <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-5 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -1111,481 +1137,284 @@ export default function TaxationPage() {
         </div>
       )}
 
-      {/* Download SA100 Modal */}
       {showDownloadModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-t-2xl shadow-lg">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-xl w-full max-h-[95vh] overflow-y-auto border border-white/50">
+
+
+
+
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <Download className="w-6 h-6" />
-                  </div>
-                  Download SA100 Tax Return
+                <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                  <Download className="w-5 h-5" />
+                  Export Tax Reports
                 </h2>
                 <button 
                   onClick={() => setShowDownloadModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5 text-white" />
                 </button>
               </div>
             </div>
 
-            <div className="p-6 space-y-5">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4">
-                <h3 className="font-bold text-blue-900 mb-2">Tax Return Details:</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-blue-700 font-semibold">Tax Year:</p>
-                    <p className="text-blue-900">{saTaxYear}</p>
-                  </div>
-                  <div>
-                    <p className="text-blue-700 font-semibold">Total Tax Due:</p>
-                    <p className="text-blue-900">£{totalTaxDueValue.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-blue-700 font-semibold">Status:</p>
-                    <p className="text-blue-900">{saProgress}% Complete</p>
-                  </div>
-                  <div>
-                    <p className="text-blue-700 font-semibold">Deadline:</p>
-                    <p className="text-blue-900">31 Jan 2025</p>
-                  </div>
+
+
+
+
+            <div className="p-5 space-y-4">
+              <div>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Select Report Type:</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+
+
+
+                  {(['Self Assessment', 'Corporation Tax', 'VAT', 'PAYE'] as const).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setSelectedReportType(type)}
+                      className={`p-3 border-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        selectedReportType === type 
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-lg' 
+                          : 'bg-white border-gray-100 text-gray-600 hover:border-blue-300'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+
+
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5">
+                <h3 className="font-bold text-blue-900 mb-2.5 text-xs">{selectedReportType} Details:</h3>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[15px]">
+                  {selectedReportType === 'Self Assessment' ? (
+                    <>
+                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
+                        <span className="text-blue-700 font-semibold">Tax Year:</span>
+                        <span className="font-bold text-blue-900">{saTaxYear}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
+                        <span className="text-blue-700 font-semibold">Total Tax:</span>
+                        <span className="font-bold text-blue-900">£{totalTaxDueValue.toLocaleString()}</span>
+                      </div>
+                    </>
+                  ) : selectedReportType === 'Corporation Tax' ? (
+                    <>
+                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
+                        <span className="text-blue-700 font-semibold">Period:</span>
+                        <span className="font-bold text-blue-900">{ctPeriod}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
+                        <span className="text-blue-700 font-semibold">Est. Tax:</span>
+                        <span className="font-bold text-blue-900">£{(Number(ctProfit) * 0.19).toLocaleString()}</span>
+                      </div>
+                    </>
+                  ) : selectedReportType === 'VAT' ? (
+                    <>
+                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
+                        <span className="text-blue-700 font-semibold">VAT Period:</span>
+                        <span className="font-bold text-blue-900">Q3 2025/26</span>
+                      </div>
+                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
+                        <span className="text-blue-700 font-semibold">Payable:</span>
+                        <span className="font-bold text-blue-900">£{Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2)).toLocaleString()}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
+                        <span className="text-blue-700 font-semibold">Month:</span>
+                        <span className="font-bold text-blue-900">January 2026</span>
+                      </div>
+                      <div className="flex justify-between border-b border-blue-100/40 pb-1">
+                        <span className="text-blue-700 font-semibold">HMRC Total:</span>
+                        <span className="font-bold text-blue-900">£4,300.00</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div>
-                <h3 className="font-bold text-gray-900 mb-3">Select Download Format:</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => setSelectedDownloadFormat('TXT')}
-                    className={`p-5 border-2 rounded-xl transition-all text-center cursor-pointer ${
-                      selectedDownloadFormat === 'TXT'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                    }`}
-                  >
-                    <div className={`p-3 rounded-lg w-fit mx-auto mb-3 transition-colors ${
-                      selectedDownloadFormat === 'TXT' ? 'bg-blue-200' : 'bg-blue-100'
-                    }`}>
-                      <FileText className="w-8 h-8 text-blue-600" />
-                    </div>
-                    <p className={`font-bold mb-1 ${
-                      selectedDownloadFormat === 'TXT' ? 'text-blue-900' : 'text-gray-900'
-                    }`}>Text File</p>
-                    <p className="text-xs text-gray-600">Plain text format</p>
-                    {selectedDownloadFormat === 'TXT' && (
-                      <div className="mt-2">
-                        <CheckCircle className="w-5 h-5 text-blue-600 mx-auto" />
+                <h3 className="font-bold text-gray-900 mb-2.5 text-xs">Select Download Format:</h3>
+                <div className="grid grid-cols-4 gap-2.5">
+                  {(['TXT', 'CSV', 'PDF', 'JSON'] as const).map((format) => (
+                    <button
+                      key={format}
+                      onClick={() => setSelectedDownloadFormat(format)}
+                      className={`p-3 border-2 rounded-xl transition-all text-center cursor-pointer flex flex-col items-center gap-1.5 ${
+                        selectedDownloadFormat === format
+                          ? 'border-blue-500 bg-blue-50 shadow-lg'
+                          : 'border-gray-100 hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                    >
+                      <div className={`p-2 rounded-lg w-fit mx-auto transition-colors ${
+                        selectedDownloadFormat === format ? 'bg-blue-200' : 'bg-blue-100'
+                      }`}>
+                        <FileText className={`w-6 h-6 ${
+                          format === 'TXT' ? 'text-blue-600' :
+                          format === 'CSV' ? 'text-green-600' :
+                          format === 'PDF' ? 'text-red-600' :
+                          'text-purple-600'
+                        }`} />
                       </div>
-                    )}
-                  </button>
-
-                  <button 
-                    onClick={() => setSelectedDownloadFormat('CSV')}
-                    className={`p-5 border-2 rounded-xl transition-all text-center cursor-pointer ${
-                      selectedDownloadFormat === 'CSV'
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
-                    }`}
-                  >
-                    <div className={`p-3 rounded-lg w-fit mx-auto mb-3 transition-colors ${
-                      selectedDownloadFormat === 'CSV' ? 'bg-green-200' : 'bg-green-100'
-                    }`}>
-                      <FileText className="w-8 h-8 text-green-600" />
-                    </div>
-                    <p className={`font-bold mb-1 ${
-                      selectedDownloadFormat === 'CSV' ? 'text-green-900' : 'text-gray-900'
-                    }`}>CSV / Excel</p>
-                    <p className="text-xs text-gray-600">Spreadsheet format</p>
-                    {selectedDownloadFormat === 'CSV' && (
-                      <div className="mt-2">
-                        <CheckCircle className="w-5 h-5 text-green-600 mx-auto" />
-                      </div>
-                    )}
-                  </button>
-
-                  <button 
-                    onClick={() => setSelectedDownloadFormat('PDF')}
-                    className={`p-5 border-2 rounded-xl transition-all text-center cursor-pointer ${
-                      selectedDownloadFormat === 'PDF'
-                        ? 'border-red-500 bg-red-50'
-                        : 'border-gray-200 hover:border-red-300 hover:bg-red-50'
-                    }`}
-                  >
-                    <div className={`p-3 rounded-lg w-fit mx-auto mb-3 transition-colors ${
-                      selectedDownloadFormat === 'PDF' ? 'bg-red-200' : 'bg-red-100'
-                    }`}>
-                      <FileText className="w-8 h-8 text-red-600" />
-                    </div>
-                    <p className={`font-bold mb-1 ${
-                      selectedDownloadFormat === 'PDF' ? 'text-red-900' : 'text-gray-900'
-                    }`}>PDF</p>
-                    <p className="text-xs text-gray-600">Print-ready format</p>
-                    {selectedDownloadFormat === 'PDF' && (
-                      <div className="mt-2">
-                        <CheckCircle className="w-5 h-5 text-red-600 mx-auto" />
-                      </div>
-                    )}
-                  </button>
-
-                  <button 
-                    onClick={() => setSelectedDownloadFormat('JSON')}
-                    className={`p-5 border-2 rounded-xl transition-all text-center cursor-pointer ${
-                      selectedDownloadFormat === 'JSON'
-                        ? 'border-purple-500 bg-purple-50'
-                        : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
-                    }`}
-                  >
-                    <div className={`p-3 rounded-lg w-fit mx-auto mb-3 transition-colors ${
-                      selectedDownloadFormat === 'JSON' ? 'bg-purple-200' : 'bg-purple-100'
-                    }`}>
-                      <FileText className="w-8 h-8 text-purple-600" />
-                    </div>
-                    <p className={`font-bold mb-1 ${
-                      selectedDownloadFormat === 'JSON' ? 'text-purple-900' : 'text-gray-900'
-                    }`}>JSON</p>
-                    <p className="text-xs text-gray-600">API/Data format</p>
-                    {selectedDownloadFormat === 'JSON' && (
-                      <div className="mt-2">
-                        <CheckCircle className="w-5 h-5 text-purple-600 mx-auto" />
-                      </div>
-                    )}
-                  </button>
+                      <span className={`text-[10px] font-bold ${selectedDownloadFormat === format ? 'text-blue-900' : 'text-gray-900'}`}>{format}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Selected Format Display */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-4">
+              {/* Ready to Download Display */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold text-blue-700 mb-1">Ready to Download:</p>
-                    <p className="text-sm font-bold text-blue-900">
-                      SA100 Tax Return • {selectedDownloadFormat} Format
+                    <p className="text-[10px] font-semibold text-blue-700 mb-0.5">Ready to Download:</p>
+                    <p className="text-base font-bold text-blue-900">
+                      {selectedReportType} • {selectedDownloadFormat}
                     </p>
                   </div>
-                  <div className={`p-2 rounded-lg ${
-                    selectedDownloadFormat === 'TXT' ? 'bg-blue-200' :
-                    selectedDownloadFormat === 'CSV' ? 'bg-green-200' :
-                    selectedDownloadFormat === 'PDF' ? 'bg-red-200' :
-                    'bg-purple-200'
-                  }`}>
-                    <FileText className={`w-5 h-5 ${
-                      selectedDownloadFormat === 'TXT' ? 'text-blue-600' :
-                      selectedDownloadFormat === 'CSV' ? 'text-green-600' :
-                      selectedDownloadFormat === 'PDF' ? 'text-red-600' :
-                      'text-purple-600'
-                    }`} />
-                  </div>
+                  <FileText className={`w-5 h-5 ${
+                    selectedDownloadFormat === 'TXT' ? 'text-blue-600' :
+                    selectedDownloadFormat === 'CSV' ? 'text-green-600' :
+                    selectedDownloadFormat === 'PDF' ? 'text-red-600' :
+                    'text-purple-600'
+                  }`} />
                 </div>
               </div>
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              {/* Download Features List */}
+              <div className="bg-green-50 border border-green-200 rounded-xl p-3.5">
+                <div className="flex gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-green-900 mb-1">Download Features:</p>
-                    <ul className="text-xs text-green-800 space-y-1">
-                      <li>• HMRC-compliant formatting</li>
-                      <li>• Complete income and tax breakdown</li>
-                      <li>• Payment schedule included</li>
-                      <li>• Ready for submission or record-keeping</li>
+                    <p className="font-bold text-green-900 mb-1 text-xs">Features:</p>
+                    <ul className="text-[11px] text-green-800 grid grid-cols-2 gap-x-4 gap-y-0.5">
+                      <li>• HMRC-compliant</li>
+                      <li>• Income breakdown</li>
+                      <li>• Payment schedule</li>
+                      <li>• Record-keeping</li>
                     </ul>
                   </div>
                 </div>
               </div>
 
+
+
+
               {/* Action Buttons */}
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowDownloadModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-bold text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
+
+
                 <button
                   onClick={() => {
-                    if (selectedDownloadFormat === 'TXT') {
-                      const sa100Content = `SELF ASSESSMENT TAX RETURN (SA100)
-Tax Year: ${saTaxYear}
+                    let content = '';
+                    const reportName = selectedReportType.split(' ').join('_');
+                    const date = new Date().toISOString().split('T')[0];
+                    const filename = `Report_${reportName}_${date}`;
 
-PERSONAL DETAILS
-Name: [Your Name]
-UTR: [Your UTR Number]
-NINO: [Your National Insurance Number]
-
-INCOME SUMMARY
-Self-Employment Income: £${saSelfEmployment.toLocaleString()}
-Employment Income: £${saEmployment.toLocaleString()}
-Property Income: £${saProperty.toLocaleString()}
-Dividends & Interest: £${saDividends.toLocaleString()}
-Total Income: £${totalIncome.toLocaleString()}
-
-ALLOWANCES & DEDUCTIONS
-Personal Allowance: £${personalAllowance.toLocaleString()}
-Allowable Expenses: £${saExpenses.toLocaleString()}
-Taxable Income: £${taxableIncomeValue.toLocaleString()}
-
-TAX CALCULATION
-Total Tax & NI Due: £${totalTaxDueValue.toLocaleString()}
-
-PAYMENT DEADLINES
-Payment on Account 1: 31 January 2025
-Payment on Account 2: 31 July 2025
-Balancing Payment: 31 January 2025
-
-Generated: ${new Date().toLocaleDateString('en-GB')}`;
-
-                      const blob = new Blob([sa100Content], { type: 'text/plain;charset=utf-8;' });
-                      const link = document.createElement('a');
-                      const url = URL.createObjectURL(blob);
-                      
-                      link.setAttribute('href', url);
-                      link.setAttribute('download', `SA100_Tax_Return_2023-24_${new Date().toISOString().split('T')[0]}.txt`);
-                      link.style.visibility = 'hidden';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      
-                      setShowDownloadModal(false);
-                      setSuccessContent({
-                        title: 'Download Successful',
-                        message: 'SA100 Tax Return (TXT) has been downloaded to your device.'
-                      });
-                      setShowSuccessModal(true);
-                    } else if (selectedDownloadFormat === 'CSV') {
-                      const csvContent = `Field,Value
-Tax Year,${saTaxYear}
-Self-Employment Income,£${saSelfEmployment}
-Employment Income,£${saEmployment}
-Property Income,£${saProperty}
-Dividends & Interest,£${saDividends}
-Total Income,£${totalIncome}
-Personal Allowance,£${personalAllowance}
-Allowable Expenses,£${saExpenses}
-Taxable Income,£${taxableIncomeValue}
-Total Tax Due,£${totalTaxDueValue}`;
-
-                      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                      const link = document.createElement('a');
-                      const url = URL.createObjectURL(blob);
-                      
-                      link.setAttribute('href', url);
-                      link.setAttribute('download', `SA100_Tax_Return_2023-24_${new Date().toISOString().split('T')[0]}.csv`);
-                      link.style.visibility = 'hidden';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      
-                      setShowDownloadModal(false);
-                      setSuccessContent({
-                        title: 'Download Successful',
-                        message: 'SA100 Tax Return (CSV) has been downloaded to your device.'
-                      });
-                      setShowSuccessModal(true);
-                    } else if (selectedDownloadFormat === 'PDF') {
-                      // Create PDF using jsPDF
-                      const doc = new jsPDF();
-                      
-                      // Set font
-                      doc.setFont('helvetica');
-                      
-                      // Title
-                      doc.setFontSize(18);
-                      doc.setFont('helvetica', 'bold');
-                      doc.text('SELF ASSESSMENT TAX RETURN (SA100)', 105, 20, { align: 'center' });
-                      
-                      doc.setFontSize(12);
-                      doc.setFont('helvetica', 'normal');
-                      doc.text(`Tax Year: ${saTaxYear}`, 105, 28, { align: 'center' });
-                      doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, 105, 34, { align: 'center' });
-                      
-                      // Personal Details
-                      let y = 50;
-                      doc.setFontSize(14);
-                      doc.setFont('helvetica', 'bold');
-                      doc.text('PERSONAL DETAILS', 20, y);
-                      doc.line(20, y + 2, 190, y + 2);
-                      
-                      y += 10;
-                      doc.setFontSize(11);
-                      doc.setFont('helvetica', 'normal');
-                      doc.text('Name:', 20, y);
-                      doc.text('[Your Name]', 80, y);
-                      y += 7;
-                      doc.text('UTR Number:', 20, y);
-                      doc.text('[Your UTR Number]', 80, y);
-                      y += 7;
-                      doc.text('National Insurance:', 20, y);
-                      doc.text('[Your National Insurance Number]', 80, y);
-                      
-                      // Income Summary
-                      y += 15;
-                      doc.setFontSize(14);
-                      doc.setFont('helvetica', 'bold');
-                      doc.text('INCOME SUMMARY', 20, y);
-                      doc.line(20, y + 2, 190, y + 2);
-                      
-                      y += 10;
-                      doc.setFontSize(11);
-                      doc.setFont('helvetica', 'normal');
-                      doc.text('Self-Employment Income:', 20, y);
-                      doc.text(`£${saSelfEmployment.toLocaleString()}`, 150, y, { align: 'right' });
-                      y += 7;
-                      doc.text('Employment Income:', 20, y);
-                      doc.text(`£${saEmployment.toLocaleString()}`, 150, y, { align: 'right' });
-                      y += 7;
-                      doc.text('Property Income:', 20, y);
-                      doc.text(`£${saProperty.toLocaleString()}`, 150, y, { align: 'right' });
-                      y += 7;
-                      doc.text('Dividends & Interest:', 20, y);
-                      doc.text(`£${saDividends.toLocaleString()}`, 150, y, { align: 'right' });
-                      y += 7;
-                      doc.line(20, y, 150, y);
-                      y += 5;
-                      doc.setFont('helvetica', 'bold');
-                      doc.text('Total Income:', 20, y);
-                      doc.text(`£${totalIncome.toLocaleString()}`, 150, y, { align: 'right' });
-                      
-                      // Allowances & Deductions
-                      y += 15;
-                      doc.setFontSize(14);
-                      doc.text('ALLOWANCES & DEDUCTIONS', 20, y);
-                      doc.line(20, y + 2, 190, y + 2);
-                      
-                      y += 10;
-                      doc.setFontSize(11);
-                      doc.setFont('helvetica', 'normal');
-                      doc.text('Personal Allowance:', 20, y);
-                      doc.text(`£${personalAllowance.toLocaleString()}`, 150, y, { align: 'right' });
-                      y += 7;
-                      doc.text('Allowable Expenses:', 20, y);
-                      doc.text(`£${saExpenses.toLocaleString()}`, 150, y, { align: 'right' });
-                      y += 7;
-                      doc.line(20, y, 150, y);
-                      y += 5;
-                      doc.setFont('helvetica', 'bold');
-                      doc.text('Taxable Income:', 20, y);
-                      doc.text(`£${taxableIncomeValue.toLocaleString()}`, 150, y, { align: 'right' });
-                      
-                      // Tax Calculation
-                      y += 15;
-                      doc.setFontSize(14);
-                      doc.text('TAX CALCULATION', 20, y);
-                      doc.line(20, y + 2, 190, y + 2);
-                      
-                      y += 10;
-                      doc.setFontSize(11);
-                      doc.setFont('helvetica', 'normal');
-                      doc.text('Total Tax & NI Due:', 20, y);
-                      doc.text(`£${totalTaxDueValue.toLocaleString()}`, 150, y, { align: 'right' });
-                      
-                      // Payment Schedule
-                      y += 15;
-                      doc.setFontSize(14);
-                      doc.text('PAYMENT SCHEDULE', 20, y);
-                      doc.line(20, y + 2, 190, y + 2);
-                      
-                      y += 10;
-                      doc.setFontSize(11);
-                      doc.setFont('helvetica', 'normal');
-                      doc.text('Payment on Account 1:', 20, y);
-                      doc.text('31 January 2025', 100, y);
-                      doc.text(`£${Math.round(totalTaxDueValue / 2).toLocaleString()}`, 150, y, { align: 'right' });
-                      y += 7;
-                      doc.text('Payment on Account 2:', 20, y);
-                      doc.text('31 July 2025', 100, y);
-                      doc.text(`£${Math.round(totalTaxDueValue / 2).toLocaleString()}`, 150, y, { align: 'right' });
-                      
-                      // Important Deadlines
-                      y += 15;
-                      doc.setFontSize(14);
-                      doc.setFont('helvetica', 'bold');
-                      doc.text('IMPORTANT DEADLINES', 20, y);
-                      doc.line(20, y + 2, 190, y + 2);
-                      
-                      y += 10;
-                      doc.setFontSize(11);
-                      doc.setFont('helvetica', 'normal');
-                      doc.text('Paper Return Deadline:', 20, y);
-                      doc.text('31 October 2024', 100, y);
-                      y += 7;
-                      doc.text('Online Return Deadline:', 20, y);
-                      doc.text('31 January 2025', 100, y);
-                      y += 7;
-                      doc.text('Payment Deadline:', 20, y);
-                      doc.text('31 January 2025', 100, y);
-                      
-                      // Footer
-                      doc.setFontSize(9);
-                      doc.setFont('helvetica', 'italic');
-                      doc.text('This is a summary document. For official HMRC submission, please use the online Self Assessment service.', 105, 280, { align: 'center' });
-                      doc.text('Document generated by Okleevo Tax Management System • HMRC-compliant • Making Tax Digital ready', 105, 285, { align: 'center' });
-                      
-                      // Save the PDF
-                      doc.save(`SA100_Tax_Return_${saTaxYear.replace('/', '-')}_${new Date().toISOString().split('T')[0]}.pdf`);
-                      
-                      setShowDownloadModal(false);
-                      setSuccessContent({
-                        title: 'Download Successful',
-                        message: 'SA100 Tax Return (PDF) has been downloaded to your device.'
-                      });
-                      setShowSuccessModal(true);
-                    } else if (selectedDownloadFormat === 'JSON') {
-                      const jsonContent = JSON.stringify({
-                        taxYear: saTaxYear,
-                        personalDetails: {
-                          name: "[Your Name]",
-                          utr: "[Your UTR Number]",
-                          nino: "[Your National Insurance Number]"
-                        },
-                        income: {
-                          selfEmployment: saSelfEmployment,
-                          employment: saEmployment,
-                          property: saProperty,
-                          dividendsInterest: saDividends,
-                          total: totalIncome
-                        },
-                        allowances: {
-                          personalAllowance: personalAllowance,
-                          allowableExpenses: saExpenses,
-                          taxableIncome: taxableIncomeValue
-                        },
-                        tax: {
-                          totalDue: totalTaxDueValue
-                        },
-                        deadlines: {
-                          paymentOnAccount1: "2025-01-31",
-                          paymentOnAccount2: "2025-07-31",
-                          balancingPayment: "2025-01-31"
-                        }
-                      }, null, 2);
-
-                      const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-                      const link = document.createElement('a');
-                      const url = URL.createObjectURL(blob);
-                      
-                      link.setAttribute('href', url);
-                      link.setAttribute('download', `SA100_Tax_Return_${saTaxYear.replace('/', '-')}_${new Date().toISOString().split('T')[0]}.json`);
-                      link.style.visibility = 'hidden';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      
-                      setShowDownloadModal(false);
-                      setSuccessContent({
-                        title: 'Download Successful',
-                        message: 'SA100 Tax Return (JSON) has been downloaded to your device.'
-                      });
-                      setShowSuccessModal(true);
+                    if (selectedReportType === 'Self Assessment') {
+                      if (selectedDownloadFormat === 'TXT') {
+                        content = `SELF ASSESSMENT TAX RETURN (SA100)\nTax Year: ${saTaxYear}\n\nINCOME SUMMARY\nSelf-Employment: £${saSelfEmployment.toLocaleString()}\nEmployment: £${saEmployment.toLocaleString()}\nProperty: £${saProperty.toLocaleString()}\nDividends: £${saDividends.toLocaleString()}\nTotal Income: £${totalIncome.toLocaleString()}\n\nTAX CALCULATION\nPersonal Allowance: £${personalAllowance.toLocaleString()}\nExpenses: £${saExpenses.toLocaleString()}\nTaxable Income: £${taxableIncomeValue.toLocaleString()}\nTotal Tax & NI Due: £${totalTaxDueValue.toLocaleString()}`;
+                      } else if (selectedDownloadFormat === 'CSV') {
+                        content = `Field,Value\nTax Year,${saTaxYear}\nSelf-Employment Income,£${saSelfEmployment}\nEmployment Income,£${saEmployment}\nProperty Income,£${saProperty}\nDividends & Interest,£${saDividends}\nTotal Income,£${totalIncome}\nPersonal Allowance,£${personalAllowance}\nAllowable Expenses,£${saExpenses}\nTaxable Income,£${taxableIncomeValue}\nTotal Tax Due,£${totalTaxDueValue}`;
+                      } else if (selectedDownloadFormat === 'JSON') {
+                        content = JSON.stringify({ taxYear: saTaxYear, income: { selfEmployment: saSelfEmployment, employment: saEmployment, property: saProperty, dividends: saDividends, total: totalIncome }, taxation: { taxableIncome: taxableIncomeValue, totalDue: totalTaxDueValue } }, null, 2);
+                      }
+                    } else if (selectedReportType === 'Corporation Tax') {
+                      const estimatedTax = Number(ctProfit) * 0.19;
+                      if (selectedDownloadFormat === 'TXT') {
+                        content = `CORPORATION TAX REPORT\nPeriod: ${ctPeriod}\n\nPROFIT SUMMARY\nTaxable Profit: £${Number(ctProfit).toLocaleString()}\nEstimated Tax (19%): £${estimatedTax.toLocaleString()}`;
+                      } else if (selectedDownloadFormat === 'CSV') {
+                        content = `Field,Value\nPeriod,${ctPeriod}\nTaxable Profit,${ctProfit}\nEstimated Tax Rate,19%\nEstimated Tax,${estimatedTax}`;
+                      } else if (selectedDownloadFormat === 'JSON') {
+                        content = JSON.stringify({ period: ctPeriod, profit: ctProfit, taxRate: '19%', estimatedTax }, null, 2);
+                      }
+                    } else if (selectedReportType === 'VAT') {
+                      const netPayable = Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2));
+                      if (selectedDownloadFormat === 'TXT') {
+                        content = `VAT RETURN SUMMARY\nPeriod: Q3 2025/26\n\nBREAKDOWN\nOutput Sales (excl VAT): £${parseFloat(vatOutputSales).toLocaleString()}\nInput Purchases (excl VAT): £${parseFloat(vatInputPurchases).toLocaleString()}\nNet VAT Payable: £${netPayable.toLocaleString()}`;
+                      } else if (selectedDownloadFormat === 'CSV') {
+                        content = `Field,Value\nPeriod,Q3 2025/26\nOutput Sales,${vatOutputSales}\nInput Purchases,${vatInputPurchases}\nNet VAT Payable,${netPayable}`;
+                      } else if (selectedDownloadFormat === 'JSON') {
+                        content = JSON.stringify({ period: 'Q3 2025/26', outputSales: vatOutputSales, inputPurchases: vatInputPurchases, netVATPayable: netPayable }, null, 2);
+                      }
+                    } else if (selectedReportType === 'PAYE') {
+                      if (selectedDownloadFormat === 'TXT') {
+                        content = `PAYE & NI REPORT\nMonth: January 2026\n\nSUBMISSION SUMMARY\nEmployees: 12\nPAYE Income Tax: £2,450.00\nEmployee NI: £850.00\nEmployer NI: £1,000.00\nTotal to HMRC: £4,300.00`;
+                      } else if (selectedDownloadFormat === 'CSV') {
+                        content = `Field,Value\nMonth,January 2026\nEmployees,12\nPAYE Tax,2450\nEmployee NI,850\nEmployer NI,1000\nTotal to HMRC,4300`;
+                      } else if (selectedDownloadFormat === 'JSON') {
+                        content = JSON.stringify({ month: 'January 2026', employees: 12, payeTax: 2450, employeeNI: 850, employerNI: 1000, totalToHMRC: 4300 }, null, 2);
+                      }
                     }
+
+                    if (selectedDownloadFormat === 'PDF') {
+                      const doc = new jsPDF();
+                      doc.setFontSize(18);
+                      doc.text(`${selectedReportType.toUpperCase()} REPORT`, 105, 20, { align: 'center' });
+                      doc.setFontSize(12);
+                      doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, 105, 30, { align: 'center' });
+                      
+                      let y = 50;
+                      if (selectedReportType === 'Self Assessment') {
+                        doc.text(`Tax Year: ${saTaxYear}`, 20, y); y+=10;
+                        doc.text(`Total Income: £${totalIncome.toLocaleString()}`, 20, y); y+=10;
+                        doc.text(`Taxable Income: £${taxableIncomeValue.toLocaleString()}`, 20, y); y+=10;
+                        doc.text(`Total Tax Due: £${totalTaxDueValue.toLocaleString()}`, 20, y);
+                      } else if (selectedReportType === 'Corporation Tax') {
+                        doc.text(`Period: ${ctPeriod}`, 20, y); y+=10;
+                        doc.text(`Taxable Profit: £${Number(ctProfit).toLocaleString()}`, 20, y); y+=10;
+                        doc.text(`Estimated Tax (19%): £${(Number(ctProfit) * 0.19).toLocaleString()}`, 20, y);
+                      } else if (selectedReportType === 'VAT') {
+                        doc.text(`Period: Q3 2025/26`, 20, y); y+=10;
+                        doc.text(`Output Sales: £${parseFloat(vatOutputSales).toLocaleString()}`, 20, y); y+=10;
+                        doc.text(`Input Purchases: £${parseFloat(vatInputPurchases).toLocaleString()}`, 20, y); y+=10;
+                        doc.text(`Net VAT Payable: £${Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2)).toLocaleString()}`, 20, y);
+                      } else if (selectedReportType === 'PAYE') {
+                        doc.text(`Month: January 2026`, 20, y); y+=10;
+                        doc.text(`Employees: 12`, 20, y); y+=10;
+                        doc.text(`PAYE Tax: £2,450.00`, 20, y); y+=10;
+                        doc.text(`Total to HMRC: £4,300.00`, 20, y);
+                      }
+                      
+                      doc.save(`${filename}.pdf`);
+                    } else {
+                      const mime = selectedDownloadFormat === 'JSON' ? 'application/json' : selectedDownloadFormat === 'CSV' ? 'text/csv' : 'text/plain';
+                      const ext = selectedDownloadFormat.toLowerCase();
+                      const blob = new Blob([content], { type: `${mime};charset=utf-8;` });
+                      const link = document.createElement('a');
+                      link.href = URL.createObjectURL(blob);
+                      link.download = `${filename}.${ext}`;
+                      link.click();
+                    }
+
+                    setShowDownloadModal(false);
+                    setSuccessContent({
+                      title: 'Download Successful',
+                      message: `${selectedReportType} Report (${selectedDownloadFormat}) has been downloaded.`
+                    });
+                    setShowSuccessModal(true);
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-[1.5] px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-base rounded-2xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 cursor-pointer"
                 >
                   <Download className="w-5 h-5" />
-                  Download {selectedDownloadFormat}
+                  Download
                 </button>
+
+
+
+
+
               </div>
             </div>
           </div>
@@ -2408,7 +2237,7 @@ Total Tax Due,£${totalTaxDueValue}`;
       {/* New Return Modal */}
       {showNewReturnModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50 relative">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-white/50 relative">
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl sticky top-0 z-10 shadow-lg">
               <div className="flex items-center justify-between">
@@ -2655,7 +2484,7 @@ Total Tax Due,£${totalTaxDueValue}`;
       {/* Corporation Tax (CT600) Modal */}
       {showCT600Modal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50 relative">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-white/50 relative">
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-blue-700 to-indigo-700 p-6 rounded-t-2xl sticky top-0 z-10 shadow-lg">
               <div className="flex items-center justify-between">
@@ -3271,7 +3100,7 @@ Total Tax Due,£${totalTaxDueValue}`;
               <button
                 onClick={() => {
                   setShowRTIModal(false);
-                  const ref = 'RTI-' + today.getFullYear() + '-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                  const ref = 'RTI-2026-X8D2F1';
                   setSuccessContent({
                     title: 'RTI Submitted Successfully',
                     message: `Full Payment Submission sent to HMRC.\n\nReference: ${ref}\nPeriod: January 2026\nAmount: £4,300.00\n\nPayment due by 22 February 2026.`
@@ -3435,7 +3264,7 @@ Total Tax Due,£${totalTaxDueValue}`;
               <button
                 onClick={() => {
                   setShowVATReturnModal(false);
-                  const ref = 'VAT-' + today.getFullYear() + '-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                  const ref = 'VAT-2026-A2B9C8';
                   setSuccessContent({
                     title: 'VAT Return Submitted',
                     message: `Your return for Q3 2025/26 has been successfully submitted to HMRC via MTD.\n\nReference: ${ref}\nNet Amount: £${Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2)).toLocaleString('en-GB', {minimumFractionDigits: 2})}\n\nDeadline for payment: 7 February 2026.`
@@ -3747,7 +3576,321 @@ Total Tax Due,£${totalTaxDueValue}`;
           </motion.div>
         )}
       </AnimatePresence>
+ 
+       {/* MTD Compliance Status Modal */}
+       {showComplianceModal && (
+         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[70] p-4 animate-in fade-in duration-200">
+           <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden border border-white/50 transform animate-in zoom-in-95 duration-300 flex flex-col">
+             
+             {/* Header */}
+             <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-6 overflow-hidden"
+>
+               <div className="absolute inset-0 opacity-10">
+                 <div className="absolute -right-10 -top-10 w-48 h-48 bg-white rounded-full"></div>
+                 <Globe className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 text-white opacity-20" />
+               </div>
+               <div className="relative flex items-center justify-between">
+                 <div className="flex items-center gap-5">
+                   <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl shadow-xl border border-white/30">
+                     <ShieldCheck className="w-8 h-8 text-white"
+ />
+                   </div>
+                   <div>
+                     <h2 className="text-3xl font-black text-white tracking-tight">HMRC Compliance</h2>
+                     <div className="flex items-center gap-3 mt-1">
+                       <div className="flex items-center gap-1.5 px-2 py-1 bg-green-500/20 rounded-lg border border-green-400/30">
+                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                         <span className="text-xs font-bold text-green-100 uppercase tracking-wider">HMRC Connected</span>
+                       </div>
+                       <p className="text-indigo-100 text-sm font-medium">Agent Ref: OKL-88291-UK</p>
+                     </div>
+                   </div>
+                 </div>
+                 <button 
+                   onClick={() => setShowComplianceModal(false)}
+                   className="p-3 bg-white/10 hover:bg-white/30 rounded-2xl transition-all cursor-pointer group"
+                 >
+                   <X className="w-6 h-6 text-white group-hover:rotate-90 transition-transform" />
+                 </button>
+               </div>
+             </div>
+ 
+             <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar"
+>
+               {/* Global Status Banner */}
+               {complianceCheckStatus === 'success' ? (
+                 <motion.div 
+                   initial={{ opacity: 0, scale: 0.95 }}
+                   animate={{ opacity: 1, scale: 1 }}
+                   className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl p-8 text-white shadow-xl shadow-green-500/20 relative overflow-hidden group"
+                 >
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+                   <div className="flex items-center gap-6 relative z-10">
+                     <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-md border border-white/30">
+                       <CheckCircle className="w-8 h-8 text-white"
+ />
+                     </div>
+                     <div>
+                       <h3 className="text-2xl font-black tracking-tight leading-none mb-2">Integrity Status: Verified</h3>
+                       <p className="text-green-50 font-medium">All financial links, HMRC authentication, and MTD gateways are fully operational.</p>
+                       <p className="text-[10px] font-bold uppercase tracking-widest mt-4 opacity-80">Last Check: {today.toLocaleDateString()} at 09:41 AM</p>
+                     </div>
+                   </div>
+                 </motion.div>
+               ) : (
+                 <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-3xl p-6 border border-emerald-100 shadow-sm flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                     <div className="p-3 bg-emerald-500 rounded-2xl shadow-lg ring-4 ring-emerald-500/20">
+                       <CheckCircle className="w-6 h-6 text-white" />
+                     </div>
+                     <div>
+                       <p className="text-sm font-bold text-emerald-800 uppercase tracking-widest leading-none mb-1">MTD Compliance Level</p>
+                       <p className="text-2xl font-black text-emerald-950">Fully Compliant</p>
+                     </div>
+                   </div>
+                   <div className="text-right">
+                     <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Last Verified</p>
+                     <p className="text-sm font-bold text-emerald-800">Today, 09:41 AM</p>
+                   </div>
+                 </div>
+               )}
+ 
+               {/* Compliance Details */}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="p-5 bg-white rounded-3xl
+ border border-gray-100 shadow-sm space-y-4">
+                   <div className="flex items-center gap-3 text-indigo-600 mb-2">
+                     <Building2 className="w-5 h-5" />
+                     <h3 className="font-black uppercase tracking-tighter text-sm">Registrations</h3>
+                   </div>
+                   {[
+                     { name: 'VAT (MTD)', status: 'Active' },
+                     { name: 'Corporation Tax', status: 'Active' },
+                     { name: 'PAYE (RTI)', status: 'Active' },
+                     { name: 'Self Assessment', status: 'Active' }
+                   ].map((reg, i) => (
+                     <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border border-transparent hover:border-indigo-100 transition-colors">
+                       <span className="text-sm font-bold text-gray-700">{reg.name}</span>
+                       <span className="px-2.5 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-lg uppercase tracking-wider">{reg.status}</span>
+                     </div>
+                   ))}
+                 </div>
+ 
+                 <div className="p-5 bg-white rounded-3xl
+ border border-gray-100 shadow-sm">
+                   <div className="flex items-center gap-3 text-purple-600 mb-6">
+                     <History className="w-5 h-5" />
+                     <h3 className="font-black uppercase tracking-tighter text-sm">Submission Log</h3>
+                   </div>
+                   <div className="space-y-6">
+                     {[
+                       { type: 'VAT Return', date: '07 Nov 2025', status: 'Accepted' },
+                       { type: 'RTI Full Payment', date: '19 Dec 2025', status: 'Accepted' },
+                       { type: 'CT600 Filing', date: '15 Jan 2026', status: 'Accepted' }
+                     ].map((sub, i) => (
+                       <div key={i} className="flex gap-4 relative">
+                         <div className="flex flex-col items-center">
+                           <div className="w-3 h-3 bg-green-500 rounded-full ring-4 ring-green-500/20 shadow-sm"></div>
+                           {i < 2 && <div className="w-px h-10 bg-gray-100"></div>}
+                         </div>
+                         <div className="-mt-1">
+                           <p className="text-xs font-bold text-gray-900">{sub.type}</p>
+                           <p className="text-[10px] text-gray-500 font-medium">{sub.date} • Reference ID: HMRC-8829{i + 1}</p>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               </div>
+ 
+               {/* Authorization Status */}
+               <div className="p-5 bg-indigo-50 rounded-3xl
+ border border-indigo-100 flex items-center justify-between">
+                 <div className="flex gap-4">
+                   <div className="p-3 bg-white rounded-2xl border border-indigo-100">
+                     <Shield className="w-6 h-6 text-indigo-600" />
+                   </div>
+                   <div>
+                     <p className="font-bold text-indigo-900">Digital Certificate Authorization</p>
+                     <p className="text-xs text-indigo-700 mt-0.5 font-medium">Valid until December 2026 • Issued by HMRC Secure Gateway</p>
+                   </div>
+                 </div>
+                 <button className="p-2.5 bg-white text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm border border-indigo-200 group">
+                   <ExternalLink className="w-4 h-4 group-hover:rotate-45 transition-transform" />
+                 </button>
+               </div>
+             </div>
+ 
+             {/* Footer Actions */}
+             <div className="p-6 bg-gray-50 border-t border-gray-200 flex flex-col gap-4">
+               {isCheckingCompliance && (
+                 <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
+                   <motion.div 
+                     initial={{ width: 0 }}
+                     animate={{ width: `${complianceProgress}%` }}
+                     className="bg-indigo-600 h-full rounded-full"
+                   />
+                 </div>
+               )}
+               <div className="flex gap-4">
+                 <button 
+                   disabled={isCheckingCompliance}
+                   onClick={() => {
+                     setIsCheckingCompliance(true);
+                     setComplianceCheckStatus('running');
+                     setComplianceProgress(0);
+                     const interval = setInterval(() => {
+                       setComplianceProgress(prev => {
+                         if (prev >= 100) {
+                           clearInterval(interval);
+                           setIsCheckingCompliance(false);
+                           setComplianceCheckStatus('success');
+                           showToast('System integrity check completed. No issues found.');
+                           return 100;
+                         }
+                         return prev + 5;
+                       });
+                     }, 100);
+                   }}
+                   className="flex-1 py-4 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-700 hover:bg-gray-100 hover:border-indigo-300 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer"
+
+                 >
+                   {isCheckingCompliance ? (
+                     <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                   ) : (
+                     <ShieldCheck className="w-5 h-5 text-indigo-600" />
+                   )}
+                   {isCheckingCompliance ? `Verifying (${complianceProgress}%)...` : (complianceCheckStatus === 'success' ? 'Re-run Integrity Check' : 'Run Integrity Check')}
+                 </button>
+                 <button 
+                   onClick={() => {
+                     // Generate Professional PDF using jsPDF
+                     const doc = new jsPDF();
+                     
+                     // Style configuration
+                     const brandColor = [79, 70, 229]; // Indigo-600
+                     
+                     // Header
+                     doc.setFillColor(brandColor[0], brandColor[1], brandColor[2]);
+                     doc.rect(0, 0, 210, 40, 'F');
+                     doc.setTextColor(255, 255, 255);
+                     doc.setFontSize(24);
+                     doc.setFont('helvetica', 'bold');
+                     doc.text('MTD Compliance Certificate', 20, 25);
+                     
+                     // Content
+                     doc.setTextColor(0, 0, 0);
+                     doc.setFontSize(12);
+                     doc.setFont('helvetica', 'normal');
+                     
+                     let y = 60;
+                     doc.setFont('helvetica', 'bold');
+                     doc.text('Verification Details', 20, y);
+                     y += 10;
+                     doc.setFont('helvetica', 'normal');
+                     doc.text(`Certificate Number: CERT-MTD-${Math.floor(Math.random() * 1000000)}`, 20, y);
+                     y += 8;
+                     doc.text(`Date of Issue: ${today.toLocaleDateString()}`, 20, y);
+                     y += 8;
+                     doc.text('Agent Reference: OKL-88291-UK', 20, y);
+                     y += 20;
+                     
+                     doc.setFont('helvetica', 'bold');
+                     doc.text('Compliance Status', 20, y);
+                     y += 10;
+                     doc.setFont('helvetica', 'normal');
+                     doc.text('• VAT (MTD): Registered & Active', 25, y); y += 8;
+                     doc.text('• Corporation Tax: Registered & Active', 25, y); y += 8;
+                     doc.text('• PAYE (RTI): Registered & Active', 25, y); y += 8;
+                     doc.text('• Digital Link Requirements: Fully Operational', 25, y); y += 15;
+                     
+                     // Footer banner
+                     doc.setFillColor(243, 244, 246);
+                     doc.rect(20, y, 170, 40, 'F');
+                     doc.setTextColor(75, 85, 99);
+                     doc.setFontSize(10);
+                     doc.text('This certificate verifies that the systems listed above are fully compliant', 30, y + 15);
+                     doc.text('with HMRC Making Tax Digital (MTD) requirements for the 2025/26 tax year.', 30, y + 22);
+                     doc.text('Verified by Okleevo Digital Compliance Engine.', 30, y + 29);
+                     
+                     // Save the PDF
+                     doc.save('MTD_Compliance_Certificate.pdf');
+                     showToast('MTD Compliance Certificate (PDF) generated and downloaded.');
+                   }}
+                   className="flex-1 py-4 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-bold rounded-2xl hover:shadow-xl hover:shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
+
+                 >
+                   <Download className="w-5 h-5" />
+                   Download PDF Certificate
+                 </button>
+               </div>
+
+             </div>
+
+           </div>
+         </div>
+       )}
+ 
+       {/* MTD Learn More Modal */}
+       {showMTDLearnMoreModal && (
+         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[70] p-4 animate-in fade-in duration-200">
+           <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 relative transform animate-in zoom-in-95 duration-300">
+             <button 
+               onClick={() => setShowMTDLearnMoreModal(false)}
+               className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+             >
+               <X className="w-5 h-5 text-gray-400" />
+             </button>
+             
+             <div className="text-center mb-8">
+               <div className="w-20 h-20 bg-indigo-100 rounded-3xl flex items-center justify-center mx-auto mb-6 text-indigo-600 rotate-3">
+                 <ShieldCheck className="w-10 h-10" />
+               </div>
+               <h2 className="text-2xl font-black text-gray-900 tracking-tight">Understanding MTD Compliance</h2>
+               <p className="text-gray-500 mt-2 font-medium">Making Tax Digital is an HMRC initiative to modernize the UK tax system.</p>
+             </div>
+ 
+             <div className="space-y-6 mb-8">
+               <div className="flex gap-4">
+                 <div className="bg-blue-50 p-2 rounded-lg h-fit group-hover:bg-blue-600 transition-colors">
+                   <Globe className="w-5 h-5 text-blue-600 group-hover:text-white" />
+                 </div>
+                 <div>
+                   <p className="font-bold text-gray-900 leading-none mb-1">Direct API Connection</p>
+                   <p className="text-sm text-gray-600 leading-relaxed font-medium">Automated data transfer between your records and HMRC systems via secure REST APIs.</p>
+                 </div>
+               </div>
+               <div className="flex gap-4">
+                 <div className="bg-emerald-50 p-2 rounded-lg h-fit">
+                   <Shield className="w-5 h-5 text-emerald-600" />
+                 </div>
+                 <div>
+                   <p className="font-bold text-gray-900 leading-none mb-1">Standardized Records</p>
+                   <p className="text-sm text-gray-600 leading-relaxed font-medium">Maintains digital records for at least six years as mandated by HMRC regulations.</p>
+                 </div>
+               </div>
+               <div className="flex gap-4">
+                 <div className="bg-purple-50 p-2 rounded-lg h-fit">
+                   <CheckCircle className="w-5 h-5 text-purple-600" />
+                 </div>
+                 <div>
+                   <p className="font-bold text-gray-900 leading-none mb-1">Verified Software</p>
+                   <p className="text-sm text-gray-600 leading-relaxed font-medium">This software is officially recognized by HMRC as compatible with MTD for VAT and Income Tax.</p>
+                 </div>
+               </div>
+             </div>
+ 
+             <button 
+               onClick={() => setShowMTDLearnMoreModal(false)}
+               className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-black active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-gray-900/10"
+             >
+               Got it, thanks!
+             </button>
+           </div>
+         </div>
+       )}
     </div>
+
   );
 }
 

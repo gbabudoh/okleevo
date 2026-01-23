@@ -180,7 +180,7 @@ export default function AINotesPage() {
               AI Notes <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Studio</span>
             </h1>
             <p className="text-gray-500 font-medium max-w-2xl text-lg">
-              Intelligent note-taking with neural synthesis and semantic organization.
+              Intelligent note-taking with neural synthesis and semantic organisation.
             </p>
           </div>
           <button

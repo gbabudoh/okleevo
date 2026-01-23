@@ -496,7 +496,7 @@ export default function InvoicingPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/20">
-            {filteredInvoices.map((invoice) => (
+            {filteredInvoices.map((invoice, index) => (
               <tr key={invoice.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all group">
                 <td className="px-6 py-4">
                   <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{invoice.id}</div>
@@ -610,7 +610,7 @@ export default function InvoicingPage() {
                       {activeMenu === invoice.id && (
                         <>
                           <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
+                          <div className={`absolute right-0 ${index < 2 ? 'mt-2' : 'bottom-full mb-2'} w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50`}>
                             <button
                               type="button"
                               onClick={() => {

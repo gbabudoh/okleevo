@@ -315,8 +315,91 @@ export default function KPIDashboardPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [timeRange, setTimeRange] = useState('month');
   const [showAddKPI, setShowAddKPI] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingKPI, setEditingKPI] = useState<KPI | null>(null);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [analysisKPI, setAnalysisKPI] = useState<KPI | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingKPI, setDeletingKPI] = useState<KPI | null>(null);
   const [activeMenuKPId, setActiveMenuKPId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const openEditModal = (kpi: KPI) => {
+    setEditingKPI({ ...kpi });
+    setShowEditModal(true);
+    setActiveMenuKPId(null);
+  };
+
+  const openAnalysisModal = (kpi: KPI) => {
+    setAnalysisKPI(kpi);
+    setShowAnalysisModal(true);
+    setActiveMenuKPId(null);
+  };
+
+  const openDeleteModal = (kpi: KPI) => {
+    setDeletingKPI(kpi);
+    setShowDeleteModal(true);
+    setActiveMenuKPId(null);
+  };
+
+  const confirmDelete = () => {
+    if (!deletingKPI) return;
+    setKpis(kpis.filter(k => k.id !== deletingKPI.id));
+    showNotification(`KPI "${deletingKPI.name}" has been deleted`, 'success');
+    setShowDeleteModal(false);
+    setDeletingKPI(null);
+  };
+
+  const syncKPIData = (kpi: KPI) => {
+    setActiveMenuKPId(null);
+    showNotification(`Synchronizing ${kpi.name}...`, 'info');
+    
+    // Simulate async data fetch
+    setTimeout(() => {
+      setKpis(prevKpis => prevKpis.map(k => {
+        if (k.id !== kpi.id) return k;
+        
+        // Simulate slight data changes (±5%)
+        const variation = 0.95 + Math.random() * 0.1;
+        const currentValue = typeof k.value === 'string' 
+          ? parseFloat(k.value.replace(/[^0-9.-]/g, '')) 
+          : k.value;
+        const newValue = Math.round(currentValue * variation * 100) / 100;
+        
+        // Format value based on unit
+        let formattedValue: string | number = newValue;
+        if (k.unit === 'USD' || String(k.value).startsWith('$')) {
+          formattedValue = `$${newValue.toLocaleString()}`;
+        } else if (k.unit === '%' || String(k.value).includes('%')) {
+          formattedValue = `${newValue.toFixed(1)}%`;
+        } else if (String(k.value).includes('/')) {
+          formattedValue = k.value; // Keep rating format unchanged
+        } else {
+          formattedValue = newValue.toLocaleString();
+        }
+        
+        // Randomize change slightly
+        const newChange = Math.round((k.change + (Math.random() - 0.5) * 2) * 10) / 10;
+        
+        return {
+          ...k,
+          value: formattedValue,
+          change: newChange,
+          changeType: newChange > 0 ? 'increase' : newChange < 0 ? 'decrease' : 'neutral'
+        } as KPI;
+      }));
+      
+      showNotification(`${kpi.name} synced successfully`, 'success');
+    }, 1500);
+  };
+
+  const saveKPIEdit = () => {
+    if (!editingKPI) return;
+    setKpis(kpis.map(k => k.id === editingKPI.id ? editingKPI : k));
+    setShowEditModal(false);
+    setEditingKPI(null);
+    showNotification(`KPI "${editingKPI.name}" updated successfully`, 'success');
+  };
 
   // Close menu on click outside
   useEffect(() => {
@@ -575,21 +658,21 @@ export default function KPIDashboardPage() {
                           className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 z-50 py-2 animate-in fade-in zoom-in-95 duration-200"
                         >
                           <button 
-                            onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Editing KPI: ${kpi.name}`, 'info'); }}
+                          onClick={(e) => { e.stopPropagation(); openEditModal(kpi); }}
                             className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
                           >
                             <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Edit3 className="w-4 h-4" /></div>
                             <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Edit Node</span>
                           </button>
                           <button 
-                            onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Synchronizing Data for ${kpi.name}...`, 'success'); }}
+                            onClick={(e) => { e.stopPropagation(); syncKPIData(kpi); }}
                             className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
                           >
                             <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><RefreshCw className="w-4 h-4" /></div>
                             <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Sync Data</span>
                           </button>
                           <button 
-                            onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Generating Analysis for ${kpi.name}`, 'info'); }}
+                            onClick={(e) => { e.stopPropagation(); openAnalysisModal(kpi); }}
                             className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
                           >
                             <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><ExternalLink className="w-4 h-4" /></div>
@@ -597,7 +680,7 @@ export default function KPIDashboardPage() {
                           </button>
                           <div className="my-1 border-t border-gray-100" />
                           <button 
-                            onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Deleting Stream: ${kpi.name}`, 'info'); }}
+                            onClick={(e) => { e.stopPropagation(); openDeleteModal(kpi); }}
                             className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left text-red-600 cursor-pointer"
                           >
                             <div className="p-2 bg-red-50 rounded-lg text-red-600"><Trash2 className="w-4 h-4" /></div>
@@ -762,21 +845,21 @@ export default function KPIDashboardPage() {
                         className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 z-50 py-2 animate-in fade-in zoom-in-95 duration-200"
                       >
                         <button 
-                          onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Editing KPI: ${kpi.name}`, 'info'); }}
+                          onClick={(e) => { e.stopPropagation(); openEditModal(kpi); }}
                           className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
                         >
                           <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Edit3 className="w-4 h-4" /></div>
                           <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Edit Node</span>
                         </button>
                         <button 
-                          onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Synchronizing Data for ${kpi.name}...`, 'success'); }}
+                          onClick={(e) => { e.stopPropagation(); syncKPIData(kpi); }}
                           className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
                         >
                           <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><RefreshCw className="w-4 h-4" /></div>
                           <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Sync Data</span>
                         </button>
                         <button 
-                          onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Generating Analysis for ${kpi.name}`, 'info'); }}
+                          onClick={(e) => { e.stopPropagation(); openAnalysisModal(kpi); }}
                           className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
                         >
                           <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><ExternalLink className="w-4 h-4" /></div>
@@ -784,7 +867,7 @@ export default function KPIDashboardPage() {
                         </button>
                         <div className="my-1 border-t border-gray-100" />
                         <button 
-                          onClick={(e) => { e.stopPropagation(); setActiveMenuKPId(null); showNotification(`Deleting Stream: ${kpi.name}`, 'info'); }}
+                          onClick={(e) => { e.stopPropagation(); openDeleteModal(kpi); }}
                           className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left text-red-600 cursor-pointer"
                         >
                           <div className="p-2 bg-red-50 rounded-lg text-red-600"><Trash2 className="w-4 h-4" /></div>
@@ -1143,6 +1226,256 @@ export default function KPIDashboardPage() {
                   className="w-full sm:w-auto px-10 py-4 bg-gray-900 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-600 hover:shadow-2xl hover:shadow-blue-500/40 transition-all duration-500 cursor-pointer active:scale-95"
                 >
                   Confirm Provisioning
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit KPI Modal */}
+      {showEditModal && editingKPI && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => { setShowEditModal(false); setEditingKPI(null); }} />
+          
+          <div className="relative w-full max-w-2xl bg-white/95 backdrop-blur-2xl rounded-[3rem] shadow-2xl border-2 border-white overflow-hidden animate-in zoom-in-95 duration-500">
+            <div className="p-10">
+              <div className="flex items-center justify-between mb-10">
+                <div className="flex items-center gap-4">
+                  {(() => { const Icon = editingKPI.icon; return (
+                  <div className={`p-4 rounded-2xl bg-gradient-to-br ${editingKPI.gradient} shadow-lg`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  ); })()}
+                  <div>
+                    <h3 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em]">Edit Node</h3>
+                    <p className="text-xl font-black text-gray-900 tracking-tight">{editingKPI.name}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setShowEditModal(false); setEditingKPI(null); }}
+                  className="p-4 hover:bg-gray-100 rounded-2xl transition-all duration-300 group cursor-pointer"
+                >
+                  <X className="w-6 h-6 text-gray-400 group-hover:text-gray-900 group-hover:rotate-90 transition-all duration-500" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Current Value</label>
+                  <input
+                    type="text"
+                    value={String(editingKPI.value)}
+                    onChange={(e) => setEditingKPI({ ...editingKPI, value: e.target.value })}
+                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl transition-all duration-300 font-bold text-gray-900 shadow-sm outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Target Threshold</label>
+                  <input
+                    type="text"
+                    value={String(editingKPI.target || '')}
+                    onChange={(e) => setEditingKPI({ ...editingKPI, target: e.target.value })}
+                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl transition-all duration-300 font-bold text-gray-900 shadow-sm outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Progress %</label>
+                  <input
+                    type="number"
+                    value={editingKPI.progress || 0}
+                    onChange={(e) => setEditingKPI({ ...editingKPI, progress: Number(e.target.value) })}
+                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl transition-all duration-300 font-bold text-gray-900 shadow-sm outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Change %</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={editingKPI.change}
+                    onChange={(e) => setEditingKPI({ ...editingKPI, change: Number(e.target.value) })}
+                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl transition-all duration-300 font-bold text-gray-900 shadow-sm outline-none"
+                  />
+                </div>
+
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Description</label>
+                  <textarea
+                    value={editingKPI.description || ''}
+                    onChange={(e) => setEditingKPI({ ...editingKPI, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl transition-all duration-300 font-bold text-gray-900 shadow-sm outline-none resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-4 mt-10">
+                <button
+                  onClick={() => { setShowEditModal(false); setEditingKPI(null); }}
+                  className="w-full sm:w-auto px-8 py-4 bg-gray-100 text-gray-600 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-200 transition-all duration-300 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={saveKPIEdit}
+                  className="w-full sm:w-auto px-10 py-4 bg-gray-900 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-600 hover:shadow-2xl hover:shadow-blue-500/40 transition-all duration-500 cursor-pointer active:scale-95"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Analysis Modal */}
+      {showAnalysisModal && analysisKPI && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => { setShowAnalysisModal(false); setAnalysisKPI(null); }} />
+          
+          <div className="relative w-full max-w-3xl bg-white/95 backdrop-blur-2xl rounded-[2rem] shadow-2xl border-2 border-white overflow-hidden animate-in zoom-in-95 duration-500 max-h-[85vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  {(() => { const Icon = analysisKPI.icon; return (
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${analysisKPI.gradient} shadow-lg`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  ); })()}
+                  <div>
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">Performance Analysis</h3>
+                    <p className="text-lg font-black text-gray-900 tracking-tight">{analysisKPI.name}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setShowAnalysisModal(false); setAnalysisKPI(null); }}
+                  className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-300 group cursor-pointer"
+                >
+                  <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900 group-hover:rotate-90 transition-all duration-500" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-4 gap-3 mb-6">
+                <div className="bg-gray-50 rounded-xl p-3 text-center">
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Value</p>
+                  <p className="text-lg font-black text-gray-900">{analysisKPI.value}</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-3 text-center">
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Target</p>
+                  <p className="text-lg font-black text-gray-900">{analysisKPI.target || 'N/A'}</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-3 text-center">
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Progress</p>
+                  <p className="text-lg font-black text-blue-600">{analysisKPI.progress || 0}%</p>
+                </div>
+                <div className={`rounded-xl p-3 text-center ${analysisKPI.changeType === 'increase' ? 'bg-emerald-50' : 'bg-red-50'}`}>
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Change</p>
+                  <p className={`text-lg font-black ${analysisKPI.changeType === 'increase' ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {analysisKPI.changeType === 'increase' ? '+' : ''}{analysisKPI.change}%
+                  </p>
+                </div>
+              </div>
+
+              {analysisKPI.trend && (
+                <div className="mb-6">
+                  <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-[0.15em] mb-3 flex items-center gap-2">
+                    <div className="p-1.5 bg-blue-100 rounded-lg"><LineChart className="w-3 h-3 text-blue-600" /></div>
+                    12-Month Trend
+                  </h4>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="flex items-end justify-between h-24 gap-1">
+                      {analysisKPI.trend.map((value, idx) => {
+                        const maxValue = Math.max(...analysisKPI.trend!);
+                        const height = (value / maxValue) * 100;
+                        const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+                        return (
+                          <div key={idx} className="flex-1 flex flex-col items-center gap-1 group/bar">
+                            <div className="w-full relative">
+                              <div
+                                className={`w-full bg-gradient-to-t ${analysisKPI.gradient} rounded-t transition-all duration-300 group-hover/bar:opacity-100 opacity-60 cursor-pointer`}
+                                style={{ height: `${height * 0.9}px` }}
+                              />
+                            </div>
+                            <span className="text-[8px] font-black text-gray-400">{months[idx]}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+                  <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.1em] mb-2 flex items-center gap-1.5">
+                    <TrendingUp className="w-3 h-3" /> Strengths
+                  </h4>
+                  <ul className="space-y-1 text-xs font-bold text-emerald-700">
+                    <li>• {analysisKPI.progress || 0}% progress toward target</li>
+                    <li>• {analysisKPI.change}% change this period</li>
+                  </ul>
+                </div>
+                <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                  <h4 className="text-[10px] font-black text-amber-800 uppercase tracking-[0.1em] mb-2 flex items-center gap-1.5">
+                    <Target className="w-3 h-3" /> Recommendations
+                  </h4>
+                  <ul className="space-y-1 text-xs font-bold text-amber-700">
+                    <li>• Target remaining {100 - (analysisKPI.progress || 0)}% gap</li>
+                    <li>• Review strategy if growth slows</li>
+                  </ul>
+                </div>
+              </div>
+
+              {analysisKPI.description && (
+                <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                  <p className="text-xs font-bold text-gray-600"><span className="font-black text-gray-900">Description:</span> {analysisKPI.description}</p>
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button 
+                  onClick={() => { setShowAnalysisModal(false); setAnalysisKPI(null); }}
+                  className="px-8 py-3 bg-gray-900 text-white font-black text-[9px] uppercase tracking-[0.2em] rounded-xl hover:bg-blue-600 transition-all duration-300 cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && deletingKPI && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => { setShowDeleteModal(false); setDeletingKPI(null); }} />
+          
+          <div className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl border-2 border-white overflow-hidden animate-in zoom-in-95 duration-300 p-8">
+            <div className="text-center">
+              <div className="mx-auto w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-6">
+                <Trash2 className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-2">Delete Stream?</h3>
+              <p className="text-sm font-bold text-gray-500 mb-6">
+                Are you sure you want to delete <span className="text-gray-900">&quot;{deletingKPI.name}&quot;</span>? This action cannot be undone.
+              </p>
+              
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { setShowDeleteModal(false); setDeletingKPI(null); }}
+                  className="flex-1 px-6 py-3 bg-gray-100 text-gray-600 font-black text-[10px] uppercase tracking-[0.15em] rounded-xl hover:bg-gray-200 transition-all duration-300 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  className="flex-1 px-6 py-3 bg-red-600 text-white font-black text-[10px] uppercase tracking-[0.15em] rounded-xl hover:bg-red-700 transition-all duration-300 cursor-pointer"
+                >
+                  Delete
                 </button>
               </div>
             </div>

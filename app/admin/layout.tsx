@@ -17,6 +17,13 @@ import {
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
+interface ExtendedUser {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+}
+
 export default function AdminLayout({
   children,
 }: {
@@ -42,7 +49,7 @@ export default function AdminLayout({
     }
 
     // Check role directly from session (no API call needed)
-    const userRole = (session.user as any)?.role;
+    const userRole = (session.user as ExtendedUser)?.role;
     if (userRole !== "SUPER_ADMIN") {
       router.push("/dashboard");
     }
@@ -66,7 +73,7 @@ export default function AdminLayout({
   }
 
   // Check if user is super admin (from session)
-  const userRole = (session?.user as any)?.role;
+  const userRole = (session?.user as ExtendedUser)?.role;
   if (!session?.user || userRole !== "SUPER_ADMIN") {
     return null; // Will redirect in useEffect
   }
@@ -104,7 +111,7 @@ export default function AdminLayout({
           <div className="flex items-center gap-4">
             <div className="text-right hidden md:block">
               <p className="text-sm font-medium text-gray-900">
-                {(session?.user as any)?.name || 'Super Admin'}
+                {(session?.user as ExtendedUser)?.name || 'Super Admin'}
               </p>
               <p className="text-xs text-gray-500">Platform Administrator</p>
             </div>
@@ -114,7 +121,7 @@ export default function AdminLayout({
                   method: "POST",
                   credentials: "include",
                 });
-                signOut({ callbackUrl: "/admin/access" });
+                signOut({ callbackUrl: "/" });
               }}
               className="px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center gap-2 rounded-lg border border-gray-200"
             >
