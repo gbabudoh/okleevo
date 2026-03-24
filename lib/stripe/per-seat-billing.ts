@@ -59,7 +59,6 @@ export async function syncSubscriptionWithSeats(businessId: string, seatCount: n
       name: business.name,
       metadata: {
         businessId: business.id,
-        clerkOrgId: business.clerkOrgId || '',
       },
     });
 

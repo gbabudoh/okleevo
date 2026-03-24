@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
  * POST - Force fix super admin login
  * This will create or fix the super admin user to ensure login works
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const email = 'admin@okleevo.com';
     const password = 'Admin123!@#';
@@ -30,12 +30,12 @@ export async function POST(request: NextRequest) {
         END $$;
       `);
       console.log('[FIX-LOGIN] ✅ SUPER_ADMIN enum value added to database');
-    } catch (enumError: any) {
-      // If enum already exists or other error, continue
-      if (enumError.message?.includes('already exists')) {
+    } catch (enumError: unknown) {
+      const errMsg = enumError instanceof Error ? enumError.message : String(enumError);
+      if (errMsg.includes('already exists')) {
         console.log('[FIX-LOGIN] SUPER_ADMIN enum value already exists');
       } else {
-        console.warn('[FIX-LOGIN] Could not add enum value (may already exist):', enumError.message);
+        console.warn('[FIX-LOGIN] Could not add enum value (may already exist):', errMsg);
       }
     }
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
           country: 'UK',
           seatCount: 1,
           maxSeats: 1,
-        } as any,
+        },
       });
       console.log('[FIX-LOGIN] Created Platform Administration business');
     }
@@ -74,17 +74,18 @@ export async function POST(request: NextRequest) {
           where: { id: user.id },
           data: {
             password: hashedPassword,
-            role: 'SUPER_ADMIN' as any,
-            status: 'ACTIVE' as any,
+            role: 'SUPER_ADMIN',
+            status: 'ACTIVE',
             emailVerified: new Date(),
             businessId: platformBusiness.id,
-          } as any,
+          },
         });
         console.log('[FIX-LOGIN] User updated successfully');
-      } catch (updateError: any) {
+      } catch (updateError: unknown) {
+        const errMsg = updateError instanceof Error ? (updateError as Error).message : String(updateError);
         console.error('[FIX-LOGIN] Error updating user:', updateError);
         // Try with raw query if enum issue
-        if (updateError.message?.includes('UserRole') || updateError.message?.includes('enum')) {
+        if (errMsg.includes('UserRole') || errMsg.includes('enum')) {
           console.log('[FIX-LOGIN] Attempting raw update due to enum issue...');
           await prisma.$executeRawUnsafe(`
             UPDATE "User" 
@@ -112,18 +113,19 @@ export async function POST(request: NextRequest) {
             firstName: 'Super',
             lastName: 'Admin',
             name: 'Super Admin',
-            role: 'SUPER_ADMIN' as any,
-            status: 'ACTIVE' as any,
+            role: 'SUPER_ADMIN',
+            status: 'ACTIVE',
             businessId: platformBusiness.id,
             emailVerified: new Date(),
             timezone: 'Europe/London',
-          } as any,
+          },
         });
         console.log('[FIX-LOGIN] User created successfully');
-      } catch (createError: any) {
+      } catch (createError: unknown) {
+        const errMsg = createError instanceof Error ? (createError as Error).message : String(createError);
         console.error('[FIX-LOGIN] Error creating user:', createError);
         // Try with raw query if enum issue
-        if (createError.message?.includes('UserRole') || createError.message?.includes('enum')) {
+        if (errMsg.includes('UserRole') || errMsg.includes('enum')) {
           console.log('[FIX-LOGIN] Attempting raw insert due to enum issue...');
           const userId = `user_${Date.now()}`;
           await prisma.$executeRawUnsafe(`
@@ -139,6 +141,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the password works
+    if (!user) {
+      return NextResponse.json({ error: 'Failed to create/update user' }, { status: 500 });
+    }
+
     const passwordValid = await bcrypt.compare(password, user.password!);
     
     if (!passwordValid) {
@@ -184,15 +190,16 @@ export async function POST(request: NextRequest) {
         '4. Click Sign In',
       ],
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : 'Failed to fix login';
+    const errStack = error instanceof Error ? error.stack : undefined;
     console.error('[FIX-LOGIN] Error:', error);
     return NextResponse.json(
       { 
-        error: error.message || 'Failed to fix login',
-        details: error.stack,
+        error: errMsg,
+        details: errStack,
       },
       { status: 500 }
     );
   }
 }
-

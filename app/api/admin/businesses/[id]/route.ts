@@ -19,13 +19,11 @@ async function isSuperAdmin(userId: string): Promise<boolean> {
  * GET - Get a specific business with details
  */
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Handle both Promise and direct params (Next.js 15 vs 14)
-    const resolvedParams = params instanceof Promise ? await params : params;
-    const businessId = resolvedParams.id;
+    const { id: businessId } = await params;
 
     if (!businessId) {
       console.error('[ADMIN-BUSINESS] Missing business ID in params');
@@ -95,13 +93,15 @@ export async function GET(
 
     console.log('[ADMIN-BUSINESS] Business fetched successfully:', business.name);
     return NextResponse.json({ business });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[ADMIN-BUSINESS] Error fetching business:', error);
-    console.error('[ADMIN-BUSINESS] Error stack:', error.stack);
+    const errMsg = error instanceof Error ? error.message : 'Failed to fetch business';
+    const errStack = error instanceof Error ? error.stack : undefined;
+    console.error('[ADMIN-BUSINESS] Error stack:', errStack);
     return NextResponse.json(
       { 
         error: 'Failed to fetch business',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? errMsg : undefined
       },
       { status: 500 }
     );
@@ -113,12 +113,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Handle both Promise and direct params (Next.js 15 vs 14)
-    const resolvedParams = params instanceof Promise ? await params : params;
-    const businessId = resolvedParams.id;
+    const { id: businessId } = await params;
 
     const userId = await getAuthenticatedUserId();
 
@@ -157,10 +155,11 @@ export async function PUT(
       success: true,
       business,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating business:', error);
+    const errMsg = error instanceof Error ? error.message : 'Failed to update business';
     return NextResponse.json(
-      { error: error.message || 'Failed to update business' },
+      { error: errMsg },
       { status: 500 }
     );
   }
@@ -170,13 +169,11 @@ export async function PUT(
  * DELETE - Delete a business (and all associated data)
  */
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Handle both Promise and direct params (Next.js 15 vs 14)
-    const resolvedParams = params instanceof Promise ? await params : params;
-    const businessId = resolvedParams.id;
+    const { id: businessId } = await params;
 
     const userId = await getAuthenticatedUserId();
 
@@ -215,10 +212,11 @@ export async function DELETE(
       success: true,
       message: 'Business deleted successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting business:', error);
+    const errMsg = error instanceof Error ? error.message : 'Failed to delete business';
     return NextResponse.json(
-      { error: error.message || 'Failed to delete business' },
+      { error: errMsg },
       { status: 500 }
     );
   }

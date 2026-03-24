@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './prisma-client';
 
 // Type-safe global for Prisma Client
 const globalForPrisma = globalThis as unknown as {
@@ -27,10 +27,9 @@ const prismaClientSingleton = () => {
   }
 
   // Create Prisma Client
-  // Note: Using type assertion to work around Prisma 7.x engine type detection
   const client = new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-  }) as any;
+  });
 
   return client;
 };

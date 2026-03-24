@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import type { Prisma } from '@/lib/prisma-client';
+import { UserRole } from '@/lib/prisma-client';
 import { getAuthenticatedUserId } from '@/lib/multi-tenancy';
 import bcrypt from 'bcryptjs';
 
@@ -46,7 +48,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
@@ -58,7 +60,7 @@ export async function GET(request: NextRequest) {
       where.businessId = businessId;
     }
     if (role) {
-      where.role = role;
+      where.role = role as UserRole;
     }
 
     const [users, total] = await Promise.all([
@@ -76,20 +78,6 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          phone: true,
-          role: true,
-          status: true,
-          businessId: true,
-          business: true,
-          createdAt: true,
-          updatedAt: true,
-          lastLoginAt: true,
-        },
       }),
       prisma.user.count({ where }),
     ]);
@@ -103,7 +91,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching users:', error);
     return NextResponse.json(
       { error: 'Failed to fetch users' },
@@ -186,7 +174,7 @@ export async function POST(request: NextRequest) {
         status: status || 'ACTIVE',
         emailVerified: password ? new Date() : null,
         timezone: 'Europe/London',
-      } as any,
+      },
       include: {
         business: {
           select: {
@@ -216,10 +204,11 @@ export async function POST(request: NextRequest) {
         business: newUser.business,
       },
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating user:', error);
+    const errMsg = error instanceof Error ? error.message : 'Failed to create user';
     return NextResponse.json(
-      { error: error.message || 'Failed to create user' },
+      { error: errMsg },
       { status: 500 }
     );
   }

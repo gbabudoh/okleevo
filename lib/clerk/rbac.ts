@@ -10,6 +10,9 @@ export interface Permission {
 }
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  SUPER_ADMIN: [
+    { resource: '*', actions: ['*'] }, // Platform-level full access
+  ],
   OWNER: [
     { resource: '*', actions: ['*'] }, // Full access to everything
   ],

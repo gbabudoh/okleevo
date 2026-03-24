@@ -1,16 +1,47 @@
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 
-// Email service for sending transactional emails
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export interface EmailAttachment {
+  filename: string;
+  content?: Buffer | string;
+  path?: string;           // URL or file path
+  contentType?: string;
+}
+
 export interface EmailOptions {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
   text?: string;
+  replyTo?: string;
+  cc?: string | string[];
+  bcc?: string | string[];
+  attachments?: EmailAttachment[];
 }
 
-// Create reusable transporter
+export interface ClientEmailOptions {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  replyTo?: string;
+  cc?: string | string[];
+  bcc?: string | string[];
+  attachments?: EmailAttachment[];
+  businessName?: string;
+  businessEmail?: string;
+}
+
+export interface EmailResult {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
+// ─── Transporter ─────────────────────────────────────────────────────────────
+
 const createTransporter = () => {
-  // Check if email is configured
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
     return null;
   }
@@ -20,10 +51,10 @@ const createTransporter = () => {
     return nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false, // true for 465, false for other ports
+      secure: false,
       auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS, // App Password for Gmail
+        pass: process.env.SMTP_PASS,
       },
     });
   }
@@ -40,39 +71,102 @@ const createTransporter = () => {
   });
 };
 
-export async function sendEmail(options: EmailOptions): Promise<boolean> {
+// ─── Core Send ───────────────────────────────────────────────────────────────
+
+export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
   try {
     const transporter = createTransporter();
-    
-    // If email not configured, log and return false
+
     if (!transporter) {
       console.warn('Email not configured. SMTP_HOST, SMTP_USER, or SMTP_PASS missing.');
       console.log('Would send email:', { to: options.to, subject: options.subject });
-      return false;
+      return { success: false, error: 'SMTP not configured' };
     }
 
     const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@okleevo.com';
     const fromName = process.env.EMAIL_FROM_NAME || 'Okleevo';
 
-    await transporter.sendMail({
+    const mailOptions: Record<string, unknown> = {
       from: `"${fromName}" <${fromEmail}>`,
-      to: options.to,
+      to: Array.isArray(options.to) ? options.to.join(', ') : options.to,
       subject: options.subject,
       html: options.html,
       text: options.text || options.html.replace(/<[^>]*>/g, ''),
-    });
+    };
 
-    console.log('✅ Email sent successfully to:', options.to);
-    return true;
+    if (options.replyTo) mailOptions.replyTo = options.replyTo;
+    if (options.cc) mailOptions.cc = options.cc;
+    if (options.bcc) mailOptions.bcc = options.bcc;
+
+    if (options.attachments && options.attachments.length > 0) {
+      mailOptions.attachments = options.attachments.map((att) => ({
+        filename: att.filename,
+        content: att.content,
+        path: att.path,
+        contentType: att.contentType,
+      }));
+    }
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent successfully to:', options.to, '| MessageID:', info.messageId);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error('❌ Email send failed:', error);
-    return false;
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('❌ Email send failed:', message);
+    return { success: false, error: message };
   }
 }
 
-export async function sendWelcomeEmail(email: string, name: string): Promise<boolean> {
+// ─── SME → Client Email (branded) ───────────────────────────────────────────
+
+export async function sendClientEmail(options: ClientEmailOptions): Promise<EmailResult> {
+  const businessName = options.businessName || 'Your Business';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+  const brandedHtml = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 640px; margin: 0 auto; background: #ffffff;">
+      <!-- Header -->
+      <div style="background: linear-gradient(135deg, #fc6813 0%, #ff8a47 100%); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600;">
+          ${businessName}
+        </h2>
+        <p style="color: rgba(255,255,255,0.85); margin: 4px 0 0; font-size: 13px;">
+          via Okleevo
+        </p>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none;">
+        ${options.html}
+      </div>
+
+      <!-- Footer -->
+      <div style="padding: 20px 32px; background: #f9fafb; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="margin: 0; font-size: 12px; color: #9ca3af; text-align: center;">
+          Sent by <strong>${businessName}</strong> using
+          <a href="${appUrl}" style="color: #fc6813; text-decoration: none;">Okleevo</a>
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: options.to,
+    subject: options.subject,
+    html: brandedHtml,
+    text: options.text,
+    replyTo: options.replyTo || options.businessEmail,
+    cc: options.cc,
+    bcc: options.bcc,
+    attachments: options.attachments,
+  });
+}
+
+// ─── Template Helpers (existing) ─────────────────────────────────────────────
+
+export async function sendWelcomeEmail(email: string, name: string): Promise<EmailResult> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  
+
   return sendEmail({
     to: email,
     subject: 'Welcome to Okleevo!',
@@ -82,7 +176,7 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<boo
         <p>Thank you for joining Okleevo - your all-in-one business platform.</p>
         <p>You can now access all 20 integrated business tools to help grow your SME.</p>
         <p style="margin-top: 30px;">
-          <a href="${appUrl}/access" 
+          <a href="${appUrl}/access"
              style="background-color: #fc6813; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; display: inline-block;">
             Sign In to Your Account
           </a>
@@ -96,10 +190,10 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<boo
   });
 }
 
-export async function sendVerificationEmail(email: string, token: string, name: string): Promise<boolean> {
+export async function sendVerificationEmail(email: string, token: string, name: string): Promise<EmailResult> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
   const verificationUrl = `${appUrl}/auth/verify-email?token=${token}`;
-  
+
   return sendEmail({
     to: email,
     subject: 'Verify your Okleevo account',
@@ -109,7 +203,7 @@ export async function sendVerificationEmail(email: string, token: string, name: 
         <p>Hi ${name},</p>
         <p>Please verify your email address by clicking the button below:</p>
         <p style="margin: 30px 0;">
-          <a href="${verificationUrl}" 
+          <a href="${verificationUrl}"
              style="background-color: #fc6813; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; display: inline-block;">
             Verify Email Address
           </a>
@@ -125,10 +219,10 @@ export async function sendVerificationEmail(email: string, token: string, name: 
   });
 }
 
-export async function sendPasswordResetEmail(email: string, resetToken: string): Promise<boolean> {
+export async function sendPasswordResetEmail(email: string, resetToken: string): Promise<EmailResult> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
   const resetUrl = `${appUrl}/auth/reset-password?token=${resetToken}`;
-  
+
   return sendEmail({
     to: email,
     subject: 'Reset your Okleevo password',
@@ -137,7 +231,7 @@ export async function sendPasswordResetEmail(email: string, resetToken: string):
         <h1 style="color: #fc6813;">Password Reset Request</h1>
         <p>Click the button below to reset your password:</p>
         <p style="margin: 30px 0;">
-          <a href="${resetUrl}" 
+          <a href="${resetUrl}"
              style="background-color: #fc6813; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; display: inline-block;">
             Reset Password
           </a>
@@ -151,10 +245,10 @@ export async function sendPasswordResetEmail(email: string, resetToken: string):
   });
 }
 
-export async function sendInvoiceEmail(email: string, invoiceId: string, invoiceUrl?: string): Promise<boolean> {
+export async function sendInvoiceEmail(email: string, invoiceId: string, invoiceUrl?: string): Promise<EmailResult> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
   const url = invoiceUrl || `${appUrl}/dashboard/invoices/${invoiceId}`;
-  
+
   return sendEmail({
     to: email,
     subject: 'New Invoice from Okleevo',
@@ -163,7 +257,7 @@ export async function sendInvoiceEmail(email: string, invoiceId: string, invoice
         <h1 style="color: #fc6813;">New Invoice</h1>
         <p>You have a new invoice: <strong>${invoiceId}</strong></p>
         <p style="margin: 30px 0;">
-          <a href="${url}" 
+          <a href="${url}"
              style="background-color: #fc6813; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; display: inline-block;">
             View Invoice
           </a>

@@ -1,22 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
+import type { Prisma } from '@/lib/prisma-client';
+import { InvoiceStatus } from '@/lib/prisma-client';
 import { createAuditLog } from '@/lib/clerk/audit-log';
 
 // Get all invoices for the current SME
-export const GET = withMultiTenancy(async (req, { user, org, dataFilter }) => {
+export const GET = withMultiTenancy(async (req, { dataFilter }) => {
   try {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    const where: any = {
+    const where: Prisma.InvoiceWhereInput = {
       ...dataFilter, // Automatically filters by smeId and userId based on role
     };
 
     if (status) {
-      where.status = status;
+      where.status = status as InvoiceStatus;
     }
 
     const [invoices, total] = await Promise.all([
@@ -38,7 +40,7 @@ export const GET = withMultiTenancy(async (req, { user, org, dataFilter }) => {
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Get invoices error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch invoices' },
@@ -48,7 +50,7 @@ export const GET = withMultiTenancy(async (req, { user, org, dataFilter }) => {
 });
 
 // Create new invoice
-export const POST = withMultiTenancy(async (req, { user, org, dataFilter }) => {
+export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body = await req.json();
     const { clientName, clientEmail, amount, items, dueDate } = body;
@@ -66,9 +68,9 @@ export const POST = withMultiTenancy(async (req, { user, org, dataFilter }) => {
         userId: user.id,
         clientName,
         clientEmail,
-        amount: parseFloat(amount),
+        amount: parseFloat(amount) || 0,
         items: items || [],
-        dueDate: new Date(dueDate),
+        dueDate: dueDate ? new Date(dueDate) : new Date(),
         status: 'DRAFT',
       },
     });
@@ -82,10 +84,11 @@ export const POST = withMultiTenancy(async (req, { user, org, dataFilter }) => {
     });
 
     return NextResponse.json({ data: invoice }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Create invoice error:', error);
+    const errMsg = error instanceof Error ? error.message : 'Failed to create invoice';
     return NextResponse.json(
-      { error: 'Failed to create invoice' },
+      { error: errMsg },
       { status: 500 }
     );
   }

@@ -24,7 +24,7 @@ A comprehensive, all-in-one business platform designed specifically for UK SMEs.
 ## 🚀 Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
-- **Database**: MongoDB
+- **Database**: PostgreSQL (via Prisma)
 - **Payments**: Stripe
 - **AI/LLM**: 
   - Gemini API (High-quality content generation)
@@ -75,12 +75,12 @@ A comprehensive, all-in-one business platform designed specifically for UK SMEs.
 │   ├── /ui               # Design system primitives
 │   └── /drag-and-drop    # Workspace drag-and-drop logic
 ├── /config               # Environment variables & settings
-├── /db                   # MongoDB connection
+├── /db                   # Database Utilities
 ├── /lib                  # Shared utilities & services
 │   ├── /types           # TypeScript type definitions
 │   ├── /utils           # Helper functions
 │   └── /services        # Service wrappers
-├── /models              # MongoDB schemas
+├── /models              # Business Logic Models
 └── /modules             # The 20 self-contained modules
 ```
 
@@ -129,7 +129,7 @@ The platform features a stunning, modern UI design with:
 ### Prerequisites
 
 - Node.js 18+ 
-- MongoDB instance (local or Atlas)
+- PostgreSQL instance
 - Stripe account (for payments)
 - Gemini API key (for AI content)
 - Groq API key (for AI processing)
@@ -150,9 +150,8 @@ npm install
 3. **Set up environment variables:**
 Create a `.env.local` file in the root directory:
 ```env
-# MongoDB
-MONGODB_URI=your_mongodb_connection_string
-MONGODB_DB_NAME=okleevo
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/okleevo
 
 # Stripe
 STRIPE_SECRET_KEY=sk_test_...
@@ -192,7 +191,7 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### Key Features
 
-- **Module Integration**: All modules share data through centralized MongoDB schemas
+- **Module Integration**: All modules share data through centralized PostgreSQL schemas via Prisma
 - **CRM as Hub**: Customer data flows between modules seamlessly
 - **Task Aggregation**: Auto-generated tasks from multiple modules
 - **AI Integration**: Gemini for quality, Groq for speed
@@ -201,7 +200,7 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 ### Adding a New Module
 
 1. Create module folder in `/modules/[module-name]`
-2. Define MongoDB schema in `/models`
+2. Define database schema in `prisma/schema.prisma`
 3. Create API routes in `/app/api/[module-name]`
 4. Build UI components following the design system
 5. Integrate with CRM and Task Board
@@ -234,7 +233,7 @@ Modern overview with gradient stat cards, quick actions, and recent activity.
 - ✅ Core 20 modules implemented
 - ✅ Modern UI design system
 - ✅ Authentication and authorization
-- ✅ MongoDB integration
+- ✅ PostgreSQL integration (via Prisma)
 - ✅ Responsive design
 
 ### Phase 2 (Q1 2025)

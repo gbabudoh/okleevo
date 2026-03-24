@@ -19,10 +19,11 @@ async function isSuperAdmin(userId: string): Promise<boolean> {
  * GET - Get a specific subscription
  */
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = await getAuthenticatedUserId();
 
     if (!userId) {
@@ -40,7 +41,7 @@ export async function GET(
     }
 
     const subscription = await prisma.subscription.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         business: {
           include: {
@@ -66,7 +67,7 @@ export async function GET(
     }
 
     return NextResponse.json({ subscription });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching subscription:', error);
     return NextResponse.json(
       { error: 'Failed to fetch subscription' },
@@ -80,9 +81,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = await getAuthenticatedUserId();
 
     if (!userId) {
@@ -102,7 +104,7 @@ export async function PUT(
     const body = await request.json();
     const { status, plan, amount, currency, currentPeriodStart, currentPeriodEnd, trialEnd, cancelAtPeriodEnd } = body;
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (plan) updateData.plan = plan;
     if (amount !== undefined) updateData.amount = amount;
@@ -113,7 +115,7 @@ export async function PUT(
     if (cancelAtPeriodEnd !== undefined) updateData.cancelAtPeriodEnd = cancelAtPeriodEnd;
 
     const subscription = await prisma.subscription.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         business: {
@@ -129,10 +131,11 @@ export async function PUT(
       success: true,
       subscription,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating subscription:', error);
+    const errMsg = error instanceof Error ? error.message : 'Failed to update subscription';
     return NextResponse.json(
-      { error: error.message || 'Failed to update subscription' },
+      { error: errMsg },
       { status: 500 }
     );
   }
@@ -142,10 +145,11 @@ export async function PUT(
  * DELETE - Delete a subscription
  */
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = await getAuthenticatedUserId();
 
     if (!userId) {
@@ -163,17 +167,18 @@ export async function DELETE(
     }
 
     await prisma.subscription.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({
       success: true,
       message: 'Subscription deleted successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting subscription:', error);
+    const errMsg = error instanceof Error ? error.message : 'Failed to delete subscription';
     return NextResponse.json(
-      { error: error.message || 'Failed to delete subscription' },
+      { error: errMsg },
       { status: 500 }
     );
   }

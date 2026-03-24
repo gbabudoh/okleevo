@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserId } from '@/lib/multi-tenancy';
+import type { Prisma } from '@/lib/prisma-client';
 import bcrypt from 'bcryptjs';
 
 export const runtime = 'nodejs';
@@ -20,10 +21,11 @@ async function isSuperAdmin(userId: string): Promise<boolean> {
  * GET - Get a specific user
  */
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = await getAuthenticatedUserId();
 
     if (!userId) {
@@ -41,28 +43,13 @@ export async function GET(
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         business: {
           include: {
             subscription: true,
           },
         },
-      },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        phone: true,
-        role: true,
-        status: true,
-        businessId: true,
-        business: true,
-        createdAt: true,
-        updatedAt: true,
-        lastLoginAt: true,
-        timezone: true,
       },
     });
 
@@ -74,7 +61,7 @@ export async function GET(
     }
 
     return NextResponse.json({ user });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching user:', error);
     return NextResponse.json(
       { error: 'Failed to fetch user' },
@@ -88,9 +75,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = await getAuthenticatedUserId();
 
     if (!userId) {
@@ -112,7 +100,7 @@ export async function PUT(
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingUser) {
@@ -149,13 +137,13 @@ export async function PUT(
     }
 
     // Hash password if provided
-    const updateData: any = {};
+    const updateData: Prisma.UserUpdateInput = {};
     if (email) updateData.email = email;
     if (firstName) updateData.firstName = firstName;
     if (lastName) updateData.lastName = lastName;
     if (phone !== undefined) updateData.phone = phone;
     if (role) updateData.role = role;
-    if (businessId) updateData.businessId = businessId;
+    if (businessId) updateData.business = { connect: { id: businessId } };
     if (status) updateData.status = status;
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
@@ -163,7 +151,7 @@ export async function PUT(
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         business: {
@@ -187,10 +175,11 @@ export async function PUT(
         business: updatedUser.business,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating user:', error);
+    const errMsg = error instanceof Error ? error.message : 'Failed to update user';
     return NextResponse.json(
-      { error: error.message || 'Failed to update user' },
+      { error: errMsg },
       { status: 500 }
     );
   }
@@ -200,10 +189,11 @@ export async function PUT(
  * DELETE - Delete a user
  */
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = await getAuthenticatedUserId();
 
     if (!userId) {
@@ -221,7 +211,7 @@ export async function DELETE(
     }
 
     // Prevent deleting yourself
-    if (params.id === userId) {
+    if (id === userId) {
       return NextResponse.json(
         { error: 'Cannot delete your own account' },
         { status: 400 }
@@ -229,7 +219,7 @@ export async function DELETE(
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         business: true,
       },
@@ -244,7 +234,7 @@ export async function DELETE(
 
     // Delete user (cascade will handle related data)
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     // Update business seat count
@@ -260,10 +250,11 @@ export async function DELETE(
       success: true,
       message: 'User deleted successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting user:', error);
+    const errMsg = error instanceof Error ? error.message : 'Failed to delete user';
     return NextResponse.json(
-      { error: error.message || 'Failed to delete user' },
+      { error: errMsg },
       { status: 500 }
     );
   }

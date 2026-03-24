@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../lib/prisma-client"
 }
 
 datasource db {
@@ -55,6 +56,8 @@ model User {
   notes         Note[]
   expenses      Expense[]
   tickets       Ticket[]
+  journalEntries JournalEntry[]
+  emailLogs     EmailLog[]
   
   @@index([email])
   @@index([businessId])
@@ -154,6 +157,9 @@ model Business {
   suppliers       Supplier[]
   campaigns       Campaign[]
   tickets         Ticket[]
+  ledgerAccounts  LedgerAccount[]
+  journalEntries  JournalEntry[]
+  emailLogs       EmailLog[]
   
   @@index([name])
 }
@@ -226,6 +232,10 @@ model Invoice {
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  
+  // Ledger Integration
+  journalEntryId String?   @unique
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
   
   @@index([businessId])
   @@index([userId])
@@ -379,6 +389,10 @@ model Expense {
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  
+  // Ledger Integration
+  journalEntryId String?   @unique
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
   
   @@index([businessId])
   @@index([userId])
@@ -720,4 +734,133 @@ model WorkspaceVisibility {
 enum VisibilityType {
   PRIVATE  // Only creator can see
   SHARED   // Shared with team (or specific users)
+}
+
+// =============================================================================
+// Accounting & Bookkeeping (HMRC Compliant Double-Entry)
+// =============================================================================
+
+model LedgerAccount {
+  id            String   @id @default(cuid())
+  code          String   // e.g. "1200" for Accounts Receivable
+  name          String   // e.g. "Accounts Receivable"
+  description   String?
+  
+  type          AccountType
+  category      String   // e.g. "Current Assets", "Operating Expenses"
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  isActive      Boolean  @default(true)
+  isSystem      Boolean  @default(false) // If true, cannot be deleted (e.g., Accounts Payable)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  ledgerEntries LedgerEntry[]
+  
+  @@unique([businessId, code])
+  @@index([businessId])
+  @@index([type])
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+model JournalEntry {
+  id            String   @id @default(cuid())
+  date          DateTime @default(now())
+  description   String
+  reference     String?  // e.g. Invoice #, Receipt #
+  
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  status        JournalStatus @default(POSTED)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  entries       LedgerEntry[]
+  
+  // Source tracking
+  invoice       Invoice?
+  expense       Expense?
+  
+  @@index([businessId])
+  @@index([date])
+  @@index([status])
+}
+
+enum JournalStatus {
+  DRAFT
+  PENDING
+  POSTED
+  VOID
+}
+
+model LedgerEntry {
+  id            String   @id @default(cuid())
+  
+  journalEntryId String
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  
+  accountId     String
+  account       LedgerAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  debit         Float    @default(0)
+  credit        Float    @default(0)
+  
+  description   String?  // Line-item specific description
+  
+  createdAt     DateTime @default(now())
+  
+  @@index([journalEntryId])
+  @@index([accountId])
+}
+
+// =============================================================================
+// Email Log (SME → Client emails)
+// =============================================================================
+
+model EmailLog {
+  id            String      @id @default(cuid())
+
+  businessId    String
+  business      Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+
+  to            String
+  cc            String?
+  bcc           String?
+  subject       String
+  body          String      @db.Text
+  attachments   Json?       // [{filename, objectKey, size, contentType}]
+
+  status        EmailStatus @default(SENT)
+  errorMessage  String?
+  messageId     String?     // SMTP message ID
+
+  createdAt     DateTime    @default(now())
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum EmailStatus {
+  SENT
+  FAILED
+  QUEUED
 }

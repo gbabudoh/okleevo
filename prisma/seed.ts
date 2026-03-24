@@ -22,7 +22,7 @@ async function main() {
   console.log('✅ Created demo business');
 
   // Create subscription
-  const subscription = await prisma.subscription.create({
+  await prisma.subscription.create({
     data: {
       businessId: business.id,
       status: 'TRIAL',
@@ -47,7 +47,7 @@ async function main() {
       firstName: 'Demo',
       lastName: 'User',
       phone: '07123456789',
-      emailVerified: true,
+      emailVerified: new Date(),
       role: 'OWNER',
       status: 'ACTIVE',
       businessId: business.id,

@@ -8,9 +8,8 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   
-  // MongoDB
-  MONGODB_URI: process.env.MONGODB_URI || '',
-  MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'sme-hub-20',
+  // PostgreSQL (Primary Database)
+  DATABASE_URL: process.env.DATABASE_URL || '',
   
   // Stripe
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
@@ -43,7 +42,7 @@ export const env = {
 // Validation
 if (process.env.NODE_ENV === 'production') {
   const required = [
-    'MONGODB_URI',
+    'DATABASE_URL',
     'STRIPE_SECRET_KEY',
     'STRIPE_PUBLISHABLE_KEY',
     'GEMINI_API_KEY',

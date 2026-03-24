@@ -12,7 +12,6 @@ import {
   Edit3,
   Trash2,
   TrendingUp,
-  TrendingDown,
   DollarSign,
   FileText,
   Calendar,
@@ -29,29 +28,38 @@ import {
   Send,
   Save,
   X,
-  Target,
-  Wallet,
   Receipt,
   FileCheck,
 } from "lucide-react";
+import useSWR from "swr";
+import accounting from "accounting";
+import { AccountingSummary } from "@/components/dashboard/accounting/AccountingSummary";
+import { ChartOfAccounts } from "@/components/dashboard/accounting/ChartOfAccounts";
+import { JournalEntries } from "@/components/dashboard/accounting/JournalEntries";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface Account {
   id: string;
   code: string;
   name: string;
-  type: "asset" | "liability" | "equity" | "revenue" | "expense";
+  type: string;
+  category?: string;
   balance: number;
-  lastTransaction: Date;
+  lastTransaction?: Date;
 }
 
 interface Transaction {
   id: string;
-  date: Date;
+  date: Date | string;
   description: string;
-  debit: { account: string; amount: number };
-  credit: { account: string; amount: number };
-  reference: string;
-  status: "posted" | "pending" | "draft";
+  reference?: string;
+  status: string;
+  entries: {
+    debit: number;
+    credit: number;
+    account: { name: string };
+  }[];
 }
 
 export default function AccountingPage() {
@@ -98,111 +106,21 @@ export default function AccountingPage() {
     openingBalance: "",
   });
 
-  const accounts: Account[] = [
-    {
-      id: "1",
-      code: "1000",
-      name: "Cash at Bank",
-      type: "asset",
-      balance: 45250.0,
-      lastTransaction: new Date("2024-12-05"),
-    },
-    {
-      id: "2",
-      code: "1100",
-      name: "Accounts Receivable",
-      type: "asset",
-      balance: 28500.0,
-      lastTransaction: new Date("2024-12-06"),
-    },
-    {
-      id: "3",
-      code: "1200",
-      name: "Inventory",
-      type: "asset",
-      balance: 15750.0,
-      lastTransaction: new Date("2024-12-04"),
-    },
-    {
-      id: "4",
-      code: "2000",
-      name: "Accounts Payable",
-      type: "liability",
-      balance: 12300.0,
-      lastTransaction: new Date("2024-12-05"),
-    },
-    {
-      id: "5",
-      code: "3000",
-      name: "Share Capital",
-      type: "equity",
-      balance: 50000.0,
-      lastTransaction: new Date("2024-01-01"),
-    },
-    {
-      id: "6",
-      code: "4000",
-      name: "Sales Revenue",
-      type: "revenue",
-      balance: 124500.0,
-      lastTransaction: new Date("2024-12-06"),
-    },
-    {
-      id: "7",
-      code: "5000",
-      name: "Cost of Sales",
-      type: "expense",
-      balance: 45200.0,
-      lastTransaction: new Date("2024-12-05"),
-    },
-    {
-      id: "8",
-      code: "5100",
-      name: "Operating Expenses",
-      type: "expense",
-      balance: 28750.0,
-      lastTransaction: new Date("2024-12-06"),
-    },
-  ];
+  const { data: accountsData } = useSWR("/api/accounting/accounts", fetcher);
+  const { data: journalData } = useSWR("/api/accounting/journal", fetcher);
 
-  const recentTransactions: Transaction[] = [
-    {
-      id: "1",
-      date: new Date("2024-12-06"),
-      description: "Sales Invoice #INV-1045",
-      debit: { account: "Accounts Receivable", amount: 2450.0 },
-      credit: { account: "Sales Revenue", amount: 2450.0 },
-      reference: "INV-1045",
-      status: "posted",
-    },
-    {
-      id: "2",
-      date: new Date("2024-12-05"),
-      description: "Supplier Payment",
-      debit: { account: "Accounts Payable", amount: 1500.0 },
-      credit: { account: "Cash at Bank", amount: 1500.0 },
-      reference: "PAY-234",
-      status: "posted",
-    },
-    {
-      id: "3",
-      date: new Date("2024-12-05"),
-      description: "Office Rent",
-      debit: { account: "Operating Expenses", amount: 2000.0 },
-      credit: { account: "Cash at Bank", amount: 2000.0 },
-      reference: "EXP-156",
-      status: "posted",
-    },
-  ];
+  const accounts = accountsData?.data || [];
+  const recentTransactions = journalData?.data || [];
 
   const financialSummary = {
-    totalAssets: 89500.0,
-    totalLiabilities: 12300.0,
-    totalEquity: 77200.0,
-    totalRevenue: 124500.0,
-    totalExpenses: 73950.0,
-    netProfit: 50550.0,
+    totalAssets: accounts.filter((a: Account) => a.type === "asset").reduce((sum: number, a: Account) => sum + a.balance, 0),
+    totalLiabilities: accounts.filter((a: Account) => a.type === "liability").reduce((sum: number, a: Account) => sum + a.balance, 0),
+    totalEquity: accounts.filter((a: Account) => a.type === "equity").reduce((sum: number, a: Account) => sum + a.balance, 0),
+    totalRevenue: accounts.filter((a: Account) => a.type === "revenue").reduce((sum: number, a: Account) => sum + a.balance, 0),
+    totalExpenses: accounts.filter((a: Account) => a.type === "expense").reduce((sum: number, a: Account) => sum + a.balance, 0),
+    netProfit: 0,
   };
+  financialSummary.netProfit = financialSummary.totalRevenue - financialSummary.totalExpenses;
 
   const tabs = [
     { id: "overview", name: "Overview", icon: BarChart3 },
@@ -286,7 +204,7 @@ export default function AccountingPage() {
     setNewAccount({
       code: account.code,
       name: account.name,
-      type: account.type,
+      type: account.type as "asset" | "liability" | "equity" | "revenue" | "expense",
       description: "",
       openingBalance: account.balance.toString(),
     });
@@ -301,13 +219,13 @@ export default function AccountingPage() {
   const handleEditEntry = (entry: Transaction) => {
     setSelectedEntry(entry);
     setNewEntry({
-      date: entry.date.toISOString().split("T")[0],
+      date: new Date(entry.date).toISOString().split("T")[0],
       description: entry.description,
-      reference: entry.reference,
-      debitAccount: entry.debit.account,
-      debitAmount: entry.debit.amount.toString(),
-      creditAccount: entry.credit.account,
-      creditAmount: entry.credit.amount.toString(),
+      reference: entry.reference || "",
+      debitAccount: entry.entries[0]?.account.name || "",
+      debitAmount: (entry.entries[0]?.debit || 0).toString(),
+      creditAccount: entry.entries[1]?.account.name || "",
+      creditAmount: (entry.entries[1]?.credit || 0).toString(),
     });
     setShowEditEntryModal(true);
   };
@@ -419,68 +337,7 @@ export default function AccountingPage() {
       </div>
 
       {/* Financial Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {[
-          {
-            label: "Total Assets",
-            value: financialSummary.totalAssets,
-            color: "blue",
-            icon: TrendingUp,
-          },
-          {
-            label: "Total Liabilities",
-            value: financialSummary.totalLiabilities,
-            color: "red",
-            icon: TrendingDown,
-          },
-          {
-            label: "Total Equity",
-            value: financialSummary.totalEquity,
-            color: "purple",
-            icon: Wallet,
-          },
-          {
-            label: "Total Revenue",
-            value: financialSummary.totalRevenue,
-            color: "green",
-            icon: DollarSign,
-          },
-          {
-            label: "Total Expenses",
-            value: financialSummary.totalExpenses,
-            color: "orange",
-            icon: Receipt,
-          },
-          {
-            label: "Net Profit",
-            value: financialSummary.netProfit,
-            color: "indigo",
-            icon: Target,
-          },
-        ].map((item, idx) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={idx}
-              className="bg-white/60 backdrop-blur-xl rounded-xl p-5 border border-white/50 hover:shadow-lg transition-all cursor-pointer"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div
-                  className={`p-2 bg-${item.color}-500 rounded-lg shadow-md`}
-                >
-                  <Icon className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className={`text-sm text-${item.color}-600 font-medium mb-1`}>
-                {item.label}
-              </p>
-              <p className={`text-2xl font-bold text-${item.color}-900`}>
-                £{item.value.toLocaleString()}
-              </p>
-            </div>
-          );
-        })}
-      </div>
+      <AccountingSummary data={financialSummary} />
 
       {/* Tabs */}
       <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/50 p-2 shadow-sm">
@@ -516,41 +373,12 @@ export default function AccountingPage() {
               <FileText className="w-6 h-6 text-blue-600" />
               Recent Journal Entries
             </h2>
-            <div className="space-y-3">
-              {recentTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-4 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 hover:shadow-md transition-all cursor-pointer"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-100/50 rounded-xl backdrop-blur-sm">
-                      <FileText className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">
-                        {transaction.description}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        DR: {transaction.debit.account} | CR:{" "}
-                        {transaction.credit.account}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {transaction.date.toLocaleDateString()} • Ref:{" "}
-                        {transaction.reference}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">
-                      £{transaction.debit.amount.toLocaleString()}
-                    </p>
-                    <span className="px-3 py-1 bg-green-100/50 border border-green-200/50 text-green-700 rounded-full text-xs font-semibold backdrop-blur-sm">
-                      {transaction.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <JournalEntries
+              entries={recentTransactions}
+              onViewEntry={handleViewEntry}
+              onEditEntry={handleEditEntry}
+              onDeleteEntry={(id) => handleDeleteClick("entry", id)}
+            />
           </div>
 
           {/* Quick Actions */}
@@ -595,112 +423,15 @@ export default function AccountingPage() {
       )}
 
       {activeTab === "chart-of-accounts" && (
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              Chart of Accounts
-            </h2>
-            <button
-              onClick={() => setShowAddAccountModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              Add Account
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50/50 border-b border-gray-200/50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                    Code
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                    Account Name
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                    Type
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase">
-                    Balance
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                    Last Transaction
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200/50">
-                {accounts.map((account) => (
-                  <tr
-                    key={account.id}
-                    className="hover:bg-white/50 transition-colors group"
-                  >
-                    <td className="px-6 py-4 font-mono text-sm font-semibold text-gray-900 bg-white/30 rounded-l-lg my-1">
-                      {account.code}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-gray-900 bg-white/30 my-1">
-                      {account.name}
-                    </td>
-                    <td className="px-6 py-4 bg-white/30 my-1">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
-                          account.type === "asset"
-                            ? "bg-blue-100/80 text-blue-700"
-                            : account.type === "liability"
-                              ? "bg-red-100/80 text-red-700"
-                              : account.type === "equity"
-                                ? "bg-purple-100/80 text-purple-700"
-                                : account.type === "revenue"
-                                  ? "bg-green-100/80 text-green-700"
-                                  : "bg-orange-100/80 text-orange-700"
-                        }`}
-                      >
-                        {account.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold text-gray-900 bg-white/30 my-1">
-                      £{account.balance.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 bg-white/30 my-1">
-                      {account.lastTransaction.toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 bg-white/30 rounded-r-lg my-1">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleViewAccount(account)}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                          title="View Account"
-                        >
-                          <Eye className="w-4 h-4 text-blue-600" />
-                        </button>
-                        <button
-                          onClick={() => handleEditAccount(account)}
-                          className="p-2 hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
-                          title="Edit Account"
-                        >
-                          <Edit3 className="w-4 h-4 text-purple-600" />
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleDeleteClick("account", account.id)
-                          }
-                          className="p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                          title="Delete Account"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <ChartOfAccounts
+          accounts={accounts}
+          onAddAccount={() => setShowAddAccountModal(true)}
+          onViewAccount={handleViewAccount}
+          onEditAccount={handleEditAccount}
+          onDeleteAccount={(id) => handleDeleteClick("account", id)}
+        />
       )}
+
 
       {activeTab === "journal" && (
         <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
@@ -737,7 +468,7 @@ export default function AccountingPage() {
           </div>
 
           <div className="space-y-3">
-            {recentTransactions.map((transaction) => (
+            {recentTransactions.map((transaction: Transaction) => (
               <div
                 key={transaction.id}
                 className="bg-white/40 border border-white/50 rounded-xl p-5 hover:bg-white/60 hover:shadow-lg transition-all backdrop-blur-sm"
@@ -754,7 +485,7 @@ export default function AccountingPage() {
                       <div className="flex items-center gap-3 mt-1">
                         <span className="text-sm text-gray-600 flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {transaction.date.toLocaleDateString("en-GB")}
+                          {new Date(transaction.date).toLocaleDateString("en-GB")}
                         </span>
                         <span className="text-sm text-gray-600">
                           Ref: {transaction.reference}
@@ -806,10 +537,10 @@ export default function AccountingPage() {
                       <span className="font-bold text-green-900">DEBIT</span>
                     </div>
                     <p className="text-sm text-gray-700 mb-1">
-                      {transaction.debit.account}
+                      {transaction.entries[0]?.account.name}
                     </p>
                     <p className="text-2xl font-bold text-green-900">
-                      £{transaction.debit.amount.toLocaleString()}
+                      {accounting.formatMoney(transaction.entries[0]?.debit || 0, "£")}
                     </p>
                   </div>
 
@@ -820,10 +551,10 @@ export default function AccountingPage() {
                       <span className="font-bold text-red-900">CREDIT</span>
                     </div>
                     <p className="text-sm text-gray-700 mb-1">
-                      {transaction.credit.account}
+                      {transaction.entries[1]?.account.name}
                     </p>
                     <p className="text-2xl font-bold text-red-900">
-                      £{transaction.credit.amount.toLocaleString()}
+                      {accounting.formatMoney(transaction.entries[1]?.credit || 0, "£")}
                     </p>
                   </div>
                 </div>
@@ -901,7 +632,7 @@ export default function AccountingPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200/50">
-                {accounts.map((account) => (
+                {accounts.map((account: Account) => (
                   <tr
                     key={account.id}
                     className="hover:bg-white/50 transition-colors"
@@ -936,17 +667,17 @@ export default function AccountingPage() {
                   <td className="px-6 py-4 text-right font-bold text-green-900 text-lg">
                     £
                     {accounts
-                      .filter((a) => ["asset", "expense"].includes(a.type))
-                      .reduce((sum, a) => sum + a.balance, 0)
+                      .filter((a: Account) => ["asset", "expense"].includes(a.type))
+                      .reduce((sum: number, a: Account) => sum + a.balance, 0)
                       .toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-right font-bold text-red-900 text-lg">
                     £
                     {accounts
-                      .filter((a) =>
+                      .filter((a: Account) =>
                         ["liability", "equity", "revenue"].includes(a.type),
                       )
-                      .reduce((sum, a) => sum + a.balance, 0)
+                      .reduce((sum: number, a: Account) => sum + a.balance, 0)
                       .toLocaleString()}
                   </td>
                 </tr>
@@ -1221,7 +952,7 @@ export default function AccountingPage() {
                       className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none text-sm"
                     >
                       <option value="">Select account...</option>
-                      {accounts.map((account) => (
+                      {accounts.map((account: Account) => (
                         <option key={account.id} value={account.name}>
                           {account.name}
                         </option>
@@ -1273,7 +1004,7 @@ export default function AccountingPage() {
                       className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:outline-none text-sm"
                     >
                       <option value="">Select account...</option>
-                      {accounts.map((account) => (
+                      {accounts.map((account: Account) => (
                         <option key={account.id} value={account.name}>
                           {account.name}
                         </option>
@@ -2070,7 +1801,7 @@ export default function AccountingPage() {
                   Last Transaction
                 </p>
                 <p className="text-lg text-gray-900">
-                  {selectedAccount.lastTransaction.toLocaleDateString("en-GB")}
+                  {selectedAccount.lastTransaction ? new Date(selectedAccount.lastTransaction).toLocaleDateString("en-GB") : "N/A"}
                 </p>
               </div>
               <button
@@ -2109,7 +1840,7 @@ export default function AccountingPage() {
                     Date
                   </p>
                   <p className="text-lg font-bold text-gray-900">
-                    {selectedEntry.date.toLocaleDateString("en-GB")}
+                    {new Date(selectedEntry.date).toLocaleDateString("en-GB")}
                   </p>
                 </div>
                 <div>
@@ -2136,10 +1867,10 @@ export default function AccountingPage() {
                     DEBIT
                   </p>
                   <p className="text-sm text-gray-700 mb-1">
-                    {selectedEntry.debit.account}
+                    {selectedEntry.entries[0]?.account.name}
                   </p>
                   <p className="text-2xl font-bold text-green-900">
-                    £{selectedEntry.debit.amount.toLocaleString()}
+                    £{(selectedEntry.entries[0]?.debit || 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="bg-red-50/50 border border-red-200/50 rounded-xl p-4 backdrop-blur-sm">
@@ -2148,10 +1879,10 @@ export default function AccountingPage() {
                     CREDIT
                   </p>
                   <p className="text-sm text-gray-700 mb-1">
-                    {selectedEntry.credit.account}
+                    {selectedEntry.entries[1]?.account.name}
                   </p>
                   <p className="text-2xl font-bold text-red-900">
-                    £{selectedEntry.credit.amount.toLocaleString()}
+                    £{(selectedEntry.entries[1]?.credit || 0).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -2416,7 +2147,7 @@ export default function AccountingPage() {
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none"
                     >
                       <option value="">Select account...</option>
-                      {accounts.map((account) => (
+                      {accounts.map((account: Account) => (
                         <option key={account.id} value={account.name}>
                           {account.code} - {account.name}
                         </option>
@@ -2465,7 +2196,7 @@ export default function AccountingPage() {
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none"
                     >
                       <option value="">Select account...</option>
-                      {accounts.map((account) => (
+                      {accounts.map((account: Account) => (
                         <option key={account.id} value={account.name}>
                           {account.code} - {account.name}
                         </option>

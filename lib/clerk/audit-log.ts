@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from './multi-tenancy';
+import type { Prisma } from '@/lib/prisma-client';
+import { getCurrentUser } from '../multi-tenancy';
 
 /**
  * Create an audit log entry
@@ -9,8 +10,8 @@ export async function createAuditLog(params: {
   action: string;
   resourceType: string;
   resourceId: string;
-  changes?: any;
-  metadata?: any;
+  changes?: Prisma.InputJsonValue;
+  metadata?: Prisma.InputJsonValue;
   ipAddress?: string;
   userAgent?: string;
 }) {
@@ -55,7 +56,7 @@ export async function getAuditLogs(params: {
   limit?: number;
   offset?: number;
 }) {
-  const where: any = {
+  const where: Record<string, string> = {
     smeId: params.smeId,
   };
 
