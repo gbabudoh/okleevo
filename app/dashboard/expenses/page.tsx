@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Plus, Search, TrendingDown, Filter, Tag, Receipt, Edit, 
   Trash2, X, Upload, Download, BarChart3, PieChart, DollarSign,
-  ShoppingBag, Building2, Coffee, Car, Zap, MoreVertical, Target
+  ShoppingBag, Building2, Coffee, Car, Zap, MoreVertical, Target, Loader2
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import StatusModal from '@/components/StatusModal';
@@ -15,24 +15,24 @@ interface Expense {
   amount: number;
   category: string;
   date: string;
-  vendor: string;
-  paymentMethod: string;
   receipt?: string;
+  vendor?: string;
+  paymentMethod?: string;
+  status?: string;
   notes?: string;
-  status?: 'pending' | 'approved' | 'reimbursed';
+}
+
+interface PrismaExpense {
+  id: string;
+  description: string;
+  amount: number;
+  category: string;
+  date: string;
 }
 
 export default function ExpensesPage() {
-  const [expenses, setExpenses] = useState<Expense[]>([
-    { id: '1', title: 'Office Supplies', amount: 250, category: 'Office', date: '2024-12-01', vendor: 'Staples', paymentMethod: 'Card', notes: 'Printer paper and pens', status: 'approved' },
-    { id: '2', title: 'Software Subscription', amount: 99, category: 'Software', date: '2024-12-02', vendor: 'Adobe', paymentMethod: 'Card', notes: 'Monthly Creative Cloud', status: 'approved' },
-    { id: '3', title: 'Client Lunch', amount: 85, category: 'Meals', date: '2024-12-03', vendor: 'Restaurant', paymentMethod: 'Card', notes: 'Meeting with client', status: 'reimbursed' },
-    { id: '4', title: 'Travel - Train', amount: 120, category: 'Travel', date: '2024-12-04', vendor: 'Rail Company', paymentMethod: 'Card', status: 'pending' },
-    { id: '5', title: 'Marketing Materials', amount: 340, category: 'Marketing', date: '2024-12-05', vendor: 'Print Shop', paymentMethod: 'Bank Transfer', status: 'approved' },
-    { id: '6', title: 'Office Rent', amount: 1500, category: 'Rent', date: '2024-12-01', vendor: 'Property Management', paymentMethod: 'Bank Transfer', status: 'approved' },
-    { id: '7', title: 'Team Coffee', amount: 45, category: 'Meals', date: '2024-12-06', vendor: 'Starbucks', paymentMethod: 'Card', status: 'pending' },
-    { id: '8', title: 'Cloud Storage', amount: 29, category: 'Software', date: '2024-12-07', vendor: 'Dropbox', paymentMethod: 'Card', status: 'approved' },
-  ]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -47,10 +47,6 @@ export default function ExpensesPage() {
     amount: 0,
     category: 'Office',
     date: new Date().toISOString().split('T')[0],
-    vendor: '',
-    paymentMethod: 'Card',
-    notes: '',
-    status: 'pending' as 'pending' | 'approved' | 'reimbursed'
   });
 
   const [statusModal, setStatusModal] = useState<{
@@ -77,8 +73,7 @@ export default function ExpensesPage() {
   ];
   
   const filteredExpenses = expenses.filter(expense => {
-    const matchesSearch = expense.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         expense.vendor.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = expense.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || expense.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
@@ -90,32 +85,65 @@ export default function ExpensesPage() {
     acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
     return acc;
   }, {} as Record<string, number>);
+  
+  const fetchExpenses = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/expenses');
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setExpenses(data.map((exp: PrismaExpense) => ({
+          ...exp,
+          title: exp.description,
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
 
 
 
-  const handleAddExpense = () => {
-    const expense: Expense = {
-      id: String(expenses.length + 1),
-      ...newExpense
-    };
-    setExpenses([...expenses, expense]);
-    setShowAddModal(false);
-    setNewExpense({
-      title: '',
-      amount: 0,
-      category: 'Office',
-      date: new Date().toISOString().split('T')[0],
-      vendor: '',
-      paymentMethod: 'Card',
-      notes: '',
-      status: 'pending'
-    });
-    setStatusModal({
-      isOpen: true,
-      title: 'Expense Added',
-      message: 'Your new expense has been successfully recorded.',
-      type: 'success'
-    });
+  const handleAddExpense = async () => {
+    try {
+      const response = await fetch('/api/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newExpense),
+      });
+      
+      if (!response.ok) throw new Error('Failed to save expense');
+      
+      const savedExpense = await response.json();
+      setExpenses([{ ...savedExpense, title: savedExpense.description }, ...expenses]);
+      setShowAddModal(false);
+      setNewExpense({
+        title: '',
+        amount: 0,
+        category: 'Office',
+        date: new Date().toISOString().split('T')[0],
+      });
+      setStatusModal({
+        isOpen: true,
+        title: 'Expense Added',
+        message: 'Your new expense has been successfully recorded.',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      setStatusModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Failed to add expense. Please try again.',
+        type: 'error'
+      });
+    }
   };
 
   const handleDeleteExpense = (expense: Expense) => {
@@ -123,19 +151,38 @@ export default function ExpensesPage() {
     setShowDeleteModal(true);
   };
 
-  const handleEditExpense = () => {
+  const handleEditExpense = async () => {
     if (selectedExpense) {
-      setExpenses(expenses.map(exp => 
-        exp.id === selectedExpense.id ? selectedExpense : exp
-      ));
-      setShowEditModal(false);
-      setSelectedExpense(null);
-      setStatusModal({
-        isOpen: true,
-        title: 'Expense Updated',
-        message: 'The expense details have been successfully updated.',
-        type: 'success'
-      });
+      try {
+        const response = await fetch(`/api/expenses/${selectedExpense.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(selectedExpense),
+        });
+
+        if (!response.ok) throw new Error('Failed to update expense');
+
+        const updatedExpense = await response.json();
+        setExpenses(expenses.map(exp => 
+          exp.id === updatedExpense.id ? { ...updatedExpense, title: updatedExpense.description } : exp
+        ));
+        setShowEditModal(false);
+        setSelectedExpense(null);
+        setStatusModal({
+          isOpen: true,
+          title: 'Expense Updated',
+          message: 'The expense details have been successfully updated.',
+          type: 'success'
+        });
+      } catch (error) {
+        console.error('Error updating expense:', error);
+        setStatusModal({
+          isOpen: true,
+          title: 'Error',
+          message: 'Failed to update expense. Please try again.',
+          type: 'error'
+        });
+      }
     }
   };
 
@@ -158,7 +205,7 @@ export default function ExpensesPage() {
     csv += headers.join(',') + '\n';
     csv += rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -366,32 +413,41 @@ export default function ExpensesPage() {
           </div>
           Expense Breakdown
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]).map(([name, amount]) => {
-            const categoryInfo = getCategoryIcon(name);
-            const Icon = categoryInfo.icon;
-            const percentage = (amount / totalExpenses * 100).toFixed(1);
-            
-            return (
-              <div key={name} className="p-5 bg-white/50 rounded-2xl border border-white/60 hover:bg-white/80 transition-all cursor-pointer group hover:shadow-lg shadow-sm">
-                <div className="flex items-start justify-between mb-3">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${categoryInfo.color} shadow-md group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-5 h-5 text-white" />
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-4">
+            <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+            <p className="text-gray-500 font-medium italic">Analyzing your spending patterns...</p>
+          </div>
+        ) : Object.keys(categoryTotals).length === 0 ? (
+          <div className="text-center py-12 text-gray-500 font-medium">No expenses recorded yet.</div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]).map(([name, amount]) => {
+              const categoryInfo = getCategoryIcon(name);
+              const Icon = categoryInfo.icon;
+              const percentage = (amount / totalExpenses * 100).toFixed(1);
+              
+              return (
+                <div key={name} className="p-5 bg-white/50 rounded-2xl border border-white/60 hover:bg-white/80 transition-all cursor-pointer group hover:shadow-lg shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`p-3 rounded-xl bg-gradient-to-br ${categoryInfo.color} shadow-md group-hover:scale-110 transition-transform`}>
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-xs font-bold text-gray-400 bg-white/80 px-2 py-1 rounded-lg">{percentage}%</span>
                   </div>
-                  <span className="text-xs font-bold text-gray-400 bg-white/80 px-2 py-1 rounded-lg">{percentage}%</span>
+                  <h4 className="font-bold text-gray-700 mb-1">{name}</h4>
+                  <p className="text-xl font-black text-gray-900">£{amount.toLocaleString()}</p>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3 overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full bg-gradient-to-r ${categoryInfo.color} opacity-80 group-hover:opacity-100 transition-opacity`} 
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
                 </div>
-                <h4 className="font-bold text-gray-700 mb-1">{name}</h4>
-                <p className="text-xl font-black text-gray-900">£{amount.toLocaleString()}</p>
-                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3 overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full bg-gradient-to-r ${categoryInfo.color} opacity-80 group-hover:opacity-100 transition-opacity`} 
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Expenses List */}
@@ -403,87 +459,79 @@ export default function ExpensesPage() {
           <h3 className="text-xl font-black text-gray-900">Recent Expenses</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50/50">
-              <tr>
-                <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Expense Details</th>
-                <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
-                <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Vendor</th>
-                <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
-                <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Amount</th>
-                <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-8 py-5 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredExpenses.map((expense) => {
-                const categoryInfo = getCategoryIcon(expense.category);
-                const Icon = categoryInfo.icon;
-                
-                return (
-                  <tr key={expense.id} className="hover:bg-blue-50/30 transition-colors group">
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-xl bg-gradient-to-br ${categoryInfo.color} shadow-md group-hover:scale-110 transition-transform`}>
-                          <Icon className="w-4 h-4 text-white" />
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+              <p className="text-gray-500 font-bold tracking-widest uppercase text-xs">Syncing ledger data...</p>
+            </div>
+          ) : filteredExpenses.length === 0 ? (
+            <div className="text-center py-20 text-gray-500 font-medium">No expenses found. Start by adding one!</div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50/50">
+                <tr>
+                  <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Expense Details</th>
+                  <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
+                  <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
+                  <th className="px-8 py-5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Amount</th>
+                  <th className="px-8 py-5 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredExpenses.map((expense) => {
+                  const categoryInfo = getCategoryIcon(expense.category);
+                  const Icon = categoryInfo.icon;
+                  
+                  return (
+                    <tr key={expense.id} className="hover:bg-blue-50/30 transition-colors group">
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-3 rounded-xl bg-gradient-to-br ${categoryInfo.color} shadow-md group-hover:scale-110 transition-transform`}>
+                            <Icon className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-900">{expense.title}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-bold text-gray-900">{expense.title}</p>
-                          {expense.notes && (
-                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{expense.notes}</p>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5">
-                      <span className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-xs font-bold shadow-sm inline-flex items-center gap-1.5">
-                        <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${categoryInfo.color}`} />
-                        {expense.category}
-                      </span>
-                    </td>
-                    <td className="px-8 py-5 text-sm font-semibold text-gray-600">{expense.vendor}</td>
-                    <td className="px-8 py-5 text-sm font-medium text-gray-500">{new Date(expense.date).toLocaleDateString()}</td>
-                    <td className="px-8 py-5">
-                      <span className="font-black text-gray-900 text-lg">£{expense.amount.toLocaleString()}</span>
-                    </td>
-                    <td className="px-8 py-5">
-                      <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm border ${
-                        expense.status === 'approved' 
-                          ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
-                          : expense.status === 'reimbursed' 
-                          ? 'bg-blue-100 text-blue-700 border-blue-200' 
-                          : 'bg-amber-100 text-amber-700 border-amber-200'
-                      }`}>
-                        {expense.status || 'pending'}
-                      </span>
-                    </td>
-                    <td className="px-8 py-5">
-                      <div className="flex items-center justify-end gap-2">
+                      </td>
+                      <td className="px-8 py-5">
+                        <span className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-xs font-bold shadow-sm inline-flex items-center gap-1.5">
+                          <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${categoryInfo.color}`} />
+                          {expense.category}
+                        </span>
+                      </td>
+                      <td className="px-8 py-5 text-sm font-medium text-gray-500">{new Date(expense.date).toLocaleDateString()}</td>
+                      <td className="px-8 py-5">
+                        <span className="font-black text-gray-900 text-lg">£{expense.amount.toLocaleString()}</span>
+                      </td>
+                      <td className="px-8 py-5">
+                        <div className="flex items-center justify-end gap-2">
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedExpense(expense);
-                            setShowEditModal(true);
-                          }}
-                          className="p-2 bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteExpense(expense)}
-                          className="p-2 bg-white border border-gray-200 hover:border-rose-300 hover:bg-rose-50 text-gray-500 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedExpense(expense);
+                              setShowEditModal(true);
+                            }}
+                            className="p-2 bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteExpense(expense)}
+                            className="p-2 bg-white border border-gray-200 hover:border-rose-300 hover:bg-rose-50 text-gray-500 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -553,56 +601,17 @@ export default function ExpensesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
-                  <select
-                    value={newExpense.category}
-                    onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900 cursor-pointer"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat.name} value={cat.name}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Payment</label>
-                  <select
-                    value={newExpense.paymentMethod}
-                    onChange={(e) => setNewExpense({ ...newExpense, paymentMethod: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900 cursor-pointer"
-                  >
-                    <option value="Card">Card</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                  </select>
-                </div>
-              </div>
-
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Vendor</label>
-                <div className="relative">
-                  <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    value={newExpense.vendor}
-                    onChange={(e) => setNewExpense({ ...newExpense, vendor: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900"
-                    placeholder="e.g., Amazon, Staples"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Notes</label>
-                <textarea
-                  value={newExpense.notes}
-                  onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900"
-                  rows={3}
-                  placeholder="Additional details..."
-                />
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
+                <select
+                  value={newExpense.category}
+                  onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900 cursor-pointer"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.name} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex gap-4 pt-4 mt-auto">
@@ -681,51 +690,17 @@ export default function ExpensesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
-                  <select
-                    value={selectedExpense.category}
-                    onChange={(e) => setSelectedExpense({ ...selectedExpense, category: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900 cursor-pointer"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat.name} value={cat.name}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Status</label>
-                  <select
-                      value={selectedExpense.status || 'pending'}
-                      onChange={(e) => setSelectedExpense({ ...selectedExpense, status: e.target.value as 'pending' | 'approved' | 'reimbursed' })}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900 cursor-pointer"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="approved">Approved</option>
-                      <option value="reimbursed">Reimbursed</option>
-                    </select>
-                </div>
-              </div>
-
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Vendor</label>
-                <input
-                  type="text"
-                  value={selectedExpense.vendor}
-                  onChange={(e) => setSelectedExpense({ ...selectedExpense, vendor: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Notes</label>
-                <textarea
-                  value={selectedExpense.notes || ''}
-                  onChange={(e) => setSelectedExpense({ ...selectedExpense, notes: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900"
-                  rows={3}
-                />
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
+                <select
+                  value={selectedExpense.category}
+                  onChange={(e) => setSelectedExpense({ ...selectedExpense, category: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900 cursor-pointer"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.name} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex gap-4 pt-4 mt-auto">
@@ -760,16 +735,32 @@ export default function ExpensesPage() {
             setShowDeleteModal(false);
             setDeletingExpense(null);
           }}
-          onConfirm={() => {
-            setExpenses(expenses.filter(exp => exp.id !== deletingExpense.id));
-            setShowDeleteModal(false);
-            setDeletingExpense(null);
-            setStatusModal({
-              isOpen: true,
-              title: 'Expense Deleted',
-              message: 'The expense record has been permanently removed.',
-              type: 'success'
-            });
+          onConfirm={async () => {
+            try {
+              const response = await fetch(`/api/expenses/${deletingExpense.id}`, {
+                method: 'DELETE',
+              });
+
+              if (!response.ok) throw new Error('Failed to delete expense');
+
+              setExpenses(expenses.filter(exp => exp.id !== deletingExpense.id));
+              setShowDeleteModal(false);
+              setDeletingExpense(null);
+              setStatusModal({
+                isOpen: true,
+                title: 'Expense Deleted',
+                message: 'The expense record has been permanently removed.',
+                type: 'success'
+              });
+            } catch (error) {
+              console.error('Error deleting expense:', error);
+              setStatusModal({
+                isOpen: true,
+                title: 'Error',
+                message: 'Failed to delete expense. Please try again.',
+                type: 'error'
+              });
+            }
           }}
           title="Delete Expense"
           itemName={deletingExpense.title}

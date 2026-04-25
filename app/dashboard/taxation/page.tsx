@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileText, Plus, Download, Calculator, Calendar, DollarSign, TrendingUp, AlertCircle, CheckCircle,
   Clock, Building2, User, Users, Briefcase, BarChart3, Shield, Send, X, Receipt, Home, History,
-  ShieldCheck, Globe, ExternalLink
+  ShieldCheck, Globe, ExternalLink, Loader2
 } from 'lucide-react';
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface TaxObligation {
@@ -17,6 +17,16 @@ interface TaxObligation {
   dueDate: Date;
   amount: number;
   status: 'paid' | 'pending' | 'overdue';
+  period: string;
+}
+
+interface TaxObligationResponse {
+  id: string;
+  type: string;
+  description: string;
+  dueDate: string;
+  amount: number;
+  status: string;
   period: string;
 }
 
@@ -143,14 +153,13 @@ export default function TaxationPage() {
 
   // Initial year data (generated once)
   const initialYearData: Record<string, { selfEmployment: number, employment: number, property: number, dividends: number, expenses: number }> = {};
-  taxYearOptions.forEach((option, index) => {
-    const multiplier = 1 - (index * 0.08);
+  taxYearOptions.forEach((option) => {
     initialYearData[option.year] = {
-      selfEmployment: Math.round(45000 * multiplier),
-      employment: Math.round(25000 * multiplier),
-      property: Math.round(12000 * multiplier),
-      dividends: Math.round(3500 * multiplier),
-      expenses: Math.round(8200 * multiplier)
+      selfEmployment: 0,
+      employment: 0,
+      property: 0,
+      dividends: 0,
+      expenses: 0
     };
   });
 
@@ -161,6 +170,58 @@ export default function TaxationPage() {
     dividends: number,
     expenses: number
   }>>(initialYearData);
+
+  const [taxSummary, setTaxSummary] = useState({
+    corporationTax: 0,
+    vatLiability: 0,
+    payeNI: 0,
+    totalTaxLiability: 0,
+    taxPaid: 0,
+    taxOutstanding: 0,
+  });
+
+  const [taxObligations, setTaxObligations] = useState<TaxObligation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTaxData();
+  }, []);
+
+  const fetchTaxData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/taxation');
+      const data = await response.json();
+      
+      if (data.summary) {
+        setTaxSummary(data.summary);
+      }
+      if (data.obligations) {
+        setTaxObligations(data.obligations.map((o: TaxObligationResponse) => ({
+          ...o,
+          status: o.status as TaxObligation['status'],
+          dueDate: new Date(o.dueDate)
+        })));
+      }
+      if (data.selfAssessment) {
+        setSaYearData(prev => ({
+          ...prev,
+          [currentTaxYear]: data.selfAssessment
+        }));
+      }
+      if (data.details) {
+        setCtProfit(data.details.profit.toString());
+        setVatOutputSales((data.details.vatOutput / 0.20).toFixed(2)); // Reverse VAT to get sales estimate
+        setVatInputPurchases((data.details.vatInput / 0.20).toFixed(2));
+        setPayeGrossSalary((data.details.totalMonthlySalary).toFixed(2));
+      }
+    } catch (error) {
+      console.error('Error fetching tax data:', error);
+      showToast('Failed to load taxation data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const currentYearData = saYearData[saTaxYear] || initialYearData[currentTaxYear] || { selfEmployment: 0, employment: 0, property: 0, dividends: 0, expenses: 0 };
   const saSelfEmployment = currentYearData.selfEmployment;
@@ -299,44 +360,7 @@ export default function TaxationPage() {
 
   const saProgress = calculateProgress();
 
-  const taxObligations: TaxObligation[] = [
-    {
-      id: '1',
-      type: 'Corporation Tax',
-      description: 'CT600 Return for year ending 31/03/2024',
-      dueDate: new Date('2025-01-01'),
-      amount: 9500.00,
-      status: 'pending',
-      period: 'FY 2023/24'
-    },
-    {
-      id: '2',
-      type: 'VAT Return',
-      description: 'VAT Return Q4 2024',
-      dueDate: new Date('2025-02-07'),
-      amount: 4250.00,
-      status: 'pending',
-      period: 'Q4 2024'
-    },
-    {
-      id: '3',
-      type: 'PAYE',
-      description: 'PAYE/NI Payment December 2024',
-      dueDate: new Date('2025-01-22'),
-      amount: 3200.00,
-      status: 'pending',
-      period: 'Dec 2024'
-    },
-  ];
-
-  const taxSummary = {
-    corporationTax: 9500.00,
-    vatLiability: 4250.00,
-    payeNI: 3200.00,
-    totalTaxLiability: 16950.00,
-    taxPaid: 12500.00,
-    taxOutstanding: 4450.00,
-  };
+  // Data is now handled by state and fetched from API
 
   const tabs: { id: string; name: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'overview', name: 'Overview', icon: BarChart3 },
@@ -468,43 +492,56 @@ export default function TaxationPage() {
           <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <Calendar className="w-6 h-6 text-green-600" />
-              Upcoming Tax Obligations
+              {loading ? 'Loading...' : 'Upcoming Tax Obligations'}
             </h2>
-            <div className="space-y-3">
-              {taxObligations.map((obligation) => (
-                <div key={obligation.id} className="flex items-center justify-between p-4 bg-white/40 border border-white/30 rounded-xl hover:bg-white/60 hover:shadow-lg transition-all cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg ${
-                      obligation.status === 'paid' ? 'bg-green-100' :
-                      obligation.status === 'overdue' ? 'bg-red-100' : 'bg-orange-100'
-                    }`}>
-                      <FileText className={`w-5 h-5 ${
-                        obligation.status === 'paid' ? 'text-green-600' :
-                        obligation.status === 'overdue' ? 'text-red-600' : 'text-orange-600'
-                      }`} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{obligation.type}</p>
-                      <p className="text-sm text-gray-600">{obligation.description}</p>
-                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                        <Clock className="w-3 h-3" />
-                        Due: {obligation.dueDate.toLocaleDateString()} • {obligation.period}
-                      </p>
-                    </div>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-4">
+                <Loader2 className="w-10 h-10 text-green-600 animate-spin" />
+                <p className="text-gray-500 font-medium">Calculating your tax position...</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {taxObligations.length === 0 ? (
+                  <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                    <p className="text-gray-500">No upcoming tax obligations found.</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">£{obligation.amount.toLocaleString()}</p>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      obligation.status === 'paid' ? 'bg-green-100 text-green-700' :
-                      obligation.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                      'bg-orange-100 text-orange-700'
-                    }`}>
-                      {obligation.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ) : (
+                  taxObligations.map((obligation) => (
+                    <div key={obligation.id} className="flex items-center justify-between p-4 bg-white/40 border border-white/30 rounded-xl hover:bg-white/60 hover:shadow-lg transition-all cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-lg ${
+                          obligation.status === 'paid' ? 'bg-green-100' :
+                          obligation.status === 'overdue' ? 'bg-red-100' : 'bg-orange-100'
+                        }`}>
+                          <FileText className={`w-5 h-5 ${
+                            obligation.status === 'paid' ? 'text-green-600' :
+                            obligation.status === 'overdue' ? 'text-red-600' : 'text-orange-600'
+                          }`} />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{obligation.type}</p>
+                          <p className="text-sm text-gray-600">{obligation.description}</p>
+                          <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                            <Clock className="w-3 h-3" />
+                            Due: {obligation.dueDate.toLocaleDateString()} • {obligation.period}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-gray-900">£{obligation.amount.toLocaleString()}</p>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          obligation.status === 'paid' ? 'bg-green-100 text-green-700' :
+                          obligation.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                          'bg-orange-100 text-orange-700'
+                        }`}>
+                          {obligation.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -1391,7 +1428,7 @@ export default function TaxationPage() {
                     } else {
                       const mime = selectedDownloadFormat === 'JSON' ? 'application/json' : selectedDownloadFormat === 'CSV' ? 'text/csv' : 'text/plain';
                       const ext = selectedDownloadFormat.toLowerCase();
-                      const blob = new Blob([content], { type: `${mime};charset=utf-8;` });
+                      const blob = new Blob(['\uFEFF' + content], { type: `${mime};charset=utf-8;` });
                       const link = document.createElement('a');
                       link.href = URL.createObjectURL(blob);
                       link.download = `${filename}.${ext}`;
@@ -3889,8 +3926,30 @@ export default function TaxationPage() {
            </div>
          </div>
        )}
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-8 right-8 z-[100]"
+          >
+            <div className={`px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md border ${
+              toast.type === 'success' 
+                ? 'bg-green-500/90 text-white border-green-400' 
+                : 'bg-red-500/90 text-white border-red-400'
+            }`}>
+              {toast.type === 'success' ? (
+                <CheckCircle className="w-6 h-6" />
+              ) : (
+                <AlertCircle className="w-6 h-6" />
+              )}
+              <span className="font-bold">{toast.message}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-
   );
 }
-

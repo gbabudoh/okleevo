@@ -39,76 +39,7 @@ const statusConfig = {
 };
 
 export default function ESignaturePage() {
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      id: '1',
-      name: 'Service Agreement Contract',
-      type: 'Contract',
-      status: 'signed',
-      createdDate: new Date('2024-12-01'),
-      signedDate: new Date('2024-12-02'),
-      sender: 'John Doe',
-      recipients: [
-        { name: 'Alice Johnson', email: 'alice@company.com', status: 'signed', signedDate: new Date('2024-12-02') },
-        { name: 'Bob Smith', email: 'bob@company.com', status: 'signed', signedDate: new Date('2024-12-02') }
-      ],
-      description: 'Annual service agreement for software development services',
-      pages: 5
-    },
-    {
-      id: '2',
-      name: 'Non-Disclosure Agreement',
-      type: 'NDA',
-      status: 'pending',
-      createdDate: new Date('2024-12-03'),
-      expiryDate: new Date('2024-12-10'),
-      sender: 'John Doe',
-      recipients: [
-        { name: 'Carol Martinez', email: 'carol@partner.com', status: 'pending' },
-        { name: 'David Lee', email: 'david@partner.com', status: 'pending' }
-      ],
-      description: 'Confidentiality agreement for project collaboration',
-      pages: 3
-    },
-    {
-      id: '3',
-      name: 'Employment Contract - Emma Wilson',
-      type: 'Employment',
-      status: 'signed',
-      createdDate: new Date('2024-11-28'),
-      signedDate: new Date('2024-11-30'),
-      sender: 'HR Department',
-      recipients: [
-        { name: 'Emma Wilson', email: 'emma@company.com', status: 'signed', signedDate: new Date('2024-11-30') }
-      ],
-      description: 'Full-time employment contract for Sales Representative position',
-      pages: 8
-    },
-    {
-      id: '4',
-      name: 'Partnership Agreement Draft',
-      type: 'Partnership',
-      status: 'draft',
-      createdDate: new Date('2024-12-04'),
-      sender: 'John Doe',
-      recipients: [],
-      description: 'Strategic partnership agreement - pending final review',
-      pages: 12
-    },
-    {
-      id: '5',
-      name: 'Vendor Agreement',
-      type: 'Contract',
-      status: 'declined',
-      createdDate: new Date('2024-11-25'),
-      sender: 'Procurement Team',
-      recipients: [
-        { name: 'Tech Supplies Inc.', email: 'contracts@techsupplies.com', status: 'declined' }
-      ],
-      description: 'Vendor services agreement - declined by vendor',
-      pages: 6
-    }
-  ]);
+  const [documents, setDocuments] = useState<Document[]>([]);
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, 
@@ -13,7 +13,6 @@ import {
   X, Sparkles, Brain, CheckSquare, LucideIcon,
   Edit3, Trash2, ExternalLink
 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
 
 interface KPI {
   id: string;
@@ -24,13 +23,20 @@ interface KPI {
   target?: string | number;
   progress?: number;
   category: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  iconName?: string;
   color: string;
   gradient: string;
   unit?: string;
   description?: string;
   trend?: number[];
 }
+
+const iconMap: Record<string, LucideIcon> = {
+  DollarSign, Percent, CreditCard, Activity, 
+  ShoppingCart, ShoppingBag, MousePointer, TrendingUp,
+  Target, Eye, Users, UserCheck, Star, AlertCircle
+};
 
 interface MetricCategory {
   id: string;
@@ -41,276 +47,11 @@ interface MetricCategory {
   dest?: string;
 }
 
-const metricCategories: MetricCategory[] = [
-  { id: 'all', name: 'All Metrics', icon: Grid, color: 'gray', count: 24 },
-  { id: 'financial', name: 'Financial', icon: DollarSign, color: 'green', count: 8, dest: '/dashboard/accounting' },
-  { id: 'sales', name: 'Sales', icon: ShoppingCart, color: 'blue', count: 6, dest: '/dashboard/crm' },
-  { id: 'marketing', name: 'Marketing', icon: Target, color: 'purple', count: 5, dest: '/dashboard/campaigns' },
-  { id: 'customer', name: 'Customer', icon: Users, color: 'orange', count: 5, dest: '/dashboard/helpdesk' },
-];
-
 export default function KPIDashboardPage() {
   const router = useRouter();
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'info'} | null>(null);
-
-  const showNotification = (message: string, type: 'success' | 'info' = 'success') => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
-
-  const [kpis, setKpis] = useState<KPI[]>([
-    {
-      id: '1',
-      name: 'Total Revenue',
-      value: '$124,580',
-      change: 12.5,
-      changeType: 'increase',
-      target: '$150,000',
-      progress: 83,
-      category: 'financial',
-      icon: DollarSign,
-      color: 'green',
-      gradient: 'from-green-500 to-emerald-500',
-      unit: 'USD',
-      description: 'Total revenue generated this month',
-      trend: [45000, 52000, 48000, 65000, 58000, 72000, 68000, 80000, 75000, 85000, 82000, 90000]
-    },
-    {
-      id: '2',
-      name: 'Net Profit Margin',
-      value: '28.4%',
-      change: 3.2,
-      changeType: 'increase',
-      target: '30%',
-      progress: 94.6,
-      category: 'financial',
-      icon: Percent,
-      color: 'emerald',
-      gradient: 'from-emerald-500 to-teal-500',
-      unit: '%',
-      description: 'Profit as percentage of revenue',
-      trend: [22, 24, 23, 26, 25, 27, 26, 28, 27, 29, 28, 30]
-    },
-    {
-      id: '3',
-      name: 'Operating Expenses',
-      value: '$45,230',
-      change: -5.8,
-      changeType: 'decrease',
-      target: '$40,000',
-      progress: 88,
-      category: 'financial',
-      icon: CreditCard,
-      color: 'red',
-      gradient: 'from-red-500 to-rose-500',
-      unit: 'USD',
-      description: 'Monthly operational costs',
-      trend: [50000, 48000, 49000, 47000, 46000, 45000, 44000, 46000, 45000, 44000, 45230, 43000]
-    },
-    {
-      id: '4',
-      name: 'Cash Flow',
-      value: '$89,350',
-      change: 18.3,
-      changeType: 'increase',
-      category: 'financial',
-      icon: Activity,
-      color: 'cyan',
-      gradient: 'from-cyan-500 to-blue-500',
-      unit: 'USD',
-      description: 'Net cash flow this period',
-      trend: [60000, 65000, 62000, 70000, 68000, 75000, 72000, 80000, 78000, 85000, 83000, 89350]
-    },
-    {
-      id: '5',
-      name: 'Total Sales',
-      value: '1,847',
-      change: 15.7,
-      changeType: 'increase',
-      target: '2,000',
-      progress: 92.3,
-      category: 'sales',
-      icon: ShoppingCart,
-      color: 'blue',
-      gradient: 'from-blue-500 to-indigo-500',
-      unit: 'orders',
-      description: 'Number of completed sales',
-      trend: [1200, 1300, 1250, 1400, 1350, 1500, 1450, 1600, 1550, 1700, 1650, 1847]
-    },
-    {
-      id: '6',
-      name: 'Average Order Value',
-      value: '$67.45',
-      change: 8.2,
-      changeType: 'increase',
-      target: '$75',
-      progress: 89.9,
-      category: 'sales',
-      icon: ShoppingBag,
-      color: 'indigo',
-      gradient: 'from-indigo-500 to-purple-500',
-      unit: 'USD',
-      description: 'Average value per order',
-      trend: [55, 58, 57, 60, 59, 62, 61, 64, 63, 66, 65, 67.45]
-    },
-    {
-      id: '7',
-      name: 'Conversion Rate',
-      value: '4.8%',
-      change: 0.5,
-      changeType: 'increase',
-      target: '5.5%',
-      progress: 87.2,
-      category: 'sales',
-      icon: MousePointer,
-      color: 'violet',
-      gradient: 'from-violet-500 to-purple-500',
-      unit: '%',
-      description: 'Visitor to customer conversion',
-      trend: [3.5, 3.8, 3.7, 4.0, 3.9, 4.2, 4.1, 4.4, 4.3, 4.6, 4.5, 4.8]
-    },
-    {
-      id: '8',
-      name: 'Sales Growth Rate',
-      value: '23.4%',
-      change: 3.1,
-      changeType: 'increase',
-      category: 'sales',
-      icon: TrendingUp,
-      color: 'sky',
-      gradient: 'from-sky-500 to-blue-500',
-      unit: '%',
-      description: 'Month-over-month growth',
-      trend: [15, 16, 15.5, 18, 17, 19, 18.5, 21, 20, 22, 21.5, 23.4]
-    },
-    {
-      id: '9',
-      name: 'Website Traffic',
-      value: '45,892',
-      change: 22.8,
-      changeType: 'increase',
-      target: '50,000',
-      progress: 91.7,
-      category: 'marketing',
-      icon: Activity,
-      color: 'purple',
-      gradient: 'from-purple-500 to-pink-500',
-      unit: 'visits',
-      description: 'Total website visitors',
-      trend: [30000, 32000, 31000, 35000, 34000, 38000, 37000, 41000, 40000, 44000, 43000, 45892]
-    },
-    {
-      id: '10',
-      name: 'Lead Generation',
-      value: '892',
-      change: 18.5,
-      changeType: 'increase',
-      target: '1,000',
-      progress: 89.2,
-      category: 'marketing',
-      icon: Target,
-      color: 'fuchsia',
-      gradient: 'from-fuchsia-500 to-pink-500',
-      unit: 'leads',
-      description: 'New leads captured',
-      trend: [600, 650, 620, 700, 680, 750, 730, 800, 780, 850, 830, 892]
-    },
-    {
-      id: '11',
-      name: 'Email Open Rate',
-      value: '28.7%',
-      change: 4.3,
-      changeType: 'increase',
-      target: '30%',
-      progress: 95.6,
-      category: 'marketing',
-      icon: Eye,
-      color: 'rose',
-      gradient: 'from-rose-500 to-red-500',
-      unit: '%',
-      description: 'Email campaign engagement',
-      trend: [22, 23, 22.5, 24, 23.5, 25, 24.5, 26, 25.5, 27, 26.5, 28.7]
-    },
-    {
-      id: '12',
-      name: 'Social Media Reach',
-      value: '124.5K',
-      change: 31.2,
-      changeType: 'increase',
-      category: 'marketing',
-      icon: Users,
-      color: 'amber',
-      gradient: 'from-amber-500 to-orange-500',
-      unit: 'impressions',
-      description: 'Total social media impressions',
-      trend: [80000, 85000, 82000, 90000, 88000, 95000, 93000, 100000, 98000, 110000, 115000, 124500]
-    },
-    {
-      id: '13',
-      name: 'Total Customers',
-      value: '3,456',
-      change: 12.3,
-      changeType: 'increase',
-      target: '4,000',
-      progress: 86.4,
-      category: 'customer',
-      icon: Users,
-      color: 'orange',
-      gradient: 'from-orange-500 to-red-500',
-      unit: 'customers',
-      description: 'Active customer base',
-      trend: [2500, 2600, 2550, 2700, 2650, 2800, 2750, 2900, 2850, 3000, 3200, 3456]
-    },
-    {
-      id: '14',
-      name: 'Customer Retention',
-      value: '94.2%',
-      change: 2.1,
-      changeType: 'increase',
-      target: '95%',
-      progress: 99.1,
-      category: 'customer',
-      icon: UserCheck,
-      color: 'teal',
-      gradient: 'from-teal-500 to-cyan-500',
-      unit: '%',
-      description: 'Customer retention rate',
-      trend: [88, 89, 88.5, 90, 89.5, 91, 90.5, 92, 91.5, 93, 92.5, 94.2]
-    },
-    {
-      id: '15',
-      name: 'Customer Satisfaction',
-      value: '4.7/5',
-      change: 0.3,
-      changeType: 'increase',
-      target: '4.8/5',
-      progress: 97.9,
-      category: 'customer',
-      icon: Star,
-      color: 'yellow',
-      gradient: 'from-yellow-500 to-amber-500',
-      unit: 'rating',
-      description: 'Average customer rating',
-      trend: [4.2, 4.3, 4.25, 4.35, 4.3, 4.4, 4.35, 4.5, 4.45, 4.6, 4.55, 4.7]
-    },
-    {
-      id: '16',
-      name: 'Churn Rate',
-      value: '2.3%',
-      change: -0.8,
-      changeType: 'decrease',
-      target: '2%',
-      progress: 87,
-      category: 'customer',
-      icon: AlertCircle,
-      color: 'red',
-      gradient: 'from-red-500 to-pink-500',
-      unit: '%',
-      description: 'Customer churn rate',
-      trend: [4.5, 4.2, 4.3, 4.0, 3.8, 3.5, 3.3, 3.0, 2.8, 2.5, 2.4, 2.3]
-    }
-  ]);
-
+  const [kpis, setKpis] = useState<KPI[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [timeRange, setTimeRange] = useState('month');
@@ -322,7 +63,56 @@ export default function KPIDashboardPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingKPI, setDeletingKPI] = useState<KPI | null>(null);
   const [activeMenuKPId, setActiveMenuKPId] = useState<string | null>(null);
+  const [trendLabels, setTrendLabels] = useState<string[]>([]);
+  const [activeTrendTab, setActiveTrendTab] = useState<'Revenue' | 'Sales' | 'Customers'>('Revenue');
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const getTrendData = useCallback(() => {
+    const kpi = kpis.find(k => {
+      if (activeTrendTab === 'Revenue') return k.id === 'rev-1';
+      if (activeTrendTab === 'Sales') return k.id === 'sales-1';
+      if (activeTrendTab === 'Customers') return k.id === 'cust-1';
+      return false;
+    });
+    return kpi?.trend || [];
+  }, [kpis, activeTrendTab]);
+
+  const trendData = getTrendData();
+
+  const fetchKPIs = useCallback(async () => {
+    try {
+      const res = await fetch('/api/kpis');
+      if (res.ok) {
+        const { kpis: rawKpis, trendLabels: labels }: { kpis: (Omit<KPI, 'icon'> & { iconName: string })[], trendLabels: string[] } = await res.json();
+        setKpis(rawKpis.map((k) => ({
+          ...k,
+          icon: iconMap[k.iconName] || Activity
+        })));
+        setTrendLabels(labels);
+      }
+    } catch (error) {
+      console.error('Error fetching KPIs:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchKPIs();
+  }, [fetchKPIs]);
+
+  const metricCategories: MetricCategory[] = [
+    { id: 'all', name: 'All Metrics', icon: Grid, color: 'gray', count: kpis.length },
+    { id: 'financial', name: 'Financial', icon: DollarSign, color: 'green', count: kpis.filter(k => k.category === 'financial').length, dest: '/dashboard/accounting' },
+    { id: 'sales', name: 'Sales', icon: ShoppingCart, color: 'blue', count: kpis.filter(k => k.category === 'sales').length, dest: '/dashboard/crm' },
+    { id: 'marketing', name: 'Marketing', icon: Target, color: 'purple', count: kpis.filter(k => k.category === 'marketing').length, dest: '/dashboard/campaigns' },
+    { id: 'customer', name: 'Customer', icon: Users, color: 'orange', count: kpis.filter(k => k.category === 'customer').length, dest: '/dashboard/helpdesk' },
+  ];
+
+  const showNotification = (message: string, type: 'success' | 'info' = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const openEditModal = (kpi: KPI) => {
     setEditingKPI({ ...kpi });
@@ -353,44 +143,7 @@ export default function KPIDashboardPage() {
   const syncKPIData = (kpi: KPI) => {
     setActiveMenuKPId(null);
     showNotification(`Synchronizing ${kpi.name}...`, 'info');
-    
-    // Simulate async data fetch
-    setTimeout(() => {
-      setKpis(prevKpis => prevKpis.map(k => {
-        if (k.id !== kpi.id) return k;
-        
-        // Simulate slight data changes (±5%)
-        const variation = 0.95 + Math.random() * 0.1;
-        const currentValue = typeof k.value === 'string' 
-          ? parseFloat(k.value.replace(/[^0-9.-]/g, '')) 
-          : k.value;
-        const newValue = Math.round(currentValue * variation * 100) / 100;
-        
-        // Format value based on unit
-        let formattedValue: string | number = newValue;
-        if (k.unit === 'USD' || String(k.value).startsWith('$')) {
-          formattedValue = `$${newValue.toLocaleString()}`;
-        } else if (k.unit === '%' || String(k.value).includes('%')) {
-          formattedValue = `${newValue.toFixed(1)}%`;
-        } else if (String(k.value).includes('/')) {
-          formattedValue = k.value; // Keep rating format unchanged
-        } else {
-          formattedValue = newValue.toLocaleString();
-        }
-        
-        // Randomize change slightly
-        const newChange = Math.round((k.change + (Math.random() - 0.5) * 2) * 10) / 10;
-        
-        return {
-          ...k,
-          value: formattedValue,
-          change: newChange,
-          changeType: newChange > 0 ? 'increase' : newChange < 0 ? 'decrease' : 'neutral'
-        } as KPI;
-      }));
-      
-      showNotification(`${kpi.name} synced successfully`, 'success');
-    }, 1500);
+    fetchKPIs();
   };
 
   const saveKPIEdit = () => {
@@ -437,7 +190,9 @@ export default function KPIDashboardPage() {
   };
 
   const calculateOverallPerformance = () => {
-    const avgProgress = kpis.filter(k => k.progress).reduce((acc, k) => acc + (k.progress || 0), 0) / kpis.filter(k => k.progress).length;
+    const progressKPIs = kpis.filter(k => k.progress !== undefined);
+    if (progressKPIs.length === 0) return "0.0";
+    const avgProgress = progressKPIs.reduce((acc, k) => acc + (k.progress || 0), 0) / progressKPIs.length;
     return avgProgress.toFixed(1);
   };
 
@@ -455,7 +210,7 @@ export default function KPIDashboardPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white/40 backdrop-blur-xl p-8 rounded-[2.5rem] border-2 border-white shadow-2xl shadow-blue-500/5">
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+              <div className="absolute -inset-1 bg-linear-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
               <div className="relative p-5 bg-white rounded-2xl shadow-xl flex items-center justify-center">
                 <BarChart3 className="w-10 h-10 text-blue-600" />
               </div>
@@ -471,7 +226,7 @@ export default function KPIDashboardPage() {
                 </span>
               </div>
               <h1 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">
-                KPI <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Dashboard</span>
+                KPI <span className="bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-purple-600">Dashboard</span>
               </h1>
               <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Strategic Asset Performance Metrics</p>
             </div>
@@ -525,7 +280,7 @@ export default function KPIDashboardPage() {
         </div>
 
       {/* Overall Performance Summary */}
-      <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 rounded-[2.5rem] p-10 text-white relative overflow-hidden group shadow-2xl shadow-blue-500/20 cursor-help">
+      <div className="bg-linear-to-br from-blue-600 via-purple-600 to-indigo-600 rounded-[2.5rem] p-10 text-white relative overflow-hidden group shadow-2xl shadow-blue-500/20 cursor-help">
         <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:rotate-12 transition-transform duration-700">
           <Zap className="w-48 h-48" />
         </div>
@@ -559,7 +314,7 @@ export default function KPIDashboardPage() {
               Precision Goals
             </div>
             <div>
-              <p className="text-5xl font-black tracking-tighter mb-1">{kpis.filter(k => k.progress && k.progress >= 90).length}</p>
+              <p className="text-5xl font-black tracking-tighter mb-1">{kpis.filter(k => k.progress !== undefined && k.progress >= 90).length}</p>
               <p className="text-xs font-bold opacity-60 uppercase tracking-widest">Targets Secured / {kpis.filter(k => k.target).length} Total</p>
             </div>
           </div>
@@ -621,11 +376,27 @@ export default function KPIDashboardPage() {
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && kpis.length === 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-pulse">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-white/40 backdrop-blur-md rounded-[2rem] border-2 border-white p-8 h-[400px]">
+              <div className="w-16 h-16 bg-gray-200 rounded-2xl mb-8" />
+              <div className="h-4 bg-gray-200 rounded-full w-1/3 mb-4" />
+              <div className="h-8 bg-gray-200 rounded-full w-2/3 mb-8" />
+              <div className="h-12 bg-gray-200 rounded-full w-full mb-8" />
+              <div className="h-24 bg-gray-100 rounded-2xl w-full" />
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* KPI Grid/List */}
-      {viewMode === 'grid' ? (
+      {!loading && (
+        viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredKPIs.map((kpi, index) => {
-            const Icon = kpi.icon;
+            const Icon = kpi.icon || Activity;
             const ChangeIcon = getChangeIcon(kpi.changeType);
             return (
               <div
@@ -633,12 +404,12 @@ export default function KPIDashboardPage() {
                 className={`group relative bg-white/60 backdrop-blur-md rounded-[2rem] border-2 p-6 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 fill-mode-both ${activeMenuKPId === kpi.id ? 'z-[60] border-blue-200' : 'z-10 bg-white/60 border-white'}`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${kpi.gradient} opacity-[0.03] rounded-bl-[4rem] group-hover:scale-110 transition-transform duration-700`} />
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-linear-to-br ${kpi.gradient} opacity-[0.03] rounded-bl-[4rem] group-hover:scale-110 transition-transform duration-700`} />
                 
                 <div className="relative z-10">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-6">
-                    <div className={`p-4 rounded-2xl bg-gradient-to-br ${kpi.gradient} shadow-lg shadow-blue-500/10 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
+                    <div className={`p-4 rounded-2xl bg-linear-to-br ${kpi.gradient} shadow-lg shadow-blue-500/10 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
                       <Icon className="w-6 h-6 text-white" />
                     </div>
                     <div className="relative">
@@ -722,7 +493,7 @@ export default function KPIDashboardPage() {
                       </div>
                       <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-50 shadow-inner">
                         <div
-                          className={`h-full bg-gradient-to-r ${kpi.gradient} rounded-full transition-all duration-1000 ease-out shadow-lg`}
+                          className={`h-full bg-linear-to-r ${kpi.gradient} rounded-full transition-all duration-1000 ease-out shadow-lg`}
                           style={{ width: `${Math.min(kpi.progress, 100)}%` }}
                         />
                       </div>
@@ -739,7 +510,7 @@ export default function KPIDashboardPage() {
                           return (
                             <div
                               key={idx}
-                              className={`flex-1 bg-gradient-to-t ${kpi.gradient} rounded-t-md opacity-20 group-hover:opacity-60 transition-all duration-500 hover:!opacity-100 cursor-help`}
+                              className={`flex-1 bg-linear-to-t ${kpi.gradient} rounded-t-md opacity-20 group-hover:opacity-60 transition-all duration-500 hover:!opacity-100 cursor-help`}
                               style={{ height: `${height}%` }}
                               title={`${value}`}
                             />
@@ -756,7 +527,7 @@ export default function KPIDashboardPage() {
       ) : (
         <div className="space-y-4">
           {filteredKPIs.map((kpi, index) => {
-            const Icon = kpi.icon;
+            const Icon = kpi.icon || Activity;
             const ChangeIcon = getChangeIcon(kpi.changeType);
             return (
               <div
@@ -766,7 +537,7 @@ export default function KPIDashboardPage() {
               >
                 <div className="flex items-center gap-6">
                   {/* Icon Identity */}
-                  <div className={`p-4 rounded-2xl bg-gradient-to-br ${kpi.gradient} shadow-lg shadow-blue-500/10 group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
+                  <div className={`p-4 rounded-2xl bg-linear-to-br ${kpi.gradient} shadow-lg shadow-blue-500/10 group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
 
@@ -801,7 +572,7 @@ export default function KPIDashboardPage() {
                       </div>
                       <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden border border-gray-50 shadow-inner">
                         <div
-                          className={`h-full bg-gradient-to-r ${kpi.gradient} rounded-full`}
+                          className={`h-full bg-linear-to-r ${kpi.gradient} rounded-full`}
                           style={{ width: `${Math.min(kpi.progress, 100)}%` }}
                         />
                       </div>
@@ -818,7 +589,7 @@ export default function KPIDashboardPage() {
                           return (
                             <div
                               key={idx}
-                              className={`flex-1 bg-gradient-to-t ${kpi.gradient} rounded-t-sm opacity-20 group-hover:opacity-60 transition-all duration-500`}
+                              className={`flex-1 bg-linear-to-t ${kpi.gradient} rounded-t-sm opacity-20 group-hover:opacity-60 transition-all duration-500`}
                               style={{ height: `${height}%` }}
                             />
                           );
@@ -881,7 +652,7 @@ export default function KPIDashboardPage() {
             );
           })}
         </div>
-      )}
+      ))}
 
       {/* Performance Insights Matrix */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -906,7 +677,7 @@ export default function KPIDashboardPage() {
               .sort((a, b) => b.change - a.change)
               .slice(0, 5)
               .map((kpi, idx) => {
-                const Icon = kpi.icon;
+                const Icon = kpi.icon || Activity;
                 return (
                   <div 
                     key={kpi.id} 
@@ -916,7 +687,7 @@ export default function KPIDashboardPage() {
                     <div className="flex items-center justify-center w-10 h-10 bg-white shadow-sm border border-emerald-100 rounded-xl font-black text-emerald-600 text-xs group-hover/item:scale-110 transition-transform">
                       {idx + 1}
                     </div>
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${kpi.gradient} shadow-lg shadow-blue-500/10`}>
+                    <div className={`p-3 rounded-xl bg-linear-to-br ${kpi.gradient} shadow-lg shadow-blue-500/10`}>
                       <Icon className="w-4 h-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -956,14 +727,14 @@ export default function KPIDashboardPage() {
               .sort((a, b) => (a.progress || 0) - (b.progress || 0))
               .slice(0, 5)
               .map((kpi) => {
-                const Icon = kpi.icon;
+                const Icon = kpi.icon || Activity;
                 return (
                   <div 
                     key={kpi.id} 
                     className="flex items-center gap-4 p-4 bg-rose-50/30 rounded-2xl border border-rose-100/50 group/item hover:bg-rose-50 hover:scale-[1.02] transition-all duration-300 cursor-pointer"
                     onClick={() => showNotification(`Strategic Alert: ${kpi.name} requires attention`, 'info')}
                   >
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${kpi.gradient} shadow-lg shadow-blue-500/10`}>
+                    <div className={`p-3 rounded-xl bg-linear-to-br ${kpi.gradient} shadow-lg shadow-blue-500/10`}>
                       <Icon className="w-4 h-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -993,13 +764,14 @@ export default function KPIDashboardPage() {
             </h3>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Cross-sectional performance trends</p>
           </div>
-          <div className="flex items-center gap-3 p-2 bg-gray-50/50 rounded-2xl border border-gray-100">
+...
+        <div className="flex items-center gap-3 p-2 bg-gray-50/50 rounded-2xl border border-gray-100">
             {['Revenue', 'Sales', 'Customers'].map((tab) => (
               <button
                 key={tab}
-                onClick={() => showNotification(`Viewing ${tab} Analytics`, 'info')}
+                onClick={() => setActiveTrendTab(tab as 'Revenue' | 'Sales' | 'Customers')}
                 className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 cursor-pointer ${
-                  tab === 'Revenue' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                  activeTrendTab === tab ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
                 {tab}
@@ -1009,24 +781,24 @@ export default function KPIDashboardPage() {
         </div>
         
         <div className="h-72 flex items-end justify-between gap-3 px-4">
-          {kpis[0].trend?.map((value, idx) => {
-            const maxValue = Math.max(...(kpis[0].trend || []));
-            const height = (value / maxValue) * 100;
+          {trendData.length > 0 && trendData.map((value, idx) => {
+            const maxValue = Math.max(...(trendData || [1]));
+            const height = (value / (maxValue || 1)) * 100;
             return (
               <div key={idx} className="flex-1 flex flex-col items-center gap-4 group/bar">
                 <div className="w-full relative">
                   <div
-                    className="w-full bg-gradient-to-t from-blue-600 to-purple-600 rounded-t-xl transition-all duration-500 group-hover/bar:from-blue-700 group-hover/bar:to-purple-700 cursor-pointer relative shadow-lg shadow-blue-500/10 group-hover/bar:-translate-y-1"
+                    className={`w-full bg-linear-to-t ${activeTrendTab === 'Revenue' ? 'from-blue-600 to-purple-600' : activeTrendTab === 'Sales' ? 'from-emerald-600 to-teal-600' : 'from-orange-600 to-red-600'} rounded-t-xl transition-all duration-500 group-hover/bar:brightness-110 cursor-pointer relative shadow-lg group-hover/bar:-translate-y-1`}
                     style={{ height: `${height * 2.8}px` }}
                   >
                     <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-0 group-hover/bar:opacity-100 transition-opacity rounded-t-xl" />
                   </div>
                   <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-[10px] font-black px-3 py-1.5 rounded-lg opacity-0 group-hover/bar:opacity-100 transition-all duration-300 pointer-events-none shadow-xl scale-90 group-hover/bar:scale-100">
-                    ${(value / 1000).toFixed(1)}K
+                    {activeTrendTab === 'Revenue' ? `$${(value / 1000).toFixed(1)}K` : value.toLocaleString()}
                   </div>
                 </div>
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest transition-colors group-hover/bar:text-blue-600">
-                  {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][idx]}
+                  {trendLabels[idx]}
                 </span>
               </div>
             );
@@ -1039,7 +811,9 @@ export default function KPIDashboardPage() {
         {metricCategories.filter(c => c.id !== 'all').map((category) => {
           const Icon = category.icon;
           const categoryKPIs = kpis.filter(k => k.category === category.id);
-          const avgChange = categoryKPIs.reduce((acc, k) => acc + k.change, 0) / categoryKPIs.length;
+          const avgChange = categoryKPIs.length > 0 
+            ? categoryKPIs.reduce((acc, k) => acc + k.change, 0) / categoryKPIs.length 
+            : 0;
           const isPositive = avgChange > 0;
           
           return (
@@ -1049,7 +823,7 @@ export default function KPIDashboardPage() {
               onClick={() => category.dest ? router.push(category.dest) : setSelectedCategory(category.id)}
             >
               <div className="flex items-center justify-between mb-5">
-                <div className={`p-3 rounded-2xl bg-gradient-to-br transition-transform duration-500 group-hover/cat:scale-110 shadow-lg`}
+                <div className={`p-3 rounded-2xl bg-linear-to-br transition-transform duration-500 group-hover/cat:scale-110 shadow-lg`}
                      style={{
                        background: category.color === 'green' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' :
                                   category.color === 'blue' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' :
@@ -1097,7 +871,7 @@ export default function KPIDashboardPage() {
 
       {/* Add KPI Modal */}
       {showAddKPI && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 md:pl-72">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowAddKPI(false)} />
           
           <div className="relative w-full max-w-5xl bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-2xl border-2 border-white overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-500 max-h-[90vh]">
@@ -1235,15 +1009,15 @@ export default function KPIDashboardPage() {
 
       {/* Edit KPI Modal */}
       {showEditModal && editingKPI && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 md:pl-72">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => { setShowEditModal(false); setEditingKPI(null); }} />
           
           <div className="relative w-full max-w-2xl bg-white/95 backdrop-blur-2xl rounded-[3rem] shadow-2xl border-2 border-white overflow-hidden animate-in zoom-in-95 duration-500">
             <div className="p-10">
               <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-4">
-                  {(() => { const Icon = editingKPI.icon; return (
-                  <div className={`p-4 rounded-2xl bg-gradient-to-br ${editingKPI.gradient} shadow-lg`}>
+                  {(() => { const Icon = editingKPI.icon || Activity; return (
+                  <div className={`p-4 rounded-2xl bg-linear-to-br ${editingKPI.gradient} shadow-lg`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
                   ); })()}
@@ -1334,15 +1108,15 @@ export default function KPIDashboardPage() {
 
       {/* Analysis Modal */}
       {showAnalysisModal && analysisKPI && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 md:pl-72">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => { setShowAnalysisModal(false); setAnalysisKPI(null); }} />
           
           <div className="relative w-full max-w-3xl bg-white/95 backdrop-blur-2xl rounded-[2rem] shadow-2xl border-2 border-white overflow-hidden animate-in zoom-in-95 duration-500 max-h-[85vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  {(() => { const Icon = analysisKPI.icon; return (
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${analysisKPI.gradient} shadow-lg`}>
+                  {(() => { const Icon = analysisKPI.icon || Activity; return (
+                  <div className={`p-3 rounded-xl bg-linear-to-br ${analysisKPI.gradient} shadow-lg`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                   ); })()}
@@ -1390,17 +1164,16 @@ export default function KPIDashboardPage() {
                     <div className="flex items-end justify-between h-24 gap-1">
                       {analysisKPI.trend.map((value, idx) => {
                         const maxValue = Math.max(...analysisKPI.trend!);
-                        const height = (value / maxValue) * 100;
-                        const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+                        const height = (value / (maxValue || 1)) * 100;
                         return (
                           <div key={idx} className="flex-1 flex flex-col items-center gap-1 group/bar">
                             <div className="w-full relative">
                               <div
-                                className={`w-full bg-gradient-to-t ${analysisKPI.gradient} rounded-t transition-all duration-300 group-hover/bar:opacity-100 opacity-60 cursor-pointer`}
+                                className={`w-full bg-linear-to-t ${analysisKPI.gradient} rounded-t transition-all duration-300 group-hover/bar:opacity-100 opacity-60 cursor-pointer`}
                                 style={{ height: `${height * 0.9}px` }}
                               />
                             </div>
-                            <span className="text-[8px] font-black text-gray-400">{months[idx]}</span>
+                            <span className="text-[8px] font-black text-gray-400">{trendLabels[idx]?.charAt(0)}</span>
                           </div>
                         );
                       })}

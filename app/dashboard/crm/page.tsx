@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Plus, Search, Mail, Phone, Building2, MapPin, DollarSign, 
+  Plus, Search, Mail, Phone, Building2, MapPin, PoundSterling, 
   Users, TrendingUp, Star, Edit, Trash2, Eye, X, Tag, AlertCircle, 
-  MoreHorizontal, Clock, ChevronDown, Sparkles, LayoutGrid, List
+  MoreHorizontal, Clock, ChevronDown, Sparkles, LayoutGrid, List, Loader2
 } from 'lucide-react';
 import StatusModal from '@/components/StatusModal';
 
@@ -15,7 +15,7 @@ interface Client {
   phone?: string;
   company: string;
   clientType: 'business' | 'individual';
-  status: 'active' | 'lead' | 'inactive';
+  status: 'active' | 'lead' | 'inactive' | 'customer';
   pipelineStage: 'new' | 'contacted' | 'proposal' | 'negotiation' | 'closed-won' | 'closed-lost';
   revenue: number;
   location?: string;
@@ -24,15 +24,25 @@ interface Client {
   notes?: string;
 }
 
+interface PrismaContact {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  clientType: string;
+  status: string;
+  pipelineStage: string;
+  revenue: number;
+  address?: string;
+  lastContact?: string;
+  tags: string[];
+  notes?: string;
+}
+
 export default function CRMPage() {
-  const [clients, setClients] = useState<Client[]>([
-    { id: '1', name: 'John Smith', email: 'john@acme.com', phone: '+44 20 1234 5678', company: 'Acme Corp', clientType: 'business', status: 'active', pipelineStage: 'negotiation', revenue: 25000, location: 'London, UK', lastContact: '2024-12-01', tags: ['Enterprise', 'Priority'] },
-    { id: '2', name: 'Sarah Johnson', email: 'sarah@tech.com', phone: '+44 161 234 5678', company: 'Tech Solutions', clientType: 'business', status: 'active', pipelineStage: 'contacted', revenue: 18000, location: 'Manchester, UK', lastContact: '2024-12-03', tags: ['SMB'] },
-    { id: '3', name: 'Mike Brown', email: 'mike@design.com', phone: '+44 131 234 5678', company: 'Design Studio', clientType: 'business', status: 'lead', pipelineStage: 'new', revenue: 0, location: 'Edinburgh, UK', lastContact: '2024-12-05', tags: ['New Lead'] },
-    { id: '4', name: 'Emma Wilson', email: 'emma@startup.com', phone: '+44 117 234 5678', company: 'StartupXYZ', clientType: 'business', status: 'active', pipelineStage: 'proposal', revenue: 12000, location: 'Bristol, UK', lastContact: '2024-12-02', tags: ['Startup'] },
-    { id: '5', name: 'David Thompson', email: 'david.t@email.com', phone: '+44 20 9876 5432', company: 'Self-Employed', clientType: 'individual', status: 'active', pipelineStage: 'closed-won', revenue: 8500, location: 'London, UK', lastContact: '2024-12-04', tags: ['Freelancer'] },
-    { id: '6', name: 'Lisa Anderson', email: 'lisa.a@email.com', phone: '+44 161 8765 4321', company: 'Personal', clientType: 'individual', status: 'lead', pipelineStage: 'closed-lost', revenue: 0, location: 'Manchester, UK', lastContact: '2024-12-05', tags: ['Consultant'] },
-  ]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -63,17 +73,58 @@ export default function CRMPage() {
     message: ''
   });
 
+  const [newClient, setNewClient] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    clientType: 'business' as 'business' | 'individual',
+    status: 'lead' as 'active' | 'lead' | 'inactive',
+    pipelineStage: 'new' as 'new' | 'contacted' | 'proposal' | 'negotiation' | 'closed-won' | 'closed-lost',
+    location: '',
+    revenue: 0,
+    tags: [] as string[]
+  });
+
+  const fetchContacts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/crm');
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setClients(data.map((c: PrismaContact) => ({
+          ...c,
+          status: c.status.toLowerCase() as 'active' | 'lead' | 'inactive' | 'customer',
+          clientType: c.clientType as 'business' | 'individual',
+          pipelineStage: c.pipelineStage as 'new' | 'contacted' | 'proposal' | 'negotiation' | 'closed-won' | 'closed-lost',
+          location: c.address,
+          company: c.company || 'N/A',
+          lastContact: c.lastContact ? new Date(c.lastContact).toISOString().split('T')[0] : undefined
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
+
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'active': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
       case 'lead': return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'inactive': return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'customer': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
 
   const getStageColor = (stage: string) => {
-    switch (stage) {
+    switch (stage.toLowerCase()) {
       case 'new': return 'bg-blue-50 text-blue-600 border-blue-100';
       case 'contacted': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
       case 'proposal': return 'bg-purple-50 text-purple-600 border-purple-100';
@@ -81,6 +132,116 @@ export default function CRMPage() {
       case 'closed-won': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
       case 'closed-lost': return 'bg-red-50 text-red-600 border-red-100';
       default: return 'bg-gray-50 text-gray-600';
+    }
+  };
+
+  const handleAddClient = async () => {
+    try {
+      const response = await fetch('/api/crm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newClient,
+          address: newClient.location
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to add client');
+
+      await fetchContacts();
+      setShowAddModal(false);
+      setNewClient({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        clientType: 'business',
+        status: 'lead',
+        pipelineStage: 'new',
+        location: '',
+        revenue: 0,
+        tags: []
+      });
+
+      setStatusModal({
+        isOpen: true,
+        title: 'Client Added',
+        message: 'New client has been successfully added to the CRM.',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Error adding client:', error);
+      setStatusModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Failed to add client. Please try again.',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleEditClient = async () => {
+    if (!editingClient) return;
+    try {
+      const response = await fetch('/api/crm', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...editingClient,
+          address: editingClient.location
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update client');
+
+      await fetchContacts();
+      setShowEditModal(false);
+      setEditingClient(null);
+
+      setStatusModal({
+        isOpen: true,
+        title: 'Client Updated',
+        message: 'Client details have been successfully updated.',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Error updating client:', error);
+      setStatusModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Failed to update client. Please try again.',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleDeleteClient = async () => {
+    if (!deletingClient) return;
+    try {
+      const response = await fetch(`/api/crm?id=${deletingClient.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete client');
+
+      setClients(clients.filter(c => c.id !== deletingClient.id));
+      setShowDeleteModal(false);
+      setDeletingClient(null);
+
+      setStatusModal({
+        isOpen: true,
+        title: 'Client Deleted',
+        message: 'The client has been successfully deleted from the system.',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      setStatusModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Failed to delete client. Please try again.',
+        type: 'error'
+      });
     }
   };
 
@@ -197,7 +358,7 @@ export default function CRMPage() {
           <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-6 border border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group hover:border-amber-500/50">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg group-hover:scale-110 transition-transform duration-500">
-                <DollarSign className="w-6 h-6 text-white" />
+                <PoundSterling className="w-6 h-6 text-white" />
               </div>
               <div className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600">Revenue</div>
             </div>
@@ -256,7 +417,30 @@ export default function CRMPage() {
         </div>
 
         {/* Kanban / List View */}
-        {viewMode === 'grid' ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-32 gap-6 bg-white/40 backdrop-blur-xl rounded-3xl border border-white/50 shadow-xl">
+            <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
+            <div className="text-center space-y-2">
+              <p className="text-xl font-black text-gray-900 tracking-tight">Syncing Relationship Data</p>
+              <p className="text-gray-500 font-medium italic">Establishing secure connection to your client database...</p>
+            </div>
+          </div>
+        ) : filteredClients.length === 0 ? (
+          <div className="bg-white/70 backdrop-blur-xl rounded-3xl p-20 border border-white/50 shadow-lg text-center space-y-4">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Users className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-2xl font-black text-gray-900">No clients found</h3>
+            <p className="text-gray-500 max-w-md mx-auto">Start building your database by adding your first client or adjusting your search filters.</p>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all cursor-pointer inline-flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Add First Client
+            </button>
+          </div>
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredClients.map((client) => (
               <div 
@@ -583,17 +767,7 @@ export default function CRMPage() {
 
               <div className="flex gap-3 pt-4">
                 <button 
-                  onClick={() => {
-                    setClients(clients.map(c => c.id === editingClient.id ? editingClient : c));
-                    setShowEditModal(false);
-                    setEditingClient(null);
-                    setStatusModal({
-                      isOpen: true,
-                      title: 'Client Updated',
-                      message: 'Client details have been successfully updated.',
-                      type: 'success'
-                    });
-                  }}
+                  onClick={handleEditClient}
                   className="flex-1 px-6 py-4 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Edit className="w-5 h-5" />
@@ -616,8 +790,8 @@ export default function CRMPage() {
 
       {/* Email Compose Modal */}
       {showEmailModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl max-h-[85vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
             {/* Header */}
             <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -734,7 +908,7 @@ export default function CRMPage() {
                   value={emailData.message}
                   onChange={(e) => setEmailData({...emailData, message: e.target.value})}
                   placeholder="Type your message here..."
-                  rows={10}
+                  rows={5}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none font-normal"
                 />
                 <div className="flex items-center justify-between mt-2">
@@ -903,15 +1077,7 @@ export default function CRMPage() {
                 onClick={() => {
                   const input = document.getElementById('delete-confirmation') as HTMLInputElement;
                   if (input && input.value === 'DELETE') {
-                    setClients(clients.filter(c => c.id !== deletingClient.id));
-                    setShowDeleteModal(false);
-                    setDeletingClient(null);
-                    setStatusModal({
-                      isOpen: true,
-                      title: 'Client Deleted',
-                      message: 'The client has been successfully deleted from the system.',
-                      type: 'success'
-                    });
+                    handleDeleteClient();
                   } else {
                     setStatusModal({
                       isOpen: true,
@@ -955,6 +1121,8 @@ export default function CRMPage() {
                   <input
                     type="text"
                     placeholder="John Smith"
+                    value={newClient.name}
+                    onChange={(e) => setNewClient({...newClient, name: e.target.value})}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -963,6 +1131,8 @@ export default function CRMPage() {
                   <input
                     type="email"
                     placeholder="john@company.com"
+                    value={newClient.email}
+                    onChange={(e) => setNewClient({...newClient, email: e.target.value})}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -974,6 +1144,8 @@ export default function CRMPage() {
                   <input
                     type="tel"
                     placeholder="+44 20 1234 5678"
+                    value={newClient.phone}
+                    onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -982,6 +1154,8 @@ export default function CRMPage() {
                   <input
                     type="text"
                     placeholder="Acme Corp"
+                    value={newClient.company}
+                    onChange={(e) => setNewClient({...newClient, company: e.target.value})}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -990,14 +1164,22 @@ export default function CRMPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Client Type *</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all cursor-pointer">
+                  <select 
+                    value={newClient.clientType}
+                    onChange={(e) => setNewClient({...newClient, clientType: e.target.value as 'business' | 'individual'})}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all cursor-pointer"
+                  >
                     <option value="business">Business</option>
                     <option value="individual">Individual</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Status *</label>
-                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all cursor-pointer">
+                  <select 
+                    value={newClient.status}
+                    onChange={(e) => setNewClient({...newClient, status: e.target.value as 'active' | 'lead' | 'inactive'})}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all cursor-pointer"
+                  >
                     <option value="lead">Lead</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -1010,6 +1192,8 @@ export default function CRMPage() {
                 <input
                   type="text"
                   placeholder="London, UK"
+                  value={newClient.location}
+                  onChange={(e) => setNewClient({...newClient, location: e.target.value})}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                 />
               </div>
@@ -1019,21 +1203,15 @@ export default function CRMPage() {
                 <input
                   type="text"
                   placeholder="Enterprise, Priority, VIP"
+                  value={newClient.tags.join(', ')}
+                  onChange={(e) => setNewClient({...newClient, tags: e.target.value.split(',').map(t => t.trim())})}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                 />
               </div>
 
               <div className="flex gap-3 pt-4">
                 <button 
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setStatusModal({
-                      isOpen: true,
-                      title: 'Client Added',
-                      message: 'New client has been successfully added to the CRM.',
-                      type: 'success'
-                    });
-                  }}
+                  onClick={handleAddClient}
                   className="flex-1 px-6 py-4 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Plus className="w-5 h-5" />

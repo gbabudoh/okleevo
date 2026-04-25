@@ -106,85 +106,16 @@ const templates: Template[] = [
   }
 ];
 
-const categories = [
-  { id: 'all', name: 'All Templates', count: 6 },
-  { id: 'marketing', name: 'Marketing', count: 3 },
-  { id: 'events', name: 'Events', count: 1 },
-  { id: 'sales', name: 'Sales', count: 1 },
-  { id: 'personal', name: 'Personal', count: 1 },
+const categoryConfigs = [
+  { id: 'all', name: 'All Templates' },
+  { id: 'marketing', name: 'Marketing' },
+  { id: 'events', name: 'Events' },
+  { id: 'sales', name: 'Sales' },
+  { id: 'personal', name: 'Personal' },
 ];
 
 export default function MicroPagesPage() {
-  const [pages, setPages] = useState<MicroPage[]>([
-    {
-      id: '1',
-      title: 'Product Launch 2024',
-      slug: 'product-launch-2024',
-      url: 'https://yourdomain.com/product-launch-2024',
-      template: 'product-launch',
-      status: 'published',
-      views: 2847,
-      conversions: 142,
-      conversionRate: 4.99,
-      createdDate: new Date('2024-11-15'),
-      lastModified: new Date('2024-12-01'),
-      description: 'Landing page for our new product launch campaign',
-      components: ['Hero', 'Features', 'Pricing', 'CTA'],
-      seoTitle: 'Revolutionary Product Launch 2024',
-      seoDescription: 'Discover our latest innovation that will transform your workflow'
-    },
-    {
-      id: '2',
-      title: 'Annual Conference 2025',
-      slug: 'conference-2025',
-      url: 'https://yourdomain.com/conference-2025',
-      template: 'event-landing',
-      status: 'published',
-      views: 1563,
-      conversions: 89,
-      conversionRate: 5.69,
-      createdDate: new Date('2024-11-20'),
-      lastModified: new Date('2024-11-28'),
-      description: 'Event registration page for annual conference',
-      components: ['Hero', 'Schedule', 'Speakers', 'Registration'],
-      seoTitle: 'Annual Tech Conference 2025',
-      seoDescription: 'Join industry leaders for three days of innovation and networking'
-    },
-    {
-      id: '3',
-      title: 'Free eBook Download',
-      slug: 'free-ebook',
-      url: 'https://yourdomain.com/free-ebook',
-      template: 'lead-capture',
-      status: 'published',
-      views: 4521,
-      conversions: 678,
-      conversionRate: 15.0,
-      createdDate: new Date('2024-10-10'),
-      lastModified: new Date('2024-11-15'),
-      description: 'Lead magnet page for eBook download',
-      components: ['Hero', 'Benefits', 'Form', 'Social Proof'],
-      seoTitle: 'Free eBook: Master Digital Marketing',
-      seoDescription: 'Download our comprehensive guide to digital marketing success'
-    },
-    {
-      id: '4',
-      title: 'Portfolio - John Doe',
-      slug: 'portfolio-john',
-      url: 'https://yourdomain.com/portfolio-john',
-      template: 'portfolio',
-      status: 'draft',
-      views: 0,
-      conversions: 0,
-      conversionRate: 0,
-      createdDate: new Date('2024-12-03'),
-      lastModified: new Date('2024-12-04'),
-      description: 'Personal portfolio website',
-      components: ['Hero', 'Projects', 'Skills', 'Contact'],
-      seoTitle: 'John Doe - Creative Designer',
-      seoDescription: 'View my portfolio of design work and creative projects'
-    }
-  ]);
+  const [pages, setPages] = useState<MicroPage[]>([]);
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -240,11 +171,16 @@ export default function MicroPagesPage() {
     }
   };
 
+  const categories = categoryConfigs.map(cat => ({
+    ...cat,
+    count: cat.id === 'all' ? templates.length : templates.filter(t => t.category.toLowerCase() === cat.id).length
+  }));
+
   const stats = {
     total: pages.length,
     published: pages.filter(p => p.status === 'published').length,
     totalViews: pages.reduce((acc, p) => acc + p.views, 0),
-    avgConversion: pages.reduce((acc, p) => acc + p.conversionRate, 0) / pages.length,
+    avgConversion: pages.length > 0 ? pages.reduce((acc, p) => acc + p.conversionRate, 0) / pages.length : 0,
   };
 
   // Close dropdown when clicking outside

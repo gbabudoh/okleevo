@@ -36,11 +36,12 @@ export function HeroAnimation() {
           transition={{ duration: 0.8 }}
         >
         {/* Laptop Base */}
+        <div className="scale-[0.48] sm:scale-[0.65] md:scale-[0.78] lg:scale-100 origin-top transition-transform">
         <div className="relative">
           {/* Screen */}
           <div className="w-[600px] h-[380px] bg-gray-900 rounded-t-2xl border-8 border-gray-800 shadow-2xl overflow-hidden">
             {/* Screen Content */}
-            <div className="w-full h-full bg-gradient-to-br from-blue-50 via-white to-orange-50 p-6">
+            <div className="w-full h-full bg-linear-to-br from-blue-50 via-white to-orange-50 p-6">
               {/* Browser Chrome */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-3 h-3 rounded-full bg-red-400"></div>
@@ -52,7 +53,7 @@ export function HeroAnimation() {
               <div className="space-y-3">
                 {/* Header with Activity */}
                 <motion.div
-                  className="h-8 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center px-3 gap-2"
+                  className="h-8 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center px-3 gap-2"
                   initial={{ width: 0 }}
                   animate={{ width: "100%" }}
                   transition={{ duration: 1, delay: 0.5 }}
@@ -87,14 +88,14 @@ export function HeroAnimation() {
                     >
                       {/* Background gradient */}
                       <motion.div
-                        className={`absolute inset-0 bg-gradient-to-br ${module.color} opacity-5`}
+                        className={`absolute inset-0 bg-linear-to-br ${module.color} opacity-5`}
                         animate={{ opacity: [0.05, 0.15, 0.05] }}
                         transition={{ duration: 3, delay: i * 0.3, repeat: Infinity }}
                       />
                       
                       <div className="relative flex items-center gap-2 h-full">
                         <motion.div 
-                          className={`w-10 h-10 bg-gradient-to-br ${module.color} rounded-lg flex items-center justify-center shadow-sm`}
+                          className={`w-10 h-10 bg-linear-to-br ${module.color} rounded-lg flex items-center justify-center shadow-sm`}
                           animate={{ rotate: [0, 5, 0, -5, 0] }}
                           transition={{ duration: 4, delay: i * 0.2, repeat: Infinity }}
                         >
@@ -144,7 +145,7 @@ export function HeroAnimation() {
                       }}
                       transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg border-2 border-white">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg border-2 border-white">
                         <Users className="w-5 h-5 text-white" />
                       </div>
                     </motion.div>
@@ -159,7 +160,7 @@ export function HeroAnimation() {
                       }}
                       transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg border-2 border-white">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg border-2 border-white">
                         <UserCheck className="w-5 h-5 text-white" />
                       </div>
                     </motion.div>
@@ -174,7 +175,7 @@ export function HeroAnimation() {
                       }}
                       transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg border-2 border-white">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg border-2 border-white">
                         <Users className="w-5 h-5 text-white" />
                       </div>
                     </motion.div>
@@ -189,7 +190,7 @@ export function HeroAnimation() {
                       }}
                       transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg border-2 border-white">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg border-2 border-white">
                         <UserCheck className="w-5 h-5 text-white" />
                       </div>
                     </motion.div>
@@ -204,7 +205,7 @@ export function HeroAnimation() {
                       }}
                       transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center shadow-lg border-2 border-white">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-pink-400 to-pink-600 flex items-center justify-center shadow-lg border-2 border-white">
                         <Users className="w-5 h-5 text-white" />
                       </div>
                     </motion.div>
@@ -236,6 +237,7 @@ export function HeroAnimation() {
           {/* Laptop Bottom */}
           <div className="w-[600px] h-4 bg-gray-300 rounded-b-xl -mt-1 shadow-lg"></div>
           <div className="w-[610px] h-2 bg-gray-400 rounded-b-2xl shadow-xl mx-auto"></div>
+        </div>
         </div>
       </motion.div>
       </div>

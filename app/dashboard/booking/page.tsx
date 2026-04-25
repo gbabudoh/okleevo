@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Calendar, Clock, Plus, X, Mail, Phone, MapPin, Video, CheckCircle, Edit, Trash2, Filter, Search, TrendingUp, CalendarCheck, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Calendar, Clock, Plus, X, Mail, Phone, MapPin, Video, CheckCircle, Edit, Trash2, Filter, Search, TrendingUp, CalendarCheck, ChevronRight, Loader2 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Booking {
@@ -20,14 +20,8 @@ interface Booking {
 }
 
 export default function BookingPage() {
-  const [bookings, setBookings] = useState<Booking[]>([
-    { id: '1', client: 'John Smith', email: 'john@email.com', phone: '+44 20 1234 5678', service: 'Consultation', date: '2024-12-10', time: '10:00 AM', duration: 60, status: 'confirmed', type: 'video', notes: 'First time client' },
-    { id: '2', client: 'Sarah Johnson', email: 'sarah@email.com', phone: '+44 161 234 5678', service: 'Strategy Session', date: '2024-12-11', time: '2:00 PM', duration: 90, status: 'confirmed', type: 'in-person', location: 'Office - Room 3' },
-    { id: '3', client: 'Mike Brown', email: 'mike@email.com', service: 'Follow-up', date: '2024-12-12', time: '11:30 AM', duration: 30, status: 'pending', type: 'phone' },
-    { id: '4', client: 'Emma Wilson', email: 'emma@email.com', phone: '+44 117 234 5678', service: 'Initial Meeting', date: '2024-12-13', time: '3:00 PM', duration: 45, status: 'confirmed', type: 'video' },
-    { id: '5', client: 'David Lee', email: 'david@email.com', service: 'Review Session', date: '2024-12-09', time: '9:00 AM', duration: 60, status: 'completed', type: 'in-person', location: 'Office - Room 1' },
-  ]);
-
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -37,6 +31,7 @@ export default function BookingPage() {
   const [deletingBooking, setDeletingBooking] = useState<Booking | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  
   const [newBooking, setNewBooking] = useState({
     client: '',
     email: '',
@@ -50,6 +45,83 @@ export default function BookingPage() {
     notes: ''
   });
 
+  const fetchBookings = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/bookings');
+      if (res.ok) {
+        const data = await res.json();
+        setBookings(data);
+      }
+    } catch (error: unknown) {
+      console.error('Error fetching bookings:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
+  const handleCreateBooking = async () => {
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBooking),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setBookings(prev => [saved, ...prev]);
+        setShowAddModal(false);
+        setNewBooking({ client: '', email: '', phone: '', service: '', date: '', time: '', duration: 60, type: 'video', location: '', notes: '' });
+      }
+    } catch (error: unknown) {
+      console.error('Error creating booking:', error);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editBooking) return;
+    try {
+      const res = await fetch(`/api/bookings/${editBooking.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editBooking),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setBookings(prev => prev.map(b => b.id === updated.id ? updated : b));
+        setShowEditModal(false);
+        setEditBooking(null);
+      }
+    } catch (error: unknown) {
+      console.error('Error updating booking:', error);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingBooking) return;
+    try {
+      const res = await fetch(`/api/bookings/${deletingBooking.id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setBookings(prev => prev.filter(b => b.id !== deletingBooking.id));
+        setShowDeleteModal(false);
+        setDeletingBooking(null);
+      }
+    } catch (error: unknown) {
+      console.error('Error deleting booking:', error);
+    }
+  };
+
+  const handleDeleteBooking = (booking: Booking) => {
+    setDeletingBooking(booking);
+    setShowDeleteModal(true);
+  };
+
   const filteredBookings = bookings.filter(booking => {
     const matchesSearch = booking.client.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          booking.service.toLowerCase().includes(searchTerm.toLowerCase());
@@ -61,11 +133,6 @@ export default function BookingPage() {
   const totalBookings = bookings.length;
   const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
   const completedBookings = bookings.filter(b => b.status === 'completed').length;
-
-  const handleDeleteBooking = (booking: Booking) => {
-    setDeletingBooking(booking);
-    setShowDeleteModal(true);
-  };
 
   const getStatusConfig = (status: string) => {
     switch(status) {
@@ -85,6 +152,17 @@ export default function BookingPage() {
       default: return <Calendar className="w-3.5 h-3.5" />;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+          <p className="text-gray-500 font-bold animate-pulse text-lg">Synchronizing Schedule...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#F8FAFC]">
@@ -410,16 +488,7 @@ export default function BookingPage() {
                 Cancel
               </button>
               <button 
-                onClick={() => {
-                  const booking: Booking = {
-                    id: String(bookings.length + 1),
-                    ...newBooking,
-                    status: 'pending'
-                  };
-                  setBookings([...bookings, booking]);
-                  setShowAddModal(false);
-                  setNewBooking({ client: '', email: '', phone: '', service: '', date: '', time: '', duration: 60, type: 'video', location: '', notes: '' });
-                }}
+                onClick={handleCreateBooking}
                 disabled={!newBooking.client || !newBooking.email || !newBooking.service || !newBooking.date || !newBooking.time}
                 className="flex-[2] px-6 py-4 bg-gray-900 text-white rounded-xl font-bold shadow-lg shadow-gray-200 hover:shadow-xl hover:scale-[1.02] hover:bg-black transition-all cursor-pointer disabled:opacity-50 disabled:hover:scale-100" 
               >
@@ -591,11 +660,7 @@ export default function BookingPage() {
                 Cancel
               </button>
               <button 
-                onClick={() => {
-                   setBookings(bookings.map(b => b.id === editBooking.id ? editBooking : b));
-                   setShowEditModal(false);
-                   setEditBooking(null);
-                }}
+                onClick={handleSaveEdit}
                 className="flex-[2] px-6 py-4 bg-gray-900 text-white rounded-xl font-bold shadow-lg shadow-gray-200 hover:shadow-xl hover:scale-[1.02] hover:bg-black transition-all cursor-pointer" 
               >
                 Save Changes
@@ -702,10 +767,7 @@ export default function BookingPage() {
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
           onClose={() => { setShowDeleteModal(false); setDeletingBooking(null); }}
-          onConfirm={() => {
-            setBookings(bookings.filter(b => b.id !== deletingBooking.id));
-            alert('✓ Booking deleted successfully!');
-          }}
+          onConfirm={handleDeleteConfirm}
           title="Delete Booking"
           itemName={deletingBooking.client}
           itemDetails={`${deletingBooking.service} - ${deletingBooking.date}`}

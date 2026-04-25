@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser, getDataIsolationFilter } from '@/lib/multi-tenancy';
 import { hasPermission } from '@/lib/clerk/rbac';
 
+type RouteParams = Promise<Record<string, string | string[] | undefined>>;
+
 /**
  * API Route wrapper for multi-tenancy
  * Automatically adds SME context and data isolation
@@ -11,9 +13,10 @@ export function withMultiTenancy(
     user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
     business: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>['business'];
     dataFilter: ReturnType<typeof getDataIsolationFilter>;
+    params: RouteParams;
   }) => Promise<NextResponse>
 ) {
-  return async (req: NextRequest) => {
+  return async (req: NextRequest, context: { params: RouteParams }) => {
     try {
       const user = await getCurrentUser();
 
@@ -30,7 +33,12 @@ export function withMultiTenancy(
         user.role
       );
 
-      return handler(req, { user, business: user.business, dataFilter });
+      return handler(req, { 
+        user, 
+        business: user.business, 
+        dataFilter, 
+        params: context.params || Promise.resolve({})
+      });
     } catch (error) {
       console.error('Multi-tenancy error:', error);
       return NextResponse.json(
@@ -51,6 +59,7 @@ export function withRBAC(
     user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
     business: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>['business'];
     dataFilter: ReturnType<typeof getDataIsolationFilter>;
+    params: RouteParams;
   }) => Promise<NextResponse>
 ) {
   return withMultiTenancy(async (req, context) => {

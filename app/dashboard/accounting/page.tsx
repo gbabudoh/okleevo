@@ -36,6 +36,7 @@ import accounting from "accounting";
 import { AccountingSummary } from "@/components/dashboard/accounting/AccountingSummary";
 import { ChartOfAccounts } from "@/components/dashboard/accounting/ChartOfAccounts";
 import { JournalEntries } from "@/components/dashboard/accounting/JournalEntries";
+import { jsPDF } from "jspdf";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -61,6 +62,200 @@ interface Transaction {
     account: { name: string };
   }[];
 }
+
+// Separate impure logic from the React component to avoid render-purity errors
+const exportAccountingData = (
+  reportType: string,
+  format: "CSV" | "Excel" | "PDF",
+  isAccounts: boolean,
+  accounts: Account[],
+  recentTransactions: Transaction[]
+) => {
+  if (format === "PDF") {
+    const doc = new jsPDF();
+    
+    // Premium Header
+    doc.setFillColor(63, 81, 181); 
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setFontSize(28);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("Okleevo", 14, 25);
+    
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("Professional Accounting Services", 14, 33);
+    
+    // Report Info
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    const displayTitle = reportType.replace(/_/g, ' ');
+    doc.text(displayTitle, 14, 55);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100);
+    const timestamp = new Date().toLocaleString();
+    const refId = Math.random().toString(36).substring(2, 9).toUpperCase();
+    doc.text(`Generated: ${timestamp}`, 14, 63);
+    doc.text(`Reference: OKL-${refId}`, 14, 68);
+    
+    doc.setDrawColor(230);
+    doc.line(14, 75, 196, 75);
+
+    let y = 85;
+    doc.setFontSize(9);
+    doc.setTextColor(0);
+    
+    if (isAccounts) {
+      doc.setFillColor(245, 247, 250);
+      doc.rect(14, y - 6, 182, 8, 'F');
+      doc.setFont("helvetica", "bold");
+      doc.text("CODE", 16, y);
+      doc.text("ACCOUNT NAME", 40, y);
+      doc.text("TYPE", 120, y);
+      doc.text("BALANCE", 170, y);
+      y += 10;
+      doc.setFont("helvetica", "normal");
+      
+      accounts.forEach((acc: Account, idx: number) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        if (idx % 2 === 0) {
+          doc.setFillColor(252, 252, 252);
+          doc.rect(14, y - 5, 182, 7, 'F');
+        }
+        doc.text(acc.code, 16, y);
+        doc.text(acc.name, 40, y);
+        doc.text(acc.type, 120, y);
+        doc.text(accounting.formatMoney(acc.balance, "£"), 170, y);
+        y += 7;
+      });
+    } else {
+      doc.setFillColor(245, 247, 250);
+      doc.rect(14, y - 6, 182, 8, 'F');
+      doc.setFont("helvetica", "bold");
+      doc.text("DATE", 16, y);
+      doc.text("DESCRIPTION", 40, y);
+      doc.text("REF", 120, y);
+      doc.text("DEBIT", 150, y);
+      doc.text("CREDIT", 175, y);
+      y += 10;
+      doc.setFont("helvetica", "normal");
+      
+      recentTransactions.forEach((tx: Transaction, idx: number) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        if (idx % 2 === 0) {
+          doc.setFillColor(252, 252, 252);
+          doc.rect(14, y - 5, 182, 7, 'F');
+        }
+        doc.text(new Date(tx.date).toLocaleDateString(), 16, y);
+        doc.text(tx.description.substring(0, 40), 40, y);
+        doc.text(tx.reference || "-", 120, y);
+        doc.text(tx.entries[0]?.debit > 0 ? accounting.formatMoney(tx.entries[0].debit, "") : "-", 150, y);
+        doc.text(tx.entries[1]?.credit > 0 ? accounting.formatMoney(tx.entries[1].credit, "") : "-", 175, y);
+        y += 7;
+      });
+    }
+
+    // Footer
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Okleevo | Financial Document | Page ${i} of ${pageCount}`, 105, 285, { align: 'center' });
+    }
+    
+    doc.save(`Okleevo_Accounting_Data_${Date.now()}.pdf`);
+  } else if (format === "Excel") {
+    let xmlContent = `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Worksheet ss:Name="Accounting Data">
+  <Table>`;
+
+    if (isAccounts) {
+      xmlContent += `<Row>
+        <Cell><Data ss:Type="String">Account Code</Data></Cell>
+        <Cell><Data ss:Type="String">Name</Data></Cell>
+        <Cell><Data ss:Type="String">Type</Data></Cell>
+        <Cell><Data ss:Type="String">Balance</Data></Cell>
+      </Row>`;
+      accounts.forEach((acc: Account) => {
+        xmlContent += `<Row>
+          <Cell><Data ss:Type="String">${acc.code}</Data></Cell>
+          <Cell><Data ss:Type="String">${acc.name}</Data></Cell>
+          <Cell><Data ss:Type="String">${acc.type}</Data></Cell>
+          <Cell><Data ss:Type="Number">${acc.balance}</Data></Cell>
+        </Row>`;
+      });
+    } else {
+      xmlContent += `<Row>
+        <Cell><Data ss:Type="String">Date</Data></Cell>
+        <Cell><Data ss:Type="String">Description</Data></Cell>
+        <Cell><Data ss:Type="String">Reference</Data></Cell>
+        <Cell><Data ss:Type="String">Debit Account</Data></Cell>
+        <Cell><Data ss:Type="String">Debit Amount</Data></Cell>
+        <Cell><Data ss:Type="String">Credit Account</Data></Cell>
+        <Cell><Data ss:Type="String">Credit Amount</Data></Cell>
+      </Row>`;
+      recentTransactions.forEach((tx: Transaction) => {
+        xmlContent += `<Row>
+          <Cell><Data ss:Type="String">${new Date(tx.date).toLocaleDateString()}</Data></Cell>
+          <Cell><Data ss:Type="String">${tx.description}</Data></Cell>
+          <Cell><Data ss:Type="String">${tx.reference || ""}</Data></Cell>
+          <Cell><Data ss:Type="String">${tx.entries[0]?.account.name}</Data></Cell>
+          <Cell><Data ss:Type="Number">${tx.entries[0]?.debit}</Data></Cell>
+          <Cell><Data ss:Type="String">${tx.entries[1]?.account.name}</Data></Cell>
+          <Cell><Data ss:Type="Number">${tx.entries[1]?.credit}</Data></Cell>
+        </Row>`;
+      });
+    }
+
+    xmlContent += `</Table></Worksheet></Workbook>`;
+
+    const blob = new Blob([xmlContent], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const fileName = `Okleevo_Accounting_Data_${Date.now()}.xls`;
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else {
+    let csvContent = "sep=,\n";
+    if (isAccounts) {
+      csvContent += "Account Code,Name,Type,Balance\n";
+      accounts.forEach((acc: Account) => {
+        csvContent += `"${acc.code}","${acc.name}","${acc.type}","${acc.balance}"\n`;
+      });
+    } else {
+      csvContent += "Date,Description,Reference,Debit Account,Debit Amount,Credit Account,Credit Amount\n";
+      recentTransactions.forEach((tx: Transaction) => {
+        csvContent += `"${new Date(tx.date).toLocaleDateString()}","${tx.description}","${tx.reference || ""}","${tx.entries[0]?.account.name}","${tx.entries[0]?.debit}","${tx.entries[1]?.account.name}","${tx.entries[1]?.credit}"\n`;
+      });
+    }
+
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const fileName = `Okleevo_Accounting_Data_${Date.now()}.csv`;
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
 
 export default function AccountingPage() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -251,36 +446,19 @@ export default function AccountingPage() {
   };
 
   const handleExportReport = (reportType: string) => {
-    console.log(`Exporting ${reportType} report`);
+    exportAccountingData(
+      reportType,
+      selectedExportFormat,
+      activeTab === "chart-of-accounts",
+      accounts,
+      recentTransactions
+    );
 
-    // Create a sample CSV content
-    const csvContent = `Date,Description,Debit Account,Debit Amount,Credit Account,Credit Amount,Reference
-06/12/2024,Sales Invoice #INV-1045,Accounts Receivable,2450.00,Sales Revenue,2450.00,INV-1045
-05/12/2024,Supplier Payment,Accounts Payable,1500.00,Cash at Bank,1500.00,PAY-234
-05/12/2024,Office Rent,Operating Expenses,2000.00,Cash at Bank,2000.00,EXP-156`;
-
-    // Create blob and download
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-
-    const fileName = `${reportType.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.csv`;
-    link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // Show success modal
-    setSuccessMessage(fileName);
+    setSuccessMessage(`Exported as ${selectedExportFormat}`);
     setShowSuccessModal(true);
-
-    // Auto-close after 3 seconds
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 3000);
+    setTimeout(() => setShowSuccessModal(false), 3000);
   };
+
 
   const handleGenerateReport = (reportType: string) => {
     setSelectedReport(reportType);
@@ -288,9 +466,11 @@ export default function AccountingPage() {
   };
 
   const handleDownloadReport = (format: string) => {
-    console.log(`Downloading ${selectedReport} as ${format}`);
-    alert(`${selectedReport} will be downloaded as ${format}`);
-    setShowReportModal(false);
+    setSelectedExportFormat(format as "CSV" | "Excel" | "PDF");
+    setTimeout(() => {
+      handleExportReport(selectedReport || "Financial_Report");
+      setShowReportModal(false);
+    }, 100);
   };
 
   return (
@@ -1361,7 +1541,7 @@ export default function AccountingPage() {
                     >
                       Excel
                     </p>
-                    <p className="text-xs text-gray-600">.xlsx format</p>
+                    <p className="text-xs text-gray-600">.xls format</p>
                     {selectedExportFormat === "Excel" && (
                       <div className="mt-2">
                         <CheckCircle className="w-4 h-4 text-green-600 mx-auto" />

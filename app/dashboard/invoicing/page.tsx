@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
-import { 
-  Plus, Search, Filter, Download, Eye, Edit, Send, Trash2, 
-  DollarSign, Clock, CheckCircle, AlertCircle, MoreVertical, X, 
-  Calendar, Mail, FileText, TrendingUp, ArrowUpRight, ArrowDownRight, Copy,
-  ChevronDown, RefreshCw
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Plus, Search, Filter, Download, Eye, Edit, Send, Trash2,
+  DollarSign, Clock, CheckCircle, AlertCircle, MoreVertical, X,
+  Calendar, Mail, FileText, Copy,
+  ChevronDown, Loader2, TableProperties
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { motion, AnimatePresence } from 'framer-motion';
-// Toast imports merged into main lucide-react block above
 
 interface Invoice {
   id: string;
@@ -21,6 +20,18 @@ interface Invoice {
   date: string;
   dueDate: string;
   items: { description: string; quantity: number; rate: number }[];
+}
+
+interface InvoiceResponse {
+  id: string;
+  number: string | null;
+  clientName: string;
+  clientEmail: string | null;
+  amount: number;
+  status: string;
+  createdAt: string;
+  dueDate: string;
+  items: { description: string; quantity: number; rate: number }[] | null;
 }
 
 export default function InvoicingPage() {
@@ -147,7 +158,7 @@ export default function InvoicingPage() {
     csv += rows.map(row => row.join(',')).join('\n');
     csv += `\n\nTotal,,,£${invoice.amount}`;
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -158,58 +169,115 @@ export default function InvoicingPage() {
     URL.revokeObjectURL(url);
   };
 
-  const [invoices, setInvoices] = useState<Invoice[]>([
-    { 
-      id: 'INV-001', 
-      client: 'Acme Corp', 
-      clientEmail: 'billing@acme.com',
-      amount: 2500, 
-      status: 'paid', 
-      date: '2024-12-01',
-      dueDate: '2024-12-15',
-      items: [{ description: 'Web Development', quantity: 20, rate: 125 }]
-    },
-    { 
-      id: 'INV-002', 
-      client: 'Tech Solutions', 
-      clientEmail: 'accounts@tech.com',
-      amount: 1800, 
-      status: 'sent', 
-      date: '2024-12-03',
-      dueDate: '2024-12-17',
-      items: [{ description: 'Consulting Services', quantity: 12, rate: 150 }]
-    },
-    { 
-      id: 'INV-003', 
-      client: 'Design Studio', 
-      clientEmail: 'finance@design.com',
-      amount: 3200, 
-      status: 'overdue', 
-      date: '2024-11-28',
-      dueDate: '2024-12-12',
-      items: [{ description: 'UI/UX Design', quantity: 16, rate: 200 }]
-    },
-    { 
-      id: 'INV-004', 
-      client: 'Marketing Pro', 
-      clientEmail: 'pay@marketing.com',
-      amount: 4500, 
-      status: 'sent', 
-      date: '2024-12-04',
-      dueDate: '2024-12-18',
-      items: [{ description: 'Marketing Campaign', quantity: 30, rate: 150 }]
-    },
-    { 
-      id: 'INV-005', 
-      client: 'StartupXYZ', 
-      clientEmail: 'admin@startup.com',
-      amount: 1200, 
-      status: 'draft', 
-      date: '2024-12-05',
-      dueDate: '2024-12-19',
-      items: [{ description: 'Logo Design', quantity: 8, rate: 150 }]
-    },
-  ]);
+  const exportAllAsPDF = (invoiceList: Invoice[]) => {
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFillColor(59, 130, 246);
+    doc.rect(0, 0, 210, 35, 'F');
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('INVOICE REPORT', 105, 15, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated: ${new Date().toLocaleDateString()} · Total invoices: ${invoiceList.length}`, 105, 26, { align: 'center' });
+
+    // Summary row
+    const totalAll = invoiceList.reduce((s, i) => s + i.amount, 0);
+    const totalPaid = invoiceList.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0);
+    const totalOverdue = invoiceList.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amount, 0);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setFillColor(239, 246, 255);
+    doc.rect(15, 40, 180, 14, 'F');
+    doc.text(`Total: £${totalAll.toLocaleString()}`, 20, 49);
+    doc.setTextColor(34, 197, 94);
+    doc.text(`Paid: £${totalPaid.toLocaleString()}`, 80, 49);
+    doc.setTextColor(239, 68, 68);
+    doc.text(`Overdue: £${totalOverdue.toLocaleString()}`, 140, 49);
+
+    // Table header
+    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(59, 130, 246);
+    doc.rect(15, 60, 180, 8, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Invoice', 18, 65);
+    doc.text('Client', 45, 65);
+    doc.text('Amount', 105, 65);
+    doc.text('Status', 135, 65);
+    doc.text('Issue Date', 158, 65);
+    doc.text('Due Date', 178, 65);
+
+    // Table rows
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    const statusColors: Record<string, [number, number, number]> = {
+      paid: [34, 197, 94], sent: [59, 130, 246],
+      overdue: [239, 68, 68], draft: [107, 114, 128], cancelled: [107, 114, 128]
+    };
+    let y = 75;
+    invoiceList.forEach((inv, idx) => {
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      if (idx % 2 === 0) {
+        doc.setFillColor(249, 250, 251);
+        doc.rect(15, y - 5, 180, 8, 'F');
+      }
+      doc.setTextColor(0, 0, 0);
+      doc.text(inv.id.slice(0, 12), 18, y);
+      doc.text(inv.client.slice(0, 22), 45, y);
+      doc.text(`£${inv.amount.toLocaleString()}`, 105, y);
+      const sc = statusColors[inv.status] || [107, 114, 128];
+      doc.setTextColor(sc[0], sc[1], sc[2]);
+      doc.text(inv.status.toUpperCase(), 135, y);
+      doc.setTextColor(0, 0, 0);
+      doc.text(inv.date, 158, y);
+      doc.text(inv.dueDate, 178, y);
+      y += 8;
+    });
+
+    doc.save(`invoices-${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const fetchInvoices = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/invoices');
+      const data = await response.json();
+      
+      if (data.data) {
+        // Map Prisma model to frontend interface
+        const mappedInvoices: Invoice[] = data.data.map((inv: InvoiceResponse) => ({
+          id: inv.number || inv.id,
+          client: inv.clientName,
+          clientEmail: inv.clientEmail || '',
+          amount: inv.amount,
+          status: inv.status.toLowerCase() as Invoice['status'],
+          date: new Date(inv.createdAt).toISOString().split('T')[0],
+          dueDate: new Date(inv.dueDate).toISOString().split('T')[0],
+          items: Array.isArray(inv.items) ? inv.items : []
+        }));
+        setInvoices(mappedInvoices);
+      }
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      showToast('Failed to load invoices', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -235,6 +303,7 @@ export default function InvoicingPage() {
     message: ''
   });
   const [downloadMenuOpen, setDownloadMenuOpen] = useState<string | null>(null);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [newInvoice, setNewInvoice] = useState({
     clientType: 'business' as 'business' | 'individual',
     client: '',
@@ -251,12 +320,12 @@ export default function InvoicingPage() {
     return matchesSearch && matchesFilter;
   });
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: invoices.reduce((sum, inv) => sum + inv.amount, 0),
     paid: invoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.amount, 0),
     pending: invoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.amount, 0),
     overdue: invoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + inv.amount, 0),
-  };
+  }), [invoices]);
 
   const getStatusIcon = (status: string) => {
     switch(status) {
@@ -284,22 +353,39 @@ export default function InvoicingPage() {
   };
 
   const sendInvoiceEmail = async () => {
-    if (emailInvoice) {
-      setInvoices(invoices.map(inv => 
-        inv.id === emailInvoice.id ? { ...inv, status: 'sent' as const } : inv
-      ));
+    try {
+      if (emailInvoice) {
+        // Find the actual database ID if emailInvoice.id is the invoice number
+        const dbInvoice = invoices.find(inv => inv.id === emailInvoice.id);
+        if (!dbInvoice) throw new Error('Invoice not found');
+
+        const response = await fetch(`/api/invoices/${emailInvoice.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'SENT' })
+        });
+
+        if (!response.ok) throw new Error('Failed to update invoice status');
+        
+        await fetchInvoices();
+      }
+      
+      showToast(`Invoice sent successfully to ${emailData.to}!`);
+      setShowEmailModal(false);
+      setEmailInvoice(null);
+    } catch (error) {
+      console.error('Error sending invoice email:', error);
+      showToast('Failed to send invoice', 'error');
     }
-    
-    showToast(`Invoice sent successfully to ${emailData.to}!`);
-    setShowEmailModal(false);
-    setEmailInvoice(null);
   };
 
   return (
     <div className="space-y-8 pb-8">
       {/* Header */}
-      <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 shadow-lg border border-white/50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+      <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 shadow-lg border border-white/50 relative z-30">
+        <div className="absolute top-0 right-0 w-64 h-64 overflow-hidden rounded-2xl pointer-events-none">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
+        </div>
         <div className="flex items-center justify-between relative z-10">
           <div>
             <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
@@ -309,47 +395,68 @@ export default function InvoicingPage() {
             <p className="text-gray-600 text-lg">Create, manage and track all your invoices</p>
           </div>
           <div className="flex items-center gap-3">
-            <button 
-              type="button"
-              onClick={() => {
-                const headers = ['Invoice ID', 'Client', 'Email', 'Amount', 'Status', 'Issue Date', 'Due Date'];
-                const rows = invoices.map(inv => [
-                  inv.id,
-                  inv.client,
-                  inv.clientEmail,
-                  inv.amount,
-                  inv.status,
-                  inv.date,
-                  inv.dueDate
-                ]);
-                
-                let csv = 'Invoice Report\n';
-                csv += `Generated: ${new Date().toLocaleDateString()}\n`;
-                csv += `Total Invoices: ${invoices.length}\n`;
-                csv += `Total Amount: £${stats.total.toLocaleString()}\n\n`;
-                csv += headers.join(',') + '\n';
-                csv += rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-
-                const blob = new Blob([csv], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `invoices-${new Date().toISOString().split('T')[0]}.csv`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                 URL.revokeObjectURL(url);
-                showToast('All invoices exported successfully!');
-              }}
-              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl rounded-xl transition-all font-semibold flex items-center gap-2 cursor-pointer"
-            >
-              <Download className="w-5 h-5" />
-              <span>Export All</span>
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setExportMenuOpen(!exportMenuOpen)}
+                className="px-6 py-3 bg-linear-to-r from-orange-500 to-orange-600 text-white hover:shadow-xl rounded-xl transition-all font-semibold flex items-center gap-2 cursor-pointer"
+              >
+                <Download className="w-5 h-5" />
+                <span>Export All</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {exportMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setExportMenuOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        exportAllAsPDF(invoices);
+                        setExportMenuOpen(false);
+                        showToast('All invoices exported as PDF!');
+                      }}
+                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer"
+                    >
+                      <FileText className="w-4 h-4 text-red-600" />
+                      <span className="font-medium">Export as PDF</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const headers = ['Invoice ID', 'Client', 'Email', 'Amount', 'Status', 'Issue Date', 'Due Date'];
+                        const rows = invoices.map(inv => [inv.id, inv.client, inv.clientEmail, inv.amount, inv.status, inv.date, inv.dueDate]);
+                        let csv = 'Invoice Report\n';
+                        csv += `Generated: ${new Date().toLocaleDateString()}\n`;
+                        csv += `Total Invoices: ${invoices.length}\n`;
+                        csv += `Total Amount: £${stats.total.toLocaleString()}\n\n`;
+                        csv += headers.join(',') + '\n';
+                        csv += rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+                        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `invoices-${new Date().toISOString().split('T')[0]}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        setExportMenuOpen(false);
+                        showToast('All invoices exported as CSV!');
+                      }}
+                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 transition-colors flex items-center gap-2 cursor-pointer"
+                    >
+                      <TableProperties className="w-4 h-4 text-green-600" />
+                      <span className="font-medium">Export as CSV</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
             <button
               type="button"
               onClick={() => setShowNewInvoiceModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer"
+              className="px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all font-bold flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               New Invoice
@@ -367,10 +474,6 @@ export default function InvoicingPage() {
               <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
                 <DollarSign className="w-6 h-6 text-white" />
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-100 text-blue-700 backdrop-blur-sm bg-opacity-50">
-                <TrendingUp className="w-4 h-4" />
-                <span className="text-sm font-bold">+12%</span>
-              </div>
             </div>
             <p className="text-sm text-gray-600 font-medium mb-1">Total Revenue</p>
             <p className="text-4xl font-bold text-gray-900 mb-2">£{stats.total.toLocaleString()}</p>
@@ -384,10 +487,6 @@ export default function InvoicingPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg">
                 <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-green-100 text-green-700 backdrop-blur-sm bg-opacity-50">
-                <ArrowUpRight className="w-4 h-4" />
-                <span className="text-sm font-bold">+8%</span>
               </div>
             </div>
             <p className="text-sm text-gray-600 font-medium mb-1">Paid</p>
@@ -403,10 +502,6 @@ export default function InvoicingPage() {
               <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 shadow-lg">
                 <Clock className="w-6 h-6 text-white" />
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-yellow-100 text-yellow-700 backdrop-blur-sm bg-opacity-50">
-                <RefreshCw className="w-4 h-4" />
-                <span className="text-sm font-bold">Pending</span>
-              </div>
             </div>
             <p className="text-sm text-gray-600 font-medium mb-1">Pending</p>
             <p className="text-4xl font-bold text-yellow-600 mb-2">£{stats.pending.toLocaleString()}</p>
@@ -421,10 +516,6 @@ export default function InvoicingPage() {
               <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 shadow-lg">
                 <AlertCircle className="w-6 h-6 text-white" />
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-lg bg-red-100 text-red-700 backdrop-blur-sm bg-opacity-50">
-                <ArrowDownRight className="w-4 h-4" />
-                <span className="text-sm font-bold">Urgent</span>
-              </div>
             </div>
             <p className="text-sm text-gray-600 font-medium mb-1">Overdue</p>
             <p className="text-4xl font-bold text-red-600 mb-2">£{stats.overdue.toLocaleString()}</p>
@@ -434,7 +525,7 @@ export default function InvoicingPage() {
       </div>
 
       {/* Search and Filter */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 relative z-20">
         <div className="flex-1 relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -483,192 +574,209 @@ export default function InvoicingPage() {
 
       {/* Invoices Table */}
       <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 overflow-hidden shadow-lg">
-        <table className="w-full">
-          <thead className="bg-slate-50/50 border-b border-white/20">
-            <tr>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Invoice</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Client</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Amount</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Issue Date</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Due Date</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/20">
-            {filteredInvoices.map((invoice, index) => (
-              <tr key={invoice.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all group">
-                <td className="px-6 py-4">
-                  <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{invoice.id}</div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md">
-                      {invoice.client.charAt(0)}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">{invoice.client}</div>
-                      <div className="text-sm text-gray-500 flex items-center gap-1">
-                        <Mail className="w-3 h-3" />
-                        {invoice.clientEmail}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+            <p className="text-gray-500 font-medium">Loading invoices...</p>
+          </div>
+        ) : filteredInvoices.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+            <div className="p-4 bg-gray-50 rounded-full">
+              <FileText className="w-12 h-12 text-gray-300" />
+            </div>
+            <div>
+              <p className="text-gray-900 font-bold text-lg">No invoices found</p>
+              <p className="text-gray-500">Try adjusting your search or filters, or create a new invoice.</p>
+            </div>
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead className="bg-slate-50/50 border-b border-white/20">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Invoice</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Client</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Issue Date</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Due Date</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/20">
+              {filteredInvoices.map((invoice, index) => (
+                <tr key={invoice.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all group">
+                  <td className="px-6 py-4">
+                    <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{invoice.id}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md">
+                        {invoice.client.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-900">{invoice.client}</div>
+                        <div className="text-sm text-gray-500 flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          {invoice.clientEmail}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="font-bold text-xl text-gray-900">£{invoice.amount.toLocaleString()}</div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border-2 shadow-sm ${
-                    invoice.status === 'paid' ? 'bg-green-50 text-green-700 border-green-200' :
-                    invoice.status === 'sent' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                    invoice.status === 'overdue' ? 'bg-red-50 text-red-700 border-red-200' :
-                    invoice.status === 'draft' ? 'bg-gray-50 text-gray-700 border-gray-200' :
-                    'bg-gray-50 text-gray-700 border-gray-200'
-                  }`}>
-                    {getStatusIcon(invoice.status)}
-                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    {invoice.date}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    {invoice.dueDate}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleViewInvoice(invoice)}
-                      className="p-2 hover:bg-blue-50 rounded-lg transition-colors group/btn cursor-pointer"
-                      title="View"
-                    >
-                      <Eye className="w-5 h-5 text-gray-600 group-hover/btn:text-blue-600" />
-                    </button>
-                    <div className="relative">
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="font-bold text-xl text-gray-900">£{invoice.amount.toLocaleString()}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border-2 shadow-sm ${
+                      invoice.status === 'paid' ? 'bg-green-50 text-green-700 border-green-200' :
+                      invoice.status === 'sent' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      invoice.status === 'overdue' ? 'bg-red-50 text-red-700 border-red-200' :
+                      invoice.status === 'draft' ? 'bg-gray-50 text-gray-700 border-gray-200' :
+                      'bg-gray-50 text-gray-700 border-gray-200'
+                    }`}>
+                      {getStatusIcon(invoice.status)}
+                      {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      {invoice.date}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <Clock className="w-4 h-4 text-gray-400" />
+                      {invoice.dueDate}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setDownloadMenuOpen(downloadMenuOpen === invoice.id ? null : invoice.id)}
-                        className="p-2 hover:bg-green-50 rounded-lg transition-colors group/btn cursor-pointer"
-                        title="Download"
+                        onClick={() => handleViewInvoice(invoice)}
+                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors group/btn cursor-pointer"
+                        title="View"
                       >
-                        <Download className="w-5 h-5 text-gray-600 group-hover/btn:text-green-600" />
+                        <Eye className="w-5 h-5 text-gray-600 group-hover/btn:text-blue-600" />
                       </button>
-                      {downloadMenuOpen === invoice.id && (
-                        <>
-                          <div className="fixed inset-0 z-40" onClick={() => setDownloadMenuOpen(null)} />
-                          <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                downloadAsPDF(invoice);
-                                setDownloadMenuOpen(null);
-                              }}
-                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer"
-                            >
-                              <FileText className="w-4 h-4 text-red-600" />
-                              <span className="font-medium">Download PDF</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                downloadAsExcel(invoice);
-                                setDownloadMenuOpen(null);
-                              }}
-                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 transition-colors flex items-center gap-2 cursor-pointer"
-                            >
-                              <FileText className="w-4 h-4 text-green-600" />
-                              <span className="font-medium">Download Excel</span>
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSendEmail(invoice)}
-                      className="p-2 hover:bg-purple-50 rounded-lg transition-colors group/btn cursor-pointer"
-                      title="Send"
-                    >
-                      <Send className="w-5 h-5 text-gray-600 group-hover/btn:text-purple-600" />
-                    </button>
-                    <div className="relative">
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setDownloadMenuOpen(downloadMenuOpen === invoice.id ? null : invoice.id)}
+                          className="p-2 hover:bg-green-50 rounded-lg transition-colors group/btn cursor-pointer"
+                          title="Download"
+                        >
+                          <Download className="w-5 h-5 text-gray-600 group-hover/btn:text-green-600" />
+                        </button>
+                        {downloadMenuOpen === invoice.id && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setDownloadMenuOpen(null)} />
+                            <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  downloadAsPDF(invoice);
+                                  setDownloadMenuOpen(null);
+                                }}
+                                className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer"
+                              >
+                                <FileText className="w-4 h-4 text-red-600" />
+                                <span className="font-medium">Download PDF</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  downloadAsExcel(invoice);
+                                  setDownloadMenuOpen(null);
+                                }}
+                                className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 transition-colors flex items-center gap-2 cursor-pointer"
+                              >
+                                <FileText className="w-4 h-4 text-green-600" />
+                                <span className="font-medium">Download Excel</span>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setActiveMenu(activeMenu === invoice.id ? null : invoice.id)}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                        onClick={() => handleSendEmail(invoice)}
+                        className="p-2 hover:bg-purple-50 rounded-lg transition-colors group/btn cursor-pointer"
+                        title="Send"
                       >
-                        <MoreVertical className="w-5 h-5 text-gray-600" />
+                        <Send className="w-5 h-5 text-gray-600 group-hover/btn:text-purple-600" />
                       </button>
-                      {activeMenu === invoice.id && (
-                        <>
-                          <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
-                          <div className={`absolute right-0 ${index < 2 ? 'mt-2' : 'bottom-full mb-2'} w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50`}>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedInvoice(invoice);
-                                setShowInvoiceModal(true);
-                                setActiveMenu(null);
-                              }}
-                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer transition-colors"
-                            >
-                              <Edit className="w-4 h-4 text-blue-600" />
-                              <span className="font-medium">Edit</span>
-                            </button>
-                            <button
-                              type="button"
-                               onClick={() => {
-                                navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}`);
-                                showToast('Invoice link copied!');
-                                setActiveMenu(null);
-                              }}
-                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 flex items-center gap-2 cursor-pointer transition-colors"
-                            >
-                              <Copy className="w-4 h-4 text-green-600" />
-                              <span className="font-medium">Copy Link</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleSendEmail(invoice);
-                                setActiveMenu(null);
-                              }}
-                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 flex items-center gap-2 cursor-pointer transition-colors"
-                            >
-                              <Mail className="w-4 h-4 text-purple-600" />
-                              <span className="font-medium">Email</span>
-                            </button>
-                            <div className="border-t border-gray-200 my-1" />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDeletingInvoice(invoice);
-                                setShowDeleteModal(true);
-                                setActiveMenu(null);
-                              }}
-                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              <span className="font-medium">Delete</span>
-                            </button>
-                          </div>
-                        </>
-                      )}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setActiveMenu(activeMenu === invoice.id ? null : invoice.id)}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <MoreVertical className="w-5 h-5 text-gray-600" />
+                        </button>
+                        {activeMenu === invoice.id && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
+                            <div className={`absolute right-0 ${index < 2 ? 'mt-2' : 'bottom-full mb-2'} w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 py-2 z-50`}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedInvoice(invoice);
+                                  setShowInvoiceModal(true);
+                                  setActiveMenu(null);
+                                }}
+                                className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer transition-colors"
+                              >
+                                <Edit className="w-4 h-4 text-blue-600" />
+                                <span className="font-medium">Edit</span>
+                              </button>
+                              <button
+                                type="button"
+                                 onClick={() => {
+                                  navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}`);
+                                  showToast('Invoice link copied!');
+                                  setActiveMenu(null);
+                                }}
+                                className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 flex items-center gap-2 cursor-pointer transition-colors"
+                              >
+                                <Copy className="w-4 h-4 text-green-600" />
+                                <span className="font-medium">Copy Link</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleSendEmail(invoice);
+                                  setActiveMenu(null);
+                                }}
+                                className="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 flex items-center gap-2 cursor-pointer transition-colors"
+                              >
+                                <Mail className="w-4 h-4 text-purple-600" />
+                                <span className="font-medium">Email</span>
+                              </button>
+                              <div className="border-t border-gray-200 my-1" />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setDeletingInvoice(invoice);
+                                  setShowDeleteModal(true);
+                                  setActiveMenu(null);
+                                }}
+                                className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                <span className="font-medium">Delete</span>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* New Invoice Modal */}
@@ -830,29 +938,39 @@ export default function InvoicingPage() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => {
-                    const totalAmount = newInvoice.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
-                    const newInv: Invoice = {
-                      id: `INV-${String(invoices.length + 1).padStart(3, '0')}`,
-                      client: newInvoice.client,
-                      clientEmail: newInvoice.clientEmail,
-                      amount: totalAmount,
-                      status: 'draft',
-                      date: newInvoice.date,
-                      dueDate: newInvoice.dueDate,
-                      items: newInvoice.items
-                    };
-                    setInvoices([...invoices, newInv]);
-                    setShowNewInvoiceModal(false);
-                    setNewInvoice({
-                      clientType: 'business',
-                      client: '',
-                      clientEmail: '',
-                      date: new Date().toISOString().split('T')[0],
-                      dueDate: '',
-                      items: [{ description: '', quantity: 1, rate: 0 }]
-                    });
-                    showToast('Invoice created successfully!');
+                  onClick={async () => {
+                    try {
+                      const totalAmount = newInvoice.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
+                      
+                      const response = await fetch('/api/invoices', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          clientName: newInvoice.client,
+                          clientEmail: newInvoice.clientEmail,
+                          amount: totalAmount,
+                          items: newInvoice.items,
+                          dueDate: newInvoice.dueDate
+                        })
+                      });
+
+                      if (!response.ok) throw new Error('Failed to create invoice');
+
+                      await fetchInvoices(); // Refresh the list
+                      setShowNewInvoiceModal(false);
+                      setNewInvoice({
+                        clientType: 'business',
+                        client: '',
+                        clientEmail: '',
+                        date: new Date().toISOString().split('T')[0],
+                        dueDate: '',
+                        items: [{ description: '', quantity: 1, rate: 0 }]
+                      });
+                      showToast('Invoice created successfully!');
+                    } catch (error) {
+                      console.error('Error creating invoice:', error);
+                      showToast('Failed to create invoice', 'error');
+                    }
                   }}
                    className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-bold cursor-pointer"
                 >
@@ -1058,9 +1176,22 @@ export default function InvoicingPage() {
             setShowDeleteModal(false);
             setDeletingInvoice(null);
           }}
-          onConfirm={() => {
-            setInvoices(invoices.filter(inv => inv.id !== deletingInvoice.id));
-            showToast('Invoice deleted successfully');
+          onConfirm={async () => {
+            try {
+              const response = await fetch(`/api/invoices/${deletingInvoice.id}`, {
+                method: 'DELETE'
+              });
+
+              if (!response.ok) throw new Error('Failed to delete invoice');
+
+              await fetchInvoices();
+              showToast('Invoice deleted successfully');
+              setShowDeleteModal(false);
+              setDeletingInvoice(null);
+            } catch (error) {
+              console.error('Error deleting invoice:', error);
+              showToast('Failed to delete invoice', 'error');
+            }
           }}
           title="Delete Invoice"
           itemName={deletingInvoice.id}

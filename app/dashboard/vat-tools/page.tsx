@@ -95,7 +95,7 @@ export default function VATToolsPage() {
     let csvContent = csv + headers.join(',') + '\n';
     csvContent += rows.map(row => row.join(',')).join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

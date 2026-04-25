@@ -17,6 +17,8 @@ const publicRoutes = [
   '/pricing',
   '/api/auth',
   '/api/webhooks',
+  '/forms',
+  '/api/public',
 ];
 
 export async function middleware(request: NextRequest) {

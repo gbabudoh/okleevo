@@ -58,6 +58,12 @@ model User {
   tickets       Ticket[]
   journalEntries JournalEntry[]
   emailLogs     EmailLog[]
+  forms         Form[]
+  appointments  Appointment[]
+  ticketComments TicketComment[]
+  aiNotes        AINote[]
+  stockMovements StockMovement[]
+
   
   @@index([email])
   @@index([businessId])
@@ -160,7 +166,11 @@ model Business {
   ledgerAccounts  LedgerAccount[]
   journalEntries  JournalEntry[]
   emailLogs       EmailLog[]
-  
+  forms           Form[]
+  appointments    Appointment[]
+  aiNotes         AINote[]
+  stockMovements  StockMovement[]
+
   @@index([name])
 }
 
@@ -272,6 +282,11 @@ model Contact {
   position      String?
   address       String?
   
+  clientType    String        @default("business")
+  pipelineStage String        @default("new")
+  revenue       Float         @default(0)
+  lastContact   DateTime?
+  
   status        ContactStatus @default(LEAD)
   source        String?
   tags          String[]
@@ -293,52 +308,6 @@ enum ContactStatus {
   CUSTOMER
 }
 
-// =============================================================================
-// Tasks Module
-// =============================================================================
-
-model Task {
-  id            String   @id @default(cuid())
-  
-  businessId    String
-  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  
-  title         String
-  description   String?
-  status        TaskStatus @default(TODO)
-  priority      TaskPriority @default(MEDIUM)
-  
-  dueDate       DateTime?
-  completedAt   DateTime?
-  
-  assignee      String?
-  tags          String[]
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  @@index([businessId])
-  @@index([userId])
-  @@index([status])
-  @@index([priority])
-}
-
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  DONE
-  CANCELED
-}
-
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
 
 // =============================================================================
 // AI Notes Module
@@ -412,31 +381,66 @@ model InventoryItem {
   
   name          String
   sku           String   @unique
-  description   String?
+  barcode       String?
+  description   String?  @db.Text
   
   quantity      Int      @default(0)
   minQuantity   Int      @default(0)
+  maxQuantity   Int      @default(100)
+  reorderPoint  Int      @default(10)
   
-  price         Float?
-  cost          Float?
+  price         Float    @default(0) // unitPrice in UI
+  cost          Float    @default(0)
   
   category      String?
   location      String?
+  unit          String   @default("pcs")
+  
+  weight        Float?
+  dimensions    String?
+  expiryDate    DateTime?
+  image         String?
+  tags          String[]
   
   status        InventoryStatus @default(IN_STOCK)
   
+  supplierId    String?
+  supplier      Supplier? @relation(fields: [supplierId], references: [id])
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
+  movements     StockMovement[]
+
   @@index([businessId])
   @@index([sku])
   @@index([status])
+}
+
+model StockMovement {
+  id            String   @id @default(cuid())
+  businessId    String
+  itemId        String
+  item          InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  type          String   // 'IN', 'OUT', 'ADJUSTMENT', 'TRANSFER'
+  quantity      Int
+  date          DateTime @default(now())
+  reason        String?
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  
+  createdAt     DateTime @default(now())
+  
+  @@index([itemId])
+  @@index([businessId])
 }
 
 enum InventoryStatus {
   IN_STOCK
   LOW_STOCK
   OUT_OF_STOCK
+  OVERSTOCKED
 }
 
 // =============================================================================
@@ -519,27 +523,33 @@ enum SupplierStatus {
 // =============================================================================
 
 model Campaign {
-  id            String   @id @default(cuid())
-  
+  id            String         @id @default(cuid())
+
   businessId    String
-  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  
+  business      Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
   name          String
   subject       String?
-  content       String?  @db.Text
-  
+  content       String?        @db.Text
+  type          CampaignType   @default(PROMOTIONAL)
+  audience      String         @default("All Subscribers")
+
   status        CampaignStatus @default(DRAFT)
-  
-  sentCount     Int      @default(0)
-  openedCount   Int      @default(0)
-  clickedCount  Int      @default(0)
-  
+
+  sentCount     Int            @default(0)
+  openedCount   Int            @default(0)
+  clickedCount  Int            @default(0)
+  bouncedCount  Int            @default(0)
+  unsubscribed  Int            @default(0)
+  revenue       Float          @default(0)
+  cost          Float          @default(0)
+
   scheduledAt   DateTime?
   sentAt        DateTime?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
   @@index([businessId])
   @@index([status])
 }
@@ -550,6 +560,13 @@ enum CampaignStatus {
   SENDING
   SENT
   COMPLETED
+}
+
+enum CampaignType {
+  PROMOTIONAL
+  NEWSLETTER
+  TRANSACTIONAL
+  ANNOUNCEMENT
 }
 
 // =============================================================================
@@ -567,6 +584,7 @@ model Ticket {
   
   subject       String
   description   String   @db.Text
+  category      String   @default("Support")
   
   status        TicketStatus @default(OPEN)
   priority      TicketPriority @default(MEDIUM)
@@ -581,14 +599,34 @@ model Ticket {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
+  comments      TicketComment[]
+  
   @@index([businessId])
   @@index([userId])
   @@index([status])
   @@index([priority])
 }
 
+model TicketComment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  authorName  String
+  authorRole  String   // 'customer' or 'agent'
+  content     String   @db.Text
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([ticketId])
+}
+
 enum TicketStatus {
   OPEN
+  PENDING
   IN_PROGRESS
   RESOLVED
   CLOSED
@@ -609,9 +647,13 @@ model Appointment {
   id            String   @id @default(cuid())
   
   businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   
-  title         String
-  description   String?
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  title         String   // Service name
+  description   String?  // Notes
   
   clientName    String
   clientEmail   String
@@ -621,12 +663,14 @@ model Appointment {
   endTime       DateTime
   
   status        AppointmentStatus @default(PENDING)
-  location      String?
+  type          AppointmentType   @default(VIDEO)
+  location      String?           // For in-person or meeting link
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
   @@index([businessId])
+  @@index([userId])
   @@index([status])
   @@index([startTime])
 }
@@ -634,8 +678,14 @@ model Appointment {
 enum AppointmentStatus {
   PENDING
   CONFIRMED
-  CANCELED
+  CANCELLED
   COMPLETED
+}
+
+enum AppointmentType {
+  VIDEO
+  PHONE
+  IN_PERSON
 }
 
 // =============================================================================
@@ -652,9 +702,8 @@ model ComplianceItem {
   
   dueDate       DateTime
   completedAt   DateTime?
-  
   status        ComplianceStatus @default(PENDING)
-  category      String
+  category      String?
   
   reminderSent  Boolean  @default(false)
   
@@ -670,6 +719,68 @@ enum ComplianceStatus {
   PENDING
   COMPLETED
   OVERDUE
+}
+
+// =============================================================================
+// Tasks Module
+// =============================================================================
+
+model Task {
+  id            String    @id @default(cuid())
+  businessId    String
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  userId        String?   // Creator
+  user          User?     @relation(fields: [userId], references: [id])
+
+  title         String
+  description   String?   @db.Text
+  
+  status        TaskStatus   @default(TODO)
+  priority      TaskPriority @default(MEDIUM)
+  
+  dueDate       DateTime?
+  assignedTo    String?   // Name of assignee
+  
+  tags          String[]
+  
+  subtasks      SubTask[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
+model SubTask {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  title     String
+  completed Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
 
 // =============================================================================
@@ -863,4 +974,83 @@ enum EmailStatus {
   SENT
   FAILED
   QUEUED
+}
+
+// =============================================================================
+// Forms Module
+// =============================================================================
+
+model Form {
+  id          String      @id @default(cuid())
+
+  businessId  String
+  business    Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+
+  name        String
+  description String?
+  category    String      @default("Contact")
+  status      FormStatus  @default(DRAFT)
+  webhookUrl  String?
+
+  fieldList   Json        @default("[]") // FormField[]
+  responses   Int         @default(0)
+  responsesList FormResponse[]
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
+}
+
+model FormResponse {
+  id        String   @id @default(cuid())
+  formId    String
+  form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  
+  data      Json     // The submitted fields
+  
+  createdAt DateTime @default(now())
+  
+  @@index([formId])
+}
+
+enum FormStatus {
+  ACTIVE
+  DRAFT
+  CLOSED
+}
+// =============================================================================
+// AI Notes Module
+// =============================================================================
+
+model AINote {
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  title         String
+  content       String
+  type          String   // meeting, brainstorm, etc.
+  date          DateTime @default(now())
+  tags          String[]
+  isPinned      Boolean  @default(false)
+  isStarred     Boolean  @default(false)
+  
+  aiSummary     String?
+  actionItems   String[]
+  participants  String[]
+  duration      String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([userId])
 }

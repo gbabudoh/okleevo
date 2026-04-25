@@ -57,6 +57,10 @@ model User {
   expenses       Expense[]
   tickets        Ticket[]
   journalEntries JournalEntry[]
+  emailLogs      EmailLog[]
+  forms          Form[]
+  appointments   Appointment[]
+  ticketComments TicketComment[]
 
   @@index([email])
   @@index([businessId])
@@ -158,6 +162,9 @@ model Business {
   tickets        Ticket[]
   ledgerAccounts LedgerAccount[]
   journalEntries JournalEntry[]
+  emailLogs      EmailLog[]
+  forms          Form[]
+  appointments   Appointment[]
 
   @@index([name])
 }
@@ -269,6 +276,11 @@ model Contact {
   company  String?
   position String?
   address  String?
+
+  clientType    String    @default("business")
+  pipelineStage String    @default("new")
+  revenue       Float     @default(0)
+  lastContact   DateTime?
 
   status ContactStatus @default(LEAD)
   source String?
@@ -565,6 +577,7 @@ model Ticket {
 
   subject     String
   description String @db.Text
+  category    String @default("Support")
 
   status   TicketStatus   @default(OPEN)
   priority TicketPriority @default(MEDIUM)
@@ -579,14 +592,34 @@ model Ticket {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  comments TicketComment[]
+
   @@index([businessId])
   @@index([userId])
   @@index([status])
   @@index([priority])
 }
 
+model TicketComment {
+  id       String @id @default(cuid())
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  authorName String
+  authorRole String // 'customer' or 'agent'
+  content    String @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
 enum TicketStatus {
   OPEN
+  PENDING
   IN_PROGRESS
   RESOLVED
   CLOSED
@@ -607,9 +640,13 @@ model Appointment {
   id String @id @default(cuid())
 
   businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  title       String
-  description String?
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  title       String // Service name
+  description String? // Notes
 
   clientName  String
   clientEmail String
@@ -619,12 +656,14 @@ model Appointment {
   endTime   DateTime
 
   status   AppointmentStatus @default(PENDING)
-  location String?
+  type     AppointmentType   @default(VIDEO)
+  location String? // For in-person or meeting link
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([businessId])
+  @@index([userId])
   @@index([status])
   @@index([startTime])
 }
@@ -632,8 +671,14 @@ model Appointment {
 enum AppointmentStatus {
   PENDING
   CONFIRMED
-  CANCELED
+  CANCELLED
   COMPLETED
+}
+
+enum AppointmentType {
+  VIDEO
+  PHONE
+  IN_PERSON
 }
 
 // =============================================================================
@@ -824,4 +869,90 @@ model LedgerEntry {
 
   @@index([journalEntryId])
   @@index([accountId])
+}
+
+// =============================================================================
+// Email Log (SME → Client emails)
+// =============================================================================
+
+model EmailLog {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  to          String
+  cc          String?
+  bcc         String?
+  subject     String
+  body        String  @db.Text
+  attachments Json? // [{filename, objectKey, size, contentType}]
+
+  status       EmailStatus @default(SENT)
+  errorMessage String?
+  messageId    String? // SMTP message ID
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum EmailStatus {
+  SENT
+  FAILED
+  QUEUED
+}
+
+// =============================================================================
+// Forms Module
+// =============================================================================
+
+model Form {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  name        String
+  description String?
+  category    String     @default("Contact")
+  status      FormStatus @default(DRAFT)
+  webhookUrl  String?
+
+  fieldList     Json           @default("[]") // FormField[]
+  responses     Int            @default(0)
+  responsesList FormResponse[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
+}
+
+model FormResponse {
+  id     String @id @default(cuid())
+  formId String
+  form   Form   @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  data Json // The submitted fields
+
+  createdAt DateTime @default(now())
+
+  @@index([formId])
+}
+
+enum FormStatus {
+  ACTIVE
+  DRAFT
+  CLOSED
 }

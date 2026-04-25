@@ -47,216 +47,17 @@ interface Employee {
   notes?: string;
 }
 
-const departments = [
-  { id: 'all', name: 'All Departments', icon: Grid, count: 24 },
-  { id: 'engineering', name: 'Engineering', icon: Laptop, count: 8 },
-  { id: 'design', name: 'Design', icon: Award, count: 5 },
-  { id: 'marketing', name: 'Marketing', icon: Target, count: 4 },
-  { id: 'sales', name: 'Sales', icon: TrendingUp, count: 4 },
-  { id: 'hr', name: 'Human Resources', icon: Users, count: 3 },
+const departmentConfigs = [
+  { id: 'all', name: 'All Departments', icon: Grid },
+  { id: 'engineering', name: 'Engineering', icon: Laptop },
+  { id: 'design', name: 'Design', icon: Award },
+  { id: 'marketing', name: 'Marketing', icon: Target },
+  { id: 'sales', name: 'Sales', icon: TrendingUp },
+  { id: 'hr', name: 'Human Resources', icon: Users },
 ];
 
 export default function HRRecordsPage() {
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      id: '1',
-      firstName: 'Alice',
-      lastName: 'Johnson',
-      email: 'alice.johnson@company.com',
-      phone: '+1 (555) 123-4567',
-      position: 'Senior Software Engineer',
-      department: 'engineering',
-      employeeId: 'EMP-2021-001',
-      dateOfBirth: new Date('1990-05-15'),
-      hireDate: new Date('2021-03-01'),
-      status: 'active',
-      employmentType: 'full-time',
-      salary: 95000,
-      address: '123 Tech Street',
-      city: 'San Francisco',
-      country: 'USA',
-      emergencyContact: {
-        name: 'John Johnson',
-        relationship: 'Spouse',
-        phone: '+1 (555) 123-4568'
-      },
-      skills: ['React', 'TypeScript', 'Node.js', 'AWS'],
-      education: 'BS Computer Science',
-      manager: 'Sarah Williams',
-      performance: {
-        rating: 4.8,
-        lastReview: new Date('2024-11-01'),
-        goals: 5
-      },
-      benefits: ['Health Insurance', '401k', 'Remote Work', 'Gym Membership'],
-      documents: ['Contract', 'NDA', 'Tax Forms', 'Resume']
-    },
-    {
-      id: '2',
-      firstName: 'Bob',
-      lastName: 'Smith',
-      email: 'bob.smith@company.com',
-      phone: '+1 (555) 234-5678',
-      position: 'Lead Product Designer',
-      department: 'design',
-      employeeId: 'EMP-2020-045',
-      dateOfBirth: new Date('1988-08-22'),
-      hireDate: new Date('2020-06-15'),
-      status: 'active',
-      employmentType: 'full-time',
-      salary: 88000,
-      address: '456 Design Avenue',
-      city: 'New York',
-      country: 'USA',
-      emergencyContact: {
-        name: 'Mary Smith',
-        relationship: 'Mother',
-        phone: '+1 (555) 234-5679'
-      },
-      skills: ['Figma', 'Adobe XD', 'UI/UX', 'Prototyping'],
-      education: 'BA Graphic Design',
-      manager: 'Jennifer Lee',
-      performance: {
-        rating: 4.6,
-        lastReview: new Date('2024-10-15'),
-        goals: 4
-      },
-      benefits: ['Health Insurance', '401k', 'Design Tools Budget'],
-      documents: ['Contract', 'Portfolio', 'Tax Forms']
-    },
-    {
-      id: '3',
-      firstName: 'Carol',
-      lastName: 'Martinez',
-      email: 'carol.martinez@company.com',
-      phone: '+1 (555) 345-6789',
-      position: 'Marketing Manager',
-      department: 'marketing',
-      employeeId: 'EMP-2019-023',
-      dateOfBirth: new Date('1985-12-10'),
-      hireDate: new Date('2019-09-01'),
-      status: 'active',
-      employmentType: 'full-time',
-      salary: 92000,
-      address: '789 Marketing Blvd',
-      city: 'Los Angeles',
-      country: 'USA',
-      emergencyContact: {
-        name: 'Carlos Martinez',
-        relationship: 'Brother',
-        phone: '+1 (555) 345-6790'
-      },
-      skills: ['SEO', 'Content Strategy', 'Analytics', 'Social Media'],
-      education: 'MBA Marketing',
-      manager: 'David Chen',
-      performance: {
-        rating: 4.9,
-        lastReview: new Date('2024-11-20'),
-        goals: 6
-      },
-      benefits: ['Health Insurance', '401k', 'Remote Work', 'Professional Development'],
-      documents: ['Contract', 'Certifications', 'Tax Forms']
-    },
-    {
-      id: '4',
-      firstName: 'David',
-      lastName: 'Lee',
-      email: 'david.lee@company.com',
-      phone: '+1 (555) 456-7890',
-      position: 'Junior Developer',
-      department: 'engineering',
-      employeeId: 'EMP-2024-089',
-      dateOfBirth: new Date('1998-03-25'),
-      hireDate: new Date('2024-08-01'),
-      status: 'probation',
-      employmentType: 'full-time',
-      salary: 65000,
-      address: '321 Code Lane',
-      city: 'Austin',
-      country: 'USA',
-      emergencyContact: {
-        name: 'Susan Lee',
-        relationship: 'Mother',
-        phone: '+1 (555) 456-7891'
-      },
-      skills: ['JavaScript', 'Python', 'Git', 'SQL'],
-      education: 'BS Software Engineering',
-      manager: 'Alice Johnson',
-      performance: {
-        rating: 4.2,
-        lastReview: new Date('2024-11-01'),
-        goals: 3
-      },
-      benefits: ['Health Insurance', 'Learning Budget'],
-      documents: ['Contract', 'Resume', 'Tax Forms']
-    },
-    {
-      id: '5',
-      firstName: 'Emma',
-      lastName: 'Wilson',
-      email: 'emma.wilson@company.com',
-      phone: '+1 (555) 567-8901',
-      position: 'Sales Representative',
-      department: 'sales',
-      employeeId: 'EMP-2022-056',
-      dateOfBirth: new Date('1992-07-18'),
-      hireDate: new Date('2022-01-15'),
-      status: 'on-leave',
-      employmentType: 'full-time',
-      salary: 75000,
-      address: '654 Sales Street',
-      city: 'Chicago',
-      country: 'USA',
-      emergencyContact: {
-        name: 'James Wilson',
-        relationship: 'Father',
-        phone: '+1 (555) 567-8902'
-      },
-      skills: ['Salesforce', 'Negotiation', 'CRM', 'Lead Generation'],
-      education: 'BA Business Administration',
-      manager: 'Michael Brown',
-      performance: {
-        rating: 4.5,
-        lastReview: new Date('2024-09-30'),
-        goals: 4
-      },
-      benefits: ['Health Insurance', '401k', 'Commission Plan', 'Car Allowance'],
-      documents: ['Contract', 'Sales Certifications', 'Tax Forms']
-    },
-    {
-      id: '6',
-      firstName: 'Frank',
-      lastName: 'Taylor',
-      email: 'frank.taylor@company.com',
-      phone: '+1 (555) 678-9012',
-      position: 'HR Specialist',
-      department: 'hr',
-      employeeId: 'EMP-2023-034',
-      dateOfBirth: new Date('1987-11-05'),
-      hireDate: new Date('2023-04-01'),
-      status: 'active',
-      employmentType: 'full-time',
-      salary: 72000,
-      address: '987 HR Plaza',
-      city: 'Seattle',
-      country: 'USA',
-      emergencyContact: {
-        name: 'Linda Taylor',
-        relationship: 'Spouse',
-        phone: '+1 (555) 678-9013'
-      },
-      skills: ['Recruitment', 'Employee Relations', 'HRIS', 'Compliance'],
-      education: 'BA Human Resources',
-      manager: 'Patricia Anderson',
-      performance: {
-        rating: 4.7,
-        lastReview: new Date('2024-10-01'),
-        goals: 5
-      },
-      benefits: ['Health Insurance', '401k', 'Remote Work', 'Professional Development'],
-      documents: ['Contract', 'HR Certifications', 'Tax Forms']
-    }
-  ]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -273,6 +74,11 @@ export default function HRRecordsPage() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState({ payroll: 0, attendance: 0, benefits: 0, performance: 0 });
+
+  const departments = departmentConfigs.map(cat => ({
+    ...cat,
+    count: cat.id === 'all' ? employees.length : employees.filter(e => e.department === cat.id).length
+  }));
 
   const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
     setNotification({ message, type });
@@ -305,8 +111,8 @@ export default function HRRecordsPage() {
 
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter(e => e.status === 'active').length;
-  const avgSalary = employees.reduce((acc, e) => acc + e.salary, 0) / employees.length;
-  const avgRating = employees.reduce((acc, e) => acc + e.performance.rating, 0) / employees.length;
+  const avgSalary = employees.length > 0 ? employees.reduce((acc, e) => acc + e.salary, 0) / employees.length : 0;
+  const avgRating = employees.length > 0 ? employees.reduce((acc, e) => acc + e.performance.rating, 0) / employees.length : 0;
 
   const handleExport = () => {
     showNotify('Exporting Personnel Data...');
@@ -337,7 +143,7 @@ export default function HRRecordsPage() {
     ].join('\n');
     
     // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -892,79 +698,79 @@ export default function HRRecordsPage() {
           </div>
         </div>
       )}
-
       {/* Add Employee Modal */}
       {showAddEmployee && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
-             <div className="p-8 md:p-10 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
-               <h2 className="text-2xl font-black tracking-tight">Onboard <span className="text-purple-600">Talent</span></h2>
-               <button onClick={() => setShowAddEmployee(false)} className="p-4 bg-gray-100/50 hover:bg-gray-200/50 rounded-2xl transition-all cursor-pointer">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] max-w-2xl w-full max-h-[85vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
+             <div className="p-6 md:p-8 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
+               <h2 className="text-xl font-black tracking-tight">Onboard <span className="text-purple-600">Talent</span></h2>
+               <button onClick={() => setShowAddEmployee(false)} className="p-3 bg-gray-100/50 hover:bg-gray-200/50 rounded-xl transition-all cursor-pointer">
                  <X className="w-5 h-5" />
                </button>
              </div>
              
-             <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-8 custom-scrollbar">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">First Name</label>
-                      <input type="text" placeholder="John" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">First Name</label>
+                      <input type="text" placeholder="John" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
                    </div>
                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Last Name</label>
-                      <input type="text" placeholder="Doe" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Last Name</label>
+                      <input type="text" placeholder="Doe" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
                    </div>
                    <div className="md:col-span-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Email Address</label>
-                      <input type="email" placeholder="john.doe@company.com" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
+                      <input type="email" placeholder="john.doe@company.com" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
                    </div>
                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Department</label>
-                      <select className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold">
-                        {departments.filter(d => d.id !== 'all').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Department</label>
+                      <select className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold">
+                        {departmentConfigs.filter(d => d.id !== 'all').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                       </select>
                    </div>
                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Role / Title</label>
-                      <input type="text" placeholder="Software Engineer" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Role / Title</label>
+                      <input type="text" placeholder="Software Engineer" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
                    </div>
                 </div>
 
-                <div className="bg-purple-50/50 rounded-[2.5rem] p-8 border border-purple-100">
-                   <h3 className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-6 flex items-center gap-2">
+                <div className="bg-purple-50/50 rounded-2xl p-6 border border-purple-100">
+                   <h3 className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                       <Shield className="w-4 h-4" />
                       Administrative Details
                    </h3>
-                   <div className="grid grid-cols-2 gap-6">
+                   <div className="grid grid-cols-2 gap-5">
                       <div>
-                         <label className="block text-[9px] font-black text-purple-400 uppercase mb-2">Start Date</label>
-                         <input type="date" className="w-full px-5 py-4 bg-white border-2 border-purple-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold text-gray-700" />
+                         <label className="block text-[9px] font-black text-purple-400 uppercase mb-1.5">Start Date</label>
+                         <input type="date" className="w-full px-5 py-3.5 bg-white border-2 border-purple-100 rounded-lg focus:border-purple-500 outline-none transition-all font-bold text-gray-700" />
                       </div>
                       <div>
-                         <label className="block text-[9px] font-black text-purple-400 uppercase mb-2">Base Salary</label>
-                         <input type="number" placeholder="0.00" className="w-full px-5 py-4 bg-white border-2 border-purple-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-purple-200" />
+                         <label className="block text-[9px] font-black text-purple-400 uppercase mb-1.5">Base Salary</label>
+                         <input type="number" placeholder="0.00" className="w-full px-5 py-3.5 bg-white border-2 border-purple-100 rounded-lg focus:border-purple-500 outline-none transition-all font-bold placeholder:text-purple-200" />
                       </div>
                    </div>
                 </div>
              </div>
 
-             <div className="p-8 md:p-10 bg-white/60 border-t border-gray-100 flex items-center gap-3">
-                <button onClick={() => setShowAddEmployee(false)} className="flex-1 px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-all cursor-pointer">
-                  Cancel
+             <div className="p-6 md:p-8 bg-white/60 border-t border-gray-100 flex items-center gap-3">
+                <button onClick={() => setShowAddEmployee(false)} className="flex-1 px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-all cursor-pointer">
+                   Cancel
                 </button>
                 <button 
                   onClick={() => {
                      showNotify('Talent Successfully Registered');
                      setShowAddEmployee(false);
                   }}
-                  className="flex-[2] px-4 py-4 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 cursor-pointer"
+                  className="flex-[2] px-8 py-4 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 cursor-pointer"
                 >
-                  Confirm Registry
+                   Confirm Registry
                 </button>
              </div>
           </div>
         </div>
       )}
+
 
       {/* Message Modal */}
       {showMessageModal && selectedEmployee && (

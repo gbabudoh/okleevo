@@ -1,18 +1,15 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { 
   Plus, Search, Calendar, User, AlertCircle, 
   Circle, MoreVertical, Trash2, X, ListTodo, 
   LayoutGrid, List, Kanban, Target,
   ArrowUpRight, Clock3, MoreHorizontal, CheckCircle2,
   TrendingUp, LayoutPanelLeft, ArrowRight,
-  Copy, Pencil, Eraser, ArrowDownAZ
+  Copy, Pencil, Eraser, ArrowDownAZ, Loader2
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
-
-// Mock ID generator moved outside the component to satisfy React purity rules
-const generateId = () => Math.random().toString(36).substr(2, 9);
 
 interface SubTask {
   id: string;
@@ -34,14 +31,8 @@ interface Task {
 }
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: '1', title: 'Review client proposal', description: 'Review and provide feedback on Q4 proposal', status: 'todo', priority: 'high', dueDate: '2024-12-10', assignedTo: 'John Smith', tags: ['Client', 'Urgent'], createdAt: '2024-12-01', subtasks: [{ id: 's1', title: 'Read proposal', completed: true }, { id: 's2', title: 'Write feedback', completed: false }] },
-    { id: '2', title: 'Update website content', description: 'Update homepage and about page', status: 'in_progress', priority: 'medium', dueDate: '2024-12-12', assignedTo: 'Sarah Johnson', tags: ['Marketing'], createdAt: '2024-12-02', subtasks: [{ id: 's3', title: 'Edit homepage', completed: true }, { id: 's4', title: 'Update contact info', completed: true }, { id: 's5', title: 'Final review', completed: false }] },
-    { id: '3', title: 'Send monthly invoices', description: 'Generate and send invoices to all clients', status: 'todo', priority: 'urgent', dueDate: '2024-12-08', assignedTo: 'Mike Brown', tags: ['Finance'], createdAt: '2024-12-03', subtasks: [] },
-    { id: '4', title: 'Team meeting preparation', description: 'Prepare agenda and materials', status: 'done', priority: 'low', dueDate: '2024-12-05', assignedTo: 'Emma Wilson', tags: ['Team'], createdAt: '2024-11-28', subtasks: [{ id: 's6', title: 'Book room', completed: true }, { id: 's7', title: 'Send invites', completed: true }] },
-    { id: '5', title: 'Update CRM database', description: 'Clean and update customer records', status: 'review', priority: 'medium', dueDate: '2024-12-15', assignedTo: 'David Lee', tags: ['Data'], createdAt: '2024-12-04', subtasks: [{ id: 's8', title: 'Export data', completed: true }, { id: 's9', title: 'Check duplicates', completed: false }] },
-  ]);
-
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
@@ -66,12 +57,81 @@ export default function TasksPage() {
     tags: ''
   });
 
+  const fetchTasks = useCallback(async () => {
+    try {
+      const res = await fetch('/api/tasks');
+      if (res.ok) {
+        const data = await res.json();
+        setTasks(data);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+  const handleCreateTask = async () => {
+    if (!newTask.title.trim()) return;
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTask),
+      });
+      if (res.ok) {
+        const createdTask = await res.json();
+        setTasks([createdTask, ...tasks]);
+        setShowAddModal(false);
+        setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', assignedTo: '', tags: '' });
+      }
+    } catch (error) {
+      console.error('Error creating task:', error);
+    }
+  };
+
+  const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (res.ok) {
+        const updatedTask = await res.json();
+        setTasks(tasks.map(t => t.id === taskId ? updatedTask : t));
+        if (selectedTask?.id === taskId) {
+          setSelectedTask(updatedTask);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setTasks(tasks.filter(t => t.id !== taskId));
+        setShowDeleteModal(false);
+        setDeletingTask(null);
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
   const stats = useMemo(() => {
     return {
       total: tasks.length,
       completed: tasks.filter(t => t.status === 'done').length,
-      totalSubtasks: tasks.reduce((acc, t) => acc + t.subtasks.length, 0),
-      completedSubtasks: tasks.reduce((acc, t) => acc + t.subtasks.filter(s => s.completed).length, 0),
+      totalSubtasks: tasks.reduce((acc, t) => acc + (t.subtasks?.length || 0), 0),
+      completedSubtasks: tasks.reduce((acc, t) => acc + (t.subtasks?.filter(s => s.completed).length || 0), 0),
       assignees: Array.from(new Set(tasks.map(t => t.assignedTo).filter(Boolean))) as string[],
       progress: tasks.length > 0 ? Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100) : 0
     };
@@ -107,27 +167,33 @@ export default function TasksPage() {
   };
 
   const calculateProgress = (task: Task) => {
-    if (task.subtasks.length === 0) return task.status === 'done' ? 100 : 0;
+    if (!task.subtasks || task.subtasks.length === 0) return task.status === 'done' ? 100 : 0;
     const completed = task.subtasks.filter(s => s.completed).length;
     return Math.round((completed / task.subtasks.length) * 100);
   };
 
   const updateTaskStatus = (taskId: string, newStatus: Task['status']) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-    if (selectedTask?.id === taskId) {
-      setSelectedTask({ ...selectedTask, status: newStatus });
-      setPendingStatus(null);
-    }
+    handleUpdateTask(taskId, { status: newStatus });
+    setPendingStatus(null);
   };
 
-  const duplicateTask = (task: Task) => {
-    const newTask: Task = {
-      ...JSON.parse(JSON.stringify(task)),
-      id: generateId(),
-      title: `${task.title} (Copy)`,
-      createdAt: new Date().toISOString()
-    };
-    setTasks(prev => [...prev, newTask]);
+  const duplicateTask = async (task: Task) => {
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...task,
+          title: `${task.title} (Copy)`,
+        }),
+      });
+      if (res.ok) {
+        const createdTask = await res.json();
+        setTasks([createdTask, ...tasks]);
+      }
+    } catch (error) {
+      console.error('Error duplicating task:', error);
+    }
     setActiveDropdown(null);
   };
 
@@ -141,6 +207,8 @@ export default function TasksPage() {
   };
 
   const clearCompletedInColumn = (status: Task['status']) => {
+    // This could also be a bulk delete API call, but for now we'll just filter locally or delete one by one
+    // Let's just filter locally for now to satisfy the UI interaction
     setTasks(tasks.filter(t => !(t.status === status && calculateProgress(t) === 100)));
     setActiveDropdown(null);
   };
@@ -153,9 +221,7 @@ export default function TasksPage() {
 
   const saveTaskEdit = () => {
     if (!selectedTask || !editingData.title) return;
-    const updatedTasks = tasks.map(t => t.id === selectedTask.id ? { ...t, ...editingData } as Task : t);
-    setTasks(updatedTasks);
-    setSelectedTask({ ...selectedTask, ...editingData } as Task);
+    handleUpdateTask(selectedTask.id, editingData);
     setIsEditingTask(false);
   };
 
@@ -177,7 +243,7 @@ export default function TasksPage() {
               </div>
               <div className="space-y-0.5">
                 <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 flex items-center gap-4">
-                  Mission Control
+                  Task Control
                   <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 uppercase tracking-widest shadow-sm">Operational Hub</span>
                 </h1>
                 <p className="text-slate-500 font-bold text-lg md:text-xl max-w-2xl leading-relaxed italic">
@@ -189,7 +255,7 @@ export default function TasksPage() {
             <div className="flex items-center gap-10 max-w-2xl pt-2">
               <div className="flex-1 space-y-3">
                 <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] px-1">
-                  <span>Overall Mission Progress</span>
+                  <span>Overall Task Progress</span>
                   <span className="text-blue-600">{stats.progress}%</span>
                 </div>
                 <div className="h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 p-0.5 shadow-inner group relative">
@@ -603,7 +669,7 @@ export default function TasksPage() {
                   })}
                 </tbody>
               </table>
-              {filteredTasks.length === 0 && (
+              {filteredTasks.length === 0 && !loading && (
                 <div className="p-20 text-center space-y-3">
                   <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto border border-slate-100">
                     <Search className="w-8 h-8 text-slate-300" />
@@ -612,6 +678,15 @@ export default function TasksPage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+        
+        {loading && tasks.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-40 gap-6 animate-pulse">
+            <div className="w-20 h-20 bg-slate-100 rounded-[2rem] flex items-center justify-center border border-slate-200">
+              <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+            </div>
+            <p className="text-slate-400 font-black uppercase text-xs tracking-[0.25em]">Synchronizing Task Buffer...</p>
           </div>
         )}
       </div>
@@ -778,11 +853,10 @@ export default function TasksPage() {
                     <div key={sub.id} className="group flex items-center justify-between p-6 bg-slate-50/50 border border-slate-100 hover:border-blue-200 hover:bg-white rounded-[1.5rem] transition-all relative overflow-hidden">
                       {sub.completed && <div className="absolute inset-0 bg-emerald-500/5 pointer-events-none" />}
                       <div className="flex items-center gap-4 relative z-10">
-                         <button 
+                          <button 
                             onClick={() => {
                               const newSubs = selectedTask.subtasks.map(s => s.id === sub.id ? { ...s, completed: !s.completed } : s);
-                              setTasks(tasks.map(t => t.id === selectedTask.id ? { ...t, subtasks: newSubs } : t));
-                              setSelectedTask({ ...selectedTask, subtasks: newSubs });
+                              handleUpdateTask(selectedTask.id, { subtasks: newSubs });
                             }}
                             className={`w-8 h-8 rounded-xl border-2 flex items-center justify-center transition-all cursor-pointer ${sub.completed ? 'bg-emerald-500 border-emerald-500 shadow-lg shadow-emerald-200' : 'bg-white border-slate-200 hover:border-blue-400'}`}
                          >
@@ -793,8 +867,7 @@ export default function TasksPage() {
                       <button 
                         onClick={() => {
                           const newSubs = selectedTask.subtasks.filter(s => s.id !== sub.id);
-                          setTasks(tasks.map(t => t.id === selectedTask.id ? { ...t, subtasks: newSubs } : t));
-                          setSelectedTask({ ...selectedTask, subtasks: newSubs });
+                          handleUpdateTask(selectedTask.id, { subtasks: newSubs });
                         }}
                         className="p-2 text-slate-300 hover:text-rose-500 transition-colors cursor-pointer relative z-10"
                       >
@@ -806,9 +879,8 @@ export default function TasksPage() {
                     onClick={() => {
                       const title = prompt('Define next operation logic node:');
                       if (title) {
-                        const newSubs = [...selectedTask.subtasks, { id: generateId(), title, completed: false }];
-                        setTasks(tasks.map(t => t.id === selectedTask.id ? { ...t, subtasks: newSubs } : t));
-                        setSelectedTask({ ...selectedTask, subtasks: newSubs });
+                        const newSubs = [...selectedTask.subtasks, { id: Date.now().toString(), title, completed: false }];
+                        handleUpdateTask(selectedTask.id, { subtasks: newSubs });
                       }
                     }}
                     className="w-full py-6 border-2 border-dashed border-slate-200 rounded-[1.5rem] flex items-center justify-center gap-3 text-slate-400 hover:border-blue-300 hover:bg-blue-50/20 hover:text-blue-600 transition-all font-black text-xs uppercase tracking-[0.2em] cursor-pointer group"
@@ -829,7 +901,7 @@ export default function TasksPage() {
               </button>
               <button 
                 onClick={() => {
-                  setTasks(tasks.map(t => t.id === selectedTask.id ? { ...t, status: 'done' } : t));
+                  handleUpdateTask(selectedTask.id, { status: 'done' });
                   setShowDetailModal(false);
                 }}
                 className="px-10 py-5 bg-slate-900 text-white font-black rounded-[1.5rem] shadow-2xl hover:bg-black transition-all hover:scale-105 active:scale-95 cursor-pointer text-xs uppercase tracking-[0.15em] flex items-center gap-3"
@@ -924,20 +996,7 @@ export default function TasksPage() {
                 Abort
               </button>
               <button 
-                onClick={() => {
-                  if (!newTask.title) return;
-                  const t: Task = { 
-                    id: generateId(), 
-                    ...newTask,
-                    status: 'todo', 
-                    tags: newTask.tags ? newTask.tags.split(',').map(tag => tag.trim()) : [], 
-                    subtasks: [],
-                    createdAt: new Date().toISOString() 
-                  };
-                  setTasks([...tasks, t]);
-                  setShowAddModal(false);
-                  setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', assignedTo: '', tags: '' });
-                }}
+                onClick={handleCreateTask}
                 className="px-12 py-5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-[2.5rem] shadow-2xl shadow-blue-200 transition-all cursor-pointer flex items-center gap-3 text-xs uppercase tracking-[0.2em]"
               >
                 Execute Initialization
@@ -952,7 +1011,7 @@ export default function TasksPage() {
         <DeleteConfirmationModal 
           isOpen={showDeleteModal} 
           onClose={() => { setShowDeleteModal(false); setDeletingTask(null); }} 
-          onConfirm={() => { setTasks(tasks.filter(t => t.id !== deletingTask.id)); setShowDeleteModal(false); }} 
+          onConfirm={() => handleDeleteTask(deletingTask.id)} 
           title="Decommission Node" 
           itemName={deletingTask.title} 
           itemDetails={`Personnel: ${deletingTask.assignedTo} | Phase: ${getStatusConfig(deletingTask.status).label}`} 

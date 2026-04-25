@@ -68,300 +68,24 @@ interface AuditLog {
   type: 'success' | 'info' | 'error' | 'warning';
 }
 
-const initialFrameworks: ComplianceFramework[] = [
-  {
-    id: 'gdpr',
-    name: 'GDPR',
-    description: 'General Data Protection Regulation',
-    icon: Shield,
-    color: 'blue',
-    gradient: 'from-blue-500 to-cyan-500',
-    requirements: 12,
-    compliant: 10,
-    category: 'Data Privacy',
-    certificationDate: new Date('2023-01-15'),
-    expiryDate: new Date('2025-01-15')
-  },
-  {
-    id: 'hipaa',
-    name: 'HIPAA',
-    description: 'Health Insurance Portability',
-    icon: Lock,
-    color: 'purple',
-    gradient: 'from-purple-500 to-pink-500',
-    requirements: 8,
-    compliant: 8,
-    category: 'Healthcare',
-    certificationDate: new Date('2023-03-20'),
-    expiryDate: new Date('2025-03-20')
-  },
-  {
-    id: 'sox',
-    name: 'SOX',
-    description: 'Sarbanes-Oxley Act',
-    icon: Scale,
-    color: 'green',
-    gradient: 'from-green-500 to-emerald-500',
-    requirements: 15,
-    compliant: 12,
-    category: 'Financial',
-    certificationDate: new Date('2023-06-10')
-  },
-  {
-    id: 'iso27001',
-    name: 'ISO 27001',
-    description: 'Information Security Management',
-    icon: Award,
-    color: 'orange',
-    gradient: 'from-orange-500 to-red-500',
-    requirements: 20,
-    compliant: 18,
-    category: 'Security',
-    certificationDate: new Date('2023-09-05'),
-    expiryDate: new Date('2026-09-05')
-  },
-  {
-    id: 'pci-dss',
-    name: 'PCI DSS',
-    description: 'Payment Card Industry Data Security',
-    icon: DollarSign,
-    color: 'indigo',
-    gradient: 'from-indigo-500 to-purple-500',
-    requirements: 12,
-    compliant: 11,
-    category: 'Financial',
-    certificationDate: new Date('2024-02-01'),
-    expiryDate: new Date('2025-02-01')
-  },
-  {
-    id: 'ccpa',
-    name: 'CCPA',
-    description: 'California Consumer Privacy Act',
-    icon: Globe,
-    color: 'teal',
-    gradient: 'from-teal-500 to-cyan-500',
-    requirements: 8,
-    compliant: 7,
-    category: 'Data Privacy',
-    certificationDate: new Date('2024-01-10')
-  },
-  {
-    id: 'iso9001',
-    name: 'ISO 9001',
-    description: 'Quality Management Systems',
-    icon: Target,
-    color: 'rose',
-    gradient: 'from-rose-500 to-pink-500',
-    requirements: 10,
-    compliant: 10,
-    category: 'Quality',
-    certificationDate: new Date('2023-11-15'),
-    expiryDate: new Date('2026-11-15')
-  },
-  {
-    id: 'nist',
-    name: 'NIST CSF',
-    description: 'Cybersecurity Framework',
-    icon: Server,
-    color: 'amber',
-    gradient: 'from-amber-500 to-orange-500',
-    requirements: 18,
-    compliant: 15,
-    category: 'Security',
-    certificationDate: new Date('2024-03-01')
-  }
+const initialFrameworks: ComplianceFramework[] = [];
+
+const riskMetrics: RiskMetric[] = [];
+
+const categoryConfigs = [
+  { id: 'all', name: 'All Items', icon: Grid },
+  { id: 'data-privacy', name: 'Data Privacy', icon: Lock },
+  { id: 'financial', name: 'Financial', icon: DollarSign },
+  { id: 'legal', name: 'Legal', icon: Gavel },
+  { id: 'security', name: 'Security', icon: Shield },
+  { id: 'operational', name: 'Operational', icon: Workflow },
+  { id: 'environmental', name: 'Environmental', icon: Globe },
 ];
 
-const riskMetrics: RiskMetric[] = [
-  { id: '1', name: 'Data Breach Risk', value: 23, trend: 'down', severity: 'medium', icon: Shield },
-  { id: '2', name: 'Regulatory Penalties', value: 15, trend: 'down', severity: 'low', icon: AlertTriangle },
-  { id: '3', name: 'Audit Findings', value: 8, trend: 'stable', severity: 'low', icon: FileCheck },
-  { id: '4', name: 'Policy Violations', value: 12, trend: 'up', severity: 'medium', icon: XCircle }
-];
-
-const categories = [
-  { id: 'all', name: 'All Items', icon: Grid, count: 24 },
-  { id: 'data-privacy', name: 'Data Privacy', icon: Lock, count: 8 },
-  { id: 'financial', name: 'Financial', icon: DollarSign, count: 6 },
-  { id: 'legal', name: 'Legal', icon: Gavel, count: 5 },
-  { id: 'security', name: 'Security', icon: Shield, count: 5 },
-  { id: 'operational', name: 'Operational', icon: Workflow, count: 4 },
-  { id: 'environmental', name: 'Environmental', icon: Globe, count: 3 },
-];
-
-const auditLogs: AuditLog[] = [
-  { action: 'Completed', item: 'GDPR Data Protection Assessment', user: 'Sarah Johnson', time: '2 hours ago', type: 'success' },
-  { action: 'Updated', item: 'ISO 27001 Security Audit', user: 'Mike Chen', time: '5 hours ago', type: 'info' },
-  { action: 'Overdue', item: 'Quarterly VAT Return', user: 'System', time: '1 day ago', type: 'error' },
-  { action: 'Created', item: 'Environmental Impact Assessment', user: 'Emma Wilson', time: '2 days ago', type: 'success' },
-  { action: 'Reviewed', item: 'Data Breach Response Plan', user: 'David Lee', time: '3 days ago', type: 'info' },
-  { action: 'Assigned', item: 'Employee Background Checks', user: 'HR Team', time: '4 days ago', type: 'info' },
-  { action: 'Certified', item: 'ISO 9001 Quality Management', user: 'BSI Auditor', time: '1 week ago', type: 'success' },
-  { action: 'Risk Alert', item: 'PCI DSS Compliance Scan', user: 'Security System', time: '1 week ago', type: 'warning' }
-];
+const auditLogs: AuditLog[] = [];
 
 export default function CompliancePage() {
-  const [items, setItems] = useState<ComplianceItem[]>([
-    {
-      id: '1',
-      title: 'Annual Tax Filing',
-      description: 'Submit annual corporate tax returns and financial statements',
-      category: 'financial',
-      priority: 'critical',
-      status: 'pending',
-      dueDate: new Date('2024-12-31'),
-      assignedTo: 'Finance Team',
-      documents: ['Tax Return Form', 'Financial Statements', 'Audit Report'],
-      requirements: ['Complete financial audit', 'Prepare tax documentation', 'Submit to authorities'],
-      framework: 'SOX',
-      jurisdiction: 'United States',
-      frequency: 'annually',
-      nextReview: new Date('2025-01-15'),
-      riskLevel: 85,
-      lastAudit: new Date('2024-01-15'),
-      auditor: 'Ernst & Young',
-      cost: 45000,
-      impact: 'High financial and reputational risk'
-    },
-    {
-      id: '2',
-      title: 'Quarterly VAT Return',
-      description: 'Submit quarterly VAT returns and payment',
-      category: 'financial',
-      priority: 'high',
-      status: 'overdue',
-      dueDate: new Date('2024-12-15'),
-      assignedTo: 'Accounting',
-      documents: ['VAT Return', 'Sales Records', 'Purchase Records'],
-      requirements: ['Calculate VAT liability', 'Prepare return', 'Submit payment'],
-      jurisdiction: 'United Kingdom',
-      frequency: 'quarterly',
-      nextReview: new Date('2025-03-15'),
-      riskLevel: 70,
-      cost: 5000,
-      impact: 'Financial penalties and interest charges'
-    },
-    {
-      id: '3',
-      title: 'GDPR Data Protection Assessment',
-      description: 'Annual review of data protection policies and procedures',
-      category: 'data-privacy',
-      priority: 'high',
-      status: 'compliant',
-      dueDate: new Date('2024-11-30'),
-      completedDate: new Date('2024-11-28'),
-      assignedTo: 'Legal & IT',
-      documents: ['DPIA Report', 'Privacy Policy', 'Data Mapping'],
-      requirements: ['Review data processing', 'Update privacy policies', 'Train staff'],
-      framework: 'GDPR',
-      jurisdiction: 'European Union',
-      frequency: 'annually',
-      nextReview: new Date('2025-11-30'),
-      riskLevel: 45,
-      lastAudit: new Date('2024-11-20'),
-      auditor: 'Internal Audit Team',
-      cost: 25000,
-      impact: 'Regulatory fines up to €20M or 4% of revenue'
-    },
-    {
-      id: '4',
-      title: 'Employee Background Checks',
-      description: 'Conduct background checks for new hires',
-      category: 'legal',
-      priority: 'medium',
-      status: 'at-risk',
-      dueDate: new Date('2024-12-20'),
-      assignedTo: 'HR Department',
-      documents: ['Background Check Forms', 'Consent Forms'],
-      requirements: ['Obtain consent', 'Conduct checks', 'Document results'],
-      jurisdiction: 'United States',
-      frequency: 'one-time',
-      riskLevel: 55,
-      cost: 3000,
-      impact: 'Legal liability and workplace safety concerns'
-    },
-    {
-      id: '5',
-      title: 'ISO 27001 Security Audit',
-      description: 'Annual information security management system audit',
-      category: 'security',
-      priority: 'high',
-      status: 'pending',
-      dueDate: new Date('2025-01-15'),
-      assignedTo: 'Security Team',
-      documents: ['Audit Plan', 'Security Policies', 'Risk Assessment'],
-      requirements: ['Internal audit', 'External certification', 'Remediation plan'],
-      framework: 'ISO 27001',
-      jurisdiction: 'International',
-      frequency: 'annually',
-      nextReview: new Date('2026-01-15'),
-      riskLevel: 60,
-      lastAudit: new Date('2024-01-10'),
-      auditor: 'BSI Group',
-      cost: 35000,
-      impact: 'Loss of certification and customer trust'
-    },
-    {
-      id: '6',
-      title: 'Data Breach Response Plan',
-      description: 'Review and update incident response procedures',
-      category: 'data-privacy',
-      priority: 'critical',
-      status: 'compliant',
-      dueDate: new Date('2024-12-01'),
-      completedDate: new Date('2024-11-25'),
-      assignedTo: 'Security & Legal',
-      documents: ['Response Plan', 'Contact List', 'Communication Templates'],
-      requirements: ['Update procedures', 'Test response', 'Train team'],
-      framework: 'GDPR',
-      jurisdiction: 'European Union',
-      frequency: 'annually',
-      nextReview: new Date('2025-12-01'),
-      riskLevel: 40,
-      lastAudit: new Date('2024-11-15'),
-      auditor: 'Internal Security Team',
-      cost: 15000,
-      impact: 'Regulatory fines and reputational damage'
-    },
-    {
-      id: '7',
-      title: 'PCI DSS Compliance Scan',
-      description: 'Quarterly vulnerability scanning and penetration testing',
-      category: 'security',
-      priority: 'high',
-      status: 'pending',
-      dueDate: new Date('2024-12-28'),
-      assignedTo: 'IT Security',
-      documents: ['Scan Report', 'Remediation Plan', 'Network Diagram'],
-      requirements: ['Run vulnerability scan', 'Fix critical issues', 'Submit ASV report'],
-      framework: 'PCI DSS',
-      jurisdiction: 'International',
-      frequency: 'quarterly',
-      nextReview: new Date('2025-03-28'),
-      riskLevel: 75,
-      cost: 12000,
-      impact: 'Loss of payment processing capability'
-    },
-    {
-      id: '8',
-      title: 'Environmental Impact Assessment',
-      description: 'Annual sustainability and environmental compliance review',
-      category: 'environmental',
-      priority: 'medium',
-      status: 'compliant',
-      dueDate: new Date('2024-11-15'),
-      completedDate: new Date('2024-11-10'),
-      assignedTo: 'Operations',
-      documents: ['Impact Report', 'Carbon Footprint Analysis', 'Waste Management Plan'],
-      requirements: ['Measure emissions', 'Report to authorities', 'Implement improvements'],
-      jurisdiction: 'European Union',
-      frequency: 'annually',
-      nextReview: new Date('2025-11-15'),
-      riskLevel: 30,
-      cost: 18000,
-      impact: 'Regulatory fines and brand reputation'
-    }
-  ]);
+  const [items, setItems] = useState<ComplianceItem[]>([]);
   const [frameworksState, setFrameworksState] = useState<ComplianceFramework[]>(initialFrameworks);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -407,6 +131,11 @@ export default function CompliancePage() {
       setShowSuccess(false);
     }, 4000);
   };
+
+  const categories = categoryConfigs.map(cat => ({
+    ...cat,
+    count: cat.id === 'all' ? items.length : items.filter(i => i.category === cat.id).length
+  }));
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -455,9 +184,9 @@ export default function CompliancePage() {
     atRisk: items.filter(i => i.status === 'at-risk').length,
   };
 
-  const complianceRate = ((stats.compliant / stats.total) * 100).toFixed(1);
+  const complianceRate = stats.total > 0 ? ((stats.compliant / stats.total) * 100).toFixed(1) : '0.0';
   const totalCost = items.reduce((sum, item) => sum + (item.cost || 0), 0);
-  const avgRiskLevel = items.reduce((sum, item) => sum + (item.riskLevel || 0), 0) / items.length;
+  const avgRiskLevel = items.length > 0 ? items.reduce((sum, item) => sum + (item.riskLevel || 0), 0) / items.length : 0;
 
   // Action Handlers
   const handleEdit = (item: ComplianceItem) => {
@@ -593,7 +322,7 @@ export default function CompliancePage() {
       mimeType = exportFormat === 'CSV' ? 'text/csv' : 'application/vnd.ms-excel';
       extension = exportFormat === 'CSV' ? 'csv' : 'xls';
 
-      const blob = new Blob([content], { type: mimeType });
+      const blob = new Blob(['\uFEFF' + content], { type: mimeType + ';charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;

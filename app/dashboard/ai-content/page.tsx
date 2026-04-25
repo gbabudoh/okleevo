@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
-import { 
-  Sparkles, Copy, Download, Wand2, FileText, Mail, 
-  MessageSquare, ShoppingBag, Megaphone, Video, 
+import { useState } from 'react';
+import {
+  Sparkles, Copy, Download, Wand2, FileText, Mail,
+  MessageSquare, ShoppingBag, Megaphone, Video,
   Briefcase, TrendingUp, Lightbulb, Check,
-  ChevronRight, Star, Zap, Target, Users, Globe
+  ChevronRight, Zap, Target, Users, Globe
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -201,51 +201,50 @@ export default function AIContentPage() {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [generatedContent, setGeneratedContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState<Array<{ template: string; content: string; timestamp: Date }>>([]);
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const categories = ['All', ...Array.from(new Set(contentTemplates.map(t => t.category)))];
 
-  const filteredTemplates = activeCategory === 'All' 
-    ? contentTemplates 
+  const filteredTemplates = activeCategory === 'All'
+    ? contentTemplates
     : contentTemplates.filter(t => t.category === activeCategory);
+
+  const hasInput = Object.values(formData).some(v => v?.trim());
 
   const handleGenerate = async () => {
     if (!selectedTemplate) return;
     setLoading(true);
     setGeneratedContent('');
-    
+
     try {
       const response = await fetch('/api/ai/generate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           template: { id: selectedTemplate.id, name: selectedTemplate.name },
           formData,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate content');
-      }
+      if (!response.ok) throw new Error('Failed to generate content');
 
       const data = await response.json();
-      
+
       if (data.content) {
         setGeneratedContent(data.content);
-        setHistory([{ 
-          template: selectedTemplate.name, 
-          content: data.content, 
-          timestamp: new Date() 
+        setHistory([{
+          template: selectedTemplate.name,
+          content: data.content,
+          timestamp: new Date()
         }, ...history]);
       } else {
-        throw new Error('Intelligence package was empty');
+        throw new Error('No content returned');
       }
     } catch (error) {
-      console.error('Synthesis Error:', error);
-      setGeneratedContent('## Operational Failure\n\nThe neural gateway was unable to synthesize the requested intelligence package. Please verify operational parameters and attempt re-initialization.');
+      console.error('Generation error:', error);
+      setGeneratedContent('## Generation failed\n\nSomething went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -253,6 +252,8 @@ export default function AIContentPage() {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(generatedContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
@@ -264,13 +265,17 @@ export default function AIContentPage() {
     a.click();
   };
 
+  const wordCount = generatedContent ? generatedContent.split(/\s+/).filter(Boolean).length : 0;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+  const charCount = generatedContent.length;
+
   return (
     <div className="relative min-h-screen -m-4 md:-m-8 p-4 md:p-8 overflow-hidden bg-slate-50">
-      {/* Dynamic Mesh Background */}
+      {/* Background glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/10 blur-[120px] rounded-full animate-pulse decoration-1000" />
-        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-pink-600/5 blur-[100px] rounded-full animate-bounce decoration-2000" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-pink-600/5 blur-[100px] rounded-full" />
       </div>
 
       <div className="relative z-10 space-y-6 pb-8">
@@ -279,24 +284,24 @@ export default function AIContentPage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-black uppercase tracking-widest border border-purple-200">
               <Sparkles className="w-3 h-3" />
-              Intelligence Core
+              AI Content
             </div>
             <h1 className="text-5xl font-black text-gray-900 tracking-tight flex items-center gap-4">
-              AI Content <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Studio</span>
+              Content <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-pink-600">Studio</span>
             </h1>
             <p className="text-gray-500 font-medium max-w-2xl text-lg">
-              Forge high-performance semantic assets with our advanced neural synthesis engine.
+              Create professional content for your business in seconds.
             </p>
           </div>
           <div className="flex items-center gap-4">
             <div className="bg-white px-6 py-4 rounded-2xl border-2 border-purple-50 shadow-sm group hover:shadow-md transition-all">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl shadow-lg group-hover:rotate-12 transition-transform">
+                <div className="p-3 bg-linear-to-br from-purple-500 to-indigo-500 rounded-xl shadow-lg group-hover:rotate-12 transition-transform">
                   <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <div className="text-2xl font-black text-gray-900 leading-none">{history.length}</div>
-                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mt-1">Synthesized</div>
+                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mt-1">Generated</div>
                 </div>
               </div>
             </div>
@@ -333,26 +338,29 @@ export default function AIContentPage() {
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <button
-                    onClick={() => setSelectedTemplate(template)}
+                    onClick={() => {
+                      setSelectedTemplate(template);
+                      setFormData({});
+                      setGeneratedContent('');
+                    }}
                     className="group relative w-full h-full bg-white rounded-3xl border-2 border-gray-100 p-8 hover:border-purple-300 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 text-left overflow-hidden flex flex-col justify-between shadow-sm cursor-pointer"
                   >
-                    {/* Gradient Background on Hover */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${template.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
-                    
+                    <div className={`absolute inset-0 bg-linear-to-br ${template.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
+
                     <div className="relative z-10">
-                      <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${template.gradient} mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500`}>
+                      <div className={`inline-flex p-4 rounded-2xl bg-linear-to-br ${template.gradient} mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500`}>
                         <Icon className="w-8 h-8 text-white" />
                       </div>
-                      
+
                       <h3 className="text-xl font-black text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">
                         {template.name}
                       </h3>
-                      
+
                       <p className="text-sm font-medium text-gray-500 leading-relaxed mb-6 line-clamp-2">
                         {template.description}
                       </p>
                     </div>
-                    
+
                     <div className="relative z-10 flex items-center justify-between pt-6 border-t border-gray-100/50">
                       <span className="text-xs font-black text-purple-600 uppercase tracking-widest">{template.category}</span>
                       <div className="p-2 rounded-xl bg-gray-50 group-hover:bg-purple-600 group-hover:text-white transition-all duration-500">
@@ -377,9 +385,9 @@ export default function AIContentPage() {
                 </div>
                 <h3 className="text-xl font-black text-gray-900 tracking-tight">12 Templates</h3>
               </div>
-              <p className="text-gray-500 font-medium">Professional content types ready for high-level synthesis.</p>
+              <p className="text-gray-500 font-medium">Professional content types for every business need.</p>
             </div>
-            
+
             <div className="bg-white rounded-3xl p-8 border-2 border-gray-100 shadow-xl hover:shadow-2xl transition-all group overflow-hidden relative">
               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Sparkles className="w-24 h-24 text-purple-600" />
@@ -390,9 +398,9 @@ export default function AIContentPage() {
                 </div>
                 <h3 className="text-xl font-black text-gray-900 tracking-tight">AI-Powered</h3>
               </div>
-              <p className="text-gray-500 font-medium">Advanced language models optimized for semantic excellence.</p>
+              <p className="text-gray-500 font-medium">Powered by Groq and Gemini for high-quality results.</p>
             </div>
-            
+
             <div className="bg-white rounded-3xl p-8 border-2 border-gray-100 shadow-xl hover:shadow-2xl transition-all group overflow-hidden relative">
               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Zap className="w-24 h-24 text-amber-600" />
@@ -401,9 +409,9 @@ export default function AIContentPage() {
                 <div className="p-3 bg-amber-500/10 rounded-2xl">
                   <Zap className="w-6 h-6 text-amber-600" />
                 </div>
-                <h3 className="text-xl font-black text-gray-900 tracking-tight">Instant Forge</h3>
+                <h3 className="text-xl font-black text-gray-900 tracking-tight">Instant Results</h3>
               </div>
-              <p className="text-gray-500 font-medium">Generate mission-critical content in sub-second intervals.</p>
+              <p className="text-gray-500 font-medium">Generate content in seconds, ready to use.</p>
             </div>
           </div>
         </div>
@@ -419,7 +427,7 @@ export default function AIContentPage() {
             className="group flex items-center gap-3 text-gray-600 hover:text-gray-900 font-black uppercase tracking-widest text-xs transition-all bg-white/70 hover:bg-white backdrop-blur-md px-6 py-3 rounded-2xl border border-white/50 shadow-xl cursor-pointer"
           >
             <ChevronRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
-            Back to Forge
+            Back to Templates
           </button>
 
           {/* Content Generation Interface */}
@@ -427,29 +435,39 @@ export default function AIContentPage() {
             {/* Input Panel */}
             <div className="space-y-6">
               <div className="bg-white rounded-[2.5rem] border-2 border-gray-100 shadow-2xl p-10 overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                  {React.createElement(selectedTemplate.icon, { className: "w-32 h-32 text-purple-600" })}
-                </div>
-                
+                {(() => {
+                  const TemplateIcon = selectedTemplate.icon;
+                  return (
+                    <div className="absolute top-0 right-0 p-8 opacity-5">
+                      <TemplateIcon className="w-32 h-32 text-purple-600" />
+                    </div>
+                  );
+                })()}
+
                 <div className="relative z-10 flex items-center gap-6 mb-10 pb-10 border-b border-gray-100">
-                  <div className={`p-4 rounded-2xl bg-gradient-to-br ${selectedTemplate.gradient} shadow-lg shadow-purple-500/20`}>
-                    {React.createElement(selectedTemplate.icon, { className: "w-8 h-8 text-white" })}
-                  </div>
+                  {(() => {
+                    const TemplateIcon = selectedTemplate.icon;
+                    return (
+                      <div className={`p-4 rounded-2xl bg-linear-to-br ${selectedTemplate.gradient} shadow-lg shadow-purple-500/20`}>
+                        <TemplateIcon className="w-8 h-8 text-white" />
+                      </div>
+                    );
+                  })()}
                   <div>
                     <h2 className="text-3xl font-black text-gray-900 tracking-tight">{selectedTemplate.name}</h2>
                     <p className="text-gray-500 font-bold uppercase tracking-wider text-xs mt-1">{selectedTemplate.category}</p>
                   </div>
                 </div>
 
-                {/* Synthesis Engine Info */}
-                <div className="mb-10 p-6 bg-slate-50 rounded-[2rem] border-2 border-slate-100 relative z-10">
+                {/* AI Engine Info */}
+                <div className="mb-10 p-6 bg-slate-50 rounded-4xl border-2 border-slate-100 relative z-10">
                   <div className="flex items-center gap-4">
                     <div className="p-2 bg-purple-500/10 rounded-xl">
                       <Zap className="w-5 h-5 text-purple-600" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-none">Automated Intelligence</h3>
-                      <p className="text-[10px] font-bold text-gray-400 mt-1 italic uppercase tracking-wider">Neural orchestration active via Groq & Gemini API</p>
+                      <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-none">AI Generation</h3>
+                      <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">Powered by Groq & Gemini</p>
                     </div>
                   </div>
                 </div>
@@ -484,7 +502,7 @@ export default function AIContentPage() {
                           onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
                           className="w-full px-6 py-5 bg-gray-50/50 border-2 border-transparent focus:border-purple-500 focus:bg-white rounded-3xl transition-all duration-300 font-bold text-gray-900 shadow-inner appearance-none cursor-pointer"
                         >
-                          <option value="">Select configuration...</option>
+                          <option value="">Select an option...</option>
                           {field.options?.map((option) => (
                             <option key={option} value={option}>{option}</option>
                           ))}
@@ -496,38 +514,38 @@ export default function AIContentPage() {
 
                 <button
                   onClick={handleGenerate}
-                  disabled={loading || Object.keys(formData).length === 0}
-                  className="w-full mt-10 px-8 py-6 bg-gray-900 text-white font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-purple-600 hover:shadow-2xl hover:shadow-purple-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-500 flex items-center justify-center gap-4 group h-[80px] cursor-pointer"
+                  disabled={loading || !hasInput}
+                  className="w-full mt-10 px-8 py-6 bg-gray-900 text-white font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-purple-600 hover:shadow-2xl hover:shadow-purple-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-500 flex items-center justify-center gap-4 group h-20 cursor-pointer"
                 >
                   {loading ? (
                     <>
                       <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span className="animate-pulse">Synthesizing...</span>
+                      <span className="animate-pulse">Generating...</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform duration-500" />
-                      Forge Asset
+                      Generate Content
                       <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-500" />
                     </>
                   )}
                 </button>
 
-                {/* Pro Tips */}
-                <div className="mt-10 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-[2rem] border border-indigo-100/50 relative overflow-hidden group">
+                {/* Tips */}
+                <div className="mt-10 p-6 bg-linear-to-br from-indigo-50 to-purple-50 rounded-4xl border border-indigo-100/50 relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:rotate-12 transition-transform">
-                    <Lightbulb className="w-12 h-12 text-indigo-600 font-black" />
+                    <Lightbulb className="w-12 h-12 text-indigo-600" />
                   </div>
-                  <div className="flex items-start gap-4 uppercase">
+                  <div className="flex items-start gap-4">
                     <div className="p-2 bg-white rounded-xl shadow-sm">
                       <Lightbulb className="w-5 h-5 text-indigo-600" />
                     </div>
                     <div>
-                      <h4 className="font-black text-indigo-900 tracking-widest text-xs mb-3">Operational Intelligence</h4>
-                      <ul className="text-[10px] font-black text-indigo-700/70 space-y-2 tracking-widest leading-loose">
-                        <li className="flex items-center gap-2 underline decoration-indigo-200">SPECIFY TARGET AUDIENCE METRICS</li>
-                        <li className="flex items-center gap-2 underline decoration-indigo-200">DEFINE SEMANTIC TONE PARAMETERS</li>
-                        <li className="flex items-center gap-2 underline decoration-indigo-200">AUGMENT WITH KEYWORD CLUSTERS</li>
+                      <h4 className="font-black text-indigo-900 tracking-widest text-xs mb-3 uppercase">Tips for better results</h4>
+                      <ul className="text-[11px] font-semibold text-indigo-700/70 space-y-2 leading-loose">
+                        <li>Be specific about your target audience</li>
+                        <li>Set the tone that matches your brand</li>
+                        <li>Include relevant keywords or phrases</li>
                       </ul>
                     </div>
                   </div>
@@ -541,23 +559,26 @@ export default function AIContentPage() {
                 <div className="flex items-center justify-between mb-8 pb-8 border-b border-gray-100">
                   <h3 className="text-xl font-black text-gray-900 flex items-center gap-3 tracking-tight">
                     <div className="p-2 bg-yellow-100 rounded-lg">
-                      <Star className="w-5 h-5 text-yellow-600" />
+                      <Sparkles className="w-5 h-5 text-yellow-600" />
                     </div>
-                    Synthesised Intelligence
+                    Generated Content
                   </h3>
                   {generatedContent && (
                     <div className="flex items-center gap-3">
                       <button
                         onClick={handleCopy}
                         className="p-4 bg-gray-50 hover:bg-purple-600 hover:text-white rounded-2xl transition-all duration-300 group/btn cursor-pointer"
-                        title="Mirror to clipboard"
+                        title="Copy to clipboard"
                       >
-                        <Copy className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                        {copied
+                          ? <Check className="w-5 h-5 text-green-500 group-hover/btn:text-white" />
+                          : <Copy className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                        }
                       </button>
                       <button
                         onClick={handleDownload}
                         className="p-4 bg-gray-50 hover:bg-purple-600 hover:text-white rounded-2xl transition-all duration-300 group/btn cursor-pointer"
-                        title="Extract data package"
+                        title="Download as text file"
                       >
                         <Download className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
                       </button>
@@ -575,8 +596,8 @@ export default function AIContentPage() {
                         </div>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-black text-gray-900 tracking-tight">Processing Forge...</p>
-                        <p className="text-gray-400 font-bold uppercase tracking-widest text-xs mt-2">Initializing Neural Synthesis</p>
+                        <p className="text-2xl font-black text-gray-900 tracking-tight">Generating...</p>
+                        <p className="text-gray-400 font-bold uppercase tracking-widest text-xs mt-2">This may take a few seconds</p>
                       </div>
                     </div>
                   ) : generatedContent ? (
@@ -587,45 +608,45 @@ export default function AIContentPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center p-12 space-y-8 grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000">
-                      <div className="p-8 bg-gradient-to-br from-purple-100 to-pink-100 rounded-[3rem] shadow-inner relative">
+                      <div className="p-8 bg-linear-to-br from-purple-100 to-pink-100 rounded-[3rem] shadow-inner relative">
                         <div className="absolute inset-0 bg-purple-400/20 blur-3xl rounded-full" />
                         <Wand2 className="w-20 h-20 text-purple-600 relative z-10" />
                       </div>
                       <div className="space-y-4">
-                        <h4 className="text-2xl font-black text-gray-900 tracking-tight">Intelligence Ready</h4>
+                        <h4 className="text-2xl font-black text-gray-900 tracking-tight">Ready to Generate</h4>
                         <p className="text-gray-500 font-medium max-w-xs mx-auto leading-relaxed">
-                          Populate the operational parameters to initiate neural synthesis and forge your asset.
+                          Fill in the details above and click Generate Content.
                         </p>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Content Quality Indicators */}
+                {/* Content Stats */}
                 {generatedContent && (
                   <div className="mt-8 pt-8 border-t border-gray-100">
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-[2rem] p-8 border border-green-100/50 shadow-sm relative overflow-hidden">
-                      <div className="absolute top-[-20px] right-[-20px] p-4 opacity-5">
-                        <Check className="w-40 h-40 text-green-600 font-black" />
+                    <div className="bg-linear-to-br from-green-50 to-emerald-50 rounded-4xl p-8 border border-green-100/50 shadow-sm relative overflow-hidden">
+                      <div className="absolute -top-5 -right-5 p-4 opacity-5">
+                        <Check className="w-40 h-40 text-green-600" />
                       </div>
                       <h4 className="text-xs font-black text-green-800 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
                         <div className="p-1 bg-green-200 rounded-full">
                           <Check className="w-3 h-3 text-green-800" />
                         </div>
-                        Quality Assurance Metrics
+                        Content Stats
                       </h4>
                       <div className="grid grid-cols-3 gap-8">
                         <div className="space-y-1">
-                          <div className="text-4xl font-black text-green-900 tracking-tighter">95%</div>
-                          <div className="text-[10px] font-black text-green-600 uppercase tracking-widest">Readability</div>
+                          <div className="text-4xl font-black text-green-900 tracking-tighter">{wordCount}</div>
+                          <div className="text-[10px] font-black text-green-600 uppercase tracking-widest">Words</div>
                         </div>
                         <div className="space-y-1">
-                          <div className="text-4xl font-black text-green-900 tracking-tighter">A+</div>
-                          <div className="text-[10px] font-black text-green-600 uppercase tracking-widest">SEO Score</div>
+                          <div className="text-4xl font-black text-green-900 tracking-tighter">{readingTime}m</div>
+                          <div className="text-[10px] font-black text-green-600 uppercase tracking-widest">Read Time</div>
                         </div>
                         <div className="space-y-1">
-                          <div className="text-4xl font-black text-green-900 tracking-tighter">98%</div>
-                          <div className="text-[10px] font-black text-green-600 uppercase tracking-widest">Originality</div>
+                          <div className="text-4xl font-black text-green-900 tracking-tighter">{charCount}</div>
+                          <div className="text-[10px] font-black text-green-600 uppercase tracking-widest">Characters</div>
                         </div>
                       </div>
                     </div>

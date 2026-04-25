@@ -75,7 +75,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
+      <section id="home" className="pt-32 pb-20 px-6 relative overflow-hidden">
         <HeroAnimation />
       </section>
 
@@ -126,7 +126,7 @@ export default function Home() {
             </Link>
           </div>
           <p className="mt-6 text-sm text-gray-500">
-            © 2024 Okleevo. All rights reserved.
+            © 2025 Okleevo. All rights reserved.
           </p>
         </div>
       </footer>

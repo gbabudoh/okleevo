@@ -55,196 +55,18 @@ interface Order {
   items: number;
 }
 
-const categories = [
-  { id: 'all', name: 'All Suppliers', icon: Grid, count: 24 },
-  { id: 'raw-materials', name: 'Raw Materials', icon: Box, count: 8 },
-  { id: 'manufacturing', name: 'Manufacturing', icon: Factory, count: 6 },
-  { id: 'packaging', name: 'Packaging', icon: Package, count: 4 },
-  { id: 'logistics', name: 'Logistics', icon: Truck, count: 3 },
-  { id: 'services', name: 'Services', icon: Handshake, count: 3 },
+const categoryConfigs = [
+  { id: 'all', name: 'All Suppliers', icon: Grid },
+  { id: 'raw-materials', name: 'Raw Materials', icon: Box },
+  { id: 'manufacturing', name: 'Manufacturing', icon: Factory },
+  { id: 'packaging', name: 'Packaging', icon: Package },
+  { id: 'logistics', name: 'Logistics', icon: Truck },
+  { id: 'services', name: 'Services', icon: Handshake },
 ];
 
 export default function SuppliersPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([
-    {
-      id: '1',
-      name: 'Global Tech Supplies Inc.',
-      companyName: 'Global Tech Supplies Inc.',
-      contactPerson: 'John Anderson',
-      email: 'john.anderson@globaltech.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Industrial Park Drive',
-      city: 'San Francisco',
-      country: 'USA',
-      website: 'www.globaltech.com',
-      category: 'raw-materials',
-      status: 'active',
-      rating: 4.8,
-      totalOrders: 156,
-      totalSpent: 487500,
-      lastOrder: new Date('2024-12-03'),
-      paymentTerms: 'Net 30',
-      leadTime: '7-10 days',
-      minimumOrder: 5000,
-      products: ['Electronic Components', 'Circuit Boards', 'Semiconductors'],
-      certifications: ['ISO 9001', 'RoHS', 'CE'],
-      performance: {
-        onTimeDelivery: 96,
-        qualityScore: 94,
-        responseTime: 92,
-        priceCompetitiveness: 88
-      }
-    },
-    {
-      id: '2',
-      name: 'Premium Packaging Solutions',
-      companyName: 'Premium Packaging Solutions Ltd.',
-      contactPerson: 'Sarah Mitchell',
-      email: 'sarah.mitchell@premiumpack.com',
-      phone: '+44 20 7123 4567',
-      address: '45 Commerce Street',
-      city: 'London',
-      country: 'UK',
-      website: 'www.premiumpack.com',
-      category: 'packaging',
-      status: 'active',
-      rating: 4.6,
-      totalOrders: 89,
-      totalSpent: 234800,
-      lastOrder: new Date('2024-12-01'),
-      paymentTerms: 'Net 45',
-      leadTime: '14-21 days',
-      minimumOrder: 10000,
-      products: ['Cardboard Boxes', 'Bubble Wrap', 'Shipping Labels'],
-      certifications: ['FSC', 'ISO 14001'],
-      performance: {
-        onTimeDelivery: 91,
-        qualityScore: 95,
-        responseTime: 88,
-        priceCompetitiveness: 85
-      }
-    },
-    {
-      id: '3',
-      name: 'Swift Logistics Partners',
-      companyName: 'Swift Logistics Partners Co.',
-      contactPerson: 'Michael Chen',
-      email: 'michael.chen@swiftlogistics.com',
-      phone: '+86 21 1234 5678',
-      address: '789 Shipping Lane',
-      city: 'Shanghai',
-      country: 'China',
-      website: 'www.swiftlogistics.com',
-      category: 'logistics',
-      status: 'active',
-      rating: 4.9,
-      totalOrders: 203,
-      totalSpent: 678900,
-      lastOrder: new Date('2024-12-04'),
-      paymentTerms: 'Net 15',
-      leadTime: '3-5 days',
-      minimumOrder: 1000,
-      products: ['Freight Forwarding', 'Warehousing', 'Last Mile Delivery'],
-      certifications: ['ISO 9001', 'IATA', 'C-TPAT'],
-      performance: {
-        onTimeDelivery: 98,
-        qualityScore: 97,
-        responseTime: 95,
-        priceCompetitiveness: 90
-      }
-    },
-    {
-      id: '4',
-      name: 'Industrial Manufacturing Corp',
-      companyName: 'Industrial Manufacturing Corporation',
-      contactPerson: 'Robert Williams',
-      email: 'robert.williams@indmfg.com',
-      phone: '+49 30 1234 5678',
-      address: '321 Factory Road',
-      city: 'Berlin',
-      country: 'Germany',
-      website: 'www.indmfg.com',
-      category: 'manufacturing',
-      status: 'pending',
-      rating: 4.3,
-      totalOrders: 45,
-      totalSpent: 156700,
-      lastOrder: new Date('2024-11-28'),
-      paymentTerms: 'Net 60',
-      leadTime: '21-30 days',
-      minimumOrder: 25000,
-      products: ['Metal Parts', 'Plastic Molding', 'Assembly Services'],
-      certifications: ['ISO 9001', 'ISO 14001', 'OHSAS 18001'],
-      performance: {
-        onTimeDelivery: 87,
-        qualityScore: 89,
-        responseTime: 84,
-        priceCompetitiveness: 82
-      }
-    },
-    {
-      id: '5',
-      name: 'Quality Raw Materials Ltd',
-      companyName: 'Quality Raw Materials Limited',
-      contactPerson: 'Emma Thompson',
-      email: 'emma.thompson@qualityraw.com',
-      phone: '+61 2 1234 5678',
-      address: '567 Mining District',
-      city: 'Sydney',
-      country: 'Australia',
-      website: 'www.qualityraw.com',
-      category: 'raw-materials',
-      status: 'active',
-      rating: 4.7,
-      totalOrders: 112,
-      totalSpent: 389400,
-      lastOrder: new Date('2024-12-02'),
-      paymentTerms: 'Net 30',
-      leadTime: '10-14 days',
-      minimumOrder: 15000,
-      products: ['Steel', 'Aluminum', 'Copper'],
-      certifications: ['ISO 9001', 'ISO 14001'],
-      performance: {
-        onTimeDelivery: 93,
-        qualityScore: 92,
-        responseTime: 90,
-        priceCompetitiveness: 87
-      }
-    },
-    {
-      id: '6',
-      name: 'Tech Services Group',
-      companyName: 'Tech Services Group Inc.',
-      contactPerson: 'David Park',
-      email: 'david.park@techservices.com',
-      phone: '+82 2 1234 5678',
-      address: '890 Business Plaza',
-      city: 'Seoul',
-      country: 'South Korea',
-      status: 'inactive',
-      category: 'services',
-      rating: 3.9,
-      totalOrders: 23,
-      totalSpent: 67800,
-      lastOrder: new Date('2024-10-15'),
-      paymentTerms: 'Net 30',
-      leadTime: '5-7 days',
-      minimumOrder: 2000,
-      products: ['IT Support', 'Consulting', 'Training'],
-      performance: {
-        onTimeDelivery: 78,
-        qualityScore: 81,
-        responseTime: 75,
-        priceCompetitiveness: 79
-      }
-    }
-  ]);
-
-  const [recentOrders] = useState<Order[]>([
-    { id: '1', supplierId: '1', supplierName: 'Global Tech Supplies Inc.', orderDate: new Date('2024-12-03'), deliveryDate: new Date('2024-12-10'), amount: 15600, status: 'shipped', items: 12 },
-    { id: '2', supplierId: '3', supplierName: 'Swift Logistics Partners', orderDate: new Date('2024-12-04'), deliveryDate: new Date('2024-12-07'), amount: 8900, status: 'confirmed', items: 5 },
-    { id: '3', supplierId: '2', supplierName: 'Premium Packaging Solutions', orderDate: new Date('2024-12-01'), deliveryDate: new Date('2024-12-15'), amount: 12400, status: 'pending', items: 8 },
-  ]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [recentOrders] = useState<Order[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -264,6 +86,11 @@ export default function SuppliersPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
+
+  const categories = categoryConfigs.map(cat => ({
+    ...cat,
+    count: cat.id === 'all' ? suppliers.length : suppliers.filter(s => s.category === cat.id).length
+  }));
 
   const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
     setNotification({ message, type });
@@ -296,7 +123,7 @@ export default function SuppliersPage() {
   const totalSuppliers = suppliers.length;
   const activeSuppliers = suppliers.filter(s => s.status === 'active').length;
   const totalSpent = suppliers.reduce((acc, s) => acc + s.totalSpent, 0);
-  const avgRating = suppliers.reduce((acc, s) => acc + s.rating, 0) / suppliers.length;
+  const avgRating = suppliers.length > 0 ? suppliers.reduce((acc, s) => acc + s.rating, 0) / suppliers.length : 0;
 
   const handleExport = () => {
     showNotify('Generating Holistic Manifest...');
@@ -328,7 +155,7 @@ export default function SuppliersPage() {
     ].join('\n');
     
     // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -994,71 +821,71 @@ export default function SuppliersPage() {
       {/* Add Supplier Modal */}
       {showAddSupplier && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
-             <div className="p-8 md:p-10 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
-               <h2 className="text-2xl font-black tracking-tight">Registry <span className="text-blue-600">New Node</span></h2>
-               <button onClick={() => setShowAddSupplier(false)} className="p-4 bg-gray-100/50 hover:bg-gray-200/50 rounded-2xl transition-all cursor-pointer">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] max-w-2xl w-full max-h-[85vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
+             <div className="p-6 md:p-8 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
+               <h2 className="text-xl font-black tracking-tight">Registry <span className="text-blue-600">New Node</span></h2>
+               <button onClick={() => setShowAddSupplier(false)} className="p-3 bg-gray-100/50 hover:bg-gray-200/50 rounded-xl transition-all cursor-pointer">
                  <X className="w-5 h-5" />
                </button>
              </div>
              
-             <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-8 custom-scrollbar">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                    <div className="md:col-span-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Enterprise Designation</label>
-                      <input type="text" placeholder="Legal Entity Name" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Enterprise Designation</label>
+                      <input type="text" placeholder="Legal Entity Name" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-gray-300" />
                    </div>
                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Classification</label>
-                      <select className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 outline-none transition-all font-bold">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Classification</label>
+                      <select className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold">
                         <option>Raw Materials</option>
                         <option>Manufacturing</option>
                         <option>Logistics</option>
                       </select>
                    </div>
                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Primary Contact</label>
-                      <input type="text" placeholder="Personnel Name" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Primary Contact</label>
+                      <input type="text" placeholder="Personnel Name" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-gray-300" />
                    </div>
                    <div className="md:col-span-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Communication Channel (Email)</label>
-                      <input type="email" placeholder="secure@entity.com" className="w-full px-6 py-4 bg-white/50 border-2 border-gray-100 rounded-2xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-gray-300" />
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Communication Channel (Email)</label>
+                      <input type="email" placeholder="secure@entity.com" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-gray-300" />
                    </div>
                 </div>
 
-                <div className="bg-blue-50/50 rounded-[2.5rem] p-8 border border-blue-100">
-                   <h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-6 flex items-center gap-2">
+                <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100">
+                   <h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                       <Factory className="w-4 h-4" />
                       Operational Parameters
                    </h3>
-                   <div className="grid grid-cols-2 gap-6">
+                   <div className="grid grid-cols-2 gap-5">
                       <div>
-                         <label className="block text-[9px] font-black text-blue-400 uppercase mb-2">Payment Cycle</label>
-                         <select className="w-full px-5 py-4 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold">
+                         <label className="block text-[9px] font-black text-blue-400 uppercase mb-1.5">Payment Cycle</label>
+                         <select className="w-full px-5 py-3.5 bg-white border-2 border-blue-100 rounded-lg focus:border-blue-500 outline-none transition-all font-bold">
                             <option>Net 30</option>
                             <option>Net 60</option>
                          </select>
                       </div>
                       <div>
-                         <label className="block text-[9px] font-black text-blue-400 uppercase mb-2">Lead Latency</label>
-                         <input type="text" placeholder="7-10 Days" className="w-full px-5 py-4 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-blue-200" />
+                         <label className="block text-[9px] font-black text-blue-400 uppercase mb-1.5">Lead Latency</label>
+                         <input type="text" placeholder="7-10 Days" className="w-full px-5 py-3.5 bg-white border-2 border-blue-100 rounded-lg focus:border-blue-500 outline-none transition-all font-bold placeholder:text-blue-200" />
                       </div>
                    </div>
                 </div>
              </div>
 
-             <div className="p-8 md:p-10 bg-white/60 border-t border-gray-100 flex items-center gap-3 underline-offset-4">
-                <button onClick={() => setShowAddSupplier(false)} className="flex-1 px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-all cursor-pointer">
-                  Cancel Manifest
+             <div className="p-6 md:p-8 bg-white/60 border-t border-gray-100 flex items-center gap-3 underline-offset-4">
+                <button onClick={() => setShowAddSupplier(false)} className="flex-1 px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-all cursor-pointer">
+                   Cancel Manifest
                 </button>
                 <button 
                   onClick={() => {
                      showNotify('Node Successfully Integrated into Registry');
                      setShowAddSupplier(false);
                   }}
-                  className="flex-[2] px-8 py-5 bg-blue-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/20 cursor-pointer"
+                  className="flex-[2] px-8 py-4 bg-blue-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/20 cursor-pointer"
                 >
-                  Registry Supplier Node
+                   Registry Supplier Node
                 </button>
              </div>
           </div>

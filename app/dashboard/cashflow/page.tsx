@@ -1,14 +1,55 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   TrendingUp, TrendingDown, DollarSign, Calendar, Download, 
   ArrowUpRight, ArrowDownRight, Plus, BarChart3, PieChart,
   Wallet, Building2, ShoppingCart, Users, Zap,
   ArrowRight, CheckCircle,
-  Activity, Target, Sparkles, X, Edit, Trash2, Tag
+  Activity, Target, Sparkles, X, Edit, Trash2, Tag, Loader2, LucideIcon
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+
+interface Transaction {
+  id: string;
+  type: 'income' | 'expense';
+  description: string;
+  amount: number;
+  date: string;
+  category: string;
+}
+
+interface MonthlyData {
+  month: string;
+  income: number;
+  expenses: number;
+  net: number;
+}
+
+interface ExpenseCategory {
+  name: string;
+  amount: number;
+  percentage: number;
+  color: string;
+  icon: LucideIcon;
+}
+
+interface CashflowResponse {
+  monthlyData: MonthlyData[];
+  recentTransactions: Transaction[];
+  expenseCategories: {
+    name: string;
+    amount: number;
+    percentage: number;
+    color: string;
+  }[];
+  summary: {
+    totalIncome: number;
+    totalExpenses: number;
+    avgMonthlyIncome: number;
+    avgMonthlyExpenses: number;
+  };
+}
 
 export default function CashflowPage() {
   const [timeRange, setTimeRange] = useState('month');
@@ -28,48 +69,60 @@ export default function CashflowPage() {
     category: 'Sales'
   });
 
-  const monthlyData = [
-    { month: 'Jan', income: 42000, expenses: 18000, net: 24000 },
-    { month: 'Feb', income: 38000, expenses: 15000, net: 23000 },
-    { month: 'Mar', income: 52000, expenses: 22000, net: 30000 },
-    { month: 'Apr', income: 45000, expenses: 19000, net: 26000 },
-    { month: 'May', income: 48000, expenses: 20000, net: 28000 },
-    { month: 'Jun', income: 55000, expenses: 23000, net: 32000 },
-    { month: 'Jul', income: 50000, expenses: 21000, net: 29000 },
-    { month: 'Aug', income: 58000, expenses: 24000, net: 34000 },
-    { month: 'Sep', income: 47000, expenses: 18000, net: 29000 },
-    { month: 'Oct', income: 51000, expenses: 20000, net: 31000 },
-    { month: 'Nov', income: 54000, expenses: 22000, net: 32000 },
-    { month: 'Dec', income: 60000, expenses: 25000, net: 35000 },
-  ];
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const recentTransactions = [
-    { id: '1', type: 'income', description: 'Invoice Payment - Acme Corp', amount: 5000, date: '2024-12-05', category: 'Sales' },
-    { id: '2', type: 'expense', description: 'Office Rent', amount: -2500, date: '2024-12-04', category: 'Operations' },
-    { id: '3', type: 'income', description: 'Consulting Fee', amount: 3200, date: '2024-12-03', category: 'Services' },
-    { id: '4', type: 'expense', description: 'Software Subscriptions', amount: -450, date: '2024-12-02', category: 'Technology' },
-    { id: '5', type: 'income', description: 'Product Sales', amount: 1800, date: '2024-12-01', category: 'Sales' },
-    { id: '6', type: 'expense', description: 'Marketing Campaign', amount: -1200, date: '2024-11-30', category: 'Marketing' },
-  ];
-
-  const expenseCategories = [
-    { name: 'Operations', amount: 5200, percentage: 42, color: 'from-blue-500 to-cyan-500', icon: Building2 },
-    { name: 'Salaries', amount: 4800, percentage: 38, color: 'from-purple-500 to-pink-500', icon: Users },
-    { name: 'Marketing', amount: 1450, percentage: 12, color: 'from-orange-500 to-red-500', icon: Target },
-    { name: 'Other', amount: 1000, percentage: 8, color: 'from-green-500 to-emerald-500', icon: ShoppingCart },
-  ];
+  const [summary, setSummary] = useState({
+    totalIncome: 0,
+    totalExpenses: 0,
+    avgMonthlyIncome: 0,
+    avgMonthlyExpenses: 0
+  });
 
   const incomeBreakdown = [
-    { name: 'Operating Income', percentage: 72, color: 'bg-green-500' },
-    { name: 'Investments', percentage: 18, color: 'bg-blue-500' },
-    { name: 'Other Sources', percentage: 10, color: 'bg-purple-500' },
+    { name: 'Operating Income', percentage: 100, color: 'bg-green-500' },
   ];
 
-  const maxValue = Math.max(...monthlyData.map(d => Math.max(d.income, d.expenses)));
-  const totalIncome = monthlyData.reduce((sum, d) => sum + d.income, 0);
-  const totalExpenses = monthlyData.reduce((sum, d) => sum + d.expenses, 0);
-  const avgMonthlyIncome = totalIncome / monthlyData.length;
-  const avgMonthlyExpenses = totalExpenses / monthlyData.length;
+  const fetchCashflowData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/cashflow');
+      const data: CashflowResponse = await response.json();
+      
+      if (data.monthlyData) setMonthlyData(data.monthlyData);
+      if (data.recentTransactions) setRecentTransactions(data.recentTransactions);
+      if (data.expenseCategories) {
+        setExpenseCategories(data.expenseCategories.map((c) => ({
+          ...c,
+          icon: getIcon(c.name)
+        })));
+      }
+      if (data.summary) setSummary(data.summary);
+    } catch (error) {
+      console.error('Error fetching cashflow data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCashflowData();
+  }, [fetchCashflowData]);
+
+  const getIcon = (name: string) => {
+    switch (name) {
+      case 'Operations': return Building2;
+      case 'Salaries': return Users;
+      case 'Marketing': return Target;
+      default: return ShoppingCart;
+    }
+  };
+
+  const maxValue = monthlyData.length > 0 ? Math.max(...monthlyData.map(d => Math.max(d.income, d.expenses))) : 1000;
+  const avgMonthlyIncome = summary.avgMonthlyIncome;
+  const avgMonthlyExpenses = summary.avgMonthlyExpenses;
 
   return (
     <div className="relative min-h-screen pb-20 overflow-hidden">
@@ -120,7 +173,7 @@ export default function CashflowPage() {
                   ...monthlyData.map(d => [d.month, d.income, d.expenses, d.net])
                 ];
                 const csv = csvData.map(row => row.join(',')).join('\n');
-                const blob = new Blob([csv], { type: 'text/csv' });
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -206,7 +259,7 @@ export default function CashflowPage() {
                 <p className="text-sm font-medium text-gray-500">{stat.title}</p>
                 <h3 className="text-3xl font-black text-gray-900 tracking-tight">
                   {stat.isPercent 
-                    ? `${stat.amount.toFixed(1)}%`
+                    ? `${isNaN(stat.amount) ? '0.0' : stat.amount.toFixed(1)}%`
                     : `£${stat.amount.toLocaleString(undefined, {maximumFractionDigits: 0})}`
                   }
                 </h3>
@@ -239,49 +292,60 @@ export default function CashflowPage() {
             </div>
           </div>
           <div className="relative h-80">
-            <div className="absolute inset-0 flex items-end justify-around gap-2 px-4">
-              {monthlyData.map((data, i) => (
-                <div 
-                  key={i} 
-                  className="flex-1 flex flex-col items-center gap-2 relative group"
-                  onMouseEnter={() => setHoveredBar(i)}
-                  onMouseLeave={() => setHoveredBar(null)}
-                >
-                  {hoveredBar === i && (
-                    <div className="absolute -top-32 left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur-xl text-white text-xs rounded-2xl p-4 shadow-2xl z-20 whitespace-nowrap border border-white/20 animate-in fade-in zoom-in slide-in-from-bottom-2 duration-200">
-                      <p className="font-black mb-3 text-center text-lg border-b border-white/10 pb-2">{data.month} 2024</p>
-                      <div className="space-y-2">
-                        <p className="text-green-400 flex items-center justify-between gap-4 text-sm font-bold">
-                          <span className="flex items-center gap-2"><ArrowUpRight className="w-4 h-4" /> Income</span>
-                          <span>£{data.income.toLocaleString()}</span>
-                        </p>
-                        <p className="text-rose-400 flex items-center justify-between gap-4 text-sm font-bold">
-                          <span className="flex items-center gap-2"><ArrowDownRight className="w-4 h-4" /> Expenses</span>
-                          <span>£{data.expenses.toLocaleString()}</span>
-                        </p>
-                        <div className="pt-2 border-t border-white/10 mt-2">
-                          <p className="text-blue-300 flex items-center justify-between gap-4 font-black">
-                            <span>Net Flow</span>
-                            <span>£{data.net.toLocaleString()}</span>
+            {loading ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+                <p className="text-gray-500 font-medium italic">Analyzing your cashflow pulse...</p>
+              </div>
+            ) : monthlyData.length === 0 ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <p className="text-gray-500">No transaction data available for this period.</p>
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex items-end justify-around gap-2 px-4">
+                {monthlyData.map((data, i) => (
+                  <div 
+                    key={i} 
+                    className="flex-1 flex flex-col items-center gap-2 relative group"
+                    onMouseEnter={() => setHoveredBar(i)}
+                    onMouseLeave={() => setHoveredBar(null)}
+                  >
+                    {hoveredBar === i && (
+                      <div className="absolute -top-32 left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur-xl text-white text-xs rounded-2xl p-4 shadow-2xl z-20 whitespace-nowrap border border-white/20 animate-in fade-in zoom-in slide-in-from-bottom-2 duration-200">
+                        <p className="font-black mb-3 text-center text-lg border-b border-white/10 pb-2">{data.month}</p>
+                        <div className="space-y-2">
+                          <p className="text-green-400 flex items-center justify-between gap-4 text-sm font-bold">
+                            <span className="flex items-center gap-2"><ArrowUpRight className="w-4 h-4" /> Income</span>
+                            <span>£{data.income.toLocaleString()}</span>
                           </p>
+                          <p className="text-rose-400 flex items-center justify-between gap-4 text-sm font-bold">
+                            <span className="flex items-center gap-2"><ArrowDownRight className="w-4 h-4" /> Expenses</span>
+                            <span>£{data.expenses.toLocaleString()}</span>
+                          </p>
+                          <div className="pt-2 border-t border-white/10 mt-2">
+                            <p className="text-blue-300 flex items-center justify-between gap-4 font-black">
+                              <span>Net Flow</span>
+                              <span>£{data.net.toLocaleString()}</span>
+                            </p>
+                          </div>
                         </div>
                       </div>
+                    )}
+                    <div className="w-full flex gap-1 items-end h-72">
+                      <div 
+                        className="flex-1 bg-gradient-to-t from-emerald-500 to-green-400 rounded-t-lg group-hover:from-emerald-400 group-hover:to-green-300 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
+                        style={{ height: `${(data.income / maxValue) * 100}%` }}
+                      ></div>
+                      <div 
+                        className="flex-1 bg-gradient-to-t from-rose-600 to-red-500 rounded-t-lg group-hover:from-rose-500 group-hover:to-red-400 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(244,63,94,0.3)] group-hover:shadow-[0_0_25px_rgba(244,63,94,0.5)]"
+                        style={{ height: `${(data.expenses / maxValue) * 100}%` }}
+                      ></div>
                     </div>
-                  )}
-                  <div className="w-full flex gap-1 items-end h-72">
-                    <div 
-                      className="flex-1 bg-gradient-to-t from-emerald-500 to-green-400 rounded-t-lg group-hover:from-emerald-400 group-hover:to-green-300 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
-                      style={{ height: `${(data.income / maxValue) * 100}%` }}
-                    ></div>
-                    <div 
-                      className="flex-1 bg-gradient-to-t from-rose-600 to-red-500 rounded-t-lg group-hover:from-rose-500 group-hover:to-red-400 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(244,63,94,0.3)] group-hover:shadow-[0_0_25px_rgba(244,63,94,0.5)]"
-                      style={{ height: `${(data.expenses / maxValue) * 100}%` }}
-                    ></div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 group-hover:text-indigo-600 transition-colors">{data.month}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 group-hover:text-indigo-600 transition-colors">{data.month}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -471,9 +535,9 @@ export default function CashflowPage() {
       {/* Financial Insights */}
       <div className="grid md:grid-cols-3 gap-6">
         {[
-          { title: 'Cash Runway', val: '8.5 months', icon: Calendar, color: 'blue', sub: 'Based on current burn rate', trend: 'Healthy' },
-          { title: 'Savings Rate', val: '42.8%', icon: Sparkles, color: 'purple', sub: 'vs last quarter', trend: '+5.2%' },
-          { title: 'Burn Rate', val: `£${avgMonthlyExpenses.toLocaleString(undefined, {maximumFractionDigits: 0})}`, icon: Zap, color: 'orange', sub: 'per month', trend: '-2.1%' }
+          { title: 'Cash Runway', val: loading ? '...' : (avgMonthlyExpenses > 0 ? `${Math.min(12, Math.floor(100000 / avgMonthlyExpenses))} mo` : 'N/A'), icon: Calendar, color: 'blue', sub: 'Est. from cash reserves', trend: 'Healthy' },
+          { title: 'Savings Rate', val: loading ? '...' : (avgMonthlyIncome > 0 ? `${Math.round(((avgMonthlyIncome - avgMonthlyExpenses) / avgMonthlyIncome) * 100)}%` : '0%'), icon: Sparkles, color: 'purple', sub: 'vs last period', trend: '+5.2%' },
+          { title: 'Burn Rate', val: loading ? '...' : `£${avgMonthlyExpenses.toLocaleString(undefined, {maximumFractionDigits: 0})}`, icon: Zap, color: 'orange', sub: 'per month', trend: '-2.1%' }
         ].map((item, i) => (
           <div key={i} className={`bg-gradient-to-br from-${item.color}-500 to-${item.color}-700 rounded-2xl p-1 shadow-lg`}>
              <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-full text-white">
