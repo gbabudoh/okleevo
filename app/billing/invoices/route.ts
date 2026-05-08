@@ -1,52 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { stripe } from "@/lib/stripe/client";
 
 // Get billing invoices
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
+    const session = await auth();
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    const businessId = (session.user as { businessId: string }).businessId;
+
+    const subscription = await prisma.subscription.findUnique({
+      where: { businessId },
+    });
+
+    if (!subscription?.stripeCustomerId) {
+      return NextResponse.json({ data: [], hasMore: false });
+    }
+
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    // TODO: Fetch from Stripe
-    const mockInvoices = {
-      data: [
-        {
-          id: 'in_' + Date.now(),
-          number: 'INV-2024-001',
-          amount: 1999,
-          currency: 'gbp',
-          status: 'paid',
-          paidAt: new Date().toISOString(),
-          periodStart: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-          periodEnd: new Date().toISOString(),
-          invoicePdf: 'https://invoice.stripe.com/mock-pdf',
-          hostedInvoiceUrl: 'https://invoice.stripe.com/mock-url',
-        },
-        {
-          id: 'in_' + (Date.now() - 1000),
-          number: 'INV-2024-002',
-          amount: 1999,
-          currency: 'gbp',
-          status: 'paid',
-          paidAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-          periodStart: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-          periodEnd: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-          invoicePdf: 'https://invoice.stripe.com/mock-pdf-2',
-          hostedInvoiceUrl: 'https://invoice.stripe.com/mock-url-2',
-        },
-      ],
-      hasMore: false,
-    };
+    const invoices = await stripe.invoices.list({
+      customer: subscription.stripeCustomerId,
+      limit,
+    });
 
-    return NextResponse.json(mockInvoices);
+    const data = invoices.data.map(inv => ({
+      id: inv.id,
+      number: inv.number,
+      amount: inv.amount_paid || inv.total,
+      currency: inv.currency,
+      status: inv.status,
+      paidAt: inv.status === 'paid' ? new Date(inv.status_transitions.paid_at! * 1000).toISOString() : null,
+      periodStart: new Date(inv.period_start * 1000).toISOString(),
+      periodEnd: new Date(inv.period_end * 1000).toISOString(),
+      invoicePdf: inv.invoice_pdf,
+      hostedInvoiceUrl: inv.hosted_invoice_url,
+    }));
+
+    return NextResponse.json({ 
+      data,
+      hasMore: invoices.has_more,
+    });
   } catch (error) {
     console.error('Get Invoices Error:', error);
     return NextResponse.json(

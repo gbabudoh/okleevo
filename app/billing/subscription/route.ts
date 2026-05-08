@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { stripe } from "@/lib/stripe/client";
 
 // Get subscription details
 export async function GET() {
@@ -14,8 +15,7 @@ export async function GET() {
       );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const businessId = (session.user as any).businessId;
+    const businessId = (session.user as { businessId: string }).businessId;
 
     if (!businessId) {
       return NextResponse.json(
@@ -32,20 +32,36 @@ export async function GET() {
       return NextResponse.json(null);
     }
 
+    // If we have a Stripe subscription ID, fetch real-time data
+    let stripeData = null;
+    if (subscription.stripeSubscriptionId) {
+      try {
+        stripeData = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
+      } catch (e) {
+        console.error('Stripe retrieval error:', e);
+      }
+    }
+
     return NextResponse.json({
         id: subscription.id,
-        status: subscription.status,
+        status: stripeData?.status || subscription.status,
         plan: {
-            id: subscription.stripePriceId || 'price_all_in_one',
+            id: stripeData?.items.data[0].price.id || subscription.stripePriceId || 'price_all_in_one',
             name: 'All-in-One Plan',
-            amount: subscription.amount,
-            currency: subscription.currency,
-            interval: 'month',
+            amount: stripeData?.items.data[0].price.unit_amount || subscription.amount,
+            currency: stripeData?.currency || subscription.currency,
+            interval: stripeData?.items.data[0].price.recurring?.interval || 'month',
         },
-        currentPeriodStart: subscription.currentPeriodStart.toISOString(),
-        currentPeriodEnd: subscription.currentPeriodEnd.toISOString(),
-        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-        trialEnd: subscription.trialEnd ? subscription.trialEnd.toISOString() : null,
+        currentPeriodStart: stripeData 
+          ? new Date(stripeData.current_period_start * 1000).toISOString() 
+          : subscription.currentPeriodStart.toISOString(),
+        currentPeriodEnd: stripeData 
+          ? new Date(stripeData.current_period_end * 1000).toISOString() 
+          : subscription.currentPeriodEnd.toISOString(),
+        cancelAtPeriodEnd: stripeData?.cancel_at_period_end ?? subscription.cancelAtPeriodEnd,
+        trialEnd: stripeData?.trial_end 
+          ? new Date(stripeData.trial_end * 1000).toISOString() 
+          : (subscription.trialEnd ? subscription.trialEnd.toISOString() : null),
         createdAt: subscription.createdAt.toISOString(),
     });
 

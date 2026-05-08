@@ -63,6 +63,7 @@ model User {
   ticketComments TicketComment[]
   aiNotes        AINote[]
   stockMovements StockMovement[]
+  notifications  Notification[]
 
   
   @@index([email])
@@ -420,6 +421,7 @@ model InventoryItem {
 model StockMovement {
   id            String   @id @default(cuid())
   businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   itemId        String
   item          InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
   
@@ -507,6 +509,8 @@ model Supplier {
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  
+  inventoryItems InventoryItem[]
   
   @@index([businessId])
   @@index([email])
@@ -1053,4 +1057,32 @@ model AINote {
 
   @@index([businessId])
   @@index([userId])
+}
+
+// =============================================================================
+// Notifications Module
+// =============================================================================
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  businessId  String
+  
+  title       String
+  message     String
+  type        String   @default("info") // 'info', 'success', 'warning', 'error'
+  status      String   @default("unread") // 'unread', 'read'
+  
+  link        String?  // Optional link to navigate to
+  metadata    Json?    // Any additional data
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([businessId])
+  @@index([status])
+  @@index([createdAt])
 }

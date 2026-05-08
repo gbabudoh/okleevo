@@ -50,6 +50,16 @@ interface UserData {
   };
 }
 
+interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  status: 'unread' | 'read';
+  createdAt: string;
+  link?: string;
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -60,6 +70,8 @@ export default function DashboardLayout({
   const { data: session, status } = useSession();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const router = useRouter();
 
@@ -116,6 +128,41 @@ export default function DashboardLayout({
 
     fetchUserData();
   }, [session, status]);
+
+  // Fetch notifications
+  useEffect(() => {
+    async function fetchNotifications() {
+      if (status === 'loading' || !session?.user?.id) return;
+      try {
+        const response = await fetch('/api/notifications');
+        if (response.ok) {
+          const data = await response.json();
+          setNotifications(data);
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    }
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, [session, status]);
+
+  const markAsRead = async (id: string) => {
+    try {
+      const res = await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: 'read' })
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
+  };
 
   // Scroll to top on route change
   useEffect(() => {
@@ -312,10 +359,89 @@ export default function DashboardLayout({
               ) : null}
             </div>
             <div className="flex items-center gap-3">
-              <button className="p-2 rounded-lg hover:bg-white/50 transition-colors relative">
-                <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <div className="flex items-center gap-3 relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-2 rounded-lg hover:bg-white/50 transition-colors relative cursor-pointer"
+              >
+                <Bell className={`w-5 h-5 ${notifications.length > 0 ? 'text-orange-500' : 'text-gray-600'}`} />
+                {notifications.length > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {notifications.length > 9 ? '9+' : notifications.length}
+                  </span>
+                )}
               </button>
+
+              {/* Notifications Dropdown */}
+              {showNotifications && (
+                <div className="absolute top-full right-0 mt-2 w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                  <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 className="font-bold text-gray-900">Notifications</h3>
+                    <button 
+                      onClick={() => setShowNotifications(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map((notification) => (
+                        <div 
+                          key={notification.id} 
+                          className="p-4 border-b border-gray-50 hover:bg-slate-50 transition-colors cursor-pointer group flex items-start gap-3"
+                          onClick={() => {
+                            // Handle click (e.g. navigate to link)
+                            if (notification.link) router.push(notification.link);
+                            markAsRead(notification.id);
+                            setShowNotifications(false);
+                          }}
+                        >
+                          <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
+                            notification.type === 'error' ? 'bg-red-500' : 
+                            notification.type === 'success' ? 'bg-emerald-500' : 
+                            'bg-blue-500'
+                          }`} />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
+                            <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
+                            <p className="text-[10px] text-gray-400 mt-1">
+                              {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAsRead(notification.id);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded text-red-400 transition-all"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center text-gray-500">
+                        <p className="text-sm">All caught up!</p>
+                      </div>
+                    )}
+                  </div>
+                  {notifications.length > 0 && (
+                    <div className="p-3 bg-slate-50 text-center border-t border-gray-100">
+                      <button 
+                        onClick={() => {
+                          // Mark all as read logic could go here
+                          setShowNotifications(false);
+                        }}
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                      >
+                        View all notifications
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              </div>
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-sm font-semibold shadow-md">
                 {userData?.firstName?.charAt(0) || 'U'}
               </div>

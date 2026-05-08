@@ -76,6 +76,43 @@ export default function SettingsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingUser, setEditingUser] = useState<TeamMember | null>(null);
+
+  // Billing states
+  interface BillingInfo {
+    status: string;
+    plan: {
+      name: string;
+      amount: number;
+      currency: string;
+      interval: string;
+    };
+    currentPeriodEnd: string;
+  }
+
+  interface PaymentMethod {
+    id: string;
+    isDefault: boolean;
+    card: {
+      brand: string;
+      last4: string;
+      expMonth: number;
+      expYear: number;
+    };
+  }
+
+  interface Invoice {
+    id: string;
+    number: string;
+    periodStart: string;
+    amount: number;
+    status: string;
+    invoicePdf: string;
+  }
+
+  const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loadingBilling, setLoadingBilling] = useState(false);
   
   // Presence tracking
   const { presence } = usePresence();
@@ -155,8 +192,52 @@ export default function SettingsPage() {
     if (activeTab === 'team') {
       fetchTeamMembers();
     }
+    if (activeTab === 'billing') {
+      fetchBillingInfo();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, session, status]);
+
+  async function fetchBillingInfo() {
+    setLoadingBilling(true);
+    try {
+      const [subRes, pmRes, invRes] = await Promise.all([
+        fetch('/app/billing/subscription'),
+        fetch('/app/billing/payment-method'),
+        fetch('/app/billing/invoices?limit=5')
+      ]);
+
+      if (subRes.ok) setBillingInfo(await subRes.json());
+      if (pmRes.ok) {
+        const pmData = await pmRes.json();
+        setPaymentMethods(pmData.data || []);
+      }
+      if (invRes.ok) {
+        const invData = await invRes.json();
+        setInvoices(invData.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching billing info:', error);
+      showToast('Failed to load billing information', 'error');
+    } finally {
+      setLoadingBilling(false);
+    }
+  }
+
+  async function handleOpenPortal() {
+    try {
+      const response = await fetch('/api/billing/portal', { method: 'POST' });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showToast(data.error || 'Failed to open billing portal', 'error');
+      }
+    } catch (error) {
+      console.error('Portal error:', error);
+      showToast('Connection error', 'error');
+    }
+  }
 
   async function fetchTeamMembers() {
     if (status === 'loading' || !session?.user?.id) {
@@ -1022,104 +1103,144 @@ export default function SettingsPage() {
       {/* Billing Tab */}
       {activeTab === 'billing' && (
         <div className="space-y-6">
-          {/* Current Plan */}
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl p-6 text-white">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold">All-in-One Plan</h2>
-                <p className="text-indigo-100">Billed monthly</p>
-              </div>
-              <div className="text-right">
-                <p className="text-4xl font-bold">£19.99</p>
-                <p className="text-indigo-100">per month</p>
-              </div>
+          {loadingBilling ? (
+            <div className="bg-white rounded-xl p-12 text-center border-2 border-gray-100">
+               <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+               <p className="text-gray-500 font-medium">Fetching secure billing data...</p>
             </div>
-            <div className="flex items-center gap-4">
-              <button 
-                type="button"
-                onClick={() => showToast('Upgrade plan functionality')}
-                className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all cursor-pointer"
-              >
-                Upgrade Plan
-              </button>
-              <button 
-                type="button"
-                onClick={() => showToast('View all plans')}
-                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all cursor-pointer"
-              >
-                View All Plans
-              </button>
-            </div>
-          </div>
-
-          {/* Payment Method */}
-          <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Payment Method</h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border-2 border-blue-200">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-500 rounded-lg">
-                    <CreditCard className="w-6 h-6 text-white" />
-                  </div>
+          ) : (
+            <>
+              {/* Current Plan */}
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl p-6 text-white shadow-lg">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-bold text-blue-900">Visa ending in 4242</h3>
-                    <p className="text-sm text-blue-700">Expires 12/2025</p>
+                    <h2 className="text-2xl font-bold">{billingInfo?.plan?.name || 'All-in-One Plan'}</h2>
+                    <p className="text-indigo-100">
+                      {billingInfo?.status === 'active' ? 'Billed monthly' : `Status: ${billingInfo?.status || 'Unknown'}`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-4xl font-bold">
+                      £{((billingInfo?.plan?.amount || 1999) / 100).toFixed(2)}
+                    </p>
+                    <p className="text-indigo-100">per {billingInfo?.plan?.interval || 'month'}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Default</span>
+                <div className="flex items-center gap-4">
                   <button 
                     type="button"
-                    onClick={() => showToast('Edit payment method')}
-                    className="p-2 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
+                    onClick={handleOpenPortal}
+                    className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all cursor-pointer shadow-md"
                   >
-                    <Edit3 className="w-4 h-4 text-blue-600" />
+                    Manage Subscription
+                  </button>
+                  {billingInfo?.currentPeriodEnd && (
+                    <p className="text-sm text-indigo-100 font-medium">
+                      Next renewal: {new Date(billingInfo.currentPeriodEnd).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-indigo-500" />
+                  Payment Method
+                </h2>
+                <div className="space-y-3">
+                  {paymentMethods.length > 0 ? (
+                    paymentMethods.map((pm) => (
+                      <div key={pm.id} className={`flex items-center justify-between p-4 rounded-xl border-2 ${pm.isDefault ? 'bg-indigo-50 border-indigo-200' : 'bg-gray-50 border-gray-100'}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${pm.isDefault ? 'bg-indigo-500' : 'bg-gray-400'}`}>
+                            <CreditCard className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className={`font-bold ${pm.isDefault ? 'text-indigo-900' : 'text-gray-900'}`}>
+                              {pm.card.brand.toUpperCase()} ending in {pm.card.last4}
+                            </h3>
+                            <p className={`text-sm ${pm.isDefault ? 'text-indigo-700' : 'text-gray-600'}`}>
+                              Expires {pm.card.expMonth}/{pm.card.expYear}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {pm.isDefault && (
+                            <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">Default</span>
+                          )}
+                          <button 
+                            type="button"
+                            onClick={handleOpenPortal}
+                            className="p-2 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <Edit3 className="w-4 h-4 text-indigo-600" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                      <p className="text-gray-500 font-medium">No payment methods found</p>
+                    </div>
+                  )}
+                  <button 
+                    type="button"
+                    onClick={handleOpenPortal}
+                    className="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-700 font-medium rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Manage Payment Methods
                   </button>
                 </div>
               </div>
-              <button 
-                type="button"
-                onClick={() => showToast('Add payment method')}
-                className="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-700 font-medium rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Plus className="w-5 h-5" />
-                Add Payment Method
-              </button>
-            </div>
-          </div>
 
-          {/* Billing History */}
-          <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Billing History</h2>
-            <div className="space-y-3">
-              {[
-                { date: 'Dec 1, 2024', amount: '£19.99', status: 'Paid', invoice: 'INV-2024-12' },
-                { date: 'Nov 1, 2024', amount: '£19.99', status: 'Paid', invoice: 'INV-2024-11' },
-                { date: 'Oct 1, 2024', amount: '£19.99', status: 'Paid', invoice: 'INV-2024-10' },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-gray-600" />
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{item.invoice}</h3>
-                      <p className="text-sm text-gray-600">{item.date}</p>
+              {/* Billing History */}
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-indigo-500" />
+                  Billing History
+                </h2>
+                <div className="space-y-3">
+                  {invoices.length > 0 ? (
+                    invoices.map((inv) => (
+                      <div key={inv.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-gray-600" />
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{inv.number}</h3>
+                            <p className="text-sm text-gray-600">{new Date(inv.periodStart).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="font-bold text-gray-900">£{(inv.amount / 100).toFixed(2)}</span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            inv.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            {inv.status.toUpperCase()}
+                          </span>
+                          {inv.invoicePdf && (
+                            <a 
+                              href={inv.invoicePdf}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Download className="w-4 h-4 text-gray-600" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center bg-gray-50 rounded-xl">
+                      <p className="text-gray-500 font-medium">No billing history available</p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold text-gray-900">{item.amount}</span>
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">{item.status}</span>
-                    <button 
-                      type="button"
-                      onClick={() => showToast(`Downloading invoice ${item.invoice}`)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-                    >
-                      <Download className="w-4 h-4 text-gray-600" />
-                    </button>
-                  </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 

@@ -61,6 +61,9 @@ model User {
   forms          Form[]
   appointments   Appointment[]
   ticketComments TicketComment[]
+  aiNotes        AINote[]
+  stockMovements StockMovement[]
+  notifications  Notification[]
 
   @@index([email])
   @@index([businessId])
@@ -165,6 +168,8 @@ model Business {
   emailLogs      EmailLog[]
   forms          Form[]
   appointments   Appointment[]
+  aiNotes        AINote[]
+  stockMovements StockMovement[]
 
   @@index([name])
 }
@@ -304,53 +309,6 @@ enum ContactStatus {
 }
 
 // =============================================================================
-// Tasks Module
-// =============================================================================
-
-model Task {
-  id String @id @default(cuid())
-
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  title       String
-  description String?
-  status      TaskStatus   @default(TODO)
-  priority    TaskPriority @default(MEDIUM)
-
-  dueDate     DateTime?
-  completedAt DateTime?
-
-  assignee String?
-  tags     String[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([businessId])
-  @@index([userId])
-  @@index([status])
-  @@index([priority])
-}
-
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  DONE
-  CANCELED
-}
-
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-// =============================================================================
 // AI Notes Module
 // =============================================================================
 
@@ -422,31 +380,67 @@ model InventoryItem {
 
   name        String
   sku         String  @unique
-  description String?
+  barcode     String?
+  description String? @db.Text
 
-  quantity    Int @default(0)
-  minQuantity Int @default(0)
+  quantity     Int @default(0)
+  minQuantity  Int @default(0)
+  maxQuantity  Int @default(100)
+  reorderPoint Int @default(10)
 
-  price Float?
-  cost  Float?
+  price Float @default(0) // unitPrice in UI
+  cost  Float @default(0)
 
   category String?
   location String?
+  unit     String  @default("pcs")
+
+  weight     Float?
+  dimensions String?
+  expiryDate DateTime?
+  image      String?
+  tags       String[]
 
   status InventoryStatus @default(IN_STOCK)
 
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  movements StockMovement[]
 
   @@index([businessId])
   @@index([sku])
   @@index([status])
 }
 
+model StockMovement {
+  id         String        @id @default(cuid())
+  businessId String
+  business   Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  itemId     String
+  item       InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  type     String // 'IN', 'OUT', 'ADJUSTMENT', 'TRANSFER'
+  quantity Int
+  date     DateTime @default(now())
+  reason   String?
+  userId   String?
+  user     User?    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([itemId])
+  @@index([businessId])
+}
+
 enum InventoryStatus {
   IN_STOCK
   LOW_STOCK
   OUT_OF_STOCK
+  OVERSTOCKED
 }
 
 // =============================================================================
@@ -514,6 +508,8 @@ model Supplier {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  inventoryItems InventoryItem[]
+
   @@index([businessId])
   @@index([email])
   @@index([status])
@@ -534,15 +530,21 @@ model Campaign {
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  name    String
-  subject String?
-  content String? @db.Text
+  name     String
+  subject  String?
+  content  String?      @db.Text
+  type     CampaignType @default(PROMOTIONAL)
+  audience String       @default("All Subscribers")
 
   status CampaignStatus @default(DRAFT)
 
-  sentCount    Int @default(0)
-  openedCount  Int @default(0)
-  clickedCount Int @default(0)
+  sentCount    Int   @default(0)
+  openedCount  Int   @default(0)
+  clickedCount Int   @default(0)
+  bouncedCount Int   @default(0)
+  unsubscribed Int   @default(0)
+  revenue      Float @default(0)
+  cost         Float @default(0)
 
   scheduledAt DateTime?
   sentAt      DateTime?
@@ -560,6 +562,13 @@ enum CampaignStatus {
   SENDING
   SENT
   COMPLETED
+}
+
+enum CampaignType {
+  PROMOTIONAL
+  NEWSLETTER
+  TRANSACTIONAL
+  ANNOUNCEMENT
 }
 
 // =============================================================================
@@ -695,9 +704,8 @@ model ComplianceItem {
 
   dueDate     DateTime
   completedAt DateTime?
-
-  status   ComplianceStatus @default(PENDING)
-  category String
+  status      ComplianceStatus @default(PENDING)
+  category    String?
 
   reminderSent Boolean @default(false)
 
@@ -713,6 +721,68 @@ enum ComplianceStatus {
   PENDING
   COMPLETED
   OVERDUE
+}
+
+// =============================================================================
+// Tasks Module
+// =============================================================================
+
+model Task {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  userId String? // Creator
+  user   User?   @relation(fields: [userId], references: [id])
+
+  title       String
+  description String? @db.Text
+
+  status   TaskStatus   @default(TODO)
+  priority TaskPriority @default(MEDIUM)
+
+  dueDate    DateTime?
+  assignedTo String? // Name of assignee
+
+  tags String[]
+
+  subtasks SubTask[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
+model SubTask {
+  id     String @id @default(cuid())
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  title     String
+  completed Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
 
 // =============================================================================
@@ -955,4 +1025,63 @@ enum FormStatus {
   ACTIVE
   DRAFT
   CLOSED
+}
+
+// =============================================================================
+// AI Notes Module
+// =============================================================================
+
+model AINote {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+
+  title     String
+  content   String
+  type      String // meeting, brainstorm, etc.
+  date      DateTime @default(now())
+  tags      String[]
+  isPinned  Boolean  @default(false)
+  isStarred Boolean  @default(false)
+
+  aiSummary    String?
+  actionItems  String[]
+  participants String[]
+  duration     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([userId])
+}
+
+// =============================================================================
+// Notifications Module
+// =============================================================================
+
+model Notification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  businessId String
+
+  title   String
+  message String
+  type    String @default("info") // 'info', 'success', 'warning', 'error'
+  status  String @default("unread") // 'unread', 'read'
+
+  link     String? // Optional link to navigate to
+  metadata Json? // Any additional data
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([businessId])
+  @@index([status])
+  @@index([createdAt])
 }

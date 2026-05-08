@@ -1,35 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { stripe } from "@/lib/stripe/client";
+import Stripe from 'stripe';
 
 // Get payment methods
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const authHeader = request.headers.get('authorization');
+    const session = await auth();
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // TODO: Fetch from Stripe
-    const mockPaymentMethods = {
-      data: [
-        {
-          id: 'pm_' + Date.now(),
-          type: 'card',
-          card: {
-            brand: 'visa',
-            last4: '4242',
-            expMonth: 12,
-            expYear: 2025,
-          },
-          isDefault: true,
-        },
-      ],
-    };
+    const businessId = (session.user as { businessId: string }).businessId;
 
-    return NextResponse.json(mockPaymentMethods);
+    const subscription = await prisma.subscription.findUnique({
+      where: { businessId },
+    });
+
+    if (!subscription?.stripeCustomerId) {
+      return NextResponse.json({ data: [] });
+    }
+
+    const paymentMethods = await stripe.paymentMethods.list({
+      customer: subscription.stripeCustomerId,
+      type: 'card',
+    });
+
+    // Also fetch customer to see default payment method
+    const customer = await stripe.customers.retrieve(subscription.stripeCustomerId);
+    
+    if (customer.deleted) {
+      return NextResponse.json({ data: [] });
+    }
+
+    const stripeCustomer = customer as Stripe.Customer;
+    const defaultPmId = stripeCustomer.invoice_settings?.default_payment_method;
+
+    const data = paymentMethods.data.map(pm => ({
+      id: pm.id,
+      type: pm.type,
+      card: {
+        brand: pm.card?.brand,
+        last4: pm.card?.last4,
+        expMonth: pm.card?.exp_month,
+        expYear: pm.card?.exp_year,
+      },
+      isDefault: pm.id === defaultPmId,
+    }));
+
+    return NextResponse.json({ data });
   } catch (error) {
     console.error('Get Payment Methods Error:', error);
     return NextResponse.json(

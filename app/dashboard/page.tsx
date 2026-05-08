@@ -8,7 +8,7 @@ import {
   DollarSign, Calendar, Clock, ArrowUpRight, ArrowDownRight,
   Sparkles, Plus, BarChart3, Activity, Target,
   Zap, Award, Bell, Mail,
-  Shield, Briefcase, X,
+  Shield, Briefcase, AlertCircle, X,
   Building2, UsersRound, AtSign, Cpu, Circle, LineChart
 } from 'lucide-react';
 import { usePresence } from '@/components/hooks/use-presence';
@@ -38,6 +38,53 @@ interface DashboardStat {
   period: string;
 }
 
+const DEFAULT_STATS: DashboardStat[] = [
+  {
+    title: 'Total Revenue',
+    value: '£0',
+    change: '+0%',
+    trend: 'up',
+    icon: DollarSign,
+    gradient: 'from-blue-500 via-blue-600 to-indigo-600',
+    bgGradient: 'from-blue-50 to-indigo-50',
+    iconBg: 'bg-blue-500',
+    period: 'vs last month'
+  },
+  {
+    title: 'Total Customers',
+    value: '0',
+    change: '+0%',
+    trend: 'up',
+    icon: Users,
+    gradient: 'from-purple-500 via-purple-600 to-pink-600',
+    bgGradient: 'from-purple-50 to-pink-50',
+    iconBg: 'bg-purple-500',
+    period: 'total base'
+  },
+  {
+    title: 'Sales Volume',
+    value: '0',
+    change: '+0%',
+    trend: 'up',
+    icon: Briefcase,
+    gradient: 'from-green-500 via-green-600 to-emerald-600',
+    bgGradient: 'from-green-50 to-emerald-50',
+    iconBg: 'bg-green-500',
+    period: 'units sold'
+  },
+  {
+    title: 'Lead Acquisition',
+    value: '0',
+    change: '+0%',
+    trend: 'up',
+    icon: Target,
+    gradient: 'from-orange-500 via-orange-600 to-red-600',
+    bgGradient: 'from-orange-50 to-red-50',
+    iconBg: 'bg-orange-500',
+    period: 'potential assets'
+  }
+];
+
 interface ActivityItem {
   type: string;
   title: string;
@@ -59,16 +106,20 @@ interface TaskItem {
 }
 
 interface NotificationItem {
-  icon?: React.ElementType;
-  color?: string;
+  id: string;
+  title: string;
   message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  status: 'unread' | 'read';
+  createdAt: string;
+  link?: string;
 }
 
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   // Dashboard Data State
-  const [stats, setStats] = useState<DashboardStat[]>([]);
+  const [stats, setStats] = useState<DashboardStat[]>(DEFAULT_STATS);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [upcomingTasks, setUpcomingTasks] = useState<TaskItem[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -99,76 +150,62 @@ export default function DashboardPage() {
     }
   }, [session, status, router]);
 
-  // Fetch Dashboard Data
   useEffect(() => {
     async function fetchDashboardData() {
       if (status === 'loading' || !session?.user?.id) return;
       
+      // Start loading but don't block the UI for stats anymore
       setIsDashboardLoading(true);
+      
       try {
-        // 1. Fetch User Profile (already exists, but we'll keep it unified)
-        const profileRes = await fetch('/api/user/profile');
+        // 1. Fetch all data in parallel for maximum performance
+        const [profileRes, kpiRes, activityRes, tasksRes, notifyRes] = await Promise.all([
+          fetch('/api/user/profile'),
+          fetch('/api/kpis'),
+          fetch('/api/activity?limit=5'),
+          fetch('/api/tasks'),
+          fetch('/api/notifications')
+        ]);
+
+        // 2. Process User Profile
         if (profileRes.ok) {
           const data: UserData = await profileRes.json();
           if (data?.business) setUserData(data);
         }
 
-        // 2. Fetch KPIs for Stats
-        const kpiRes = await fetch('/api/kpis');
+        // 3. Process KPIs for Stats
         if (kpiRes.ok) {
           const { kpis }: { kpis: { value: string; change: number }[] } = await kpiRes.json();
-          // Map KPIs to stats format
           const mappedStats: DashboardStat[] = [
             {
-              title: 'Total Revenue',
+              ...DEFAULT_STATS[0],
               value: `£${(parseInt(kpis[0]?.value?.replace(/[^0-9]/g, '') || '0')).toLocaleString()}`,
               change: `${kpis[0]?.change >= 0 ? '+' : ''}${kpis[0]?.change}%`,
               trend: kpis[0]?.change >= 0 ? 'up' : 'down',
-              icon: DollarSign,
-              gradient: 'from-blue-500 via-blue-600 to-indigo-600',
-              bgGradient: 'from-blue-50 to-indigo-50',
-              iconBg: 'bg-blue-500',
-              period: 'vs last month'
             },
             {
-              title: 'Total Customers',
+              ...DEFAULT_STATS[1],
               value: kpis[6]?.value || '0',
               change: `${kpis[6]?.change >= 0 ? '+' : ''}${kpis[6]?.change}%`,
               trend: kpis[6]?.change >= 0 ? 'up' : 'down',
-              icon: Users,
-              gradient: 'from-purple-500 via-purple-600 to-pink-600',
-              bgGradient: 'from-purple-50 to-pink-50',
-              iconBg: 'bg-purple-500',
-              period: 'total base'
             },
             {
-              title: 'Sales Volume',
+              ...DEFAULT_STATS[2],
               value: kpis[3]?.value || '0',
               change: `${kpis[3]?.change >= 0 ? '+' : ''}${kpis[3]?.change}%`,
               trend: kpis[3]?.change >= 0 ? 'up' : 'down',
-              icon: Briefcase,
-              gradient: 'from-green-500 via-green-600 to-emerald-600',
-              bgGradient: 'from-green-50 to-emerald-50',
-              iconBg: 'bg-green-500',
-              period: 'units sold'
             },
             {
-              title: 'Lead Acquisition',
+              ...DEFAULT_STATS[3],
               value: kpis[5]?.value || '0',
               change: `${kpis[5]?.change >= 0 ? '+' : ''}${kpis[5]?.change}%`,
               trend: kpis[5]?.change >= 0 ? 'up' : 'down',
-              icon: Target,
-              gradient: 'from-orange-500 via-orange-600 to-red-600',
-              bgGradient: 'from-orange-50 to-red-50',
-              iconBg: 'bg-orange-500',
-              period: 'potential assets'
             }
           ];
           setStats(mappedStats);
         }
 
-        // 3. Fetch Recent Activity
-        const activityRes = await fetch('/api/activity?limit=5');
+        // 4. Process Recent Activity
         if (activityRes.ok) {
           const { activity } = await activityRes.json();
           const mappedActivity = activity.map((a: {
@@ -192,8 +229,7 @@ export default function DashboardPage() {
           setRecentActivity(mappedActivity);
         }
 
-        // 4. Fetch Tasks
-        const tasksRes = await fetch('/api/tasks');
+        // 5. Process Tasks
         if (tasksRes.ok) {
           const tasks = await tasksRes.json();
           const upcoming = tasks
@@ -215,8 +251,7 @@ export default function DashboardPage() {
           setUpcomingTasks(upcoming);
         }
 
-        // 5. Fetch Notifications
-        const notifyRes = await fetch('/api/notifications');
+        // 6. Process Notifications
         if (notifyRes.ok) {
           const data: NotificationItem[] = await notifyRes.json();
           setNotifications(data);
@@ -232,6 +267,21 @@ export default function DashboardPage() {
 
     fetchDashboardData();
   }, [session, status]);
+
+  const markAsRead = async (id: string) => {
+    try {
+      const res = await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: 'read' })
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
+  };
 
   const handleCreateProject = () => {
     if (projectName.trim()) {
@@ -431,23 +481,17 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* KPI Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {isDashboardLoading ? (
-          // Skeleton loaders
-          [1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white/40 animate-pulse rounded-2xl h-40 border border-white/50"></div>
-          ))
-        ) : stats.length > 0 ? (
-          stats.map((stat, index) => {
-            const Icon = stat.icon;
-            const TrendIcon = stat.trend === 'up' ? ArrowUpRight : ArrowDownRight;
-            
-            return (
-              <div
-                key={index}
-                className={`relative bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group backdrop-blur-sm`}
-              >
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
+          const TrendIcon = stat.trend === 'up' ? ArrowUpRight : ArrowDownRight;
+          const isHydrating = loading && (stat.value === '£0' || stat.value === '0');
+          
+          return (
+            <div
+              key={index}
+              className={`relative bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group backdrop-blur-sm ${isHydrating ? 'opacity-70' : 'opacity-100'}`}
+            >
                 {/* Background decoration */}
                 <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full group-hover:scale-150 transition-transform`} />
                 
@@ -470,13 +514,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             );
-          })
-        ) : (
-          // Fallback if stats fail to load
-          <div className="col-span-full py-12 text-center bg-white/40 rounded-2xl border border-dashed border-gray-300">
-            <p className="text-gray-500">No performance metrics available yet.</p>
-          </div>
-        )}
+        })}
       </div>
 
       {/* Quick Actions */}
@@ -737,29 +775,47 @@ export default function DashboardPage() {
         {/* Notifications */}
         <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-red-500" />
+            <Bell className="w-5 h-5 text-red-500 cursor-pointer" />
             Notifications
-            <span className="ml-auto px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">3</span>
+            {notifications.length > 0 && (
+              <span className="ml-auto px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+                {notifications.length}
+              </span>
+            )}
           </h2>
           
           <div className="space-y-3">
             {notifications.length > 0 ? (
-              notifications.map((notification, index) => {
-                const Icon = notification.icon || Bell;
-                const colors: Record<string, { bg: string, text: string, border: string }> = {
-                  red: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
-                  blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
-                  green: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200' }
+              notifications.map((notification) => {
+                const colors: Record<string, { bg: string, text: string, border: string, icon: React.ElementType }> = {
+                  error: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', icon: Bell },
+                  info: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', icon: Bell },
+                  success: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200', icon: CheckSquare },
+                  warning: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', icon: AlertCircle }
                 };
-                const colorScheme = colors[notification.color || 'blue'] || colors.blue;
+                const colorScheme = colors[notification.type] || colors.info;
+                const Icon = colorScheme.icon;
                 
                 return (
-                  <div key={index} className={`flex items-center gap-3 p-4 rounded-xl border ${colorScheme.border} ${colorScheme.bg} hover:shadow-lg transition-all cursor-pointer`}>
-                    <div className={`p-2 bg-white rounded-lg ${colorScheme.text}`}>
+                  <div 
+                    key={notification.id} 
+                    className={`flex items-start gap-3 p-4 rounded-xl border ${colorScheme.border} ${colorScheme.bg} hover:shadow-lg transition-all cursor-pointer group`}
+                  >
+                    <div className={`p-2 bg-white rounded-lg ${colorScheme.text} shadow-sm`}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <p className="flex-1 text-sm font-medium text-gray-900 dark:text-white">{notification.message}</p>
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{notification.title}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{notification.message}</p>
+                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markAsRead(notification.id);
+                      }}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      title="Mark as read"
+                    >
                       <X className="w-4 h-4" />
                     </button>
                   </div>

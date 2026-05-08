@@ -69,6 +69,11 @@ export type Expense = $Result.DefaultSelection<Prisma.$ExpensePayload>
  */
 export type InventoryItem = $Result.DefaultSelection<Prisma.$InventoryItemPayload>
 /**
+ * Model StockMovement
+ * 
+ */
+export type StockMovement = $Result.DefaultSelection<Prisma.$StockMovementPayload>
+/**
  * Model Employee
  * 
  */
@@ -158,6 +163,11 @@ export type FormResponse = $Result.DefaultSelection<Prisma.$FormResponsePayload>
  * 
  */
 export type AINote = $Result.DefaultSelection<Prisma.$AINotePayload>
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
 
 /**
  * Enums
@@ -219,7 +229,8 @@ export type ContactStatus = (typeof ContactStatus)[keyof typeof ContactStatus]
 export const InventoryStatus: {
   IN_STOCK: 'IN_STOCK',
   LOW_STOCK: 'LOW_STOCK',
-  OUT_OF_STOCK: 'OUT_OF_STOCK'
+  OUT_OF_STOCK: 'OUT_OF_STOCK',
+  OVERSTOCKED: 'OVERSTOCKED'
 };
 
 export type InventoryStatus = (typeof InventoryStatus)[keyof typeof InventoryStatus]
@@ -697,6 +708,16 @@ export class PrismaClient<
   get inventoryItem(): Prisma.InventoryItemDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.stockMovement`: Exposes CRUD operations for the **StockMovement** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more StockMovements
+    * const stockMovements = await prisma.stockMovement.findMany()
+    * ```
+    */
+  get stockMovement(): Prisma.StockMovementDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.employee`: Exposes CRUD operations for the **Employee** model.
     * Example usage:
     * ```ts
@@ -875,6 +896,16 @@ export class PrismaClient<
     * ```
     */
   get aINote(): Prisma.AINoteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Notifications
+    * const notifications = await prisma.notification.findMany()
+    * ```
+    */
+  get notification(): Prisma.NotificationDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1327,6 +1358,7 @@ export namespace Prisma {
     Note: 'Note',
     Expense: 'Expense',
     InventoryItem: 'InventoryItem',
+    StockMovement: 'StockMovement',
     Employee: 'Employee',
     Supplier: 'Supplier',
     Campaign: 'Campaign',
@@ -1344,7 +1376,8 @@ export namespace Prisma {
     EmailLog: 'EmailLog',
     Form: 'Form',
     FormResponse: 'FormResponse',
-    AINote: 'AINote'
+    AINote: 'AINote',
+    Notification: 'Notification'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1363,7 +1396,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "business" | "subscription" | "invoice" | "contact" | "note" | "expense" | "inventoryItem" | "employee" | "supplier" | "campaign" | "ticket" | "ticketComment" | "appointment" | "complianceItem" | "task" | "subTask" | "auditLog" | "workspaceVisibility" | "ledgerAccount" | "journalEntry" | "ledgerEntry" | "emailLog" | "form" | "formResponse" | "aINote"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "business" | "subscription" | "invoice" | "contact" | "note" | "expense" | "inventoryItem" | "stockMovement" | "employee" | "supplier" | "campaign" | "ticket" | "ticketComment" | "appointment" | "complianceItem" | "task" | "subTask" | "auditLog" | "workspaceVisibility" | "ledgerAccount" | "journalEntry" | "ledgerEntry" | "emailLog" | "form" | "formResponse" | "aINote" | "notification"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2178,6 +2211,80 @@ export namespace Prisma {
           count: {
             args: Prisma.InventoryItemCountArgs<ExtArgs>
             result: $Utils.Optional<InventoryItemCountAggregateOutputType> | number
+          }
+        }
+      }
+      StockMovement: {
+        payload: Prisma.$StockMovementPayload<ExtArgs>
+        fields: Prisma.StockMovementFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.StockMovementFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.StockMovementFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload>
+          }
+          findFirst: {
+            args: Prisma.StockMovementFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.StockMovementFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload>
+          }
+          findMany: {
+            args: Prisma.StockMovementFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload>[]
+          }
+          create: {
+            args: Prisma.StockMovementCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload>
+          }
+          createMany: {
+            args: Prisma.StockMovementCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.StockMovementCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload>[]
+          }
+          delete: {
+            args: Prisma.StockMovementDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload>
+          }
+          update: {
+            args: Prisma.StockMovementUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload>
+          }
+          deleteMany: {
+            args: Prisma.StockMovementDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.StockMovementUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.StockMovementUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload>[]
+          }
+          upsert: {
+            args: Prisma.StockMovementUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StockMovementPayload>
+          }
+          aggregate: {
+            args: Prisma.StockMovementAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateStockMovement>
+          }
+          groupBy: {
+            args: Prisma.StockMovementGroupByArgs<ExtArgs>
+            result: $Utils.Optional<StockMovementGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.StockMovementCountArgs<ExtArgs>
+            result: $Utils.Optional<StockMovementCountAggregateOutputType> | number
           }
         }
       }
@@ -3513,6 +3620,80 @@ export namespace Prisma {
           }
         }
       }
+      Notification: {
+        payload: Prisma.$NotificationPayload<ExtArgs>
+        fields: Prisma.NotificationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NotificationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NotificationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          findFirst: {
+            args: Prisma.NotificationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NotificationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          findMany: {
+            args: Prisma.NotificationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+          }
+          create: {
+            args: Prisma.NotificationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          createMany: {
+            args: Prisma.NotificationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NotificationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+          }
+          delete: {
+            args: Prisma.NotificationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          update: {
+            args: Prisma.NotificationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          deleteMany: {
+            args: Prisma.NotificationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NotificationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.NotificationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+          }
+          upsert: {
+            args: Prisma.NotificationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          aggregate: {
+            args: Prisma.NotificationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNotification>
+          }
+          groupBy: {
+            args: Prisma.NotificationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NotificationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NotificationCountArgs<ExtArgs>
+            result: $Utils.Optional<NotificationCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3620,6 +3801,7 @@ export namespace Prisma {
     note?: NoteOmit
     expense?: ExpenseOmit
     inventoryItem?: InventoryItemOmit
+    stockMovement?: StockMovementOmit
     employee?: EmployeeOmit
     supplier?: SupplierOmit
     campaign?: CampaignOmit
@@ -3638,6 +3820,7 @@ export namespace Prisma {
     form?: FormOmit
     formResponse?: FormResponseOmit
     aINote?: AINoteOmit
+    notification?: NotificationOmit
   }
 
   /* Types for Logging */
@@ -3732,6 +3915,8 @@ export namespace Prisma {
     appointments: number
     ticketComments: number
     aiNotes: number
+    stockMovements: number
+    notifications: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3749,6 +3934,8 @@ export namespace Prisma {
     appointments?: boolean | UserCountOutputTypeCountAppointmentsArgs
     ticketComments?: boolean | UserCountOutputTypeCountTicketCommentsArgs
     aiNotes?: boolean | UserCountOutputTypeCountAiNotesArgs
+    stockMovements?: boolean | UserCountOutputTypeCountStockMovementsArgs
+    notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   }
 
   // Custom InputTypes
@@ -3860,6 +4047,20 @@ export namespace Prisma {
     where?: AINoteWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountStockMovementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StockMovementWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
+  }
+
 
   /**
    * Count Type BusinessCountOutputType
@@ -3883,6 +4084,7 @@ export namespace Prisma {
     forms: number
     appointments: number
     aiNotes: number
+    stockMovements: number
   }
 
   export type BusinessCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3903,6 +4105,7 @@ export namespace Prisma {
     forms?: boolean | BusinessCountOutputTypeCountFormsArgs
     appointments?: boolean | BusinessCountOutputTypeCountAppointmentsArgs
     aiNotes?: boolean | BusinessCountOutputTypeCountAiNotesArgs
+    stockMovements?: boolean | BusinessCountOutputTypeCountStockMovementsArgs
   }
 
   // Custom InputTypes
@@ -4033,6 +4236,75 @@ export namespace Prisma {
    */
   export type BusinessCountOutputTypeCountAiNotesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AINoteWhereInput
+  }
+
+  /**
+   * BusinessCountOutputType without action
+   */
+  export type BusinessCountOutputTypeCountStockMovementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StockMovementWhereInput
+  }
+
+
+  /**
+   * Count Type InventoryItemCountOutputType
+   */
+
+  export type InventoryItemCountOutputType = {
+    movements: number
+  }
+
+  export type InventoryItemCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    movements?: boolean | InventoryItemCountOutputTypeCountMovementsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * InventoryItemCountOutputType without action
+   */
+  export type InventoryItemCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryItemCountOutputType
+     */
+    select?: InventoryItemCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * InventoryItemCountOutputType without action
+   */
+  export type InventoryItemCountOutputTypeCountMovementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StockMovementWhereInput
+  }
+
+
+  /**
+   * Count Type SupplierCountOutputType
+   */
+
+  export type SupplierCountOutputType = {
+    inventoryItems: number
+  }
+
+  export type SupplierCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    inventoryItems?: boolean | SupplierCountOutputTypeCountInventoryItemsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * SupplierCountOutputType without action
+   */
+  export type SupplierCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SupplierCountOutputType
+     */
+    select?: SupplierCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * SupplierCountOutputType without action
+   */
+  export type SupplierCountOutputTypeCountInventoryItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InventoryItemWhereInput
   }
 
 
@@ -4474,6 +4746,8 @@ export namespace Prisma {
     appointments?: boolean | User$appointmentsArgs<ExtArgs>
     ticketComments?: boolean | User$ticketCommentsArgs<ExtArgs>
     aiNotes?: boolean | User$aiNotesArgs<ExtArgs>
+    stockMovements?: boolean | User$stockMovementsArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4559,6 +4833,8 @@ export namespace Prisma {
     appointments?: boolean | User$appointmentsArgs<ExtArgs>
     ticketComments?: boolean | User$ticketCommentsArgs<ExtArgs>
     aiNotes?: boolean | User$aiNotesArgs<ExtArgs>
+    stockMovements?: boolean | User$stockMovementsArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4586,6 +4862,8 @@ export namespace Prisma {
       appointments: Prisma.$AppointmentPayload<ExtArgs>[]
       ticketComments: Prisma.$TicketCommentPayload<ExtArgs>[]
       aiNotes: Prisma.$AINotePayload<ExtArgs>[]
+      stockMovements: Prisma.$StockMovementPayload<ExtArgs>[]
+      notifications: Prisma.$NotificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5015,6 +5293,8 @@ export namespace Prisma {
     appointments<T extends User$appointmentsArgs<ExtArgs> = {}>(args?: Subset<T, User$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ticketComments<T extends User$ticketCommentsArgs<ExtArgs> = {}>(args?: Subset<T, User$ticketCommentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketCommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiNotes<T extends User$aiNotesArgs<ExtArgs> = {}>(args?: Subset<T, User$aiNotesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AINotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    stockMovements<T extends User$stockMovementsArgs<ExtArgs> = {}>(args?: Subset<T, User$stockMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5791,6 +6071,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AINoteScalarFieldEnum | AINoteScalarFieldEnum[]
+  }
+
+  /**
+   * User.stockMovements
+   */
+  export type User$stockMovementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    where?: StockMovementWhereInput
+    orderBy?: StockMovementOrderByWithRelationInput | StockMovementOrderByWithRelationInput[]
+    cursor?: StockMovementWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: StockMovementScalarFieldEnum | StockMovementScalarFieldEnum[]
+  }
+
+  /**
+   * User.notifications
+   */
+  export type User$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    cursor?: NotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
   }
 
   /**
@@ -9293,6 +9621,7 @@ export namespace Prisma {
     forms?: boolean | Business$formsArgs<ExtArgs>
     appointments?: boolean | Business$appointmentsArgs<ExtArgs>
     aiNotes?: boolean | Business$aiNotesArgs<ExtArgs>
+    stockMovements?: boolean | Business$stockMovementsArgs<ExtArgs>
     _count?: boolean | BusinessCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["business"]>
 
@@ -9364,6 +9693,7 @@ export namespace Prisma {
     forms?: boolean | Business$formsArgs<ExtArgs>
     appointments?: boolean | Business$appointmentsArgs<ExtArgs>
     aiNotes?: boolean | Business$aiNotesArgs<ExtArgs>
+    stockMovements?: boolean | Business$stockMovementsArgs<ExtArgs>
     _count?: boolean | BusinessCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BusinessIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -9390,6 +9720,7 @@ export namespace Prisma {
       forms: Prisma.$FormPayload<ExtArgs>[]
       appointments: Prisma.$AppointmentPayload<ExtArgs>[]
       aiNotes: Prisma.$AINotePayload<ExtArgs>[]
+      stockMovements: Prisma.$StockMovementPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9817,6 +10148,7 @@ export namespace Prisma {
     forms<T extends Business$formsArgs<ExtArgs> = {}>(args?: Subset<T, Business$formsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FormPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     appointments<T extends Business$appointmentsArgs<ExtArgs> = {}>(args?: Subset<T, Business$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiNotes<T extends Business$aiNotesArgs<ExtArgs> = {}>(args?: Subset<T, Business$aiNotesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AINotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    stockMovements<T extends Business$stockMovementsArgs<ExtArgs> = {}>(args?: Subset<T, Business$stockMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10671,6 +11003,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AINoteScalarFieldEnum | AINoteScalarFieldEnum[]
+  }
+
+  /**
+   * Business.stockMovements
+   */
+  export type Business$stockMovementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    where?: StockMovementWhereInput
+    orderBy?: StockMovementOrderByWithRelationInput | StockMovementOrderByWithRelationInput[]
+    cursor?: StockMovementWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: StockMovementScalarFieldEnum | StockMovementScalarFieldEnum[]
   }
 
   /**
@@ -16818,15 +17174,21 @@ export namespace Prisma {
   export type InventoryItemAvgAggregateOutputType = {
     quantity: number | null
     minQuantity: number | null
+    maxQuantity: number | null
+    reorderPoint: number | null
     price: number | null
     cost: number | null
+    weight: number | null
   }
 
   export type InventoryItemSumAggregateOutputType = {
     quantity: number | null
     minQuantity: number | null
+    maxQuantity: number | null
+    reorderPoint: number | null
     price: number | null
     cost: number | null
+    weight: number | null
   }
 
   export type InventoryItemMinAggregateOutputType = {
@@ -16834,14 +17196,23 @@ export namespace Prisma {
     businessId: string | null
     name: string | null
     sku: string | null
+    barcode: string | null
     description: string | null
     quantity: number | null
     minQuantity: number | null
+    maxQuantity: number | null
+    reorderPoint: number | null
     price: number | null
     cost: number | null
     category: string | null
     location: string | null
+    unit: string | null
+    weight: number | null
+    dimensions: string | null
+    expiryDate: Date | null
+    image: string | null
     status: $Enums.InventoryStatus | null
+    supplierId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -16851,14 +17222,23 @@ export namespace Prisma {
     businessId: string | null
     name: string | null
     sku: string | null
+    barcode: string | null
     description: string | null
     quantity: number | null
     minQuantity: number | null
+    maxQuantity: number | null
+    reorderPoint: number | null
     price: number | null
     cost: number | null
     category: string | null
     location: string | null
+    unit: string | null
+    weight: number | null
+    dimensions: string | null
+    expiryDate: Date | null
+    image: string | null
     status: $Enums.InventoryStatus | null
+    supplierId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -16868,14 +17248,24 @@ export namespace Prisma {
     businessId: number
     name: number
     sku: number
+    barcode: number
     description: number
     quantity: number
     minQuantity: number
+    maxQuantity: number
+    reorderPoint: number
     price: number
     cost: number
     category: number
     location: number
+    unit: number
+    weight: number
+    dimensions: number
+    expiryDate: number
+    image: number
+    tags: number
     status: number
+    supplierId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -16885,15 +17275,21 @@ export namespace Prisma {
   export type InventoryItemAvgAggregateInputType = {
     quantity?: true
     minQuantity?: true
+    maxQuantity?: true
+    reorderPoint?: true
     price?: true
     cost?: true
+    weight?: true
   }
 
   export type InventoryItemSumAggregateInputType = {
     quantity?: true
     minQuantity?: true
+    maxQuantity?: true
+    reorderPoint?: true
     price?: true
     cost?: true
+    weight?: true
   }
 
   export type InventoryItemMinAggregateInputType = {
@@ -16901,14 +17297,23 @@ export namespace Prisma {
     businessId?: true
     name?: true
     sku?: true
+    barcode?: true
     description?: true
     quantity?: true
     minQuantity?: true
+    maxQuantity?: true
+    reorderPoint?: true
     price?: true
     cost?: true
     category?: true
     location?: true
+    unit?: true
+    weight?: true
+    dimensions?: true
+    expiryDate?: true
+    image?: true
     status?: true
+    supplierId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -16918,14 +17323,23 @@ export namespace Prisma {
     businessId?: true
     name?: true
     sku?: true
+    barcode?: true
     description?: true
     quantity?: true
     minQuantity?: true
+    maxQuantity?: true
+    reorderPoint?: true
     price?: true
     cost?: true
     category?: true
     location?: true
+    unit?: true
+    weight?: true
+    dimensions?: true
+    expiryDate?: true
+    image?: true
     status?: true
+    supplierId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -16935,14 +17349,24 @@ export namespace Prisma {
     businessId?: true
     name?: true
     sku?: true
+    barcode?: true
     description?: true
     quantity?: true
     minQuantity?: true
+    maxQuantity?: true
+    reorderPoint?: true
     price?: true
     cost?: true
     category?: true
     location?: true
+    unit?: true
+    weight?: true
+    dimensions?: true
+    expiryDate?: true
+    image?: true
+    tags?: true
     status?: true
+    supplierId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -17039,14 +17463,24 @@ export namespace Prisma {
     businessId: string
     name: string
     sku: string
+    barcode: string | null
     description: string | null
     quantity: number
     minQuantity: number
-    price: number | null
-    cost: number | null
+    maxQuantity: number
+    reorderPoint: number
+    price: number
+    cost: number
     category: string | null
     location: string | null
+    unit: string
+    weight: number | null
+    dimensions: string | null
+    expiryDate: Date | null
+    image: string | null
+    tags: string[]
     status: $Enums.InventoryStatus
+    supplierId: string | null
     createdAt: Date
     updatedAt: Date
     _count: InventoryItemCountAggregateOutputType | null
@@ -17075,17 +17509,30 @@ export namespace Prisma {
     businessId?: boolean
     name?: boolean
     sku?: boolean
+    barcode?: boolean
     description?: boolean
     quantity?: boolean
     minQuantity?: boolean
+    maxQuantity?: boolean
+    reorderPoint?: boolean
     price?: boolean
     cost?: boolean
     category?: boolean
     location?: boolean
+    unit?: boolean
+    weight?: boolean
+    dimensions?: boolean
+    expiryDate?: boolean
+    image?: boolean
+    tags?: boolean
     status?: boolean
+    supplierId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
+    supplier?: boolean | InventoryItem$supplierArgs<ExtArgs>
+    movements?: boolean | InventoryItem$movementsArgs<ExtArgs>
+    _count?: boolean | InventoryItemCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["inventoryItem"]>
 
   export type InventoryItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -17093,17 +17540,28 @@ export namespace Prisma {
     businessId?: boolean
     name?: boolean
     sku?: boolean
+    barcode?: boolean
     description?: boolean
     quantity?: boolean
     minQuantity?: boolean
+    maxQuantity?: boolean
+    reorderPoint?: boolean
     price?: boolean
     cost?: boolean
     category?: boolean
     location?: boolean
+    unit?: boolean
+    weight?: boolean
+    dimensions?: boolean
+    expiryDate?: boolean
+    image?: boolean
+    tags?: boolean
     status?: boolean
+    supplierId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
+    supplier?: boolean | InventoryItem$supplierArgs<ExtArgs>
   }, ExtArgs["result"]["inventoryItem"]>
 
   export type InventoryItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -17111,17 +17569,28 @@ export namespace Prisma {
     businessId?: boolean
     name?: boolean
     sku?: boolean
+    barcode?: boolean
     description?: boolean
     quantity?: boolean
     minQuantity?: boolean
+    maxQuantity?: boolean
+    reorderPoint?: boolean
     price?: boolean
     cost?: boolean
     category?: boolean
     location?: boolean
+    unit?: boolean
+    weight?: boolean
+    dimensions?: boolean
+    expiryDate?: boolean
+    image?: boolean
+    tags?: boolean
     status?: boolean
+    supplierId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
+    supplier?: boolean | InventoryItem$supplierArgs<ExtArgs>
   }, ExtArgs["result"]["inventoryItem"]>
 
   export type InventoryItemSelectScalar = {
@@ -17129,47 +17598,74 @@ export namespace Prisma {
     businessId?: boolean
     name?: boolean
     sku?: boolean
+    barcode?: boolean
     description?: boolean
     quantity?: boolean
     minQuantity?: boolean
+    maxQuantity?: boolean
+    reorderPoint?: boolean
     price?: boolean
     cost?: boolean
     category?: boolean
     location?: boolean
+    unit?: boolean
+    weight?: boolean
+    dimensions?: boolean
+    expiryDate?: boolean
+    image?: boolean
+    tags?: boolean
     status?: boolean
+    supplierId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type InventoryItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "name" | "sku" | "description" | "quantity" | "minQuantity" | "price" | "cost" | "category" | "location" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["inventoryItem"]>
+  export type InventoryItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "name" | "sku" | "barcode" | "description" | "quantity" | "minQuantity" | "maxQuantity" | "reorderPoint" | "price" | "cost" | "category" | "location" | "unit" | "weight" | "dimensions" | "expiryDate" | "image" | "tags" | "status" | "supplierId" | "createdAt" | "updatedAt", ExtArgs["result"]["inventoryItem"]>
   export type InventoryItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
+    supplier?: boolean | InventoryItem$supplierArgs<ExtArgs>
+    movements?: boolean | InventoryItem$movementsArgs<ExtArgs>
+    _count?: boolean | InventoryItemCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type InventoryItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
+    supplier?: boolean | InventoryItem$supplierArgs<ExtArgs>
   }
   export type InventoryItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
+    supplier?: boolean | InventoryItem$supplierArgs<ExtArgs>
   }
 
   export type $InventoryItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "InventoryItem"
     objects: {
       business: Prisma.$BusinessPayload<ExtArgs>
+      supplier: Prisma.$SupplierPayload<ExtArgs> | null
+      movements: Prisma.$StockMovementPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       businessId: string
       name: string
       sku: string
+      barcode: string | null
       description: string | null
       quantity: number
       minQuantity: number
-      price: number | null
-      cost: number | null
+      maxQuantity: number
+      reorderPoint: number
+      price: number
+      cost: number
       category: string | null
       location: string | null
+      unit: string
+      weight: number | null
+      dimensions: string | null
+      expiryDate: Date | null
+      image: string | null
+      tags: string[]
       status: $Enums.InventoryStatus
+      supplierId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["inventoryItem"]>
@@ -17567,6 +18063,8 @@ export namespace Prisma {
   export interface Prisma__InventoryItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     business<T extends BusinessDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusinessDefaultArgs<ExtArgs>>): Prisma__BusinessClient<$Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    supplier<T extends InventoryItem$supplierArgs<ExtArgs> = {}>(args?: Subset<T, InventoryItem$supplierArgs<ExtArgs>>): Prisma__SupplierClient<$Result.GetResult<Prisma.$SupplierPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    movements<T extends InventoryItem$movementsArgs<ExtArgs> = {}>(args?: Subset<T, InventoryItem$movementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17600,14 +18098,24 @@ export namespace Prisma {
     readonly businessId: FieldRef<"InventoryItem", 'String'>
     readonly name: FieldRef<"InventoryItem", 'String'>
     readonly sku: FieldRef<"InventoryItem", 'String'>
+    readonly barcode: FieldRef<"InventoryItem", 'String'>
     readonly description: FieldRef<"InventoryItem", 'String'>
     readonly quantity: FieldRef<"InventoryItem", 'Int'>
     readonly minQuantity: FieldRef<"InventoryItem", 'Int'>
+    readonly maxQuantity: FieldRef<"InventoryItem", 'Int'>
+    readonly reorderPoint: FieldRef<"InventoryItem", 'Int'>
     readonly price: FieldRef<"InventoryItem", 'Float'>
     readonly cost: FieldRef<"InventoryItem", 'Float'>
     readonly category: FieldRef<"InventoryItem", 'String'>
     readonly location: FieldRef<"InventoryItem", 'String'>
+    readonly unit: FieldRef<"InventoryItem", 'String'>
+    readonly weight: FieldRef<"InventoryItem", 'Float'>
+    readonly dimensions: FieldRef<"InventoryItem", 'String'>
+    readonly expiryDate: FieldRef<"InventoryItem", 'DateTime'>
+    readonly image: FieldRef<"InventoryItem", 'String'>
+    readonly tags: FieldRef<"InventoryItem", 'String[]'>
     readonly status: FieldRef<"InventoryItem", 'InventoryStatus'>
+    readonly supplierId: FieldRef<"InventoryItem", 'String'>
     readonly createdAt: FieldRef<"InventoryItem", 'DateTime'>
     readonly updatedAt: FieldRef<"InventoryItem", 'DateTime'>
   }
@@ -18006,6 +18514,49 @@ export namespace Prisma {
   }
 
   /**
+   * InventoryItem.supplier
+   */
+  export type InventoryItem$supplierArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Supplier
+     */
+    select?: SupplierSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Supplier
+     */
+    omit?: SupplierOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SupplierInclude<ExtArgs> | null
+    where?: SupplierWhereInput
+  }
+
+  /**
+   * InventoryItem.movements
+   */
+  export type InventoryItem$movementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    where?: StockMovementWhereInput
+    orderBy?: StockMovementOrderByWithRelationInput | StockMovementOrderByWithRelationInput[]
+    cursor?: StockMovementWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: StockMovementScalarFieldEnum | StockMovementScalarFieldEnum[]
+  }
+
+  /**
    * InventoryItem without action
    */
   export type InventoryItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18021,6 +18572,1185 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: InventoryItemInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model StockMovement
+   */
+
+  export type AggregateStockMovement = {
+    _count: StockMovementCountAggregateOutputType | null
+    _avg: StockMovementAvgAggregateOutputType | null
+    _sum: StockMovementSumAggregateOutputType | null
+    _min: StockMovementMinAggregateOutputType | null
+    _max: StockMovementMaxAggregateOutputType | null
+  }
+
+  export type StockMovementAvgAggregateOutputType = {
+    quantity: number | null
+  }
+
+  export type StockMovementSumAggregateOutputType = {
+    quantity: number | null
+  }
+
+  export type StockMovementMinAggregateOutputType = {
+    id: string | null
+    businessId: string | null
+    itemId: string | null
+    type: string | null
+    quantity: number | null
+    date: Date | null
+    reason: string | null
+    userId: string | null
+    createdAt: Date | null
+  }
+
+  export type StockMovementMaxAggregateOutputType = {
+    id: string | null
+    businessId: string | null
+    itemId: string | null
+    type: string | null
+    quantity: number | null
+    date: Date | null
+    reason: string | null
+    userId: string | null
+    createdAt: Date | null
+  }
+
+  export type StockMovementCountAggregateOutputType = {
+    id: number
+    businessId: number
+    itemId: number
+    type: number
+    quantity: number
+    date: number
+    reason: number
+    userId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type StockMovementAvgAggregateInputType = {
+    quantity?: true
+  }
+
+  export type StockMovementSumAggregateInputType = {
+    quantity?: true
+  }
+
+  export type StockMovementMinAggregateInputType = {
+    id?: true
+    businessId?: true
+    itemId?: true
+    type?: true
+    quantity?: true
+    date?: true
+    reason?: true
+    userId?: true
+    createdAt?: true
+  }
+
+  export type StockMovementMaxAggregateInputType = {
+    id?: true
+    businessId?: true
+    itemId?: true
+    type?: true
+    quantity?: true
+    date?: true
+    reason?: true
+    userId?: true
+    createdAt?: true
+  }
+
+  export type StockMovementCountAggregateInputType = {
+    id?: true
+    businessId?: true
+    itemId?: true
+    type?: true
+    quantity?: true
+    date?: true
+    reason?: true
+    userId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type StockMovementAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which StockMovement to aggregate.
+     */
+    where?: StockMovementWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StockMovements to fetch.
+     */
+    orderBy?: StockMovementOrderByWithRelationInput | StockMovementOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: StockMovementWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StockMovements from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StockMovements.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned StockMovements
+    **/
+    _count?: true | StockMovementCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: StockMovementAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: StockMovementSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: StockMovementMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: StockMovementMaxAggregateInputType
+  }
+
+  export type GetStockMovementAggregateType<T extends StockMovementAggregateArgs> = {
+        [P in keyof T & keyof AggregateStockMovement]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateStockMovement[P]>
+      : GetScalarType<T[P], AggregateStockMovement[P]>
+  }
+
+
+
+
+  export type StockMovementGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StockMovementWhereInput
+    orderBy?: StockMovementOrderByWithAggregationInput | StockMovementOrderByWithAggregationInput[]
+    by: StockMovementScalarFieldEnum[] | StockMovementScalarFieldEnum
+    having?: StockMovementScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: StockMovementCountAggregateInputType | true
+    _avg?: StockMovementAvgAggregateInputType
+    _sum?: StockMovementSumAggregateInputType
+    _min?: StockMovementMinAggregateInputType
+    _max?: StockMovementMaxAggregateInputType
+  }
+
+  export type StockMovementGroupByOutputType = {
+    id: string
+    businessId: string
+    itemId: string
+    type: string
+    quantity: number
+    date: Date
+    reason: string | null
+    userId: string | null
+    createdAt: Date
+    _count: StockMovementCountAggregateOutputType | null
+    _avg: StockMovementAvgAggregateOutputType | null
+    _sum: StockMovementSumAggregateOutputType | null
+    _min: StockMovementMinAggregateOutputType | null
+    _max: StockMovementMaxAggregateOutputType | null
+  }
+
+  type GetStockMovementGroupByPayload<T extends StockMovementGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<StockMovementGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof StockMovementGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], StockMovementGroupByOutputType[P]>
+            : GetScalarType<T[P], StockMovementGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type StockMovementSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    businessId?: boolean
+    itemId?: boolean
+    type?: boolean
+    quantity?: boolean
+    date?: boolean
+    reason?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    item?: boolean | InventoryItemDefaultArgs<ExtArgs>
+    user?: boolean | StockMovement$userArgs<ExtArgs>
+  }, ExtArgs["result"]["stockMovement"]>
+
+  export type StockMovementSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    businessId?: boolean
+    itemId?: boolean
+    type?: boolean
+    quantity?: boolean
+    date?: boolean
+    reason?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    item?: boolean | InventoryItemDefaultArgs<ExtArgs>
+    user?: boolean | StockMovement$userArgs<ExtArgs>
+  }, ExtArgs["result"]["stockMovement"]>
+
+  export type StockMovementSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    businessId?: boolean
+    itemId?: boolean
+    type?: boolean
+    quantity?: boolean
+    date?: boolean
+    reason?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    item?: boolean | InventoryItemDefaultArgs<ExtArgs>
+    user?: boolean | StockMovement$userArgs<ExtArgs>
+  }, ExtArgs["result"]["stockMovement"]>
+
+  export type StockMovementSelectScalar = {
+    id?: boolean
+    businessId?: boolean
+    itemId?: boolean
+    type?: boolean
+    quantity?: boolean
+    date?: boolean
+    reason?: boolean
+    userId?: boolean
+    createdAt?: boolean
+  }
+
+  export type StockMovementOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "itemId" | "type" | "quantity" | "date" | "reason" | "userId" | "createdAt", ExtArgs["result"]["stockMovement"]>
+  export type StockMovementInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    item?: boolean | InventoryItemDefaultArgs<ExtArgs>
+    user?: boolean | StockMovement$userArgs<ExtArgs>
+  }
+  export type StockMovementIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    item?: boolean | InventoryItemDefaultArgs<ExtArgs>
+    user?: boolean | StockMovement$userArgs<ExtArgs>
+  }
+  export type StockMovementIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    item?: boolean | InventoryItemDefaultArgs<ExtArgs>
+    user?: boolean | StockMovement$userArgs<ExtArgs>
+  }
+
+  export type $StockMovementPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "StockMovement"
+    objects: {
+      business: Prisma.$BusinessPayload<ExtArgs>
+      item: Prisma.$InventoryItemPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      businessId: string
+      itemId: string
+      type: string
+      quantity: number
+      date: Date
+      reason: string | null
+      userId: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["stockMovement"]>
+    composites: {}
+  }
+
+  type StockMovementGetPayload<S extends boolean | null | undefined | StockMovementDefaultArgs> = $Result.GetResult<Prisma.$StockMovementPayload, S>
+
+  type StockMovementCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<StockMovementFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: StockMovementCountAggregateInputType | true
+    }
+
+  export interface StockMovementDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['StockMovement'], meta: { name: 'StockMovement' } }
+    /**
+     * Find zero or one StockMovement that matches the filter.
+     * @param {StockMovementFindUniqueArgs} args - Arguments to find a StockMovement
+     * @example
+     * // Get one StockMovement
+     * const stockMovement = await prisma.stockMovement.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends StockMovementFindUniqueArgs>(args: SelectSubset<T, StockMovementFindUniqueArgs<ExtArgs>>): Prisma__StockMovementClient<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one StockMovement that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {StockMovementFindUniqueOrThrowArgs} args - Arguments to find a StockMovement
+     * @example
+     * // Get one StockMovement
+     * const stockMovement = await prisma.stockMovement.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends StockMovementFindUniqueOrThrowArgs>(args: SelectSubset<T, StockMovementFindUniqueOrThrowArgs<ExtArgs>>): Prisma__StockMovementClient<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first StockMovement that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockMovementFindFirstArgs} args - Arguments to find a StockMovement
+     * @example
+     * // Get one StockMovement
+     * const stockMovement = await prisma.stockMovement.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends StockMovementFindFirstArgs>(args?: SelectSubset<T, StockMovementFindFirstArgs<ExtArgs>>): Prisma__StockMovementClient<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first StockMovement that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockMovementFindFirstOrThrowArgs} args - Arguments to find a StockMovement
+     * @example
+     * // Get one StockMovement
+     * const stockMovement = await prisma.stockMovement.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends StockMovementFindFirstOrThrowArgs>(args?: SelectSubset<T, StockMovementFindFirstOrThrowArgs<ExtArgs>>): Prisma__StockMovementClient<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more StockMovements that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockMovementFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all StockMovements
+     * const stockMovements = await prisma.stockMovement.findMany()
+     * 
+     * // Get first 10 StockMovements
+     * const stockMovements = await prisma.stockMovement.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const stockMovementWithIdOnly = await prisma.stockMovement.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends StockMovementFindManyArgs>(args?: SelectSubset<T, StockMovementFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a StockMovement.
+     * @param {StockMovementCreateArgs} args - Arguments to create a StockMovement.
+     * @example
+     * // Create one StockMovement
+     * const StockMovement = await prisma.stockMovement.create({
+     *   data: {
+     *     // ... data to create a StockMovement
+     *   }
+     * })
+     * 
+     */
+    create<T extends StockMovementCreateArgs>(args: SelectSubset<T, StockMovementCreateArgs<ExtArgs>>): Prisma__StockMovementClient<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many StockMovements.
+     * @param {StockMovementCreateManyArgs} args - Arguments to create many StockMovements.
+     * @example
+     * // Create many StockMovements
+     * const stockMovement = await prisma.stockMovement.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends StockMovementCreateManyArgs>(args?: SelectSubset<T, StockMovementCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many StockMovements and returns the data saved in the database.
+     * @param {StockMovementCreateManyAndReturnArgs} args - Arguments to create many StockMovements.
+     * @example
+     * // Create many StockMovements
+     * const stockMovement = await prisma.stockMovement.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many StockMovements and only return the `id`
+     * const stockMovementWithIdOnly = await prisma.stockMovement.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends StockMovementCreateManyAndReturnArgs>(args?: SelectSubset<T, StockMovementCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a StockMovement.
+     * @param {StockMovementDeleteArgs} args - Arguments to delete one StockMovement.
+     * @example
+     * // Delete one StockMovement
+     * const StockMovement = await prisma.stockMovement.delete({
+     *   where: {
+     *     // ... filter to delete one StockMovement
+     *   }
+     * })
+     * 
+     */
+    delete<T extends StockMovementDeleteArgs>(args: SelectSubset<T, StockMovementDeleteArgs<ExtArgs>>): Prisma__StockMovementClient<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one StockMovement.
+     * @param {StockMovementUpdateArgs} args - Arguments to update one StockMovement.
+     * @example
+     * // Update one StockMovement
+     * const stockMovement = await prisma.stockMovement.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends StockMovementUpdateArgs>(args: SelectSubset<T, StockMovementUpdateArgs<ExtArgs>>): Prisma__StockMovementClient<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more StockMovements.
+     * @param {StockMovementDeleteManyArgs} args - Arguments to filter StockMovements to delete.
+     * @example
+     * // Delete a few StockMovements
+     * const { count } = await prisma.stockMovement.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends StockMovementDeleteManyArgs>(args?: SelectSubset<T, StockMovementDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more StockMovements.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockMovementUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many StockMovements
+     * const stockMovement = await prisma.stockMovement.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends StockMovementUpdateManyArgs>(args: SelectSubset<T, StockMovementUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more StockMovements and returns the data updated in the database.
+     * @param {StockMovementUpdateManyAndReturnArgs} args - Arguments to update many StockMovements.
+     * @example
+     * // Update many StockMovements
+     * const stockMovement = await prisma.stockMovement.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more StockMovements and only return the `id`
+     * const stockMovementWithIdOnly = await prisma.stockMovement.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends StockMovementUpdateManyAndReturnArgs>(args: SelectSubset<T, StockMovementUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one StockMovement.
+     * @param {StockMovementUpsertArgs} args - Arguments to update or create a StockMovement.
+     * @example
+     * // Update or create a StockMovement
+     * const stockMovement = await prisma.stockMovement.upsert({
+     *   create: {
+     *     // ... data to create a StockMovement
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the StockMovement we want to update
+     *   }
+     * })
+     */
+    upsert<T extends StockMovementUpsertArgs>(args: SelectSubset<T, StockMovementUpsertArgs<ExtArgs>>): Prisma__StockMovementClient<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of StockMovements.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockMovementCountArgs} args - Arguments to filter StockMovements to count.
+     * @example
+     * // Count the number of StockMovements
+     * const count = await prisma.stockMovement.count({
+     *   where: {
+     *     // ... the filter for the StockMovements we want to count
+     *   }
+     * })
+    **/
+    count<T extends StockMovementCountArgs>(
+      args?: Subset<T, StockMovementCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], StockMovementCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a StockMovement.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockMovementAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends StockMovementAggregateArgs>(args: Subset<T, StockMovementAggregateArgs>): Prisma.PrismaPromise<GetStockMovementAggregateType<T>>
+
+    /**
+     * Group by StockMovement.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StockMovementGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends StockMovementGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: StockMovementGroupByArgs['orderBy'] }
+        : { orderBy?: StockMovementGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, StockMovementGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetStockMovementGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the StockMovement model
+   */
+  readonly fields: StockMovementFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for StockMovement.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__StockMovementClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    business<T extends BusinessDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusinessDefaultArgs<ExtArgs>>): Prisma__BusinessClient<$Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    item<T extends InventoryItemDefaultArgs<ExtArgs> = {}>(args?: Subset<T, InventoryItemDefaultArgs<ExtArgs>>): Prisma__InventoryItemClient<$Result.GetResult<Prisma.$InventoryItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends StockMovement$userArgs<ExtArgs> = {}>(args?: Subset<T, StockMovement$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the StockMovement model
+   */
+  interface StockMovementFieldRefs {
+    readonly id: FieldRef<"StockMovement", 'String'>
+    readonly businessId: FieldRef<"StockMovement", 'String'>
+    readonly itemId: FieldRef<"StockMovement", 'String'>
+    readonly type: FieldRef<"StockMovement", 'String'>
+    readonly quantity: FieldRef<"StockMovement", 'Int'>
+    readonly date: FieldRef<"StockMovement", 'DateTime'>
+    readonly reason: FieldRef<"StockMovement", 'String'>
+    readonly userId: FieldRef<"StockMovement", 'String'>
+    readonly createdAt: FieldRef<"StockMovement", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * StockMovement findUnique
+   */
+  export type StockMovementFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    /**
+     * Filter, which StockMovement to fetch.
+     */
+    where: StockMovementWhereUniqueInput
+  }
+
+  /**
+   * StockMovement findUniqueOrThrow
+   */
+  export type StockMovementFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    /**
+     * Filter, which StockMovement to fetch.
+     */
+    where: StockMovementWhereUniqueInput
+  }
+
+  /**
+   * StockMovement findFirst
+   */
+  export type StockMovementFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    /**
+     * Filter, which StockMovement to fetch.
+     */
+    where?: StockMovementWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StockMovements to fetch.
+     */
+    orderBy?: StockMovementOrderByWithRelationInput | StockMovementOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for StockMovements.
+     */
+    cursor?: StockMovementWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StockMovements from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StockMovements.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of StockMovements.
+     */
+    distinct?: StockMovementScalarFieldEnum | StockMovementScalarFieldEnum[]
+  }
+
+  /**
+   * StockMovement findFirstOrThrow
+   */
+  export type StockMovementFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    /**
+     * Filter, which StockMovement to fetch.
+     */
+    where?: StockMovementWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StockMovements to fetch.
+     */
+    orderBy?: StockMovementOrderByWithRelationInput | StockMovementOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for StockMovements.
+     */
+    cursor?: StockMovementWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StockMovements from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StockMovements.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of StockMovements.
+     */
+    distinct?: StockMovementScalarFieldEnum | StockMovementScalarFieldEnum[]
+  }
+
+  /**
+   * StockMovement findMany
+   */
+  export type StockMovementFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    /**
+     * Filter, which StockMovements to fetch.
+     */
+    where?: StockMovementWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StockMovements to fetch.
+     */
+    orderBy?: StockMovementOrderByWithRelationInput | StockMovementOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing StockMovements.
+     */
+    cursor?: StockMovementWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StockMovements from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StockMovements.
+     */
+    skip?: number
+    distinct?: StockMovementScalarFieldEnum | StockMovementScalarFieldEnum[]
+  }
+
+  /**
+   * StockMovement create
+   */
+  export type StockMovementCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    /**
+     * The data needed to create a StockMovement.
+     */
+    data: XOR<StockMovementCreateInput, StockMovementUncheckedCreateInput>
+  }
+
+  /**
+   * StockMovement createMany
+   */
+  export type StockMovementCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many StockMovements.
+     */
+    data: StockMovementCreateManyInput | StockMovementCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * StockMovement createManyAndReturn
+   */
+  export type StockMovementCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * The data used to create many StockMovements.
+     */
+    data: StockMovementCreateManyInput | StockMovementCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * StockMovement update
+   */
+  export type StockMovementUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    /**
+     * The data needed to update a StockMovement.
+     */
+    data: XOR<StockMovementUpdateInput, StockMovementUncheckedUpdateInput>
+    /**
+     * Choose, which StockMovement to update.
+     */
+    where: StockMovementWhereUniqueInput
+  }
+
+  /**
+   * StockMovement updateMany
+   */
+  export type StockMovementUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update StockMovements.
+     */
+    data: XOR<StockMovementUpdateManyMutationInput, StockMovementUncheckedUpdateManyInput>
+    /**
+     * Filter which StockMovements to update
+     */
+    where?: StockMovementWhereInput
+    /**
+     * Limit how many StockMovements to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * StockMovement updateManyAndReturn
+   */
+  export type StockMovementUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * The data used to update StockMovements.
+     */
+    data: XOR<StockMovementUpdateManyMutationInput, StockMovementUncheckedUpdateManyInput>
+    /**
+     * Filter which StockMovements to update
+     */
+    where?: StockMovementWhereInput
+    /**
+     * Limit how many StockMovements to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * StockMovement upsert
+   */
+  export type StockMovementUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    /**
+     * The filter to search for the StockMovement to update in case it exists.
+     */
+    where: StockMovementWhereUniqueInput
+    /**
+     * In case the StockMovement found by the `where` argument doesn't exist, create a new StockMovement with this data.
+     */
+    create: XOR<StockMovementCreateInput, StockMovementUncheckedCreateInput>
+    /**
+     * In case the StockMovement was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<StockMovementUpdateInput, StockMovementUncheckedUpdateInput>
+  }
+
+  /**
+   * StockMovement delete
+   */
+  export type StockMovementDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
+    /**
+     * Filter which StockMovement to delete.
+     */
+    where: StockMovementWhereUniqueInput
+  }
+
+  /**
+   * StockMovement deleteMany
+   */
+  export type StockMovementDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which StockMovements to delete
+     */
+    where?: StockMovementWhereInput
+    /**
+     * Limit how many StockMovements to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * StockMovement.user
+   */
+  export type StockMovement$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * StockMovement without action
+   */
+  export type StockMovementDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StockMovement
+     */
+    select?: StockMovementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StockMovement
+     */
+    omit?: StockMovementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StockMovementInclude<ExtArgs> | null
   }
 
 
@@ -19514,6 +21244,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
+    inventoryItems?: boolean | Supplier$inventoryItemsArgs<ExtArgs>
+    _count?: boolean | SupplierCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["supplier"]>
 
   export type SupplierSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -19566,6 +21298,8 @@ export namespace Prisma {
   export type SupplierOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "name" | "contactName" | "email" | "phone" | "address" | "category" | "rating" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["supplier"]>
   export type SupplierInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
+    inventoryItems?: boolean | Supplier$inventoryItemsArgs<ExtArgs>
+    _count?: boolean | SupplierCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SupplierIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
@@ -19578,6 +21312,7 @@ export namespace Prisma {
     name: "Supplier"
     objects: {
       business: Prisma.$BusinessPayload<ExtArgs>
+      inventoryItems: Prisma.$InventoryItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -19987,6 +21722,7 @@ export namespace Prisma {
   export interface Prisma__SupplierClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     business<T extends BusinessDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusinessDefaultArgs<ExtArgs>>): Prisma__BusinessClient<$Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    inventoryItems<T extends Supplier$inventoryItemsArgs<ExtArgs> = {}>(args?: Subset<T, Supplier$inventoryItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -20421,6 +22157,30 @@ export namespace Prisma {
      * Limit how many Suppliers to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Supplier.inventoryItems
+   */
+  export type Supplier$inventoryItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryItem
+     */
+    select?: InventoryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryItem
+     */
+    omit?: InventoryItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryItemInclude<ExtArgs> | null
+    where?: InventoryItemWhereInput
+    orderBy?: InventoryItemOrderByWithRelationInput | InventoryItemOrderByWithRelationInput[]
+    cursor?: InventoryItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InventoryItemScalarFieldEnum | InventoryItemScalarFieldEnum[]
   }
 
   /**
@@ -38871,6 +40631,1138 @@ export namespace Prisma {
 
 
   /**
+   * Model Notification
+   */
+
+  export type AggregateNotification = {
+    _count: NotificationCountAggregateOutputType | null
+    _min: NotificationMinAggregateOutputType | null
+    _max: NotificationMaxAggregateOutputType | null
+  }
+
+  export type NotificationMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    businessId: string | null
+    title: string | null
+    message: string | null
+    type: string | null
+    status: string | null
+    link: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type NotificationMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    businessId: string | null
+    title: string | null
+    message: string | null
+    type: string | null
+    status: string | null
+    link: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type NotificationCountAggregateOutputType = {
+    id: number
+    userId: number
+    businessId: number
+    title: number
+    message: number
+    type: number
+    status: number
+    link: number
+    metadata: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type NotificationMinAggregateInputType = {
+    id?: true
+    userId?: true
+    businessId?: true
+    title?: true
+    message?: true
+    type?: true
+    status?: true
+    link?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type NotificationMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    businessId?: true
+    title?: true
+    message?: true
+    type?: true
+    status?: true
+    link?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type NotificationCountAggregateInputType = {
+    id?: true
+    userId?: true
+    businessId?: true
+    title?: true
+    message?: true
+    type?: true
+    status?: true
+    link?: true
+    metadata?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type NotificationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Notification to aggregate.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Notifications
+    **/
+    _count?: true | NotificationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NotificationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NotificationMaxAggregateInputType
+  }
+
+  export type GetNotificationAggregateType<T extends NotificationAggregateArgs> = {
+        [P in keyof T & keyof AggregateNotification]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNotification[P]>
+      : GetScalarType<T[P], AggregateNotification[P]>
+  }
+
+
+
+
+  export type NotificationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithAggregationInput | NotificationOrderByWithAggregationInput[]
+    by: NotificationScalarFieldEnum[] | NotificationScalarFieldEnum
+    having?: NotificationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NotificationCountAggregateInputType | true
+    _min?: NotificationMinAggregateInputType
+    _max?: NotificationMaxAggregateInputType
+  }
+
+  export type NotificationGroupByOutputType = {
+    id: string
+    userId: string
+    businessId: string
+    title: string
+    message: string
+    type: string
+    status: string
+    link: string | null
+    metadata: JsonValue | null
+    createdAt: Date
+    updatedAt: Date
+    _count: NotificationCountAggregateOutputType | null
+    _min: NotificationMinAggregateOutputType | null
+    _max: NotificationMaxAggregateOutputType | null
+  }
+
+  type GetNotificationGroupByPayload<T extends NotificationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NotificationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NotificationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NotificationGroupByOutputType[P]>
+            : GetScalarType<T[P], NotificationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NotificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    businessId?: boolean
+    title?: boolean
+    message?: boolean
+    type?: boolean
+    status?: boolean
+    link?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notification"]>
+
+  export type NotificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    businessId?: boolean
+    title?: boolean
+    message?: boolean
+    type?: boolean
+    status?: boolean
+    link?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notification"]>
+
+  export type NotificationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    businessId?: boolean
+    title?: boolean
+    message?: boolean
+    type?: boolean
+    status?: boolean
+    link?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notification"]>
+
+  export type NotificationSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    businessId?: boolean
+    title?: boolean
+    message?: boolean
+    type?: boolean
+    status?: boolean
+    link?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "businessId" | "title" | "message" | "type" | "status" | "link" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["notification"]>
+  export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type NotificationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type NotificationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $NotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Notification"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      businessId: string
+      title: string
+      message: string
+      type: string
+      status: string
+      link: string | null
+      metadata: Prisma.JsonValue | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["notification"]>
+    composites: {}
+  }
+
+  type NotificationGetPayload<S extends boolean | null | undefined | NotificationDefaultArgs> = $Result.GetResult<Prisma.$NotificationPayload, S>
+
+  type NotificationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NotificationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NotificationCountAggregateInputType | true
+    }
+
+  export interface NotificationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Notification'], meta: { name: 'Notification' } }
+    /**
+     * Find zero or one Notification that matches the filter.
+     * @param {NotificationFindUniqueArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NotificationFindUniqueArgs>(args: SelectSubset<T, NotificationFindUniqueArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Notification that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NotificationFindUniqueOrThrowArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NotificationFindUniqueOrThrowArgs>(args: SelectSubset<T, NotificationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Notification that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindFirstArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NotificationFindFirstArgs>(args?: SelectSubset<T, NotificationFindFirstArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Notification that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindFirstOrThrowArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NotificationFindFirstOrThrowArgs>(args?: SelectSubset<T, NotificationFindFirstOrThrowArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Notifications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Notifications
+     * const notifications = await prisma.notification.findMany()
+     * 
+     * // Get first 10 Notifications
+     * const notifications = await prisma.notification.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const notificationWithIdOnly = await prisma.notification.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NotificationFindManyArgs>(args?: SelectSubset<T, NotificationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Notification.
+     * @param {NotificationCreateArgs} args - Arguments to create a Notification.
+     * @example
+     * // Create one Notification
+     * const Notification = await prisma.notification.create({
+     *   data: {
+     *     // ... data to create a Notification
+     *   }
+     * })
+     * 
+     */
+    create<T extends NotificationCreateArgs>(args: SelectSubset<T, NotificationCreateArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Notifications.
+     * @param {NotificationCreateManyArgs} args - Arguments to create many Notifications.
+     * @example
+     * // Create many Notifications
+     * const notification = await prisma.notification.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NotificationCreateManyArgs>(args?: SelectSubset<T, NotificationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Notifications and returns the data saved in the database.
+     * @param {NotificationCreateManyAndReturnArgs} args - Arguments to create many Notifications.
+     * @example
+     * // Create many Notifications
+     * const notification = await prisma.notification.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Notifications and only return the `id`
+     * const notificationWithIdOnly = await prisma.notification.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends NotificationCreateManyAndReturnArgs>(args?: SelectSubset<T, NotificationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Notification.
+     * @param {NotificationDeleteArgs} args - Arguments to delete one Notification.
+     * @example
+     * // Delete one Notification
+     * const Notification = await prisma.notification.delete({
+     *   where: {
+     *     // ... filter to delete one Notification
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NotificationDeleteArgs>(args: SelectSubset<T, NotificationDeleteArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Notification.
+     * @param {NotificationUpdateArgs} args - Arguments to update one Notification.
+     * @example
+     * // Update one Notification
+     * const notification = await prisma.notification.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NotificationUpdateArgs>(args: SelectSubset<T, NotificationUpdateArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Notifications.
+     * @param {NotificationDeleteManyArgs} args - Arguments to filter Notifications to delete.
+     * @example
+     * // Delete a few Notifications
+     * const { count } = await prisma.notification.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NotificationDeleteManyArgs>(args?: SelectSubset<T, NotificationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Notifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Notifications
+     * const notification = await prisma.notification.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NotificationUpdateManyArgs>(args: SelectSubset<T, NotificationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Notifications and returns the data updated in the database.
+     * @param {NotificationUpdateManyAndReturnArgs} args - Arguments to update many Notifications.
+     * @example
+     * // Update many Notifications
+     * const notification = await prisma.notification.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Notifications and only return the `id`
+     * const notificationWithIdOnly = await prisma.notification.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends NotificationUpdateManyAndReturnArgs>(args: SelectSubset<T, NotificationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Notification.
+     * @param {NotificationUpsertArgs} args - Arguments to update or create a Notification.
+     * @example
+     * // Update or create a Notification
+     * const notification = await prisma.notification.upsert({
+     *   create: {
+     *     // ... data to create a Notification
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Notification we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NotificationUpsertArgs>(args: SelectSubset<T, NotificationUpsertArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Notifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationCountArgs} args - Arguments to filter Notifications to count.
+     * @example
+     * // Count the number of Notifications
+     * const count = await prisma.notification.count({
+     *   where: {
+     *     // ... the filter for the Notifications we want to count
+     *   }
+     * })
+    **/
+    count<T extends NotificationCountArgs>(
+      args?: Subset<T, NotificationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NotificationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Notification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NotificationAggregateArgs>(args: Subset<T, NotificationAggregateArgs>): Prisma.PrismaPromise<GetNotificationAggregateType<T>>
+
+    /**
+     * Group by Notification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NotificationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NotificationGroupByArgs['orderBy'] }
+        : { orderBy?: NotificationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NotificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNotificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Notification model
+   */
+  readonly fields: NotificationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Notification.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Notification model
+   */
+  interface NotificationFieldRefs {
+    readonly id: FieldRef<"Notification", 'String'>
+    readonly userId: FieldRef<"Notification", 'String'>
+    readonly businessId: FieldRef<"Notification", 'String'>
+    readonly title: FieldRef<"Notification", 'String'>
+    readonly message: FieldRef<"Notification", 'String'>
+    readonly type: FieldRef<"Notification", 'String'>
+    readonly status: FieldRef<"Notification", 'String'>
+    readonly link: FieldRef<"Notification", 'String'>
+    readonly metadata: FieldRef<"Notification", 'Json'>
+    readonly createdAt: FieldRef<"Notification", 'DateTime'>
+    readonly updatedAt: FieldRef<"Notification", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Notification findUnique
+   */
+  export type NotificationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification findUniqueOrThrow
+   */
+  export type NotificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification findFirst
+   */
+  export type NotificationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notifications.
+     */
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification findFirstOrThrow
+   */
+  export type NotificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notifications.
+     */
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification findMany
+   */
+  export type NotificationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notifications to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification create
+   */
+  export type NotificationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Notification.
+     */
+    data: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
+  }
+
+  /**
+   * Notification createMany
+   */
+  export type NotificationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Notifications.
+     */
+    data: NotificationCreateManyInput | NotificationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Notification createManyAndReturn
+   */
+  export type NotificationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * The data used to create many Notifications.
+     */
+    data: NotificationCreateManyInput | NotificationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Notification update
+   */
+  export type NotificationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Notification.
+     */
+    data: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
+    /**
+     * Choose, which Notification to update.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification updateMany
+   */
+  export type NotificationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Notifications.
+     */
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyInput>
+    /**
+     * Filter which Notifications to update
+     */
+    where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Notification updateManyAndReturn
+   */
+  export type NotificationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * The data used to update Notifications.
+     */
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyInput>
+    /**
+     * Filter which Notifications to update
+     */
+    where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Notification upsert
+   */
+  export type NotificationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Notification to update in case it exists.
+     */
+    where: NotificationWhereUniqueInput
+    /**
+     * In case the Notification found by the `where` argument doesn't exist, create a new Notification with this data.
+     */
+    create: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
+    /**
+     * In case the Notification was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
+  }
+
+  /**
+   * Notification delete
+   */
+  export type NotificationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter which Notification to delete.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification deleteMany
+   */
+  export type NotificationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Notifications to delete
+     */
+    where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Notification without action
+   */
+  export type NotificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -39071,19 +41963,44 @@ export namespace Prisma {
     businessId: 'businessId',
     name: 'name',
     sku: 'sku',
+    barcode: 'barcode',
     description: 'description',
     quantity: 'quantity',
     minQuantity: 'minQuantity',
+    maxQuantity: 'maxQuantity',
+    reorderPoint: 'reorderPoint',
     price: 'price',
     cost: 'cost',
     category: 'category',
     location: 'location',
+    unit: 'unit',
+    weight: 'weight',
+    dimensions: 'dimensions',
+    expiryDate: 'expiryDate',
+    image: 'image',
+    tags: 'tags',
     status: 'status',
+    supplierId: 'supplierId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type InventoryItemScalarFieldEnum = (typeof InventoryItemScalarFieldEnum)[keyof typeof InventoryItemScalarFieldEnum]
+
+
+  export const StockMovementScalarFieldEnum: {
+    id: 'id',
+    businessId: 'businessId',
+    itemId: 'itemId',
+    type: 'type',
+    quantity: 'quantity',
+    date: 'date',
+    reason: 'reason',
+    userId: 'userId',
+    createdAt: 'createdAt'
+  };
+
+  export type StockMovementScalarFieldEnum = (typeof StockMovementScalarFieldEnum)[keyof typeof StockMovementScalarFieldEnum]
 
 
   export const EmployeeScalarFieldEnum: {
@@ -39398,6 +42315,23 @@ export namespace Prisma {
   };
 
   export type AINoteScalarFieldEnum = (typeof AINoteScalarFieldEnum)[keyof typeof AINoteScalarFieldEnum]
+
+
+  export const NotificationScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    businessId: 'businessId',
+    title: 'title',
+    message: 'message',
+    type: 'type',
+    status: 'status',
+    link: 'link',
+    metadata: 'metadata',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -39878,6 +42812,8 @@ export namespace Prisma {
     appointments?: AppointmentListRelationFilter
     ticketComments?: TicketCommentListRelationFilter
     aiNotes?: AINoteListRelationFilter
+    stockMovements?: StockMovementListRelationFilter
+    notifications?: NotificationListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -39914,6 +42850,8 @@ export namespace Prisma {
     appointments?: AppointmentOrderByRelationAggregateInput
     ticketComments?: TicketCommentOrderByRelationAggregateInput
     aiNotes?: AINoteOrderByRelationAggregateInput
+    stockMovements?: StockMovementOrderByRelationAggregateInput
+    notifications?: NotificationOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -39953,6 +42891,8 @@ export namespace Prisma {
     appointments?: AppointmentListRelationFilter
     ticketComments?: TicketCommentListRelationFilter
     aiNotes?: AINoteListRelationFilter
+    stockMovements?: StockMovementListRelationFilter
+    notifications?: NotificationListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -40224,6 +43164,7 @@ export namespace Prisma {
     forms?: FormListRelationFilter
     appointments?: AppointmentListRelationFilter
     aiNotes?: AINoteListRelationFilter
+    stockMovements?: StockMovementListRelationFilter
   }
 
   export type BusinessOrderByWithRelationInput = {
@@ -40258,6 +43199,7 @@ export namespace Prisma {
     forms?: FormOrderByRelationAggregateInput
     appointments?: AppointmentOrderByRelationAggregateInput
     aiNotes?: AINoteOrderByRelationAggregateInput
+    stockMovements?: StockMovementOrderByRelationAggregateInput
   }
 
   export type BusinessWhereUniqueInput = Prisma.AtLeast<{
@@ -40295,6 +43237,7 @@ export namespace Prisma {
     forms?: FormListRelationFilter
     appointments?: AppointmentListRelationFilter
     aiNotes?: AINoteListRelationFilter
+    stockMovements?: StockMovementListRelationFilter
   }, "id" | "subscriptionId">
 
   export type BusinessOrderByWithAggregationInput = {
@@ -40881,17 +43824,29 @@ export namespace Prisma {
     businessId?: StringFilter<"InventoryItem"> | string
     name?: StringFilter<"InventoryItem"> | string
     sku?: StringFilter<"InventoryItem"> | string
+    barcode?: StringNullableFilter<"InventoryItem"> | string | null
     description?: StringNullableFilter<"InventoryItem"> | string | null
     quantity?: IntFilter<"InventoryItem"> | number
     minQuantity?: IntFilter<"InventoryItem"> | number
-    price?: FloatNullableFilter<"InventoryItem"> | number | null
-    cost?: FloatNullableFilter<"InventoryItem"> | number | null
+    maxQuantity?: IntFilter<"InventoryItem"> | number
+    reorderPoint?: IntFilter<"InventoryItem"> | number
+    price?: FloatFilter<"InventoryItem"> | number
+    cost?: FloatFilter<"InventoryItem"> | number
     category?: StringNullableFilter<"InventoryItem"> | string | null
     location?: StringNullableFilter<"InventoryItem"> | string | null
+    unit?: StringFilter<"InventoryItem"> | string
+    weight?: FloatNullableFilter<"InventoryItem"> | number | null
+    dimensions?: StringNullableFilter<"InventoryItem"> | string | null
+    expiryDate?: DateTimeNullableFilter<"InventoryItem"> | Date | string | null
+    image?: StringNullableFilter<"InventoryItem"> | string | null
+    tags?: StringNullableListFilter<"InventoryItem">
     status?: EnumInventoryStatusFilter<"InventoryItem"> | $Enums.InventoryStatus
+    supplierId?: StringNullableFilter<"InventoryItem"> | string | null
     createdAt?: DateTimeFilter<"InventoryItem"> | Date | string
     updatedAt?: DateTimeFilter<"InventoryItem"> | Date | string
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+    supplier?: XOR<SupplierNullableScalarRelationFilter, SupplierWhereInput> | null
+    movements?: StockMovementListRelationFilter
   }
 
   export type InventoryItemOrderByWithRelationInput = {
@@ -40899,17 +43854,29 @@ export namespace Prisma {
     businessId?: SortOrder
     name?: SortOrder
     sku?: SortOrder
+    barcode?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
     quantity?: SortOrder
     minQuantity?: SortOrder
-    price?: SortOrderInput | SortOrder
-    cost?: SortOrderInput | SortOrder
+    maxQuantity?: SortOrder
+    reorderPoint?: SortOrder
+    price?: SortOrder
+    cost?: SortOrder
     category?: SortOrderInput | SortOrder
     location?: SortOrderInput | SortOrder
+    unit?: SortOrder
+    weight?: SortOrderInput | SortOrder
+    dimensions?: SortOrderInput | SortOrder
+    expiryDate?: SortOrderInput | SortOrder
+    image?: SortOrderInput | SortOrder
+    tags?: SortOrder
     status?: SortOrder
+    supplierId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     business?: BusinessOrderByWithRelationInput
+    supplier?: SupplierOrderByWithRelationInput
+    movements?: StockMovementOrderByRelationAggregateInput
   }
 
   export type InventoryItemWhereUniqueInput = Prisma.AtLeast<{
@@ -40920,17 +43887,29 @@ export namespace Prisma {
     NOT?: InventoryItemWhereInput | InventoryItemWhereInput[]
     businessId?: StringFilter<"InventoryItem"> | string
     name?: StringFilter<"InventoryItem"> | string
+    barcode?: StringNullableFilter<"InventoryItem"> | string | null
     description?: StringNullableFilter<"InventoryItem"> | string | null
     quantity?: IntFilter<"InventoryItem"> | number
     minQuantity?: IntFilter<"InventoryItem"> | number
-    price?: FloatNullableFilter<"InventoryItem"> | number | null
-    cost?: FloatNullableFilter<"InventoryItem"> | number | null
+    maxQuantity?: IntFilter<"InventoryItem"> | number
+    reorderPoint?: IntFilter<"InventoryItem"> | number
+    price?: FloatFilter<"InventoryItem"> | number
+    cost?: FloatFilter<"InventoryItem"> | number
     category?: StringNullableFilter<"InventoryItem"> | string | null
     location?: StringNullableFilter<"InventoryItem"> | string | null
+    unit?: StringFilter<"InventoryItem"> | string
+    weight?: FloatNullableFilter<"InventoryItem"> | number | null
+    dimensions?: StringNullableFilter<"InventoryItem"> | string | null
+    expiryDate?: DateTimeNullableFilter<"InventoryItem"> | Date | string | null
+    image?: StringNullableFilter<"InventoryItem"> | string | null
+    tags?: StringNullableListFilter<"InventoryItem">
     status?: EnumInventoryStatusFilter<"InventoryItem"> | $Enums.InventoryStatus
+    supplierId?: StringNullableFilter<"InventoryItem"> | string | null
     createdAt?: DateTimeFilter<"InventoryItem"> | Date | string
     updatedAt?: DateTimeFilter<"InventoryItem"> | Date | string
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+    supplier?: XOR<SupplierNullableScalarRelationFilter, SupplierWhereInput> | null
+    movements?: StockMovementListRelationFilter
   }, "id" | "sku">
 
   export type InventoryItemOrderByWithAggregationInput = {
@@ -40938,14 +43917,24 @@ export namespace Prisma {
     businessId?: SortOrder
     name?: SortOrder
     sku?: SortOrder
+    barcode?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
     quantity?: SortOrder
     minQuantity?: SortOrder
-    price?: SortOrderInput | SortOrder
-    cost?: SortOrderInput | SortOrder
+    maxQuantity?: SortOrder
+    reorderPoint?: SortOrder
+    price?: SortOrder
+    cost?: SortOrder
     category?: SortOrderInput | SortOrder
     location?: SortOrderInput | SortOrder
+    unit?: SortOrder
+    weight?: SortOrderInput | SortOrder
+    dimensions?: SortOrderInput | SortOrder
+    expiryDate?: SortOrderInput | SortOrder
+    image?: SortOrderInput | SortOrder
+    tags?: SortOrder
     status?: SortOrder
+    supplierId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: InventoryItemCountOrderByAggregateInput
@@ -40963,16 +43952,109 @@ export namespace Prisma {
     businessId?: StringWithAggregatesFilter<"InventoryItem"> | string
     name?: StringWithAggregatesFilter<"InventoryItem"> | string
     sku?: StringWithAggregatesFilter<"InventoryItem"> | string
+    barcode?: StringNullableWithAggregatesFilter<"InventoryItem"> | string | null
     description?: StringNullableWithAggregatesFilter<"InventoryItem"> | string | null
     quantity?: IntWithAggregatesFilter<"InventoryItem"> | number
     minQuantity?: IntWithAggregatesFilter<"InventoryItem"> | number
-    price?: FloatNullableWithAggregatesFilter<"InventoryItem"> | number | null
-    cost?: FloatNullableWithAggregatesFilter<"InventoryItem"> | number | null
+    maxQuantity?: IntWithAggregatesFilter<"InventoryItem"> | number
+    reorderPoint?: IntWithAggregatesFilter<"InventoryItem"> | number
+    price?: FloatWithAggregatesFilter<"InventoryItem"> | number
+    cost?: FloatWithAggregatesFilter<"InventoryItem"> | number
     category?: StringNullableWithAggregatesFilter<"InventoryItem"> | string | null
     location?: StringNullableWithAggregatesFilter<"InventoryItem"> | string | null
+    unit?: StringWithAggregatesFilter<"InventoryItem"> | string
+    weight?: FloatNullableWithAggregatesFilter<"InventoryItem"> | number | null
+    dimensions?: StringNullableWithAggregatesFilter<"InventoryItem"> | string | null
+    expiryDate?: DateTimeNullableWithAggregatesFilter<"InventoryItem"> | Date | string | null
+    image?: StringNullableWithAggregatesFilter<"InventoryItem"> | string | null
+    tags?: StringNullableListFilter<"InventoryItem">
     status?: EnumInventoryStatusWithAggregatesFilter<"InventoryItem"> | $Enums.InventoryStatus
+    supplierId?: StringNullableWithAggregatesFilter<"InventoryItem"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"InventoryItem"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"InventoryItem"> | Date | string
+  }
+
+  export type StockMovementWhereInput = {
+    AND?: StockMovementWhereInput | StockMovementWhereInput[]
+    OR?: StockMovementWhereInput[]
+    NOT?: StockMovementWhereInput | StockMovementWhereInput[]
+    id?: StringFilter<"StockMovement"> | string
+    businessId?: StringFilter<"StockMovement"> | string
+    itemId?: StringFilter<"StockMovement"> | string
+    type?: StringFilter<"StockMovement"> | string
+    quantity?: IntFilter<"StockMovement"> | number
+    date?: DateTimeFilter<"StockMovement"> | Date | string
+    reason?: StringNullableFilter<"StockMovement"> | string | null
+    userId?: StringNullableFilter<"StockMovement"> | string | null
+    createdAt?: DateTimeFilter<"StockMovement"> | Date | string
+    business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+    item?: XOR<InventoryItemScalarRelationFilter, InventoryItemWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type StockMovementOrderByWithRelationInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    itemId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    date?: SortOrder
+    reason?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    business?: BusinessOrderByWithRelationInput
+    item?: InventoryItemOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type StockMovementWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: StockMovementWhereInput | StockMovementWhereInput[]
+    OR?: StockMovementWhereInput[]
+    NOT?: StockMovementWhereInput | StockMovementWhereInput[]
+    businessId?: StringFilter<"StockMovement"> | string
+    itemId?: StringFilter<"StockMovement"> | string
+    type?: StringFilter<"StockMovement"> | string
+    quantity?: IntFilter<"StockMovement"> | number
+    date?: DateTimeFilter<"StockMovement"> | Date | string
+    reason?: StringNullableFilter<"StockMovement"> | string | null
+    userId?: StringNullableFilter<"StockMovement"> | string | null
+    createdAt?: DateTimeFilter<"StockMovement"> | Date | string
+    business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+    item?: XOR<InventoryItemScalarRelationFilter, InventoryItemWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type StockMovementOrderByWithAggregationInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    itemId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    date?: SortOrder
+    reason?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: StockMovementCountOrderByAggregateInput
+    _avg?: StockMovementAvgOrderByAggregateInput
+    _max?: StockMovementMaxOrderByAggregateInput
+    _min?: StockMovementMinOrderByAggregateInput
+    _sum?: StockMovementSumOrderByAggregateInput
+  }
+
+  export type StockMovementScalarWhereWithAggregatesInput = {
+    AND?: StockMovementScalarWhereWithAggregatesInput | StockMovementScalarWhereWithAggregatesInput[]
+    OR?: StockMovementScalarWhereWithAggregatesInput[]
+    NOT?: StockMovementScalarWhereWithAggregatesInput | StockMovementScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"StockMovement"> | string
+    businessId?: StringWithAggregatesFilter<"StockMovement"> | string
+    itemId?: StringWithAggregatesFilter<"StockMovement"> | string
+    type?: StringWithAggregatesFilter<"StockMovement"> | string
+    quantity?: IntWithAggregatesFilter<"StockMovement"> | number
+    date?: DateTimeWithAggregatesFilter<"StockMovement"> | Date | string
+    reason?: StringNullableWithAggregatesFilter<"StockMovement"> | string | null
+    userId?: StringNullableWithAggregatesFilter<"StockMovement"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"StockMovement"> | Date | string
   }
 
   export type EmployeeWhereInput = {
@@ -41104,6 +44186,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeFilter<"Supplier"> | Date | string
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+    inventoryItems?: InventoryItemListRelationFilter
   }
 
   export type SupplierOrderByWithRelationInput = {
@@ -41120,6 +44203,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     business?: BusinessOrderByWithRelationInput
+    inventoryItems?: InventoryItemOrderByRelationAggregateInput
   }
 
   export type SupplierWhereUniqueInput = Prisma.AtLeast<{
@@ -41139,6 +44223,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeFilter<"Supplier"> | Date | string
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+    inventoryItems?: InventoryItemListRelationFilter
   }, "id">
 
   export type SupplierOrderByWithAggregationInput = {
@@ -42596,6 +45681,91 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"AINote"> | Date | string
   }
 
+  export type NotificationWhereInput = {
+    AND?: NotificationWhereInput | NotificationWhereInput[]
+    OR?: NotificationWhereInput[]
+    NOT?: NotificationWhereInput | NotificationWhereInput[]
+    id?: StringFilter<"Notification"> | string
+    userId?: StringFilter<"Notification"> | string
+    businessId?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    message?: StringFilter<"Notification"> | string
+    type?: StringFilter<"Notification"> | string
+    status?: StringFilter<"Notification"> | string
+    link?: StringNullableFilter<"Notification"> | string | null
+    metadata?: JsonNullableFilter<"Notification">
+    createdAt?: DateTimeFilter<"Notification"> | Date | string
+    updatedAt?: DateTimeFilter<"Notification"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type NotificationOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessId?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    link?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type NotificationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: NotificationWhereInput | NotificationWhereInput[]
+    OR?: NotificationWhereInput[]
+    NOT?: NotificationWhereInput | NotificationWhereInput[]
+    userId?: StringFilter<"Notification"> | string
+    businessId?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    message?: StringFilter<"Notification"> | string
+    type?: StringFilter<"Notification"> | string
+    status?: StringFilter<"Notification"> | string
+    link?: StringNullableFilter<"Notification"> | string | null
+    metadata?: JsonNullableFilter<"Notification">
+    createdAt?: DateTimeFilter<"Notification"> | Date | string
+    updatedAt?: DateTimeFilter<"Notification"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type NotificationOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessId?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    link?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: NotificationCountOrderByAggregateInput
+    _max?: NotificationMaxOrderByAggregateInput
+    _min?: NotificationMinOrderByAggregateInput
+  }
+
+  export type NotificationScalarWhereWithAggregatesInput = {
+    AND?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
+    OR?: NotificationScalarWhereWithAggregatesInput[]
+    NOT?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Notification"> | string
+    userId?: StringWithAggregatesFilter<"Notification"> | string
+    businessId?: StringWithAggregatesFilter<"Notification"> | string
+    title?: StringWithAggregatesFilter<"Notification"> | string
+    message?: StringWithAggregatesFilter<"Notification"> | string
+    type?: StringWithAggregatesFilter<"Notification"> | string
+    status?: StringWithAggregatesFilter<"Notification"> | string
+    link?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"Notification">
+    createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -42629,6 +45799,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -42664,6 +45836,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -42699,6 +45873,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -42734,6 +45910,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -43024,6 +46202,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateInput = {
@@ -43058,6 +46237,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUpdateInput = {
@@ -43092,6 +46272,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateInput = {
@@ -43126,6 +46307,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateManyInput = {
@@ -43778,17 +46960,28 @@ export namespace Prisma {
     id?: string
     name: string
     sku: string
+    barcode?: string | null
     description?: string | null
     quantity?: number
     minQuantity?: number
-    price?: number | null
-    cost?: number | null
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
     category?: string | null
     location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
     status?: $Enums.InventoryStatus
     createdAt?: Date | string
     updatedAt?: Date | string
     business: BusinessCreateNestedOneWithoutInventoryInput
+    supplier?: SupplierCreateNestedOneWithoutInventoryItemsInput
+    movements?: StockMovementCreateNestedManyWithoutItemInput
   }
 
   export type InventoryItemUncheckedCreateInput = {
@@ -43796,33 +46989,55 @@ export namespace Prisma {
     businessId: string
     name: string
     sku: string
+    barcode?: string | null
     description?: string | null
     quantity?: number
     minQuantity?: number
-    price?: number | null
-    cost?: number | null
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
     category?: string | null
     location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
     status?: $Enums.InventoryStatus
+    supplierId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    movements?: StockMovementUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type InventoryItemUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     minQuantity?: IntFieldUpdateOperationsInput | number
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
-    cost?: NullableFloatFieldUpdateOperationsInput | number | null
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
     category?: NullableStringFieldUpdateOperationsInput | string | null
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
     status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     business?: BusinessUpdateOneRequiredWithoutInventoryNestedInput
+    supplier?: SupplierUpdateOneWithoutInventoryItemsNestedInput
+    movements?: StockMovementUpdateManyWithoutItemNestedInput
   }
 
   export type InventoryItemUncheckedUpdateInput = {
@@ -43830,16 +47045,27 @@ export namespace Prisma {
     businessId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     minQuantity?: IntFieldUpdateOperationsInput | number
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
-    cost?: NullableFloatFieldUpdateOperationsInput | number | null
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
     category?: NullableStringFieldUpdateOperationsInput | string | null
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
     status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
+    supplierId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    movements?: StockMovementUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type InventoryItemCreateManyInput = {
@@ -43847,14 +47073,24 @@ export namespace Prisma {
     businessId: string
     name: string
     sku: string
+    barcode?: string | null
     description?: string | null
     quantity?: number
     minQuantity?: number
-    price?: number | null
-    cost?: number | null
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
     category?: string | null
     location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
     status?: $Enums.InventoryStatus
+    supplierId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -43863,13 +47099,22 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     minQuantity?: IntFieldUpdateOperationsInput | number
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
-    cost?: NullableFloatFieldUpdateOperationsInput | number | null
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
     category?: NullableStringFieldUpdateOperationsInput | string | null
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
     status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43880,16 +47125,107 @@ export namespace Prisma {
     businessId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     minQuantity?: IntFieldUpdateOperationsInput | number
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
-    cost?: NullableFloatFieldUpdateOperationsInput | number | null
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
     category?: NullableStringFieldUpdateOperationsInput | string | null
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
     status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
+    supplierId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockMovementCreateInput = {
+    id?: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    createdAt?: Date | string
+    business: BusinessCreateNestedOneWithoutStockMovementsInput
+    item: InventoryItemCreateNestedOneWithoutMovementsInput
+    user?: UserCreateNestedOneWithoutStockMovementsInput
+  }
+
+  export type StockMovementUncheckedCreateInput = {
+    id?: string
+    businessId: string
+    itemId: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    userId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type StockMovementUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutStockMovementsNestedInput
+    item?: InventoryItemUpdateOneRequiredWithoutMovementsNestedInput
+    user?: UserUpdateOneWithoutStockMovementsNestedInput
+  }
+
+  export type StockMovementUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    itemId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockMovementCreateManyInput = {
+    id?: string
+    businessId: string
+    itemId: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    userId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type StockMovementUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockMovementUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    itemId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type EmployeeCreateInput = {
@@ -44037,6 +47373,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     business: BusinessCreateNestedOneWithoutSuppliersInput
+    inventoryItems?: InventoryItemCreateNestedManyWithoutSupplierInput
   }
 
   export type SupplierUncheckedCreateInput = {
@@ -44052,6 +47389,7 @@ export namespace Prisma {
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    inventoryItems?: InventoryItemUncheckedCreateNestedManyWithoutSupplierInput
   }
 
   export type SupplierUpdateInput = {
@@ -44067,6 +47405,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     business?: BusinessUpdateOneRequiredWithoutSuppliersNestedInput
+    inventoryItems?: InventoryItemUpdateManyWithoutSupplierNestedInput
   }
 
   export type SupplierUncheckedUpdateInput = {
@@ -44082,6 +47421,7 @@ export namespace Prisma {
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventoryItems?: InventoryItemUncheckedUpdateManyWithoutSupplierNestedInput
   }
 
   export type SupplierCreateManyInput = {
@@ -45716,6 +49056,103 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type NotificationCreateInput = {
+    id?: string
+    businessId: string
+    title: string
+    message: string
+    type?: string
+    status?: string
+    link?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutNotificationsInput
+  }
+
+  export type NotificationUncheckedCreateInput = {
+    id?: string
+    userId: string
+    businessId: string
+    title: string
+    message: string
+    type?: string
+    status?: string
+    link?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NotificationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
+  }
+
+  export type NotificationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationCreateManyInput = {
+    id?: string
+    userId: string
+    businessId: string
+    title: string
+    message: string
+    type?: string
+    status?: string
+    link?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NotificationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -45894,6 +49331,18 @@ export namespace Prisma {
     none?: AINoteWhereInput
   }
 
+  export type StockMovementListRelationFilter = {
+    every?: StockMovementWhereInput
+    some?: StockMovementWhereInput
+    none?: StockMovementWhereInput
+  }
+
+  export type NotificationListRelationFilter = {
+    every?: NotificationWhereInput
+    some?: NotificationWhereInput
+    none?: NotificationWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -45952,6 +49401,14 @@ export namespace Prisma {
   }
 
   export type AINoteOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type StockMovementOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NotificationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -46868,19 +50325,34 @@ export namespace Prisma {
     not?: NestedEnumInventoryStatusFilter<$PrismaModel> | $Enums.InventoryStatus
   }
 
+  export type SupplierNullableScalarRelationFilter = {
+    is?: SupplierWhereInput | null
+    isNot?: SupplierWhereInput | null
+  }
+
   export type InventoryItemCountOrderByAggregateInput = {
     id?: SortOrder
     businessId?: SortOrder
     name?: SortOrder
     sku?: SortOrder
+    barcode?: SortOrder
     description?: SortOrder
     quantity?: SortOrder
     minQuantity?: SortOrder
+    maxQuantity?: SortOrder
+    reorderPoint?: SortOrder
     price?: SortOrder
     cost?: SortOrder
     category?: SortOrder
     location?: SortOrder
+    unit?: SortOrder
+    weight?: SortOrder
+    dimensions?: SortOrder
+    expiryDate?: SortOrder
+    image?: SortOrder
+    tags?: SortOrder
     status?: SortOrder
+    supplierId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46888,8 +50360,11 @@ export namespace Prisma {
   export type InventoryItemAvgOrderByAggregateInput = {
     quantity?: SortOrder
     minQuantity?: SortOrder
+    maxQuantity?: SortOrder
+    reorderPoint?: SortOrder
     price?: SortOrder
     cost?: SortOrder
+    weight?: SortOrder
   }
 
   export type InventoryItemMaxOrderByAggregateInput = {
@@ -46897,14 +50372,23 @@ export namespace Prisma {
     businessId?: SortOrder
     name?: SortOrder
     sku?: SortOrder
+    barcode?: SortOrder
     description?: SortOrder
     quantity?: SortOrder
     minQuantity?: SortOrder
+    maxQuantity?: SortOrder
+    reorderPoint?: SortOrder
     price?: SortOrder
     cost?: SortOrder
     category?: SortOrder
     location?: SortOrder
+    unit?: SortOrder
+    weight?: SortOrder
+    dimensions?: SortOrder
+    expiryDate?: SortOrder
+    image?: SortOrder
     status?: SortOrder
+    supplierId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46914,14 +50398,23 @@ export namespace Prisma {
     businessId?: SortOrder
     name?: SortOrder
     sku?: SortOrder
+    barcode?: SortOrder
     description?: SortOrder
     quantity?: SortOrder
     minQuantity?: SortOrder
+    maxQuantity?: SortOrder
+    reorderPoint?: SortOrder
     price?: SortOrder
     cost?: SortOrder
     category?: SortOrder
     location?: SortOrder
+    unit?: SortOrder
+    weight?: SortOrder
+    dimensions?: SortOrder
+    expiryDate?: SortOrder
+    image?: SortOrder
     status?: SortOrder
+    supplierId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46929,8 +50422,11 @@ export namespace Prisma {
   export type InventoryItemSumOrderByAggregateInput = {
     quantity?: SortOrder
     minQuantity?: SortOrder
+    maxQuantity?: SortOrder
+    reorderPoint?: SortOrder
     price?: SortOrder
     cost?: SortOrder
+    weight?: SortOrder
   }
 
   export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -46957,6 +50453,60 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumInventoryStatusFilter<$PrismaModel>
     _max?: NestedEnumInventoryStatusFilter<$PrismaModel>
+  }
+
+  export type InventoryItemScalarRelationFilter = {
+    is?: InventoryItemWhereInput
+    isNot?: InventoryItemWhereInput
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type StockMovementCountOrderByAggregateInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    itemId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    date?: SortOrder
+    reason?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type StockMovementAvgOrderByAggregateInput = {
+    quantity?: SortOrder
+  }
+
+  export type StockMovementMaxOrderByAggregateInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    itemId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    date?: SortOrder
+    reason?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type StockMovementMinOrderByAggregateInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    itemId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    date?: SortOrder
+    reason?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type StockMovementSumOrderByAggregateInput = {
+    quantity?: SortOrder
   }
 
   export type EnumEmployeeStatusFilter<$PrismaModel = never> = {
@@ -47243,11 +50793,6 @@ export namespace Prisma {
     in?: $Enums.TicketPriority[] | ListEnumTicketPriorityFieldRefInput<$PrismaModel>
     notIn?: $Enums.TicketPriority[] | ListEnumTicketPriorityFieldRefInput<$PrismaModel>
     not?: NestedEnumTicketPriorityFilter<$PrismaModel> | $Enums.TicketPriority
-  }
-
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
   }
 
   export type TicketCountOrderByAggregateInput = {
@@ -48125,6 +51670,46 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type NotificationCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessId?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    link?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NotificationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessId?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    link?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NotificationMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessId?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    link?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type BusinessCreateNestedOneWithoutUsersInput = {
     create?: XOR<BusinessCreateWithoutUsersInput, BusinessUncheckedCreateWithoutUsersInput>
     connectOrCreate?: BusinessCreateOrConnectWithoutUsersInput
@@ -48229,6 +51814,20 @@ export namespace Prisma {
     connect?: AINoteWhereUniqueInput | AINoteWhereUniqueInput[]
   }
 
+  export type StockMovementCreateNestedManyWithoutUserInput = {
+    create?: XOR<StockMovementCreateWithoutUserInput, StockMovementUncheckedCreateWithoutUserInput> | StockMovementCreateWithoutUserInput[] | StockMovementUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutUserInput | StockMovementCreateOrConnectWithoutUserInput[]
+    createMany?: StockMovementCreateManyUserInputEnvelope
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+  }
+
+  export type NotificationCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -48325,6 +51924,20 @@ export namespace Prisma {
     connectOrCreate?: AINoteCreateOrConnectWithoutUserInput | AINoteCreateOrConnectWithoutUserInput[]
     createMany?: AINoteCreateManyUserInputEnvelope
     connect?: AINoteWhereUniqueInput | AINoteWhereUniqueInput[]
+  }
+
+  export type StockMovementUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<StockMovementCreateWithoutUserInput, StockMovementUncheckedCreateWithoutUserInput> | StockMovementCreateWithoutUserInput[] | StockMovementUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutUserInput | StockMovementCreateOrConnectWithoutUserInput[]
+    createMany?: StockMovementCreateManyUserInputEnvelope
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+  }
+
+  export type NotificationUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -48555,6 +52168,34 @@ export namespace Prisma {
     deleteMany?: AINoteScalarWhereInput | AINoteScalarWhereInput[]
   }
 
+  export type StockMovementUpdateManyWithoutUserNestedInput = {
+    create?: XOR<StockMovementCreateWithoutUserInput, StockMovementUncheckedCreateWithoutUserInput> | StockMovementCreateWithoutUserInput[] | StockMovementUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutUserInput | StockMovementCreateOrConnectWithoutUserInput[]
+    upsert?: StockMovementUpsertWithWhereUniqueWithoutUserInput | StockMovementUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: StockMovementCreateManyUserInputEnvelope
+    set?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    disconnect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    delete?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    update?: StockMovementUpdateWithWhereUniqueWithoutUserInput | StockMovementUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: StockMovementUpdateManyWithWhereWithoutUserInput | StockMovementUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
+  }
+
+  export type NotificationUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -48751,6 +52392,34 @@ export namespace Prisma {
     deleteMany?: AINoteScalarWhereInput | AINoteScalarWhereInput[]
   }
 
+  export type StockMovementUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<StockMovementCreateWithoutUserInput, StockMovementUncheckedCreateWithoutUserInput> | StockMovementCreateWithoutUserInput[] | StockMovementUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutUserInput | StockMovementCreateOrConnectWithoutUserInput[]
+    upsert?: StockMovementUpsertWithWhereUniqueWithoutUserInput | StockMovementUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: StockMovementCreateManyUserInputEnvelope
+    set?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    disconnect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    delete?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    update?: StockMovementUpdateWithWhereUniqueWithoutUserInput | StockMovementUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: StockMovementUpdateManyWithWhereWithoutUserInput | StockMovementUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput
@@ -48912,6 +52581,13 @@ export namespace Prisma {
     connect?: AINoteWhereUniqueInput | AINoteWhereUniqueInput[]
   }
 
+  export type StockMovementCreateNestedManyWithoutBusinessInput = {
+    create?: XOR<StockMovementCreateWithoutBusinessInput, StockMovementUncheckedCreateWithoutBusinessInput> | StockMovementCreateWithoutBusinessInput[] | StockMovementUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutBusinessInput | StockMovementCreateOrConnectWithoutBusinessInput[]
+    createMany?: StockMovementCreateManyBusinessInputEnvelope
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+  }
+
   export type SubscriptionUncheckedCreateNestedOneWithoutBusinessInput = {
     create?: XOR<SubscriptionCreateWithoutBusinessInput, SubscriptionUncheckedCreateWithoutBusinessInput>
     connectOrCreate?: SubscriptionCreateOrConnectWithoutBusinessInput
@@ -49035,6 +52711,13 @@ export namespace Prisma {
     connectOrCreate?: AINoteCreateOrConnectWithoutBusinessInput | AINoteCreateOrConnectWithoutBusinessInput[]
     createMany?: AINoteCreateManyBusinessInputEnvelope
     connect?: AINoteWhereUniqueInput | AINoteWhereUniqueInput[]
+  }
+
+  export type StockMovementUncheckedCreateNestedManyWithoutBusinessInput = {
+    create?: XOR<StockMovementCreateWithoutBusinessInput, StockMovementUncheckedCreateWithoutBusinessInput> | StockMovementCreateWithoutBusinessInput[] | StockMovementUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutBusinessInput | StockMovementCreateOrConnectWithoutBusinessInput[]
+    createMany?: StockMovementCreateManyBusinessInputEnvelope
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -49293,6 +52976,20 @@ export namespace Prisma {
     deleteMany?: AINoteScalarWhereInput | AINoteScalarWhereInput[]
   }
 
+  export type StockMovementUpdateManyWithoutBusinessNestedInput = {
+    create?: XOR<StockMovementCreateWithoutBusinessInput, StockMovementUncheckedCreateWithoutBusinessInput> | StockMovementCreateWithoutBusinessInput[] | StockMovementUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutBusinessInput | StockMovementCreateOrConnectWithoutBusinessInput[]
+    upsert?: StockMovementUpsertWithWhereUniqueWithoutBusinessInput | StockMovementUpsertWithWhereUniqueWithoutBusinessInput[]
+    createMany?: StockMovementCreateManyBusinessInputEnvelope
+    set?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    disconnect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    delete?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    update?: StockMovementUpdateWithWhereUniqueWithoutBusinessInput | StockMovementUpdateWithWhereUniqueWithoutBusinessInput[]
+    updateMany?: StockMovementUpdateManyWithWhereWithoutBusinessInput | StockMovementUpdateManyWithWhereWithoutBusinessInput[]
+    deleteMany?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
+  }
+
   export type SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput = {
     create?: XOR<SubscriptionCreateWithoutBusinessInput, SubscriptionUncheckedCreateWithoutBusinessInput>
     connectOrCreate?: SubscriptionCreateOrConnectWithoutBusinessInput
@@ -49541,6 +53238,20 @@ export namespace Prisma {
     deleteMany?: AINoteScalarWhereInput | AINoteScalarWhereInput[]
   }
 
+  export type StockMovementUncheckedUpdateManyWithoutBusinessNestedInput = {
+    create?: XOR<StockMovementCreateWithoutBusinessInput, StockMovementUncheckedCreateWithoutBusinessInput> | StockMovementCreateWithoutBusinessInput[] | StockMovementUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutBusinessInput | StockMovementCreateOrConnectWithoutBusinessInput[]
+    upsert?: StockMovementUpsertWithWhereUniqueWithoutBusinessInput | StockMovementUpsertWithWhereUniqueWithoutBusinessInput[]
+    createMany?: StockMovementCreateManyBusinessInputEnvelope
+    set?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    disconnect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    delete?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    update?: StockMovementUpdateWithWhereUniqueWithoutBusinessInput | StockMovementUpdateWithWhereUniqueWithoutBusinessInput[]
+    updateMany?: StockMovementUpdateManyWithWhereWithoutBusinessInput | StockMovementUpdateManyWithWhereWithoutBusinessInput[]
+    deleteMany?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
+  }
+
   export type BusinessCreateNestedOneWithoutSubscriptionInput = {
     create?: XOR<BusinessCreateWithoutSubscriptionInput, BusinessUncheckedCreateWithoutSubscriptionInput>
     connectOrCreate?: BusinessCreateOrConnectWithoutSubscriptionInput
@@ -49741,10 +53452,34 @@ export namespace Prisma {
     update?: XOR<XOR<JournalEntryUpdateToOneWithWhereWithoutExpenseInput, JournalEntryUpdateWithoutExpenseInput>, JournalEntryUncheckedUpdateWithoutExpenseInput>
   }
 
+  export type InventoryItemCreatetagsInput = {
+    set: string[]
+  }
+
   export type BusinessCreateNestedOneWithoutInventoryInput = {
     create?: XOR<BusinessCreateWithoutInventoryInput, BusinessUncheckedCreateWithoutInventoryInput>
     connectOrCreate?: BusinessCreateOrConnectWithoutInventoryInput
     connect?: BusinessWhereUniqueInput
+  }
+
+  export type SupplierCreateNestedOneWithoutInventoryItemsInput = {
+    create?: XOR<SupplierCreateWithoutInventoryItemsInput, SupplierUncheckedCreateWithoutInventoryItemsInput>
+    connectOrCreate?: SupplierCreateOrConnectWithoutInventoryItemsInput
+    connect?: SupplierWhereUniqueInput
+  }
+
+  export type StockMovementCreateNestedManyWithoutItemInput = {
+    create?: XOR<StockMovementCreateWithoutItemInput, StockMovementUncheckedCreateWithoutItemInput> | StockMovementCreateWithoutItemInput[] | StockMovementUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutItemInput | StockMovementCreateOrConnectWithoutItemInput[]
+    createMany?: StockMovementCreateManyItemInputEnvelope
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+  }
+
+  export type StockMovementUncheckedCreateNestedManyWithoutItemInput = {
+    create?: XOR<StockMovementCreateWithoutItemInput, StockMovementUncheckedCreateWithoutItemInput> | StockMovementCreateWithoutItemInput[] | StockMovementUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutItemInput | StockMovementCreateOrConnectWithoutItemInput[]
+    createMany?: StockMovementCreateManyItemInputEnvelope
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
   }
 
   export type NullableFloatFieldUpdateOperationsInput = {
@@ -49753,6 +53488,11 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type InventoryItemUpdatetagsInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type EnumInventoryStatusFieldUpdateOperationsInput = {
@@ -49765,6 +53505,88 @@ export namespace Prisma {
     upsert?: BusinessUpsertWithoutInventoryInput
     connect?: BusinessWhereUniqueInput
     update?: XOR<XOR<BusinessUpdateToOneWithWhereWithoutInventoryInput, BusinessUpdateWithoutInventoryInput>, BusinessUncheckedUpdateWithoutInventoryInput>
+  }
+
+  export type SupplierUpdateOneWithoutInventoryItemsNestedInput = {
+    create?: XOR<SupplierCreateWithoutInventoryItemsInput, SupplierUncheckedCreateWithoutInventoryItemsInput>
+    connectOrCreate?: SupplierCreateOrConnectWithoutInventoryItemsInput
+    upsert?: SupplierUpsertWithoutInventoryItemsInput
+    disconnect?: SupplierWhereInput | boolean
+    delete?: SupplierWhereInput | boolean
+    connect?: SupplierWhereUniqueInput
+    update?: XOR<XOR<SupplierUpdateToOneWithWhereWithoutInventoryItemsInput, SupplierUpdateWithoutInventoryItemsInput>, SupplierUncheckedUpdateWithoutInventoryItemsInput>
+  }
+
+  export type StockMovementUpdateManyWithoutItemNestedInput = {
+    create?: XOR<StockMovementCreateWithoutItemInput, StockMovementUncheckedCreateWithoutItemInput> | StockMovementCreateWithoutItemInput[] | StockMovementUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutItemInput | StockMovementCreateOrConnectWithoutItemInput[]
+    upsert?: StockMovementUpsertWithWhereUniqueWithoutItemInput | StockMovementUpsertWithWhereUniqueWithoutItemInput[]
+    createMany?: StockMovementCreateManyItemInputEnvelope
+    set?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    disconnect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    delete?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    update?: StockMovementUpdateWithWhereUniqueWithoutItemInput | StockMovementUpdateWithWhereUniqueWithoutItemInput[]
+    updateMany?: StockMovementUpdateManyWithWhereWithoutItemInput | StockMovementUpdateManyWithWhereWithoutItemInput[]
+    deleteMany?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
+  }
+
+  export type StockMovementUncheckedUpdateManyWithoutItemNestedInput = {
+    create?: XOR<StockMovementCreateWithoutItemInput, StockMovementUncheckedCreateWithoutItemInput> | StockMovementCreateWithoutItemInput[] | StockMovementUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: StockMovementCreateOrConnectWithoutItemInput | StockMovementCreateOrConnectWithoutItemInput[]
+    upsert?: StockMovementUpsertWithWhereUniqueWithoutItemInput | StockMovementUpsertWithWhereUniqueWithoutItemInput[]
+    createMany?: StockMovementCreateManyItemInputEnvelope
+    set?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    disconnect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    delete?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
+    update?: StockMovementUpdateWithWhereUniqueWithoutItemInput | StockMovementUpdateWithWhereUniqueWithoutItemInput[]
+    updateMany?: StockMovementUpdateManyWithWhereWithoutItemInput | StockMovementUpdateManyWithWhereWithoutItemInput[]
+    deleteMany?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
+  }
+
+  export type BusinessCreateNestedOneWithoutStockMovementsInput = {
+    create?: XOR<BusinessCreateWithoutStockMovementsInput, BusinessUncheckedCreateWithoutStockMovementsInput>
+    connectOrCreate?: BusinessCreateOrConnectWithoutStockMovementsInput
+    connect?: BusinessWhereUniqueInput
+  }
+
+  export type InventoryItemCreateNestedOneWithoutMovementsInput = {
+    create?: XOR<InventoryItemCreateWithoutMovementsInput, InventoryItemUncheckedCreateWithoutMovementsInput>
+    connectOrCreate?: InventoryItemCreateOrConnectWithoutMovementsInput
+    connect?: InventoryItemWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutStockMovementsInput = {
+    create?: XOR<UserCreateWithoutStockMovementsInput, UserUncheckedCreateWithoutStockMovementsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutStockMovementsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type BusinessUpdateOneRequiredWithoutStockMovementsNestedInput = {
+    create?: XOR<BusinessCreateWithoutStockMovementsInput, BusinessUncheckedCreateWithoutStockMovementsInput>
+    connectOrCreate?: BusinessCreateOrConnectWithoutStockMovementsInput
+    upsert?: BusinessUpsertWithoutStockMovementsInput
+    connect?: BusinessWhereUniqueInput
+    update?: XOR<XOR<BusinessUpdateToOneWithWhereWithoutStockMovementsInput, BusinessUpdateWithoutStockMovementsInput>, BusinessUncheckedUpdateWithoutStockMovementsInput>
+  }
+
+  export type InventoryItemUpdateOneRequiredWithoutMovementsNestedInput = {
+    create?: XOR<InventoryItemCreateWithoutMovementsInput, InventoryItemUncheckedCreateWithoutMovementsInput>
+    connectOrCreate?: InventoryItemCreateOrConnectWithoutMovementsInput
+    upsert?: InventoryItemUpsertWithoutMovementsInput
+    connect?: InventoryItemWhereUniqueInput
+    update?: XOR<XOR<InventoryItemUpdateToOneWithWhereWithoutMovementsInput, InventoryItemUpdateWithoutMovementsInput>, InventoryItemUncheckedUpdateWithoutMovementsInput>
+  }
+
+  export type UserUpdateOneWithoutStockMovementsNestedInput = {
+    create?: XOR<UserCreateWithoutStockMovementsInput, UserUncheckedCreateWithoutStockMovementsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutStockMovementsInput
+    upsert?: UserUpsertWithoutStockMovementsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutStockMovementsInput, UserUpdateWithoutStockMovementsInput>, UserUncheckedUpdateWithoutStockMovementsInput>
   }
 
   export type BusinessCreateNestedOneWithoutEmployeesInput = {
@@ -49791,6 +53613,20 @@ export namespace Prisma {
     connect?: BusinessWhereUniqueInput
   }
 
+  export type InventoryItemCreateNestedManyWithoutSupplierInput = {
+    create?: XOR<InventoryItemCreateWithoutSupplierInput, InventoryItemUncheckedCreateWithoutSupplierInput> | InventoryItemCreateWithoutSupplierInput[] | InventoryItemUncheckedCreateWithoutSupplierInput[]
+    connectOrCreate?: InventoryItemCreateOrConnectWithoutSupplierInput | InventoryItemCreateOrConnectWithoutSupplierInput[]
+    createMany?: InventoryItemCreateManySupplierInputEnvelope
+    connect?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+  }
+
+  export type InventoryItemUncheckedCreateNestedManyWithoutSupplierInput = {
+    create?: XOR<InventoryItemCreateWithoutSupplierInput, InventoryItemUncheckedCreateWithoutSupplierInput> | InventoryItemCreateWithoutSupplierInput[] | InventoryItemUncheckedCreateWithoutSupplierInput[]
+    connectOrCreate?: InventoryItemCreateOrConnectWithoutSupplierInput | InventoryItemCreateOrConnectWithoutSupplierInput[]
+    createMany?: InventoryItemCreateManySupplierInputEnvelope
+    connect?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+  }
+
   export type EnumSupplierStatusFieldUpdateOperationsInput = {
     set?: $Enums.SupplierStatus
   }
@@ -49801,6 +53637,34 @@ export namespace Prisma {
     upsert?: BusinessUpsertWithoutSuppliersInput
     connect?: BusinessWhereUniqueInput
     update?: XOR<XOR<BusinessUpdateToOneWithWhereWithoutSuppliersInput, BusinessUpdateWithoutSuppliersInput>, BusinessUncheckedUpdateWithoutSuppliersInput>
+  }
+
+  export type InventoryItemUpdateManyWithoutSupplierNestedInput = {
+    create?: XOR<InventoryItemCreateWithoutSupplierInput, InventoryItemUncheckedCreateWithoutSupplierInput> | InventoryItemCreateWithoutSupplierInput[] | InventoryItemUncheckedCreateWithoutSupplierInput[]
+    connectOrCreate?: InventoryItemCreateOrConnectWithoutSupplierInput | InventoryItemCreateOrConnectWithoutSupplierInput[]
+    upsert?: InventoryItemUpsertWithWhereUniqueWithoutSupplierInput | InventoryItemUpsertWithWhereUniqueWithoutSupplierInput[]
+    createMany?: InventoryItemCreateManySupplierInputEnvelope
+    set?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+    disconnect?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+    delete?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+    connect?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+    update?: InventoryItemUpdateWithWhereUniqueWithoutSupplierInput | InventoryItemUpdateWithWhereUniqueWithoutSupplierInput[]
+    updateMany?: InventoryItemUpdateManyWithWhereWithoutSupplierInput | InventoryItemUpdateManyWithWhereWithoutSupplierInput[]
+    deleteMany?: InventoryItemScalarWhereInput | InventoryItemScalarWhereInput[]
+  }
+
+  export type InventoryItemUncheckedUpdateManyWithoutSupplierNestedInput = {
+    create?: XOR<InventoryItemCreateWithoutSupplierInput, InventoryItemUncheckedCreateWithoutSupplierInput> | InventoryItemCreateWithoutSupplierInput[] | InventoryItemUncheckedCreateWithoutSupplierInput[]
+    connectOrCreate?: InventoryItemCreateOrConnectWithoutSupplierInput | InventoryItemCreateOrConnectWithoutSupplierInput[]
+    upsert?: InventoryItemUpsertWithWhereUniqueWithoutSupplierInput | InventoryItemUpsertWithWhereUniqueWithoutSupplierInput[]
+    createMany?: InventoryItemCreateManySupplierInputEnvelope
+    set?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+    disconnect?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+    delete?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+    connect?: InventoryItemWhereUniqueInput | InventoryItemWhereUniqueInput[]
+    update?: InventoryItemUpdateWithWhereUniqueWithoutSupplierInput | InventoryItemUpdateWithWhereUniqueWithoutSupplierInput[]
+    updateMany?: InventoryItemUpdateManyWithWhereWithoutSupplierInput | InventoryItemUpdateManyWithWhereWithoutSupplierInput[]
+    deleteMany?: InventoryItemScalarWhereInput | InventoryItemScalarWhereInput[]
   }
 
   export type BusinessCreateNestedOneWithoutCampaignsInput = {
@@ -50492,6 +54356,20 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAiNotesInput, UserUpdateWithoutAiNotesInput>, UserUncheckedUpdateWithoutAiNotesInput>
   }
 
+  export type UserCreateNestedOneWithoutNotificationsInput = {
+    create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
+    create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
+    upsert?: UserUpsertWithoutNotificationsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -51176,6 +55054,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutUsersInput = {
@@ -51209,6 +55088,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutUsersInput = {
@@ -51766,6 +55646,74 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type StockMovementCreateWithoutUserInput = {
+    id?: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    createdAt?: Date | string
+    business: BusinessCreateNestedOneWithoutStockMovementsInput
+    item: InventoryItemCreateNestedOneWithoutMovementsInput
+  }
+
+  export type StockMovementUncheckedCreateWithoutUserInput = {
+    id?: string
+    businessId: string
+    itemId: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    createdAt?: Date | string
+  }
+
+  export type StockMovementCreateOrConnectWithoutUserInput = {
+    where: StockMovementWhereUniqueInput
+    create: XOR<StockMovementCreateWithoutUserInput, StockMovementUncheckedCreateWithoutUserInput>
+  }
+
+  export type StockMovementCreateManyUserInputEnvelope = {
+    data: StockMovementCreateManyUserInput | StockMovementCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type NotificationCreateWithoutUserInput = {
+    id?: string
+    businessId: string
+    title: string
+    message: string
+    type?: string
+    status?: string
+    link?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NotificationUncheckedCreateWithoutUserInput = {
+    id?: string
+    businessId: string
+    title: string
+    message: string
+    type?: string
+    status?: string
+    link?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NotificationCreateOrConnectWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    create: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput>
+  }
+
+  export type NotificationCreateManyUserInputEnvelope = {
+    data: NotificationCreateManyUserInput | NotificationCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type BusinessUpsertWithoutUsersInput = {
     update: XOR<BusinessUpdateWithoutUsersInput, BusinessUncheckedUpdateWithoutUsersInput>
     create: XOR<BusinessCreateWithoutUsersInput, BusinessUncheckedCreateWithoutUsersInput>
@@ -51808,6 +55756,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutUsersInput = {
@@ -51841,6 +55790,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
@@ -52322,6 +56272,70 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"AINote"> | Date | string
   }
 
+  export type StockMovementUpsertWithWhereUniqueWithoutUserInput = {
+    where: StockMovementWhereUniqueInput
+    update: XOR<StockMovementUpdateWithoutUserInput, StockMovementUncheckedUpdateWithoutUserInput>
+    create: XOR<StockMovementCreateWithoutUserInput, StockMovementUncheckedCreateWithoutUserInput>
+  }
+
+  export type StockMovementUpdateWithWhereUniqueWithoutUserInput = {
+    where: StockMovementWhereUniqueInput
+    data: XOR<StockMovementUpdateWithoutUserInput, StockMovementUncheckedUpdateWithoutUserInput>
+  }
+
+  export type StockMovementUpdateManyWithWhereWithoutUserInput = {
+    where: StockMovementScalarWhereInput
+    data: XOR<StockMovementUpdateManyMutationInput, StockMovementUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type StockMovementScalarWhereInput = {
+    AND?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
+    OR?: StockMovementScalarWhereInput[]
+    NOT?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
+    id?: StringFilter<"StockMovement"> | string
+    businessId?: StringFilter<"StockMovement"> | string
+    itemId?: StringFilter<"StockMovement"> | string
+    type?: StringFilter<"StockMovement"> | string
+    quantity?: IntFilter<"StockMovement"> | number
+    date?: DateTimeFilter<"StockMovement"> | Date | string
+    reason?: StringNullableFilter<"StockMovement"> | string | null
+    userId?: StringNullableFilter<"StockMovement"> | string | null
+    createdAt?: DateTimeFilter<"StockMovement"> | Date | string
+  }
+
+  export type NotificationUpsertWithWhereUniqueWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    update: XOR<NotificationUpdateWithoutUserInput, NotificationUncheckedUpdateWithoutUserInput>
+    create: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput>
+  }
+
+  export type NotificationUpdateWithWhereUniqueWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    data: XOR<NotificationUpdateWithoutUserInput, NotificationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type NotificationUpdateManyWithWhereWithoutUserInput = {
+    where: NotificationScalarWhereInput
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type NotificationScalarWhereInput = {
+    AND?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+    OR?: NotificationScalarWhereInput[]
+    NOT?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+    id?: StringFilter<"Notification"> | string
+    userId?: StringFilter<"Notification"> | string
+    businessId?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    message?: StringFilter<"Notification"> | string
+    type?: StringFilter<"Notification"> | string
+    status?: StringFilter<"Notification"> | string
+    link?: StringNullableFilter<"Notification"> | string | null
+    metadata?: JsonNullableFilter<"Notification">
+    createdAt?: DateTimeFilter<"Notification"> | Date | string
+    updatedAt?: DateTimeFilter<"Notification"> | Date | string
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     email: string
@@ -52354,6 +56368,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -52388,6 +56404,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -52438,6 +56456,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -52472,6 +56492,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -52506,6 +56528,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -52540,6 +56564,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -52590,6 +56616,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -52624,6 +56652,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SubscriptionCreateWithoutBusinessInput = {
@@ -52697,6 +56727,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBusinessInput = {
@@ -52731,6 +56763,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBusinessInput = {
@@ -52957,32 +56991,54 @@ export namespace Prisma {
     id?: string
     name: string
     sku: string
+    barcode?: string | null
     description?: string | null
     quantity?: number
     minQuantity?: number
-    price?: number | null
-    cost?: number | null
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
     category?: string | null
     location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
     status?: $Enums.InventoryStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    supplier?: SupplierCreateNestedOneWithoutInventoryItemsInput
+    movements?: StockMovementCreateNestedManyWithoutItemInput
   }
 
   export type InventoryItemUncheckedCreateWithoutBusinessInput = {
     id?: string
     name: string
     sku: string
+    barcode?: string | null
     description?: string | null
     quantity?: number
     minQuantity?: number
-    price?: number | null
-    cost?: number | null
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
     category?: string | null
     location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
     status?: $Enums.InventoryStatus
+    supplierId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    movements?: StockMovementUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type InventoryItemCreateOrConnectWithoutBusinessInput = {
@@ -53053,6 +57109,7 @@ export namespace Prisma {
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    inventoryItems?: InventoryItemCreateNestedManyWithoutSupplierInput
   }
 
   export type SupplierUncheckedCreateWithoutBusinessInput = {
@@ -53067,6 +57124,7 @@ export namespace Prisma {
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    inventoryItems?: InventoryItemUncheckedCreateNestedManyWithoutSupplierInput
   }
 
   export type SupplierCreateOrConnectWithoutBusinessInput = {
@@ -53421,6 +57479,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type StockMovementCreateWithoutBusinessInput = {
+    id?: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    createdAt?: Date | string
+    item: InventoryItemCreateNestedOneWithoutMovementsInput
+    user?: UserCreateNestedOneWithoutStockMovementsInput
+  }
+
+  export type StockMovementUncheckedCreateWithoutBusinessInput = {
+    id?: string
+    itemId: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    userId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type StockMovementCreateOrConnectWithoutBusinessInput = {
+    where: StockMovementWhereUniqueInput
+    create: XOR<StockMovementCreateWithoutBusinessInput, StockMovementUncheckedCreateWithoutBusinessInput>
+  }
+
+  export type StockMovementCreateManyBusinessInputEnvelope = {
+    data: StockMovementCreateManyBusinessInput | StockMovementCreateManyBusinessInput[]
+    skipDuplicates?: boolean
+  }
+
   export type SubscriptionUpsertWithoutBusinessInput = {
     update: XOR<SubscriptionUpdateWithoutBusinessInput, SubscriptionUncheckedUpdateWithoutBusinessInput>
     create: XOR<SubscriptionCreateWithoutBusinessInput, SubscriptionUncheckedCreateWithoutBusinessInput>
@@ -53610,14 +57700,24 @@ export namespace Prisma {
     businessId?: StringFilter<"InventoryItem"> | string
     name?: StringFilter<"InventoryItem"> | string
     sku?: StringFilter<"InventoryItem"> | string
+    barcode?: StringNullableFilter<"InventoryItem"> | string | null
     description?: StringNullableFilter<"InventoryItem"> | string | null
     quantity?: IntFilter<"InventoryItem"> | number
     minQuantity?: IntFilter<"InventoryItem"> | number
-    price?: FloatNullableFilter<"InventoryItem"> | number | null
-    cost?: FloatNullableFilter<"InventoryItem"> | number | null
+    maxQuantity?: IntFilter<"InventoryItem"> | number
+    reorderPoint?: IntFilter<"InventoryItem"> | number
+    price?: FloatFilter<"InventoryItem"> | number
+    cost?: FloatFilter<"InventoryItem"> | number
     category?: StringNullableFilter<"InventoryItem"> | string | null
     location?: StringNullableFilter<"InventoryItem"> | string | null
+    unit?: StringFilter<"InventoryItem"> | string
+    weight?: FloatNullableFilter<"InventoryItem"> | number | null
+    dimensions?: StringNullableFilter<"InventoryItem"> | string | null
+    expiryDate?: DateTimeNullableFilter<"InventoryItem"> | Date | string | null
+    image?: StringNullableFilter<"InventoryItem"> | string | null
+    tags?: StringNullableListFilter<"InventoryItem">
     status?: EnumInventoryStatusFilter<"InventoryItem"> | $Enums.InventoryStatus
+    supplierId?: StringNullableFilter<"InventoryItem"> | string | null
     createdAt?: DateTimeFilter<"InventoryItem"> | Date | string
     updatedAt?: DateTimeFilter<"InventoryItem"> | Date | string
   }
@@ -53864,6 +57964,22 @@ export namespace Prisma {
     data: XOR<AINoteUpdateManyMutationInput, AINoteUncheckedUpdateManyWithoutBusinessInput>
   }
 
+  export type StockMovementUpsertWithWhereUniqueWithoutBusinessInput = {
+    where: StockMovementWhereUniqueInput
+    update: XOR<StockMovementUpdateWithoutBusinessInput, StockMovementUncheckedUpdateWithoutBusinessInput>
+    create: XOR<StockMovementCreateWithoutBusinessInput, StockMovementUncheckedCreateWithoutBusinessInput>
+  }
+
+  export type StockMovementUpdateWithWhereUniqueWithoutBusinessInput = {
+    where: StockMovementWhereUniqueInput
+    data: XOR<StockMovementUpdateWithoutBusinessInput, StockMovementUncheckedUpdateWithoutBusinessInput>
+  }
+
+  export type StockMovementUpdateManyWithWhereWithoutBusinessInput = {
+    where: StockMovementScalarWhereInput
+    data: XOR<StockMovementUpdateManyMutationInput, StockMovementUncheckedUpdateManyWithoutBusinessInput>
+  }
+
   export type BusinessCreateWithoutSubscriptionInput = {
     id?: string
     name: string
@@ -53895,6 +58011,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSubscriptionInput = {
@@ -53928,6 +58045,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSubscriptionInput = {
@@ -53977,6 +58095,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSubscriptionInput = {
@@ -54010,6 +58129,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutInvoicesInput = {
@@ -54043,6 +58163,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutInvoicesInput = {
@@ -54076,6 +58197,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutInvoicesInput = {
@@ -54115,6 +58237,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInvoicesInput = {
@@ -54149,6 +58273,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInvoicesInput = {
@@ -54231,6 +58357,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutInvoicesInput = {
@@ -54264,6 +58391,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutInvoicesInput = {
@@ -54309,6 +58437,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInvoicesInput = {
@@ -54343,6 +58473,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type JournalEntryUpsertWithoutInvoiceInput = {
@@ -54415,6 +58547,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutContactsInput = {
@@ -54448,6 +58581,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutContactsInput = {
@@ -54487,6 +58621,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutContactsInput = {
@@ -54521,6 +58657,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutContactsInput = {
@@ -54570,6 +58708,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutContactsInput = {
@@ -54603,6 +58742,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutContactsInput = {
@@ -54648,6 +58788,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutContactsInput = {
@@ -54682,6 +58824,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutNotesInput = {
@@ -54715,6 +58859,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutNotesInput = {
@@ -54748,6 +58893,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutNotesInput = {
@@ -54787,6 +58933,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotesInput = {
@@ -54821,6 +58969,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotesInput = {
@@ -54870,6 +59020,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutNotesInput = {
@@ -54903,6 +59054,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutNotesInput = {
@@ -54948,6 +59100,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotesInput = {
@@ -54982,6 +59136,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutExpensesInput = {
@@ -55015,6 +59171,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutExpensesInput = {
@@ -55048,6 +59205,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutExpensesInput = {
@@ -55087,6 +59245,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutExpensesInput = {
@@ -55121,6 +59281,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutExpensesInput = {
@@ -55203,6 +59365,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutExpensesInput = {
@@ -55236,6 +59399,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutExpensesInput = {
@@ -55281,6 +59445,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutExpensesInput = {
@@ -55315,6 +59481,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type JournalEntryUpsertWithoutExpenseInput = {
@@ -55387,6 +59555,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutInventoryInput = {
@@ -55420,11 +59589,79 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutInventoryInput = {
     where: BusinessWhereUniqueInput
     create: XOR<BusinessCreateWithoutInventoryInput, BusinessUncheckedCreateWithoutInventoryInput>
+  }
+
+  export type SupplierCreateWithoutInventoryItemsInput = {
+    id?: string
+    name: string
+    contactName?: string | null
+    email: string
+    phone?: string | null
+    address?: string | null
+    category?: string | null
+    rating?: number | null
+    status?: $Enums.SupplierStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    business: BusinessCreateNestedOneWithoutSuppliersInput
+  }
+
+  export type SupplierUncheckedCreateWithoutInventoryItemsInput = {
+    id?: string
+    businessId: string
+    name: string
+    contactName?: string | null
+    email: string
+    phone?: string | null
+    address?: string | null
+    category?: string | null
+    rating?: number | null
+    status?: $Enums.SupplierStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SupplierCreateOrConnectWithoutInventoryItemsInput = {
+    where: SupplierWhereUniqueInput
+    create: XOR<SupplierCreateWithoutInventoryItemsInput, SupplierUncheckedCreateWithoutInventoryItemsInput>
+  }
+
+  export type StockMovementCreateWithoutItemInput = {
+    id?: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    createdAt?: Date | string
+    business: BusinessCreateNestedOneWithoutStockMovementsInput
+    user?: UserCreateNestedOneWithoutStockMovementsInput
+  }
+
+  export type StockMovementUncheckedCreateWithoutItemInput = {
+    id?: string
+    businessId: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    userId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type StockMovementCreateOrConnectWithoutItemInput = {
+    where: StockMovementWhereUniqueInput
+    create: XOR<StockMovementCreateWithoutItemInput, StockMovementUncheckedCreateWithoutItemInput>
+  }
+
+  export type StockMovementCreateManyItemInputEnvelope = {
+    data: StockMovementCreateManyItemInput | StockMovementCreateManyItemInput[]
+    skipDuplicates?: boolean
   }
 
   export type BusinessUpsertWithoutInventoryInput = {
@@ -55469,6 +59706,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutInventoryInput = {
@@ -55502,6 +59740,500 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+  }
+
+  export type SupplierUpsertWithoutInventoryItemsInput = {
+    update: XOR<SupplierUpdateWithoutInventoryItemsInput, SupplierUncheckedUpdateWithoutInventoryItemsInput>
+    create: XOR<SupplierCreateWithoutInventoryItemsInput, SupplierUncheckedCreateWithoutInventoryItemsInput>
+    where?: SupplierWhereInput
+  }
+
+  export type SupplierUpdateToOneWithWhereWithoutInventoryItemsInput = {
+    where?: SupplierWhereInput
+    data: XOR<SupplierUpdateWithoutInventoryItemsInput, SupplierUncheckedUpdateWithoutInventoryItemsInput>
+  }
+
+  export type SupplierUpdateWithoutInventoryItemsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutSuppliersNestedInput
+  }
+
+  export type SupplierUncheckedUpdateWithoutInventoryItemsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockMovementUpsertWithWhereUniqueWithoutItemInput = {
+    where: StockMovementWhereUniqueInput
+    update: XOR<StockMovementUpdateWithoutItemInput, StockMovementUncheckedUpdateWithoutItemInput>
+    create: XOR<StockMovementCreateWithoutItemInput, StockMovementUncheckedCreateWithoutItemInput>
+  }
+
+  export type StockMovementUpdateWithWhereUniqueWithoutItemInput = {
+    where: StockMovementWhereUniqueInput
+    data: XOR<StockMovementUpdateWithoutItemInput, StockMovementUncheckedUpdateWithoutItemInput>
+  }
+
+  export type StockMovementUpdateManyWithWhereWithoutItemInput = {
+    where: StockMovementScalarWhereInput
+    data: XOR<StockMovementUpdateManyMutationInput, StockMovementUncheckedUpdateManyWithoutItemInput>
+  }
+
+  export type BusinessCreateWithoutStockMovementsInput = {
+    id?: string
+    name: string
+    industry: string
+    size: string
+    address?: string | null
+    city?: string | null
+    postcode?: string | null
+    country?: string
+    subscriptionId?: string | null
+    seatCount?: number
+    maxSeats?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
+    users?: UserCreateNestedManyWithoutBusinessInput
+    invoices?: InvoiceCreateNestedManyWithoutBusinessInput
+    contacts?: ContactCreateNestedManyWithoutBusinessInput
+    tasks?: TaskCreateNestedManyWithoutBusinessInput
+    notes?: NoteCreateNestedManyWithoutBusinessInput
+    expenses?: ExpenseCreateNestedManyWithoutBusinessInput
+    inventory?: InventoryItemCreateNestedManyWithoutBusinessInput
+    employees?: EmployeeCreateNestedManyWithoutBusinessInput
+    suppliers?: SupplierCreateNestedManyWithoutBusinessInput
+    campaigns?: CampaignCreateNestedManyWithoutBusinessInput
+    tickets?: TicketCreateNestedManyWithoutBusinessInput
+    ledgerAccounts?: LedgerAccountCreateNestedManyWithoutBusinessInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutBusinessInput
+    emailLogs?: EmailLogCreateNestedManyWithoutBusinessInput
+    forms?: FormCreateNestedManyWithoutBusinessInput
+    appointments?: AppointmentCreateNestedManyWithoutBusinessInput
+    aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+  }
+
+  export type BusinessUncheckedCreateWithoutStockMovementsInput = {
+    id?: string
+    name: string
+    industry: string
+    size: string
+    address?: string | null
+    city?: string | null
+    postcode?: string | null
+    country?: string
+    subscriptionId?: string | null
+    seatCount?: number
+    maxSeats?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
+    users?: UserUncheckedCreateNestedManyWithoutBusinessInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutBusinessInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutBusinessInput
+    notes?: NoteUncheckedCreateNestedManyWithoutBusinessInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutBusinessInput
+    inventory?: InventoryItemUncheckedCreateNestedManyWithoutBusinessInput
+    employees?: EmployeeUncheckedCreateNestedManyWithoutBusinessInput
+    suppliers?: SupplierUncheckedCreateNestedManyWithoutBusinessInput
+    campaigns?: CampaignUncheckedCreateNestedManyWithoutBusinessInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutBusinessInput
+    ledgerAccounts?: LedgerAccountUncheckedCreateNestedManyWithoutBusinessInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutBusinessInput
+    emailLogs?: EmailLogUncheckedCreateNestedManyWithoutBusinessInput
+    forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
+    aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+  }
+
+  export type BusinessCreateOrConnectWithoutStockMovementsInput = {
+    where: BusinessWhereUniqueInput
+    create: XOR<BusinessCreateWithoutStockMovementsInput, BusinessUncheckedCreateWithoutStockMovementsInput>
+  }
+
+  export type InventoryItemCreateWithoutMovementsInput = {
+    id?: string
+    name: string
+    sku: string
+    barcode?: string | null
+    description?: string | null
+    quantity?: number
+    minQuantity?: number
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
+    category?: string | null
+    location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
+    status?: $Enums.InventoryStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    business: BusinessCreateNestedOneWithoutInventoryInput
+    supplier?: SupplierCreateNestedOneWithoutInventoryItemsInput
+  }
+
+  export type InventoryItemUncheckedCreateWithoutMovementsInput = {
+    id?: string
+    businessId: string
+    name: string
+    sku: string
+    barcode?: string | null
+    description?: string | null
+    quantity?: number
+    minQuantity?: number
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
+    category?: string | null
+    location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
+    status?: $Enums.InventoryStatus
+    supplierId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type InventoryItemCreateOrConnectWithoutMovementsInput = {
+    where: InventoryItemWhereUniqueInput
+    create: XOR<InventoryItemCreateWithoutMovementsInput, InventoryItemUncheckedCreateWithoutMovementsInput>
+  }
+
+  export type UserCreateWithoutStockMovementsInput = {
+    id?: string
+    email: string
+    emailVerified?: Date | string | null
+    password?: string | null
+    name?: string | null
+    firstName: string
+    lastName: string
+    phone?: string | null
+    image?: string | null
+    role?: $Enums.UserRole
+    status?: $Enums.UserStatus
+    timezone?: string
+    avatar?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
+    business: BusinessCreateNestedOneWithoutUsersInput
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    invoices?: InvoiceCreateNestedManyWithoutUserInput
+    contacts?: ContactCreateNestedManyWithoutUserInput
+    tasks?: TaskCreateNestedManyWithoutUserInput
+    notes?: NoteCreateNestedManyWithoutUserInput
+    expenses?: ExpenseCreateNestedManyWithoutUserInput
+    tickets?: TicketCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
+    emailLogs?: EmailLogCreateNestedManyWithoutUserInput
+    forms?: FormCreateNestedManyWithoutUserInput
+    appointments?: AppointmentCreateNestedManyWithoutUserInput
+    ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
+    aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutStockMovementsInput = {
+    id?: string
+    email: string
+    emailVerified?: Date | string | null
+    password?: string | null
+    name?: string | null
+    firstName: string
+    lastName: string
+    phone?: string | null
+    image?: string | null
+    role?: $Enums.UserRole
+    status?: $Enums.UserStatus
+    businessId: string
+    timezone?: string
+    avatar?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutUserInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutUserInput
+    notes?: NoteUncheckedCreateNestedManyWithoutUserInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutUserInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
+    emailLogs?: EmailLogUncheckedCreateNestedManyWithoutUserInput
+    forms?: FormUncheckedCreateNestedManyWithoutUserInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
+    ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
+    aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutStockMovementsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutStockMovementsInput, UserUncheckedCreateWithoutStockMovementsInput>
+  }
+
+  export type BusinessUpsertWithoutStockMovementsInput = {
+    update: XOR<BusinessUpdateWithoutStockMovementsInput, BusinessUncheckedUpdateWithoutStockMovementsInput>
+    create: XOR<BusinessCreateWithoutStockMovementsInput, BusinessUncheckedCreateWithoutStockMovementsInput>
+    where?: BusinessWhereInput
+  }
+
+  export type BusinessUpdateToOneWithWhereWithoutStockMovementsInput = {
+    where?: BusinessWhereInput
+    data: XOR<BusinessUpdateWithoutStockMovementsInput, BusinessUncheckedUpdateWithoutStockMovementsInput>
+  }
+
+  export type BusinessUpdateWithoutStockMovementsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    industry?: StringFieldUpdateOperationsInput | string
+    size?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
+    seatCount?: IntFieldUpdateOperationsInput | number
+    maxSeats?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
+    users?: UserUpdateManyWithoutBusinessNestedInput
+    invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
+    contacts?: ContactUpdateManyWithoutBusinessNestedInput
+    tasks?: TaskUpdateManyWithoutBusinessNestedInput
+    notes?: NoteUpdateManyWithoutBusinessNestedInput
+    expenses?: ExpenseUpdateManyWithoutBusinessNestedInput
+    inventory?: InventoryItemUpdateManyWithoutBusinessNestedInput
+    employees?: EmployeeUpdateManyWithoutBusinessNestedInput
+    suppliers?: SupplierUpdateManyWithoutBusinessNestedInput
+    campaigns?: CampaignUpdateManyWithoutBusinessNestedInput
+    tickets?: TicketUpdateManyWithoutBusinessNestedInput
+    ledgerAccounts?: LedgerAccountUpdateManyWithoutBusinessNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutBusinessNestedInput
+    emailLogs?: EmailLogUpdateManyWithoutBusinessNestedInput
+    forms?: FormUpdateManyWithoutBusinessNestedInput
+    appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
+    aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+  }
+
+  export type BusinessUncheckedUpdateWithoutStockMovementsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    industry?: StringFieldUpdateOperationsInput | string
+    size?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
+    seatCount?: IntFieldUpdateOperationsInput | number
+    maxSeats?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
+    users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutBusinessNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutBusinessNestedInput
+    notes?: NoteUncheckedUpdateManyWithoutBusinessNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutBusinessNestedInput
+    inventory?: InventoryItemUncheckedUpdateManyWithoutBusinessNestedInput
+    employees?: EmployeeUncheckedUpdateManyWithoutBusinessNestedInput
+    suppliers?: SupplierUncheckedUpdateManyWithoutBusinessNestedInput
+    campaigns?: CampaignUncheckedUpdateManyWithoutBusinessNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutBusinessNestedInput
+    ledgerAccounts?: LedgerAccountUncheckedUpdateManyWithoutBusinessNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutBusinessNestedInput
+    emailLogs?: EmailLogUncheckedUpdateManyWithoutBusinessNestedInput
+    forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
+    aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+  }
+
+  export type InventoryItemUpsertWithoutMovementsInput = {
+    update: XOR<InventoryItemUpdateWithoutMovementsInput, InventoryItemUncheckedUpdateWithoutMovementsInput>
+    create: XOR<InventoryItemCreateWithoutMovementsInput, InventoryItemUncheckedCreateWithoutMovementsInput>
+    where?: InventoryItemWhereInput
+  }
+
+  export type InventoryItemUpdateToOneWithWhereWithoutMovementsInput = {
+    where?: InventoryItemWhereInput
+    data: XOR<InventoryItemUpdateWithoutMovementsInput, InventoryItemUncheckedUpdateWithoutMovementsInput>
+  }
+
+  export type InventoryItemUpdateWithoutMovementsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    quantity?: IntFieldUpdateOperationsInput | number
+    minQuantity?: IntFieldUpdateOperationsInput | number
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
+    status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutInventoryNestedInput
+    supplier?: SupplierUpdateOneWithoutInventoryItemsNestedInput
+  }
+
+  export type InventoryItemUncheckedUpdateWithoutMovementsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    quantity?: IntFieldUpdateOperationsInput | number
+    minQuantity?: IntFieldUpdateOperationsInput | number
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
+    status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
+    supplierId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpsertWithoutStockMovementsInput = {
+    update: XOR<UserUpdateWithoutStockMovementsInput, UserUncheckedUpdateWithoutStockMovementsInput>
+    create: XOR<UserCreateWithoutStockMovementsInput, UserUncheckedCreateWithoutStockMovementsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutStockMovementsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutStockMovementsInput, UserUncheckedUpdateWithoutStockMovementsInput>
+  }
+
+  export type UserUpdateWithoutStockMovementsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    timezone?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    business?: BusinessUpdateOneRequiredWithoutUsersNestedInput
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    invoices?: InvoiceUpdateManyWithoutUserNestedInput
+    contacts?: ContactUpdateManyWithoutUserNestedInput
+    tasks?: TaskUpdateManyWithoutUserNestedInput
+    notes?: NoteUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUpdateManyWithoutUserNestedInput
+    tickets?: TicketUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
+    emailLogs?: EmailLogUpdateManyWithoutUserNestedInput
+    forms?: FormUpdateManyWithoutUserNestedInput
+    appointments?: AppointmentUpdateManyWithoutUserNestedInput
+    ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
+    aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutStockMovementsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    businessId?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutUserNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutUserNestedInput
+    notes?: NoteUncheckedUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
+    emailLogs?: EmailLogUncheckedUpdateManyWithoutUserNestedInput
+    forms?: FormUncheckedUpdateManyWithoutUserNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
+    ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
+    aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutEmployeesInput = {
@@ -55535,6 +60267,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutEmployeesInput = {
@@ -55568,6 +60301,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutEmployeesInput = {
@@ -55617,6 +60351,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutEmployeesInput = {
@@ -55650,6 +60385,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutSuppliersInput = {
@@ -55683,6 +60419,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSuppliersInput = {
@@ -55716,11 +60453,76 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSuppliersInput = {
     where: BusinessWhereUniqueInput
     create: XOR<BusinessCreateWithoutSuppliersInput, BusinessUncheckedCreateWithoutSuppliersInput>
+  }
+
+  export type InventoryItemCreateWithoutSupplierInput = {
+    id?: string
+    name: string
+    sku: string
+    barcode?: string | null
+    description?: string | null
+    quantity?: number
+    minQuantity?: number
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
+    category?: string | null
+    location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
+    status?: $Enums.InventoryStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    business: BusinessCreateNestedOneWithoutInventoryInput
+    movements?: StockMovementCreateNestedManyWithoutItemInput
+  }
+
+  export type InventoryItemUncheckedCreateWithoutSupplierInput = {
+    id?: string
+    businessId: string
+    name: string
+    sku: string
+    barcode?: string | null
+    description?: string | null
+    quantity?: number
+    minQuantity?: number
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
+    category?: string | null
+    location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
+    status?: $Enums.InventoryStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    movements?: StockMovementUncheckedCreateNestedManyWithoutItemInput
+  }
+
+  export type InventoryItemCreateOrConnectWithoutSupplierInput = {
+    where: InventoryItemWhereUniqueInput
+    create: XOR<InventoryItemCreateWithoutSupplierInput, InventoryItemUncheckedCreateWithoutSupplierInput>
+  }
+
+  export type InventoryItemCreateManySupplierInputEnvelope = {
+    data: InventoryItemCreateManySupplierInput | InventoryItemCreateManySupplierInput[]
+    skipDuplicates?: boolean
   }
 
   export type BusinessUpsertWithoutSuppliersInput = {
@@ -55765,6 +60567,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSuppliersInput = {
@@ -55798,6 +60601,23 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+  }
+
+  export type InventoryItemUpsertWithWhereUniqueWithoutSupplierInput = {
+    where: InventoryItemWhereUniqueInput
+    update: XOR<InventoryItemUpdateWithoutSupplierInput, InventoryItemUncheckedUpdateWithoutSupplierInput>
+    create: XOR<InventoryItemCreateWithoutSupplierInput, InventoryItemUncheckedCreateWithoutSupplierInput>
+  }
+
+  export type InventoryItemUpdateWithWhereUniqueWithoutSupplierInput = {
+    where: InventoryItemWhereUniqueInput
+    data: XOR<InventoryItemUpdateWithoutSupplierInput, InventoryItemUncheckedUpdateWithoutSupplierInput>
+  }
+
+  export type InventoryItemUpdateManyWithWhereWithoutSupplierInput = {
+    where: InventoryItemScalarWhereInput
+    data: XOR<InventoryItemUpdateManyMutationInput, InventoryItemUncheckedUpdateManyWithoutSupplierInput>
   }
 
   export type BusinessCreateWithoutCampaignsInput = {
@@ -55831,6 +60651,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutCampaignsInput = {
@@ -55864,6 +60685,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutCampaignsInput = {
@@ -55913,6 +60735,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutCampaignsInput = {
@@ -55946,6 +60769,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutTicketsInput = {
@@ -55979,6 +60803,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutTicketsInput = {
@@ -56012,6 +60837,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutTicketsInput = {
@@ -56051,6 +60877,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTicketsInput = {
@@ -56085,6 +60913,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTicketsInput = {
@@ -56162,6 +60992,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutTicketsInput = {
@@ -56195,6 +61026,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutTicketsInput = {
@@ -56240,6 +61072,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTicketsInput = {
@@ -56274,6 +61108,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TicketCommentUpsertWithWhereUniqueWithoutTicketInput = {
@@ -56363,6 +61199,8 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutUserInput
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTicketCommentsInput = {
@@ -56397,6 +61235,8 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutUserInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTicketCommentsInput = {
@@ -56492,6 +61332,8 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutUserNestedInput
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTicketCommentsInput = {
@@ -56526,6 +61368,8 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutUserNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutAppointmentsInput = {
@@ -56559,6 +61403,7 @@ export namespace Prisma {
     emailLogs?: EmailLogCreateNestedManyWithoutBusinessInput
     forms?: FormCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutAppointmentsInput = {
@@ -56592,6 +61437,7 @@ export namespace Prisma {
     emailLogs?: EmailLogUncheckedCreateNestedManyWithoutBusinessInput
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutAppointmentsInput = {
@@ -56631,6 +61477,8 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAppointmentsInput = {
@@ -56665,6 +61513,8 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAppointmentsInput = {
@@ -56714,6 +61564,7 @@ export namespace Prisma {
     emailLogs?: EmailLogUpdateManyWithoutBusinessNestedInput
     forms?: FormUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutAppointmentsInput = {
@@ -56747,6 +61598,7 @@ export namespace Prisma {
     emailLogs?: EmailLogUncheckedUpdateManyWithoutBusinessNestedInput
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutAppointmentsInput = {
@@ -56792,6 +61644,8 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAppointmentsInput = {
@@ -56826,6 +61680,8 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutTasksInput = {
@@ -56859,6 +61715,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutTasksInput = {
@@ -56892,6 +61749,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutTasksInput = {
@@ -56931,6 +61789,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTasksInput = {
@@ -56965,6 +61825,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTasksInput = {
@@ -57040,6 +61902,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutTasksInput = {
@@ -57073,6 +61936,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutTasksInput = {
@@ -57118,6 +61982,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTasksInput = {
@@ -57152,6 +62018,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SubTaskUpsertWithWhereUniqueWithoutTaskInput = {
@@ -57289,6 +62157,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutLedgerAccountsInput = {
@@ -57322,6 +62191,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutLedgerAccountsInput = {
@@ -57399,6 +62269,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutLedgerAccountsInput = {
@@ -57432,6 +62303,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutAccountInput = {
@@ -57494,6 +62366,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutJournalEntriesInput = {
@@ -57527,6 +62400,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutJournalEntriesInput = {
@@ -57566,6 +62440,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutJournalEntriesInput = {
@@ -57600,6 +62476,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutJournalEntriesInput = {
@@ -57753,6 +62631,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutJournalEntriesInput = {
@@ -57786,6 +62665,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutJournalEntriesInput = {
@@ -57831,6 +62711,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJournalEntriesInput = {
@@ -57865,6 +62747,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutJournalEntryInput = {
@@ -58146,6 +63030,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutEmailLogsInput = {
@@ -58179,6 +63064,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutEmailLogsInput = {
@@ -58218,6 +63104,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEmailLogsInput = {
@@ -58252,6 +63140,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEmailLogsInput = {
@@ -58301,6 +63191,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutEmailLogsInput = {
@@ -58334,6 +63225,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutEmailLogsInput = {
@@ -58379,6 +63271,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEmailLogsInput = {
@@ -58413,6 +63307,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutFormsInput = {
@@ -58446,6 +63342,7 @@ export namespace Prisma {
     emailLogs?: EmailLogCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutFormsInput = {
@@ -58479,6 +63376,7 @@ export namespace Prisma {
     emailLogs?: EmailLogUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutFormsInput = {
@@ -58518,6 +63416,8 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFormsInput = {
@@ -58552,6 +63452,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFormsInput = {
@@ -58623,6 +63525,7 @@ export namespace Prisma {
     emailLogs?: EmailLogUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutFormsInput = {
@@ -58656,6 +63559,7 @@ export namespace Prisma {
     emailLogs?: EmailLogUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutFormsInput = {
@@ -58701,6 +63605,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFormsInput = {
@@ -58735,6 +63641,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type FormResponseUpsertWithWhereUniqueWithoutFormInput = {
@@ -58870,6 +63778,7 @@ export namespace Prisma {
     emailLogs?: EmailLogCreateNestedManyWithoutBusinessInput
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutAiNotesInput = {
@@ -58903,6 +63812,7 @@ export namespace Prisma {
     emailLogs?: EmailLogUncheckedCreateNestedManyWithoutBusinessInput
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutAiNotesInput = {
@@ -58942,6 +63852,8 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutUserInput
     appointments?: AppointmentCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiNotesInput = {
@@ -58976,6 +63888,8 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutUserInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiNotesInput = {
@@ -59025,6 +63939,7 @@ export namespace Prisma {
     emailLogs?: EmailLogUpdateManyWithoutBusinessNestedInput
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutAiNotesInput = {
@@ -59058,6 +63973,7 @@ export namespace Prisma {
     emailLogs?: EmailLogUncheckedUpdateManyWithoutBusinessNestedInput
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutAiNotesInput = {
@@ -59103,6 +64019,8 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutUserNestedInput
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiNotesInput = {
@@ -59137,6 +64055,168 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutUserNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutNotificationsInput = {
+    id?: string
+    email: string
+    emailVerified?: Date | string | null
+    password?: string | null
+    name?: string | null
+    firstName: string
+    lastName: string
+    phone?: string | null
+    image?: string | null
+    role?: $Enums.UserRole
+    status?: $Enums.UserStatus
+    timezone?: string
+    avatar?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
+    business: BusinessCreateNestedOneWithoutUsersInput
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    invoices?: InvoiceCreateNestedManyWithoutUserInput
+    contacts?: ContactCreateNestedManyWithoutUserInput
+    tasks?: TaskCreateNestedManyWithoutUserInput
+    notes?: NoteCreateNestedManyWithoutUserInput
+    expenses?: ExpenseCreateNestedManyWithoutUserInput
+    tickets?: TicketCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
+    emailLogs?: EmailLogCreateNestedManyWithoutUserInput
+    forms?: FormCreateNestedManyWithoutUserInput
+    appointments?: AppointmentCreateNestedManyWithoutUserInput
+    ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
+    aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutNotificationsInput = {
+    id?: string
+    email: string
+    emailVerified?: Date | string | null
+    password?: string | null
+    name?: string | null
+    firstName: string
+    lastName: string
+    phone?: string | null
+    image?: string | null
+    role?: $Enums.UserRole
+    status?: $Enums.UserStatus
+    businessId: string
+    timezone?: string
+    avatar?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutUserInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutUserInput
+    notes?: NoteUncheckedCreateNestedManyWithoutUserInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutUserInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
+    emailLogs?: EmailLogUncheckedCreateNestedManyWithoutUserInput
+    forms?: FormUncheckedCreateNestedManyWithoutUserInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
+    ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
+    aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutNotificationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+  }
+
+  export type UserUpsertWithoutNotificationsInput = {
+    update: XOR<UserUpdateWithoutNotificationsInput, UserUncheckedUpdateWithoutNotificationsInput>
+    create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutNotificationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutNotificationsInput, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type UserUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    timezone?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    business?: BusinessUpdateOneRequiredWithoutUsersNestedInput
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    invoices?: InvoiceUpdateManyWithoutUserNestedInput
+    contacts?: ContactUpdateManyWithoutUserNestedInput
+    tasks?: TaskUpdateManyWithoutUserNestedInput
+    notes?: NoteUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUpdateManyWithoutUserNestedInput
+    tickets?: TicketUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
+    emailLogs?: EmailLogUpdateManyWithoutUserNestedInput
+    forms?: FormUpdateManyWithoutUserNestedInput
+    appointments?: AppointmentUpdateManyWithoutUserNestedInput
+    ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
+    aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    businessId?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutUserNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutUserNestedInput
+    notes?: NoteUncheckedUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
+    emailLogs?: EmailLogUncheckedUpdateManyWithoutUserNestedInput
+    forms?: FormUncheckedUpdateManyWithoutUserNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
+    ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
+    aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -59334,6 +64414,30 @@ export namespace Prisma {
     actionItems?: AINoteCreateactionItemsInput | string[]
     participants?: AINoteCreateparticipantsInput | string[]
     duration?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type StockMovementCreateManyUserInput = {
+    id?: string
+    businessId: string
+    itemId: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    createdAt?: Date | string
+  }
+
+  export type NotificationCreateManyUserInput = {
+    id?: string
+    businessId: string
+    title: string
+    message: string
+    type?: string
+    status?: string
+    link?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -59947,6 +65051,78 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type StockMovementUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutStockMovementsNestedInput
+    item?: InventoryItemUpdateOneRequiredWithoutMovementsNestedInput
+  }
+
+  export type StockMovementUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    itemId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockMovementUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    itemId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateManyBusinessInput = {
     id?: string
     email: string
@@ -60050,14 +65226,24 @@ export namespace Prisma {
     id?: string
     name: string
     sku: string
+    barcode?: string | null
     description?: string | null
     quantity?: number
     minQuantity?: number
-    price?: number | null
-    cost?: number | null
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
     category?: string | null
     location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
     status?: $Enums.InventoryStatus
+    supplierId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -60219,6 +65405,17 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type StockMovementCreateManyBusinessInput = {
+    id?: string
+    itemId: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    userId?: string | null
+    createdAt?: Date | string
+  }
+
   export type UserUpdateWithoutBusinessInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -60251,6 +65448,8 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBusinessInput = {
@@ -60285,6 +65484,8 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutBusinessInput = {
@@ -60550,46 +65751,78 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     minQuantity?: IntFieldUpdateOperationsInput | number
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
-    cost?: NullableFloatFieldUpdateOperationsInput | number | null
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
     category?: NullableStringFieldUpdateOperationsInput | string | null
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
     status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    supplier?: SupplierUpdateOneWithoutInventoryItemsNestedInput
+    movements?: StockMovementUpdateManyWithoutItemNestedInput
   }
 
   export type InventoryItemUncheckedUpdateWithoutBusinessInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     minQuantity?: IntFieldUpdateOperationsInput | number
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
-    cost?: NullableFloatFieldUpdateOperationsInput | number | null
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
     category?: NullableStringFieldUpdateOperationsInput | string | null
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
     status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
+    supplierId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    movements?: StockMovementUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type InventoryItemUncheckedUpdateManyWithoutBusinessInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     minQuantity?: IntFieldUpdateOperationsInput | number
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
-    cost?: NullableFloatFieldUpdateOperationsInput | number | null
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
     category?: NullableStringFieldUpdateOperationsInput | string | null
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
     status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
+    supplierId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -60660,6 +65893,7 @@ export namespace Prisma {
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventoryItems?: InventoryItemUpdateManyWithoutSupplierNestedInput
   }
 
   export type SupplierUncheckedUpdateWithoutBusinessInput = {
@@ -60674,6 +65908,7 @@ export namespace Prisma {
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventoryItems?: InventoryItemUncheckedUpdateManyWithoutSupplierNestedInput
   }
 
   export type SupplierUncheckedUpdateManyWithoutBusinessInput = {
@@ -61073,6 +66308,189 @@ export namespace Prisma {
     actionItems?: AINoteUpdateactionItemsInput | string[]
     participants?: AINoteUpdateparticipantsInput | string[]
     duration?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockMovementUpdateWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    item?: InventoryItemUpdateOneRequiredWithoutMovementsNestedInput
+    user?: UserUpdateOneWithoutStockMovementsNestedInput
+  }
+
+  export type StockMovementUncheckedUpdateWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    itemId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockMovementUncheckedUpdateManyWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    itemId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockMovementCreateManyItemInput = {
+    id?: string
+    businessId: string
+    type: string
+    quantity: number
+    date?: Date | string
+    reason?: string | null
+    userId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type StockMovementUpdateWithoutItemInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutStockMovementsNestedInput
+    user?: UserUpdateOneWithoutStockMovementsNestedInput
+  }
+
+  export type StockMovementUncheckedUpdateWithoutItemInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StockMovementUncheckedUpdateManyWithoutItemInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InventoryItemCreateManySupplierInput = {
+    id?: string
+    businessId: string
+    name: string
+    sku: string
+    barcode?: string | null
+    description?: string | null
+    quantity?: number
+    minQuantity?: number
+    maxQuantity?: number
+    reorderPoint?: number
+    price?: number
+    cost?: number
+    category?: string | null
+    location?: string | null
+    unit?: string
+    weight?: number | null
+    dimensions?: string | null
+    expiryDate?: Date | string | null
+    image?: string | null
+    tags?: InventoryItemCreatetagsInput | string[]
+    status?: $Enums.InventoryStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type InventoryItemUpdateWithoutSupplierInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    quantity?: IntFieldUpdateOperationsInput | number
+    minQuantity?: IntFieldUpdateOperationsInput | number
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
+    status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutInventoryNestedInput
+    movements?: StockMovementUpdateManyWithoutItemNestedInput
+  }
+
+  export type InventoryItemUncheckedUpdateWithoutSupplierInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    quantity?: IntFieldUpdateOperationsInput | number
+    minQuantity?: IntFieldUpdateOperationsInput | number
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
+    status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    movements?: StockMovementUncheckedUpdateManyWithoutItemNestedInput
+  }
+
+  export type InventoryItemUncheckedUpdateManyWithoutSupplierInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    quantity?: IntFieldUpdateOperationsInput | number
+    minQuantity?: IntFieldUpdateOperationsInput | number
+    maxQuantity?: IntFieldUpdateOperationsInput | number
+    reorderPoint?: IntFieldUpdateOperationsInput | number
+    price?: FloatFieldUpdateOperationsInput | number
+    cost?: FloatFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: StringFieldUpdateOperationsInput | string
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    dimensions?: NullableStringFieldUpdateOperationsInput | string | null
+    expiryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: InventoryItemUpdatetagsInput | string[]
+    status?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
