@@ -44,12 +44,21 @@ export function usePresence(interval: number = 15000) {
 
   const sendHeartbeat = useCallback(async () => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       await fetch('/api/presence', {
         method: 'POST',
         credentials: 'include',
+        signal: controller.signal,
       });
-    } catch (err) {
-      console.error('Heartbeat error:', err);
+      
+      clearTimeout(timeoutId);
+    } catch (err: unknown) {
+      // Only log if it's not a cancelled request (common during navigation)
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.debug('Heartbeat status:', err.message);
+      }
     }
   }, []);
 

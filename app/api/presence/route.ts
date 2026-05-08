@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Create a map of online users (users with active sessions)
-    const onlineUserIds = new Set(activeSessions.map((s: any) => s.userId));
+    const onlineUserIds = new Set(activeSessions.map(s => s.userId));
     
     // Determine online status
     // A user is considered "online" if:
@@ -87,10 +87,10 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
     
-    const presence = allUsers.map((user: any) => {
+    const presence = allUsers.map(user => {
       // Check if user has an active database session
       const hasActiveSession = activeSessions.some(
-        (s: any) => s.userId === user.id && s.expires > now
+        s => s.userId === user.id && s.expires > now
       );
       
       // If this is the current user making the request, they're online (they're actively using the system)
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
       const isOnline = hasActiveSession || isCurrentUser || recentlyActive;
       
       // Get the most recent session for this user
-      const userSessions = activeSessions.filter((s: any) => s.userId === user.id);
+      const userSessions = activeSessions.filter(s => s.userId === user.id);
       const lastActivity = userSessions.length > 0 
         ? userSessions[0].expires 
         : user.lastLoginAt;
@@ -129,23 +129,14 @@ export async function GET(request: NextRequest) {
     });
 
     // Debug: Log presence data
-    console.log('Presence check:', {
-      businessId: currentUser.businessId,
-      totalUsers: allUsers.length,
-      activeSessions: activeSessions.length,
-      presence: presence.map((p: any) => ({
-        name: `${p.firstName} ${p.lastName}`,
-        isOnline: p.isOnline,
-        lastLoginAt: p.lastActivity,
-      })),
-    });
+    console.log(`Presence check for business ${currentUser.businessId}: ${presence.filter(p => p.isOnline).length} online, ${presence.length} total.`);
 
     return NextResponse.json({
       presence,
-      onlineCount: presence.filter((p: any) => p.isOnline).length,
+      onlineCount: presence.filter(p => p.isOnline).length,
       totalCount: presence.length,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching presence:', error);
     return NextResponse.json(
       { error: 'Failed to fetch presence' },
@@ -178,7 +169,7 @@ export async function POST(request: NextRequest) {
       success: true,
       timestamp: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating presence:', error);
     return NextResponse.json(
       { error: 'Failed to update presence' },

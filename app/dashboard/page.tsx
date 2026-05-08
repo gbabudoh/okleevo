@@ -7,8 +7,8 @@ import {
   TrendingUp, Users, FileText, CheckSquare, 
   DollarSign, Calendar, Clock, ArrowUpRight, ArrowDownRight,
   Sparkles, Plus, BarChart3, Activity, Target,
-  Zap, Award, Bell, MessageSquare, Mail,
-  Shield, Briefcase, AlertCircle, X,
+  Zap, Award, Bell, Mail,
+  Shield, Briefcase, X,
   Building2, UsersRound, AtSign, Cpu, Circle, LineChart
 } from 'lucide-react';
 import { usePresence } from '@/components/hooks/use-presence';
@@ -26,15 +26,59 @@ interface UserData {
   };
 }
 
+interface DashboardStat {
+  title: string;
+  value: string;
+  change: string;
+  trend: 'up' | 'down';
+  icon: React.ElementType;
+  gradient: string;
+  bgGradient: string;
+  iconBg: string;
+  period: string;
+}
+
+interface ActivityItem {
+  type: string;
+  title: string;
+  client: string;
+  amount: string | null;
+  time: string;
+  icon: React.ElementType;
+  color: string;
+  bg: string;
+  resource?: string;
+}
+
+interface TaskItem {
+  title: string;
+  dueDate: string;
+  priority: string;
+  category: string;
+  progress: number;
+}
+
+interface NotificationItem {
+  icon?: React.ElementType;
+  color?: string;
+  message: string;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  // Dashboard Data State
+  const [stats, setStats] = useState<DashboardStat[]>([]);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [upcomingTasks, setUpcomingTasks] = useState<TaskItem[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [isDashboardLoading, setIsDashboardLoading] = useState(true);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
-  
+
   // Team presence tracking
   const { presence } = usePresence();
 
@@ -55,74 +99,139 @@ export default function DashboardPage() {
     }
   }, [session, status, router]);
 
-  // Fetch user and business data
+  // Fetch Dashboard Data
   useEffect(() => {
-    async function fetchUserData() {
-      if (status === 'loading') return;
+    async function fetchDashboardData() {
+      if (status === 'loading' || !session?.user?.id) return;
       
-      if (!session?.user?.id) {
-        setLoading(false);
-        return;
-      }
-
-      // Don't fetch if super admin (will be redirected)
-      const userRole = (session.user as { role?: string })?.role;
-      if (userRole === 'SUPER_ADMIN') {
-        setLoading(false);
-        return;
-      }
-
+      setIsDashboardLoading(true);
       try {
-        const response = await fetch('/api/user/profile');
-        console.log('API Response:', response.status, response.statusText);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('User data fetched:', data);
-          
-          if (data && data.business) {
-            setUserData(data);
-          } else {
-            console.error('Missing business data in response:', data);
-          }
-        } else {
-          const errorText = await response.text();
-          console.error('API Error:', response.status, errorText);
-          try {
-            const errorData = JSON.parse(errorText);
-            console.error('Error details:', errorData);
-          } catch {
-            console.error('Error response text:', errorText);
-          }
+        // 1. Fetch User Profile (already exists, but we'll keep it unified)
+        const profileRes = await fetch('/api/user/profile');
+        if (profileRes.ok) {
+          const data: UserData = await profileRes.json();
+          if (data?.business) setUserData(data);
         }
+
+        // 2. Fetch KPIs for Stats
+        const kpiRes = await fetch('/api/kpis');
+        if (kpiRes.ok) {
+          const { kpis }: { kpis: { value: string; change: number }[] } = await kpiRes.json();
+          // Map KPIs to stats format
+          const mappedStats: DashboardStat[] = [
+            {
+              title: 'Total Revenue',
+              value: `£${(parseInt(kpis[0]?.value?.replace(/[^0-9]/g, '') || '0')).toLocaleString()}`,
+              change: `${kpis[0]?.change >= 0 ? '+' : ''}${kpis[0]?.change}%`,
+              trend: kpis[0]?.change >= 0 ? 'up' : 'down',
+              icon: DollarSign,
+              gradient: 'from-blue-500 via-blue-600 to-indigo-600',
+              bgGradient: 'from-blue-50 to-indigo-50',
+              iconBg: 'bg-blue-500',
+              period: 'vs last month'
+            },
+            {
+              title: 'Total Customers',
+              value: kpis[6]?.value || '0',
+              change: `${kpis[6]?.change >= 0 ? '+' : ''}${kpis[6]?.change}%`,
+              trend: kpis[6]?.change >= 0 ? 'up' : 'down',
+              icon: Users,
+              gradient: 'from-purple-500 via-purple-600 to-pink-600',
+              bgGradient: 'from-purple-50 to-pink-50',
+              iconBg: 'bg-purple-500',
+              period: 'total base'
+            },
+            {
+              title: 'Sales Volume',
+              value: kpis[3]?.value || '0',
+              change: `${kpis[3]?.change >= 0 ? '+' : ''}${kpis[3]?.change}%`,
+              trend: kpis[3]?.change >= 0 ? 'up' : 'down',
+              icon: Briefcase,
+              gradient: 'from-green-500 via-green-600 to-emerald-600',
+              bgGradient: 'from-green-50 to-emerald-50',
+              iconBg: 'bg-green-500',
+              period: 'units sold'
+            },
+            {
+              title: 'Lead Acquisition',
+              value: kpis[5]?.value || '0',
+              change: `${kpis[5]?.change >= 0 ? '+' : ''}${kpis[5]?.change}%`,
+              trend: kpis[5]?.change >= 0 ? 'up' : 'down',
+              icon: Target,
+              gradient: 'from-orange-500 via-orange-600 to-red-600',
+              bgGradient: 'from-orange-50 to-red-50',
+              iconBg: 'bg-orange-500',
+              period: 'potential assets'
+            }
+          ];
+          setStats(mappedStats);
+        }
+
+        // 3. Fetch Recent Activity
+        const activityRes = await fetch('/api/activity?limit=5');
+        if (activityRes.ok) {
+          const { activity } = await activityRes.json();
+          const mappedActivity = activity.map((a: {
+            type: string;
+            action: string;
+            resource: string;
+            user: { name: string };
+            metadata?: { amount?: number };
+            timestamp: string;
+          }) => ({
+            type: a.type,
+            title: `${a.type.charAt(0).toUpperCase() + a.type.slice(1)} ${a.action}: ${a.resource}`,
+            client: a.user.name,
+            amount: a.metadata?.amount ? `£${a.metadata.amount.toLocaleString()}` : null,
+            time: new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            icon: a.type === 'invoice' ? DollarSign : a.type === 'contact' ? Users : a.type === 'task' ? CheckSquare : Mail,
+            color: a.type === 'invoice' ? 'text-green-600' : a.type === 'contact' ? 'text-purple-600' : 'text-blue-600',
+            bg: a.type === 'invoice' ? 'bg-green-50' : a.type === 'contact' ? 'bg-purple-50' : 'bg-blue-50',
+            resource: a.resource
+          }));
+          setRecentActivity(mappedActivity);
+        }
+
+        // 4. Fetch Tasks
+        const tasksRes = await fetch('/api/tasks');
+        if (tasksRes.ok) {
+          const tasks = await tasksRes.json();
+          const upcoming = tasks
+            .filter((t: { status: string }) => t.status !== 'done')
+            .slice(0, 4)
+            .map((t: { 
+              title: string; 
+              dueDate?: string; 
+              priority: string; 
+              tags?: string[]; 
+              status: string 
+            }) => ({
+              title: t.title,
+              dueDate: t.dueDate ? `Due ${t.dueDate}` : 'No due date',
+              priority: t.priority,
+              category: t.tags?.[0] || 'Task',
+              progress: t.status === 'in_progress' ? 50 : 10
+            }));
+          setUpcomingTasks(upcoming);
+        }
+
+        // 5. Fetch Notifications
+        const notifyRes = await fetch('/api/notifications');
+        if (notifyRes.ok) {
+          const data: NotificationItem[] = await notifyRes.json();
+          setNotifications(data);
+        }
+
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Error fetching dashboard data:', error);
       } finally {
+        setIsDashboardLoading(false);
         setLoading(false);
       }
     }
 
-    fetchUserData();
+    fetchDashboardData();
   }, [session, status]);
-
-  // const handleExportReport = () => {
-  //   const reportData = {
-  //     date: new Date().toISOString(),
-  //     revenue: '£124,500',
-  //     customers: '2,847',
-  //     projects: '42',
-  //     tasks: '18'
-  //   };
-  //   const dataStr = JSON.stringify(reportData, null, 2);
-  //   const dataBlob = new Blob([dataStr], { type: 'application/json' });
-  //   const url = URL.createObjectURL(dataBlob);
-  //   const link = document.createElement('a');
-  //   link.href = url;
-  //   link.download = `dashboard_report_${new Date().toISOString().split('T')[0]}.json`;
-  //   link.click();
-  //   URL.revokeObjectURL(url);
-  //   alert('✓ Report exported successfully!');
-  // };
 
   const handleCreateProject = () => {
     if (projectName.trim()) {
@@ -134,53 +243,6 @@ export default function DashboardPage() {
       alert('⚠️ Please enter a project name');
     }
   };
-
-  const stats = [
-    {
-      title: 'Total Revenue',
-      value: '£124,500',
-      change: '+12.5%',
-      trend: 'up',
-      icon: DollarSign,
-      gradient: 'from-blue-500 via-blue-600 to-indigo-600',
-      bgGradient: 'from-blue-50 to-indigo-50',
-      iconBg: 'bg-blue-500',
-      period: 'vs last month'
-    },
-    {
-      title: 'New Customers',
-      value: '2,847',
-      change: '+18.2%',
-      trend: 'up',
-      icon: Users,
-      gradient: 'from-purple-500 via-purple-600 to-pink-600',
-      bgGradient: 'from-purple-50 to-pink-50',
-      iconBg: 'bg-purple-500',
-      period: 'this month'
-    },
-    {
-      title: 'Active Projects',
-      value: '42',
-      change: '+5',
-      trend: 'up',
-      icon: Briefcase,
-      gradient: 'from-green-500 via-green-600 to-emerald-600',
-      bgGradient: 'from-green-50 to-emerald-50',
-      iconBg: 'bg-green-500',
-      period: 'in progress'
-    },
-    {
-      title: 'Pending Tasks',
-      value: '18',
-      change: '-3',
-      trend: 'down',
-      icon: CheckSquare,
-      gradient: 'from-orange-500 via-orange-600 to-red-600',
-      bgGradient: 'from-orange-50 to-red-50',
-      iconBg: 'bg-orange-500',
-      period: 'due this week'
-    }
-  ];
 
   const quickActions = [
     { 
@@ -238,80 +300,6 @@ export default function DashboardPage() {
       gradient: 'from-amber-500 to-orange-500',
       description: 'Regulatory tracking',
       href: '/dashboard/compliance'
-    }
-  ];
-
-  const recentActivity = [
-    { 
-      type: 'invoice', 
-      title: 'Invoice #INV-1045 paid', 
-      client: 'Acme Corporation', 
-      amount: '£2,450', 
-      time: '2 hours ago',
-      icon: DollarSign,
-      color: 'text-green-600',
-      bg: 'bg-green-50'
-    },
-    { 
-      type: 'customer', 
-      title: 'New customer added', 
-      client: 'Tech Solutions Ltd', 
-      amount: null, 
-      time: '4 hours ago',
-      icon: Users,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50'
-    },
-    { 
-      type: 'task', 
-      title: 'Task completed', 
-      client: 'Q4 Financial Review', 
-      amount: null, 
-      time: '6 hours ago',
-      icon: CheckSquare,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50'
-    },
-    { 
-      type: 'campaign', 
-      title: 'Campaign sent', 
-      client: '1,250 recipients', 
-      amount: null, 
-      time: '1 day ago',
-      icon: Mail,
-      color: 'text-indigo-600',
-      bg: 'bg-indigo-50'
-    }
-  ];
-
-  const upcomingTasks = [
-    { 
-      title: 'Quarterly VAT Return', 
-      dueDate: 'Due in 2 days', 
-      priority: 'high',
-      category: 'Finance',
-      progress: 75
-    },
-    { 
-      title: 'Client Presentation', 
-      dueDate: 'Due in 3 days', 
-      priority: 'medium',
-      category: 'Sales',
-      progress: 50
-    },
-    { 
-      title: 'Update Website Content', 
-      dueDate: 'Due in 5 days', 
-      priority: 'low',
-      category: 'Marketing',
-      progress: 30
-    },
-    { 
-      title: 'Team Performance Review', 
-      dueDate: 'Due in 1 week', 
-      priority: 'medium',
-      category: 'HR',
-      progress: 20
     }
   ];
 
@@ -377,7 +365,7 @@ export default function DashboardPage() {
             renderCompanyInfo(
               userData.business.name,
               userData.business.industry,
-              userData.business.seatCount,
+              presence?.totalCount || userData.business.seatCount,
               userData.business.maxSeats,
               userData.email
             )
@@ -385,7 +373,7 @@ export default function DashboardPage() {
             renderCompanyInfo(
               'Business Name',
               'industry',
-              0,
+              presence?.totalCount || 0,
               0,
               'email@example.com'
             )
@@ -445,38 +433,50 @@ export default function DashboardPage() {
 
       {/* KPI Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          const TrendIcon = stat.trend === 'up' ? ArrowUpRight : ArrowDownRight;
-          
-          return (
-            <div
-              key={index}
-              className={`relative bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group backdrop-blur-sm`}
-            >
-              {/* Background decoration */}
-              <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full group-hover:scale-150 transition-transform`} />
-              
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className={`flex items-center gap-1 px-3 py-1 rounded-lg ${
-                    stat.trend === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}>
-                    <TrendIcon className="w-4 h-4" />
-                    <span className="text-sm font-bold">{stat.change}</span>
-                  </div>
-                </div>
+        {isDashboardLoading ? (
+          // Skeleton loaders
+          [1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white/40 animate-pulse rounded-2xl h-40 border border-white/50"></div>
+          ))
+        ) : stats.length > 0 ? (
+          stats.map((stat, index) => {
+            const Icon = stat.icon;
+            const TrendIcon = stat.trend === 'up' ? ArrowUpRight : ArrowDownRight;
+            
+            return (
+              <div
+                key={index}
+                className={`relative bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group backdrop-blur-sm`}
+              >
+                {/* Background decoration */}
+                <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full group-hover:scale-150 transition-transform`} />
                 
-                <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">{stat.title}</p>
-                <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{stat.period}</p>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg`}>
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className={`flex items-center gap-1 px-3 py-1 rounded-lg ${
+                      stat.trend === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      <TrendIcon className="w-4 h-4" />
+                      <span className="text-sm font-bold">{stat.change}</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">{stat.title}</p>
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{stat.period}</p>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          // Fallback if stats fail to load
+          <div className="col-span-full py-12 text-center bg-white/40 rounded-2xl border border-dashed border-gray-300">
+            <p className="text-gray-500">No performance metrics available yet.</p>
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -528,32 +528,43 @@ export default function DashboardPage() {
           </div>
           
           <div className="space-y-3">
-            {recentActivity.map((activity, index) => {
-              const Icon = activity.icon;
-              
-              return (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer group"
-                >
-                  <div className={`p-3 rounded-xl ${activity.bg} group-hover:scale-110 transition-transform`}>
-                    <Icon className={`w-5 h-5 ${activity.color}`} />
+            {isDashboardLoading ? (
+              [1, 2, 3].map((i) => (
+                <div key={i} className="h-20 bg-gray-100 animate-pulse rounded-xl"></div>
+              ))
+            ) : recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => {
+                const Icon = activity.icon;
+                
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer group"
+                  >
+                    <div className={`p-3 rounded-xl ${activity.bg} group-hover:scale-110 transition-transform`}>
+                      <Icon className={`w-5 h-5 ${activity.color}`} />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{activity.title}</p>
+                      <p className="text-sm text-gray-600">{activity.client}</p>
+                    </div>
+                    
+                    <div className="text-right">
+                      {activity.amount && (
+                        <p className="font-bold text-gray-900 dark:text-white mb-1">{activity.amount}</p>
+                      )}
+                      <p className="text-xs text-gray-500">{activity.time}</p>
+                    </div>
                   </div>
-                  
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{activity.title}</p>
-                    <p className="text-sm text-gray-600">{activity.client}</p>
-                  </div>
-                  
-                  <div className="text-right">
-                    {activity.amount && (
-                      <p className="font-bold text-gray-900 dark:text-white mb-1">{activity.amount}</p>
-                    )}
-                    <p className="text-xs text-gray-500">{activity.time}</p>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="py-12 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                <p>No recent activity found.</p>
+                <p className="text-xs mt-1">Activities from Invoices, Tasks and CRM will appear here.</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -570,46 +581,57 @@ export default function DashboardPage() {
           </div>
           
           <div className="space-y-4">
-            {upcomingTasks.map((task, index) => {
-              const priorityColors = {
-                high: 'bg-red-100 text-red-700 border-red-200',
-                medium: 'bg-orange-100 text-orange-700 border-orange-200',
-                low: 'bg-green-100 text-green-700 border-green-200'
-              };
-              
-              return (
-                <div
-                  key={index}
-                  className="p-4 rounded-xl border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer group"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">{task.title}</p>
-                      <p className="text-xs text-gray-500">{task.category}</p>
-                    </div>
-                    <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
-                      {task.priority.toUpperCase()}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {task.dueDate}
+            {isDashboardLoading ? (
+              [1, 2, 3].map((i) => (
+                <div key={i} className="h-24 bg-gray-100 animate-pulse rounded-xl"></div>
+              ))
+            ) : upcomingTasks.length > 0 ? (
+              upcomingTasks.map((task, index) => {
+                const priorityColors = {
+                  high: 'bg-red-100 text-red-700 border-red-200',
+                  medium: 'bg-orange-100 text-orange-700 border-orange-200',
+                  low: 'bg-green-100 text-green-700 border-green-200'
+                };
+                
+                return (
+                  <div
+                    key={index}
+                    className="p-4 rounded-xl border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">{task.title}</p>
+                        <p className="text-xs text-gray-500">{task.category}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${priorityColors[task.priority as keyof typeof priorityColors] || 'bg-gray-100'}`}>
+                        {task.priority.toUpperCase()}
                       </span>
-                      <span className="font-bold text-gray-900 dark:text-white">{task.progress}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all"
-                        style={{ width: `${task.progress}%` }}
-                      />
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-600 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {task.dueDate}
+                        </span>
+                        <span className="font-bold text-gray-900 dark:text-white">{task.progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all"
+                          style={{ width: `${task.progress}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="py-12 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                <p>All caught up!</p>
+                <p className="text-xs mt-1">No pending tasks found.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -621,7 +643,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-blue-100 text-sm mb-1">Monthly Revenue</p>
-              <p className="text-3xl font-bold">£124.5K</p>
+              <p className="text-3xl font-bold">{stats[0]?.value || '£0'}</p>
             </div>
             <div className="p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl">
               <LineChart className="w-6 h-6" />
@@ -630,7 +652,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 text-sm">
             <div className="flex items-center gap-1 bg-white bg-opacity-20 px-2 py-1 rounded-lg">
               <TrendingUp className="w-4 h-4" />
-              <span>+12.5%</span>
+              <span>{stats[0]?.change || '0%'}</span>
             </div>
             <span className="text-blue-100">vs last month</span>
           </div>
@@ -641,7 +663,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-purple-100 text-sm mb-1">Customer Growth</p>
-              <p className="text-3xl font-bold">+18.2%</p>
+              <p className="text-3xl font-bold">{stats[1]?.change || '0%'}</p>
             </div>
             <div className="p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl">
               <Users className="w-6 h-6" />
@@ -650,7 +672,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 text-sm">
             <div className="flex items-center gap-1 bg-white bg-opacity-20 px-2 py-1 rounded-lg">
               <TrendingUp className="w-4 h-4" />
-              <span>2,847</span>
+              <span>{stats[1]?.value || '0'}</span>
             </div>
             <span className="text-purple-100">new customers</span>
           </div>
@@ -661,7 +683,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-green-100 text-sm mb-1">Conversion Rate</p>
-              <p className="text-3xl font-bold">24.8%</p>
+              <p className="text-3xl font-bold">{stats[2]?.value || '0'}</p>
             </div>
             <div className="p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl">
               <Target className="w-6 h-6" />
@@ -670,7 +692,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 text-sm">
             <div className="flex items-center gap-1 bg-white bg-opacity-20 px-2 py-1 rounded-lg">
               <TrendingUp className="w-4 h-4" />
-              <span>+3.2%</span>
+              <span>{stats[2]?.change || '0%'}</span>
             </div>
             <span className="text-green-100">improvement</span>
           </div>
@@ -687,26 +709,28 @@ export default function DashboardPage() {
           </h2>
           
           <div className="space-y-3">
-            {[
-              { name: 'Premium Package', sales: '£45,200', growth: '+25%', color: 'from-blue-500 to-cyan-500' },
-              { name: 'Standard Plan', sales: '£32,100', growth: '+18%', color: 'from-purple-500 to-pink-500' },
-              { name: 'Basic Service', sales: '£28,400', growth: '+12%', color: 'from-green-500 to-emerald-500' }
-            ].map((item, index) => (
-              <div key={index} className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-lg transition-all">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white font-bold shadow-lg`}>
-                  {index + 1}
+            {!isDashboardLoading && recentActivity.filter(a => a.type === 'invoice').length > 0 ? (
+              recentActivity.filter(a => a.type === 'invoice').slice(0, 3).map((item, index) => (
+                <div key={index} className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-lg transition-all">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold shadow-lg`}>
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900 dark:text-white">{item.resource || 'Premium Item'}</p>
+                    <p className="text-sm text-gray-600">{item.amount || '£0'} revenue</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm font-bold">
+                      ACTIVE
+                    </span>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900 dark:text-white">{item.name}</p>
-                  <p className="text-sm text-gray-600">{item.sales} revenue</p>
-                </div>
-                <div className="text-right">
-                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm font-bold">
-                    {item.growth}
-                  </span>
-                </div>
+              ))
+            ) : (
+              <div className="py-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                <p className="text-sm">No sales data yet.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -719,31 +743,33 @@ export default function DashboardPage() {
           </h2>
           
           <div className="space-y-3">
-            {[
-              { type: 'urgent', message: 'VAT return due in 2 days', icon: AlertCircle, color: 'red' },
-              { type: 'info', message: 'New customer inquiry received', icon: MessageSquare, color: 'blue' },
-              { type: 'success', message: 'Invoice #1045 has been paid', icon: CheckSquare, color: 'green' }
-            ].map((notification, index) => {
-              const Icon = notification.icon;
-              const colors = {
-                red: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
-                blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
-                green: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200' }
-              };
-              const colorScheme = colors[notification.color as keyof typeof colors];
-              
-              return (
-                <div key={index} className={`flex items-center gap-3 p-4 rounded-xl border ${colorScheme.border} ${colorScheme.bg} hover:shadow-lg transition-all cursor-pointer`}>
-                  <div className={`p-2 bg-white rounded-lg ${colorScheme.text}`}>
-                    <Icon className="w-5 h-5" />
+            {notifications.length > 0 ? (
+              notifications.map((notification, index) => {
+                const Icon = notification.icon || Bell;
+                const colors: Record<string, { bg: string, text: string, border: string }> = {
+                  red: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
+                  blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
+                  green: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200' }
+                };
+                const colorScheme = colors[notification.color || 'blue'] || colors.blue;
+                
+                return (
+                  <div key={index} className={`flex items-center gap-3 p-4 rounded-xl border ${colorScheme.border} ${colorScheme.bg} hover:shadow-lg transition-all cursor-pointer`}>
+                    <div className={`p-2 bg-white rounded-lg ${colorScheme.text}`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <p className="flex-1 text-sm font-medium text-gray-900 dark:text-white">{notification.message}</p>
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <p className="flex-1 text-sm font-medium text-gray-900 dark:text-white">{notification.message}</p>
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="py-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                <p className="text-sm">No new notifications.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
