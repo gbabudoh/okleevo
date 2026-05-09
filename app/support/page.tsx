@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { HelpCircle, Mail, MessageSquare, Book, Search, Phone, Clock, CheckCircle } from "lucide-react";
+import { HelpCircle, Mail, MessageSquare, Book, Search, Clock, CheckCircle } from "lucide-react";
 
 export default function SupportPage() {
   const { data: session, status } = useSession();
@@ -15,7 +16,7 @@ export default function SupportPage() {
   useEffect(() => {
     if (status === "loading") return; // Wait for session to load
     if (isLoggedIn) {
-      router.push("/dashboard/helpdesk");
+      router.push("/dashboard/support");
     }
   }, [isLoggedIn, status, router]);
 
@@ -38,11 +39,11 @@ export default function SupportPage() {
   const faqs = [
     {
       question: "How do I get started with Okleevo?",
-      answer: "Simply sign up for a free 14-day trial. No credit card required. You'll have full access to all 20 modules during your trial period.",
+      answer: "Simply sign up for a free 14-day trial. No credit card required. You&apos;ll have full access to all 20 modules during your trial period.",
     },
     {
       question: "What happens after my 14-day trial?",
-      answer: "After your trial ends, you'll need to subscribe to a paid plan to continue using Okleevo. We'll send you reminders before your trial expires.",
+      answer: "After your trial ends, you&apos;ll need to subscribe to a paid plan to continue using Okleevo. We&apos;ll send you reminders before your trial expires.",
     },
     {
       question: "Can I cancel my subscription anytime?",
@@ -104,7 +105,7 @@ export default function SupportPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-              <img src="/logo.png" alt="Okleevo" className="h-10 w-auto" />
+              <Image src="/logo.png" alt="Okleevo" width={120} height={32} className="h-10 w-auto" priority />
             </Link>
             <Link
               href="/"
@@ -128,7 +129,7 @@ export default function SupportPage() {
               Support Center
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              We're here to help! Get assistance with your Okleevo account, features, billing, and more.
+              We&apos;re here to help! Get assistance with your Okleevo account, features, billing, and more.
             </p>
           </div>
 
@@ -170,7 +171,7 @@ export default function SupportPage() {
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
               <Link
-                href="/dashboard/helpdesk"
+                href="/dashboard/support"
                 className="flex items-center gap-4 p-6 rounded-xl border-2 border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all group"
               >
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -249,7 +250,7 @@ export default function SupportPage() {
           <div className="mt-16 bg-gradient-to-r from-orange-500 to-pink-600 rounded-2xl p-8 md:p-12 text-white">
             <h2 className="text-3xl font-bold mb-6">Still Need Help?</h2>
             <p className="text-xl mb-8 text-white/90">
-              Our support team is ready to assist you. Get in touch and we'll respond as soon as possible.
+              Our support team is ready to assist you. Get in touch and we&apos;ll respond as soon as possible.
             </p>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">

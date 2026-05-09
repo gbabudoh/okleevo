@@ -6,7 +6,10 @@ import { TicketStatus, TicketPriority } from '@/lib/prisma-client';
 export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
   try {
     const tickets = await prisma.ticket.findMany({
-      where: { businessId: dataFilter.businessId },
+      where: { 
+        businessId: dataFilter.businessId,
+        type: 'CUSTOMER'
+      },
       include: {
         _count: {
           select: { comments: true }
@@ -28,6 +31,7 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
       assignedTo: t.assignedTo,
       description: t.description,
       responses: t._count.comments,
+      type: t.type,
     }));
 
     return NextResponse.json(mapped);
@@ -41,7 +45,7 @@ export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body = await req.json();
     const { 
-      subject, customer, email, priority, category, description 
+      subject, customer, email, priority, category, description, type 
     } = body;
 
     const ticket = await prisma.ticket.create({
@@ -51,10 +55,11 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         subject,
         customerName: customer,
         customerEmail: email,
-        priority: priority.toUpperCase() as TicketPriority,
+        priority: (priority || 'MEDIUM').toUpperCase() as TicketPriority,
         category: category || 'Support',
         description,
         status: TicketStatus.OPEN,
+        type: type === 'PLATFORM' ? 'PLATFORM' : 'CUSTOMER',
       },
     });
 

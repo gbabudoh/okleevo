@@ -12,6 +12,7 @@ export const GET = withMultiTenancy(async (_req, { user, params }) => {
       where: { id, businessId: user.businessId },
       include: {
         comments: {
+          where: { isInternal: false },
           orderBy: { createdAt: 'asc' }
         }
       }

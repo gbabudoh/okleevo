@@ -577,6 +577,11 @@ enum CampaignType {
 // Helpdesk Module
 // =============================================================================
 
+enum TicketType {
+  CUSTOMER
+  PLATFORM
+}
+
 model Ticket {
   id            String   @id @default(cuid())
   
@@ -603,6 +608,8 @@ model Ticket {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
+  type          TicketType @default(CUSTOMER)
+  
   comments      TicketComment[]
   
   @@index([businessId])
@@ -622,6 +629,7 @@ model TicketComment {
   authorName  String
   authorRole  String   // 'customer' or 'agent'
   content     String   @db.Text
+  isInternal  Boolean  @default(false)
   
   createdAt   DateTime @default(now())
   

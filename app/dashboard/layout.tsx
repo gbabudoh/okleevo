@@ -34,7 +34,8 @@ import {
   Building2,
   Cpu,
   UsersRound,
-  AtSign
+  AtSign,
+  LifeBuoy
 } from 'lucide-react';
 
 interface UserData {
@@ -299,6 +300,10 @@ export default function DashboardLayout({
 
         {/* Bottom Actions */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/20 bg-white/60 backdrop-blur-xl space-y-2">
+          <Link href="/dashboard/support" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
+            <LifeBuoy className="w-5 h-5" />
+            {sidebarOpen && <span>Support</span>}
+          </Link>
           <Link href="/dashboard/settings" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
             <Settings className="w-5 h-5" />
             {sidebarOpen && <span>Settings</span>}

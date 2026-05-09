@@ -274,6 +274,14 @@ export const CampaignType: {
 export type CampaignType = (typeof CampaignType)[keyof typeof CampaignType]
 
 
+export const TicketType: {
+  CUSTOMER: 'CUSTOMER',
+  PLATFORM: 'PLATFORM'
+};
+
+export type TicketType = (typeof TicketType)[keyof typeof TicketType]
+
+
 export const TicketStatus: {
   OPEN: 'OPEN',
   PENDING: 'PENDING',
@@ -430,6 +438,10 @@ export const CampaignStatus: typeof $Enums.CampaignStatus
 export type CampaignType = $Enums.CampaignType
 
 export const CampaignType: typeof $Enums.CampaignType
+
+export type TicketType = $Enums.TicketType
+
+export const TicketType: typeof $Enums.TicketType
 
 export type TicketStatus = $Enums.TicketStatus
 
@@ -23525,6 +23537,7 @@ export namespace Prisma {
     resolvedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    type: $Enums.TicketType | null
   }
 
   export type TicketMaxAggregateOutputType = {
@@ -23542,6 +23555,7 @@ export namespace Prisma {
     resolvedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    type: $Enums.TicketType | null
   }
 
   export type TicketCountAggregateOutputType = {
@@ -23559,6 +23573,7 @@ export namespace Prisma {
     resolvedAt: number
     createdAt: number
     updatedAt: number
+    type: number
     _all: number
   }
 
@@ -23578,6 +23593,7 @@ export namespace Prisma {
     resolvedAt?: true
     createdAt?: true
     updatedAt?: true
+    type?: true
   }
 
   export type TicketMaxAggregateInputType = {
@@ -23595,6 +23611,7 @@ export namespace Prisma {
     resolvedAt?: true
     createdAt?: true
     updatedAt?: true
+    type?: true
   }
 
   export type TicketCountAggregateInputType = {
@@ -23612,6 +23629,7 @@ export namespace Prisma {
     resolvedAt?: true
     createdAt?: true
     updatedAt?: true
+    type?: true
     _all?: true
   }
 
@@ -23702,6 +23720,7 @@ export namespace Prisma {
     resolvedAt: Date | null
     createdAt: Date
     updatedAt: Date
+    type: $Enums.TicketType
     _count: TicketCountAggregateOutputType | null
     _min: TicketMinAggregateOutputType | null
     _max: TicketMaxAggregateOutputType | null
@@ -23736,6 +23755,7 @@ export namespace Prisma {
     resolvedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    type?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     user?: boolean | Ticket$userArgs<ExtArgs>
     comments?: boolean | Ticket$commentsArgs<ExtArgs>
@@ -23757,6 +23777,7 @@ export namespace Prisma {
     resolvedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    type?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     user?: boolean | Ticket$userArgs<ExtArgs>
   }, ExtArgs["result"]["ticket"]>
@@ -23776,6 +23797,7 @@ export namespace Prisma {
     resolvedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    type?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     user?: boolean | Ticket$userArgs<ExtArgs>
   }, ExtArgs["result"]["ticket"]>
@@ -23795,9 +23817,10 @@ export namespace Prisma {
     resolvedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    type?: boolean
   }
 
-  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "userId" | "subject" | "description" | "category" | "status" | "priority" | "customerName" | "customerEmail" | "assignedTo" | "resolvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["ticket"]>
+  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "userId" | "subject" | "description" | "category" | "status" | "priority" | "customerName" | "customerEmail" | "assignedTo" | "resolvedAt" | "createdAt" | "updatedAt" | "type", ExtArgs["result"]["ticket"]>
   export type TicketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     user?: boolean | Ticket$userArgs<ExtArgs>
@@ -23835,6 +23858,7 @@ export namespace Prisma {
       resolvedAt: Date | null
       createdAt: Date
       updatedAt: Date
+      type: $Enums.TicketType
     }, ExtArgs["result"]["ticket"]>
     composites: {}
   }
@@ -24275,6 +24299,7 @@ export namespace Prisma {
     readonly resolvedAt: FieldRef<"Ticket", 'DateTime'>
     readonly createdAt: FieldRef<"Ticket", 'DateTime'>
     readonly updatedAt: FieldRef<"Ticket", 'DateTime'>
+    readonly type: FieldRef<"Ticket", 'TicketType'>
   }
     
 
@@ -24749,6 +24774,7 @@ export namespace Prisma {
     authorName: string | null
     authorRole: string | null
     content: string | null
+    isInternal: boolean | null
     createdAt: Date | null
   }
 
@@ -24759,6 +24785,7 @@ export namespace Prisma {
     authorName: string | null
     authorRole: string | null
     content: string | null
+    isInternal: boolean | null
     createdAt: Date | null
   }
 
@@ -24769,6 +24796,7 @@ export namespace Prisma {
     authorName: number
     authorRole: number
     content: number
+    isInternal: number
     createdAt: number
     _all: number
   }
@@ -24781,6 +24809,7 @@ export namespace Prisma {
     authorName?: true
     authorRole?: true
     content?: true
+    isInternal?: true
     createdAt?: true
   }
 
@@ -24791,6 +24820,7 @@ export namespace Prisma {
     authorName?: true
     authorRole?: true
     content?: true
+    isInternal?: true
     createdAt?: true
   }
 
@@ -24801,6 +24831,7 @@ export namespace Prisma {
     authorName?: true
     authorRole?: true
     content?: true
+    isInternal?: true
     createdAt?: true
     _all?: true
   }
@@ -24884,6 +24915,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal: boolean
     createdAt: Date
     _count: TicketCommentCountAggregateOutputType | null
     _min: TicketCommentMinAggregateOutputType | null
@@ -24911,6 +24943,7 @@ export namespace Prisma {
     authorName?: boolean
     authorRole?: boolean
     content?: boolean
+    isInternal?: boolean
     createdAt?: boolean
     ticket?: boolean | TicketDefaultArgs<ExtArgs>
     user?: boolean | TicketComment$userArgs<ExtArgs>
@@ -24923,6 +24956,7 @@ export namespace Prisma {
     authorName?: boolean
     authorRole?: boolean
     content?: boolean
+    isInternal?: boolean
     createdAt?: boolean
     ticket?: boolean | TicketDefaultArgs<ExtArgs>
     user?: boolean | TicketComment$userArgs<ExtArgs>
@@ -24935,6 +24969,7 @@ export namespace Prisma {
     authorName?: boolean
     authorRole?: boolean
     content?: boolean
+    isInternal?: boolean
     createdAt?: boolean
     ticket?: boolean | TicketDefaultArgs<ExtArgs>
     user?: boolean | TicketComment$userArgs<ExtArgs>
@@ -24947,10 +24982,11 @@ export namespace Prisma {
     authorName?: boolean
     authorRole?: boolean
     content?: boolean
+    isInternal?: boolean
     createdAt?: boolean
   }
 
-  export type TicketCommentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ticketId" | "userId" | "authorName" | "authorRole" | "content" | "createdAt", ExtArgs["result"]["ticketComment"]>
+  export type TicketCommentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ticketId" | "userId" | "authorName" | "authorRole" | "content" | "isInternal" | "createdAt", ExtArgs["result"]["ticketComment"]>
   export type TicketCommentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ticket?: boolean | TicketDefaultArgs<ExtArgs>
     user?: boolean | TicketComment$userArgs<ExtArgs>
@@ -24977,6 +25013,7 @@ export namespace Prisma {
       authorName: string
       authorRole: string
       content: string
+      isInternal: boolean
       createdAt: Date
     }, ExtArgs["result"]["ticketComment"]>
     composites: {}
@@ -25409,6 +25446,7 @@ export namespace Prisma {
     readonly authorName: FieldRef<"TicketComment", 'String'>
     readonly authorRole: FieldRef<"TicketComment", 'String'>
     readonly content: FieldRef<"TicketComment", 'String'>
+    readonly isInternal: FieldRef<"TicketComment", 'Boolean'>
     readonly createdAt: FieldRef<"TicketComment", 'DateTime'>
   }
     
@@ -42082,7 +42120,8 @@ export namespace Prisma {
     assignedTo: 'assignedTo',
     resolvedAt: 'resolvedAt',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    type: 'type'
   };
 
   export type TicketScalarFieldEnum = (typeof TicketScalarFieldEnum)[keyof typeof TicketScalarFieldEnum]
@@ -42095,6 +42134,7 @@ export namespace Prisma {
     authorName: 'authorName',
     authorRole: 'authorRole',
     content: 'content',
+    isInternal: 'isInternal',
     createdAt: 'createdAt'
   };
 
@@ -42629,6 +42669,20 @@ export namespace Prisma {
    * Reference to a field of type 'TicketPriority[]'
    */
   export type ListEnumTicketPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TicketPriority[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'TicketType'
+   */
+  export type EnumTicketTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TicketType'>
+    
+
+
+  /**
+   * Reference to a field of type 'TicketType[]'
+   */
+  export type ListEnumTicketTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TicketType[]'>
     
 
 
@@ -44409,6 +44463,7 @@ export namespace Prisma {
     resolvedAt?: DateTimeNullableFilter<"Ticket"> | Date | string | null
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeFilter<"Ticket"> | Date | string
+    type?: EnumTicketTypeFilter<"Ticket"> | $Enums.TicketType
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     comments?: TicketCommentListRelationFilter
@@ -44429,6 +44484,7 @@ export namespace Prisma {
     resolvedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    type?: SortOrder
     business?: BusinessOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
     comments?: TicketCommentOrderByRelationAggregateInput
@@ -44452,6 +44508,7 @@ export namespace Prisma {
     resolvedAt?: DateTimeNullableFilter<"Ticket"> | Date | string | null
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeFilter<"Ticket"> | Date | string
+    type?: EnumTicketTypeFilter<"Ticket"> | $Enums.TicketType
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     comments?: TicketCommentListRelationFilter
@@ -44472,6 +44529,7 @@ export namespace Prisma {
     resolvedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    type?: SortOrder
     _count?: TicketCountOrderByAggregateInput
     _max?: TicketMaxOrderByAggregateInput
     _min?: TicketMinOrderByAggregateInput
@@ -44495,6 +44553,7 @@ export namespace Prisma {
     resolvedAt?: DateTimeNullableWithAggregatesFilter<"Ticket"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
+    type?: EnumTicketTypeWithAggregatesFilter<"Ticket"> | $Enums.TicketType
   }
 
   export type TicketCommentWhereInput = {
@@ -44507,6 +44566,7 @@ export namespace Prisma {
     authorName?: StringFilter<"TicketComment"> | string
     authorRole?: StringFilter<"TicketComment"> | string
     content?: StringFilter<"TicketComment"> | string
+    isInternal?: BoolFilter<"TicketComment"> | boolean
     createdAt?: DateTimeFilter<"TicketComment"> | Date | string
     ticket?: XOR<TicketScalarRelationFilter, TicketWhereInput>
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -44519,6 +44579,7 @@ export namespace Prisma {
     authorName?: SortOrder
     authorRole?: SortOrder
     content?: SortOrder
+    isInternal?: SortOrder
     createdAt?: SortOrder
     ticket?: TicketOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
@@ -44534,6 +44595,7 @@ export namespace Prisma {
     authorName?: StringFilter<"TicketComment"> | string
     authorRole?: StringFilter<"TicketComment"> | string
     content?: StringFilter<"TicketComment"> | string
+    isInternal?: BoolFilter<"TicketComment"> | boolean
     createdAt?: DateTimeFilter<"TicketComment"> | Date | string
     ticket?: XOR<TicketScalarRelationFilter, TicketWhereInput>
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -44546,6 +44608,7 @@ export namespace Prisma {
     authorName?: SortOrder
     authorRole?: SortOrder
     content?: SortOrder
+    isInternal?: SortOrder
     createdAt?: SortOrder
     _count?: TicketCommentCountOrderByAggregateInput
     _max?: TicketCommentMaxOrderByAggregateInput
@@ -44562,6 +44625,7 @@ export namespace Prisma {
     authorName?: StringWithAggregatesFilter<"TicketComment"> | string
     authorRole?: StringWithAggregatesFilter<"TicketComment"> | string
     content?: StringWithAggregatesFilter<"TicketComment"> | string
+    isInternal?: BoolWithAggregatesFilter<"TicketComment"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"TicketComment"> | Date | string
   }
 
@@ -47634,6 +47698,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
     business: BusinessCreateNestedOneWithoutTicketsInput
     user?: UserCreateNestedOneWithoutTicketsInput
     comments?: TicketCommentCreateNestedManyWithoutTicketInput
@@ -47654,6 +47719,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
     comments?: TicketCommentUncheckedCreateNestedManyWithoutTicketInput
   }
 
@@ -47670,6 +47736,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
     business?: BusinessUpdateOneRequiredWithoutTicketsNestedInput
     user?: UserUpdateOneWithoutTicketsNestedInput
     comments?: TicketCommentUpdateManyWithoutTicketNestedInput
@@ -47690,6 +47757,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
     comments?: TicketCommentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
@@ -47708,6 +47776,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
   }
 
   export type TicketUpdateManyMutationInput = {
@@ -47723,6 +47792,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
   }
 
   export type TicketUncheckedUpdateManyInput = {
@@ -47740,6 +47810,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
   }
 
   export type TicketCommentCreateInput = {
@@ -47747,6 +47818,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal?: boolean
     createdAt?: Date | string
     ticket: TicketCreateNestedOneWithoutCommentsInput
     user?: UserCreateNestedOneWithoutTicketCommentsInput
@@ -47759,6 +47831,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal?: boolean
     createdAt?: Date | string
   }
 
@@ -47767,6 +47840,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ticket?: TicketUpdateOneRequiredWithoutCommentsNestedInput
     user?: UserUpdateOneWithoutTicketCommentsNestedInput
@@ -47779,6 +47853,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -47789,6 +47864,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal?: boolean
     createdAt?: Date | string
   }
 
@@ -47797,6 +47873,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -47807,6 +47884,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -50795,6 +50873,13 @@ export namespace Prisma {
     not?: NestedEnumTicketPriorityFilter<$PrismaModel> | $Enums.TicketPriority
   }
 
+  export type EnumTicketTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.TicketType | EnumTicketTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TicketType[] | ListEnumTicketTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TicketType[] | ListEnumTicketTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumTicketTypeFilter<$PrismaModel> | $Enums.TicketType
+  }
+
   export type TicketCountOrderByAggregateInput = {
     id?: SortOrder
     businessId?: SortOrder
@@ -50810,6 +50895,7 @@ export namespace Prisma {
     resolvedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    type?: SortOrder
   }
 
   export type TicketMaxOrderByAggregateInput = {
@@ -50827,6 +50913,7 @@ export namespace Prisma {
     resolvedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    type?: SortOrder
   }
 
   export type TicketMinOrderByAggregateInput = {
@@ -50844,6 +50931,7 @@ export namespace Prisma {
     resolvedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    type?: SortOrder
   }
 
   export type EnumTicketStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -50866,6 +50954,16 @@ export namespace Prisma {
     _max?: NestedEnumTicketPriorityFilter<$PrismaModel>
   }
 
+  export type EnumTicketTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TicketType | EnumTicketTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TicketType[] | ListEnumTicketTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TicketType[] | ListEnumTicketTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumTicketTypeWithAggregatesFilter<$PrismaModel> | $Enums.TicketType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTicketTypeFilter<$PrismaModel>
+    _max?: NestedEnumTicketTypeFilter<$PrismaModel>
+  }
+
   export type TicketScalarRelationFilter = {
     is?: TicketWhereInput
     isNot?: TicketWhereInput
@@ -50878,6 +50976,7 @@ export namespace Prisma {
     authorName?: SortOrder
     authorRole?: SortOrder
     content?: SortOrder
+    isInternal?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -50888,6 +50987,7 @@ export namespace Prisma {
     authorName?: SortOrder
     authorRole?: SortOrder
     content?: SortOrder
+    isInternal?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -50898,6 +50998,7 @@ export namespace Prisma {
     authorName?: SortOrder
     authorRole?: SortOrder
     content?: SortOrder
+    isInternal?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -53723,6 +53824,10 @@ export namespace Prisma {
     set?: $Enums.TicketPriority
   }
 
+  export type EnumTicketTypeFieldUpdateOperationsInput = {
+    set?: $Enums.TicketType
+  }
+
   export type BusinessUpdateOneRequiredWithoutTicketsNestedInput = {
     create?: XOR<BusinessCreateWithoutTicketsInput, BusinessUncheckedCreateWithoutTicketsInput>
     connectOrCreate?: BusinessCreateOrConnectWithoutTicketsInput
@@ -54833,6 +54938,13 @@ export namespace Prisma {
     not?: NestedEnumTicketPriorityFilter<$PrismaModel> | $Enums.TicketPriority
   }
 
+  export type NestedEnumTicketTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.TicketType | EnumTicketTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TicketType[] | ListEnumTicketTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TicketType[] | ListEnumTicketTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumTicketTypeFilter<$PrismaModel> | $Enums.TicketType
+  }
+
   export type NestedEnumTicketStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TicketStatus | EnumTicketStatusFieldRefInput<$PrismaModel>
     in?: $Enums.TicketStatus[] | ListEnumTicketStatusFieldRefInput<$PrismaModel>
@@ -54851,6 +54963,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTicketPriorityFilter<$PrismaModel>
     _max?: NestedEnumTicketPriorityFilter<$PrismaModel>
+  }
+
+  export type NestedEnumTicketTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TicketType | EnumTicketTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TicketType[] | ListEnumTicketTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TicketType[] | ListEnumTicketTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumTicketTypeWithAggregatesFilter<$PrismaModel> | $Enums.TicketType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTicketTypeFilter<$PrismaModel>
+    _max?: NestedEnumTicketTypeFilter<$PrismaModel>
   }
 
   export type NestedEnumAppointmentStatusFilter<$PrismaModel = never> = {
@@ -55379,6 +55501,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
     business: BusinessCreateNestedOneWithoutTicketsInput
     comments?: TicketCommentCreateNestedManyWithoutTicketInput
   }
@@ -55397,6 +55520,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
     comments?: TicketCommentUncheckedCreateNestedManyWithoutTicketInput
   }
 
@@ -55577,6 +55701,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal?: boolean
     createdAt?: Date | string
     ticket: TicketCreateNestedOneWithoutCommentsInput
   }
@@ -55587,6 +55712,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal?: boolean
     createdAt?: Date | string
   }
 
@@ -56066,6 +56192,7 @@ export namespace Prisma {
     resolvedAt?: DateTimeNullableFilter<"Ticket"> | Date | string | null
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeFilter<"Ticket"> | Date | string
+    type?: EnumTicketTypeFilter<"Ticket"> | $Enums.TicketType
   }
 
   export type JournalEntryUpsertWithWhereUniqueWithoutUserInput = {
@@ -56231,6 +56358,7 @@ export namespace Prisma {
     authorName?: StringFilter<"TicketComment"> | string
     authorRole?: StringFilter<"TicketComment"> | string
     content?: StringFilter<"TicketComment"> | string
+    isInternal?: BoolFilter<"TicketComment"> | boolean
     createdAt?: DateTimeFilter<"TicketComment"> | Date | string
   }
 
@@ -57202,6 +57330,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
     user?: UserCreateNestedOneWithoutTicketsInput
     comments?: TicketCommentCreateNestedManyWithoutTicketInput
   }
@@ -57220,6 +57349,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
     comments?: TicketCommentUncheckedCreateNestedManyWithoutTicketInput
   }
 
@@ -60927,6 +61057,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal?: boolean
     createdAt?: Date | string
     user?: UserCreateNestedOneWithoutTicketCommentsInput
   }
@@ -60937,6 +61068,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal?: boolean
     createdAt?: Date | string
   }
 
@@ -61141,6 +61273,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
     business: BusinessCreateNestedOneWithoutTicketsInput
     user?: UserCreateNestedOneWithoutTicketsInput
   }
@@ -61160,6 +61293,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
   }
 
   export type TicketCreateOrConnectWithoutCommentsInput = {
@@ -61268,6 +61402,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
     business?: BusinessUpdateOneRequiredWithoutTicketsNestedInput
     user?: UserUpdateOneWithoutTicketsNestedInput
   }
@@ -61287,6 +61422,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
   }
 
   export type UserUpsertWithoutTicketCommentsInput = {
@@ -64332,6 +64468,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
   }
 
   export type JournalEntryCreateManyUserInput = {
@@ -64397,6 +64534,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal?: boolean
     createdAt?: Date | string
   }
 
@@ -64754,6 +64892,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
     business?: BusinessUpdateOneRequiredWithoutTicketsNestedInput
     comments?: TicketCommentUpdateManyWithoutTicketNestedInput
   }
@@ -64772,6 +64911,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
     comments?: TicketCommentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
@@ -64789,6 +64929,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
   }
 
   export type JournalEntryUpdateWithoutUserInput = {
@@ -64975,6 +65116,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ticket?: TicketUpdateOneRequiredWithoutCommentsNestedInput
   }
@@ -64985,6 +65127,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -64994,6 +65137,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -65315,6 +65459,7 @@ export namespace Prisma {
     resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    type?: $Enums.TicketType
   }
 
   export type LedgerAccountCreateManyBusinessInput = {
@@ -66001,6 +66146,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
     user?: UserUpdateOneWithoutTicketsNestedInput
     comments?: TicketCommentUpdateManyWithoutTicketNestedInput
   }
@@ -66019,6 +66165,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
     comments?: TicketCommentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
@@ -66036,6 +66183,7 @@ export namespace Prisma {
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTicketTypeFieldUpdateOperationsInput | $Enums.TicketType
   }
 
   export type LedgerAccountUpdateWithoutBusinessInput = {
@@ -66501,6 +66649,7 @@ export namespace Prisma {
     authorName: string
     authorRole: string
     content: string
+    isInternal?: boolean
     createdAt?: Date | string
   }
 
@@ -66509,6 +66658,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutTicketCommentsNestedInput
   }
@@ -66519,6 +66669,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -66528,6 +66679,7 @@ export namespace Prisma {
     authorName?: StringFieldUpdateOperationsInput | string
     authorRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    isInternal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
