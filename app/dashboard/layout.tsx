@@ -5,38 +5,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import {
-  LayoutDashboard,
-  Receipt,
-  TrendingUp,
-  FileText,
-  Calculator,
-  Users,
-  FormInput,
-  Calendar,
-  MessageSquare,
-  Mail,
-  CheckSquare,
-  Sparkles,
-  FileEdit,
-  BarChart3,
-  Package,
-  Truck,
-  UserCheck,
-  PenTool,
-  Globe,
-  Shield,
-  Bell,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  Building2,
-  Cpu,
-  UsersRound,
-  AtSign,
-  LifeBuoy
+import { 
+  LayoutDashboard, Users, PoundSterling, Calculator, FileText, 
+  TrendingUp, FormInput, Calendar, MessageSquare, Mail, 
+  CheckSquare, Sparkles, FileEdit, BarChart3, Package, 
+  Truck, UserCheck, PenTool, Globe, Shield, X, Inbox,
+  LogOut, Settings, Building2, 
+  LifeBuoy, Rocket, BookOpen, Bell, Cpu, UsersRound, AtSign
 } from 'lucide-react';
+import WelcomeGuideModal from '@/components/WelcomeGuideModal';
+import IncomingCallModal from '@/components/collaboration/IncomingCallModal';
 
 interface UserData {
   firstName: string;
@@ -48,6 +26,8 @@ interface UserData {
     size: string;
     seatCount: number;
     maxSeats: number;
+    enabledModules: string[];
+    createdAt: string;
   };
 }
 
@@ -66,13 +46,30 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen] = useState(true);
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
+
+  // Check for new users to show welcome guide automatically
+  useEffect(() => {
+    if (userData?.business?.createdAt) {
+      const createdDate = new Date(userData.business.createdAt);
+      const now = new Date();
+      const diffInMinutes = (now.getTime() - createdDate.getTime()) / (1000 * 60);
+      
+      const hasSeenSession = sessionStorage.getItem('hasSeenWelcomeGuide');
+      
+      if (diffInMinutes < 10 && !hasSeenSession) {
+        setShowWelcomeGuide(true);
+        sessionStorage.setItem('hasSeenWelcomeGuide', 'true');
+      }
+    }
+  }, [userData]);
 
   const router = useRouter();
 
@@ -185,128 +182,177 @@ export default function DashboardLayout({
       </div>
 
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 h-full ${sidebarOpen ? 'w-64' : 'w-20'} bg-white/60 backdrop-blur-xl border-r border-white/20 z-40 transition-all duration-300 shadow-sm`}>
+      <aside className="fixed left-0 top-0 h-full w-64 bg-white/60 backdrop-blur-xl border-r border-white/20 z-40 transition-all duration-300 shadow-sm flex flex-col">
         <div className="p-6 border-b border-white/20 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2">
-            {sidebarOpen ? (
-              <Image src="/logo.png" alt="Okleevo" width={120} height={32} className="h-8 w-auto" />
-            ) : (
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#fc6813' }}>
-                <span className="text-white font-bold">O</span>
-              </div>
-            )}
+            <Image src="/logo.png" alt="Okleevo" width={120} height={32} className="h-8 w-auto" />
           </Link>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1 rounded-lg hover:bg-white/50 transition-colors"
-          >
-            {sidebarOpen ? <X className="w-5 h-5 text-gray-600 dark:text-gray-300" /> : <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />}
-          </button>
         </div>
         
-        <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-180px)] custom-scrollbar">
-          <Link 
-            href="/dashboard" 
-            className="flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
-            style={{ backgroundColor: '#fc68131a', color: '#fc6813' }}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            {sidebarOpen && <span>Dashboard</span>}
-          </Link>
-          
-          {sidebarOpen && (
-            <>
-              <div className="pt-4">
-                <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Finance</p>
-                <Link href="/dashboard/invoicing" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Receipt className="w-5 h-5" /> Invoicing
-                </Link>
-                <Link href="/dashboard/accounting" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Calculator className="w-5 h-5" /> Accounting
-                </Link>
-                <Link href="/dashboard/taxation" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <FileText className="w-5 h-5" /> Taxation
-                </Link>
-                <Link href="/dashboard/cashflow" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <TrendingUp className="w-5 h-5" /> Cashflow
-                </Link>
-                <Link href="/dashboard/expenses" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <FileText className="w-5 h-5" /> Expenses
-                </Link>
-                <Link href="/dashboard/vat-tools" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Calculator className="w-5 h-5" /> VAT Tools
-                </Link>
-              </div>
-              
-              <div className="pt-4">
-                <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Customer</p>
-                <Link href="/dashboard/crm" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Users className="w-5 h-5" /> CRM
-                </Link>
-                <Link href="/dashboard/forms" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <FormInput className="w-5 h-5" /> Forms
-                </Link>
-                <Link href="/dashboard/booking" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Calendar className="w-5 h-5" /> Booking
-                </Link>
-                <Link href="/dashboard/helpdesk" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <MessageSquare className="w-5 h-5" /> Helpdesk
-                </Link>
-                <Link href="/dashboard/campaigns" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Mail className="w-5 h-5" /> Campaigns
-                </Link>
-              </div>
-              
-              <div className="pt-4">
-                <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Productivity</p>
-                <Link href="/dashboard/tasks" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <CheckSquare className="w-5 h-5" /> Tasks
-                </Link>
-                <Link href="/dashboard/ai-content" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Sparkles className="w-5 h-5" /> AI Content
-                </Link>
-                <Link href="/dashboard/ai-notes" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <FileEdit className="w-5 h-5" /> AI Notes
-                </Link>
-                <Link href="/dashboard/kpi-dashboard" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <BarChart3 className="w-5 h-5" /> KPI Dashboard
-                </Link>
-              </div>
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
+          {(() => {
+            const enabledModules = userData?.business?.enabledModules || [];
+            const defaultModules = [
+              "dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools",
+              "crm", "mailbox", "forms", "booking", "helpdesk", "campaigns",
+              "collaboration", "tasks", "ai-content", "ai-notes", "kpi-dashboard",
+              "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"
+            ];
+            
+            // In development, we show all modules to the user
+            const finalModules = process.env.NODE_ENV === 'development' 
+              ? defaultModules 
+              : (enabledModules.length > 0 ? enabledModules : defaultModules);
 
-              <div className="pt-4">
-                <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Operations</p>
-                <Link href="/dashboard/inventory" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Package className="w-5 h-5" /> Inventory
+            return (
+              <>
+                <Link 
+                  href="/dashboard" 
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
+                  style={{ backgroundColor: '#fc68131a', color: '#fc6813' }}
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span>Dashboard</span>
                 </Link>
-                <Link href="/dashboard/suppliers" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Truck className="w-5 h-5" /> Suppliers
-                </Link>
-                <Link href="/dashboard/hr-records" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <UserCheck className="w-5 h-5" /> HR Records
-                </Link>
-                <Link href="/dashboard/e-signature" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <PenTool className="w-5 h-5" /> E-Signature
-                </Link>
-                <Link href="/dashboard/micro-pages" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Globe className="w-5 h-5" /> Micro Pages
-                </Link>
-                <Link href="/dashboard/compliance" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                  <Shield className="w-5 h-5" /> Compliance
-                </Link>
-              </div>
-            </>
-          )}
+                
+                <div className="space-y-4">
+                  {/* Finance */}
+                  {(() => {
+                    const financeModules = [
+                      { id: 'invoicing', href: '/dashboard/invoicing', icon: PoundSterling, label: 'Invoicing' },
+                      { id: 'accounting', href: '/dashboard/accounting', icon: Calculator, label: 'Accounting' },
+                      { id: 'taxation', href: '/dashboard/taxation', icon: FileText, label: 'Taxation' },
+                      { id: 'cashflow', href: '/dashboard/cashflow', icon: TrendingUp, label: 'Cashflow' },
+                      { id: 'expenses', href: '/dashboard/expenses', icon: FileText, label: 'Expenses' },
+                      { id: 'vat-tools', href: '/dashboard/vat-tools', icon: Calculator, label: 'VAT Tools' },
+                    ].filter(m => finalModules.includes(m.id));
+
+                    if (financeModules.length === 0) return null;
+                    return (
+                      <div className="pt-4">
+                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Finance</p>
+                        {financeModules.map(m => (
+                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
+                            <m.icon className="w-5 h-5" /> {m.label}
+                          </Link>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Customer */}
+                  {(() => {
+                    const customerModules = [
+                      { id: 'crm', href: '/dashboard/crm', icon: Users, label: 'CRM' },
+                      { id: 'mailbox', href: '/dashboard/mailbox', icon: Inbox, label: 'Mailbox' },
+                      { id: 'forms', href: '/dashboard/forms', icon: FormInput, label: 'Forms' },
+                      { id: 'booking', href: '/dashboard/booking', icon: Calendar, label: 'Booking' },
+                      { id: 'helpdesk', href: '/dashboard/helpdesk', icon: MessageSquare, label: 'Helpdesk' },
+                      { id: 'campaigns', href: '/dashboard/campaigns', icon: Mail, label: 'Campaigns' },
+                    ].filter(m => finalModules.includes(m.id));
+
+                    return (
+                      <div className="pt-4">
+                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Customer</p>
+                        {customerModules.map(m => (
+                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
+                            <m.icon className="w-5 h-5" /> {m.label}
+                          </Link>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Team */}
+                  {(() => {
+                    const teamModules = [
+                      { id: 'collaboration', href: '/dashboard/collaboration', icon: UsersRound, label: 'Collaboration' },
+                    ];
+
+                    if (teamModules.length === 0) return null;
+                    return (
+                      <div className="pt-4">
+                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Team</p>
+                        {teamModules.map(m => (
+                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
+                            <m.icon className="w-5 h-5" /> {m.label}
+                          </Link>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Productivity */}
+                  {(() => {
+                    const productivityModules = [
+                      { id: 'tasks', href: '/dashboard/tasks', icon: CheckSquare, label: 'Tasks' },
+                      { id: 'ai-content', href: '/dashboard/ai-content', icon: Sparkles, label: 'AI Content' },
+                      { id: 'ai-notes', href: '/dashboard/ai-notes', icon: FileEdit, label: 'AI Notes' },
+                      { id: 'kpi-dashboard', href: '/dashboard/kpi-dashboard', icon: BarChart3, label: 'KPI Dashboard' },
+                    ].filter(m => finalModules.includes(m.id));
+
+                    if (productivityModules.length === 0) return null;
+                    return (
+                      <div className="pt-4">
+                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Productivity</p>
+                        {productivityModules.map(m => (
+                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
+                            <m.icon className="w-5 h-5" /> {m.label}
+                          </Link>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Operations */}
+                  {(() => {
+                    const operationsModules = [
+                      { id: 'inventory', href: '/dashboard/inventory', icon: Package, label: 'Inventory' },
+                      { id: 'suppliers', href: '/dashboard/suppliers', icon: Truck, label: 'Suppliers' },
+                      { id: 'hr-records', href: '/dashboard/hr-records', icon: UserCheck, label: 'HR Records' },
+                      { id: 'e-signature', href: '/dashboard/e-signature', icon: PenTool, label: 'E-Signature' },
+                      { id: 'micro-pages', href: '/dashboard/micro-pages', icon: Globe, label: 'Micro Pages' },
+                      { id: 'compliance', href: '/dashboard/compliance', icon: Shield, label: 'Compliance' },
+                    ].filter(m => finalModules.includes(m.id));
+
+                    if (operationsModules.length === 0) return null;
+                    return (
+                      <div className="pt-4">
+                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Operations</p>
+                        {operationsModules.map(m => (
+                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
+                            <m.icon className="w-5 h-5" /> {m.label}
+                          </Link>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </>
+            );
+          })()}
         </nav>
 
         {/* Bottom Actions */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/20 bg-white/60 backdrop-blur-xl space-y-2">
+        <div className="p-4 border-t border-white/20 bg-white/60 backdrop-blur-xl space-y-2">
+          <button 
+            onClick={() => setShowWelcomeGuide(true)}
+            className="flex items-center gap-3 px-4 py-2 rounded-lg text-indigo-600 font-bold hover:bg-white/50 transition-colors w-full text-left cursor-pointer"
+          >
+            <Rocket className="w-5 h-5" />
+            <span>Quick Start Guide</span>
+          </button>
+          <Link href="/guide" target="_blank" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
+            <BookOpen className="w-5 h-5" />
+            <span>User Guide</span>
+          </Link>
           <Link href="/dashboard/support" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
             <LifeBuoy className="w-5 h-5" />
-            {sidebarOpen && <span>Support</span>}
+            <span>Support</span>
           </Link>
           <Link href="/dashboard/settings" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
             <Settings className="w-5 h-5" />
-            {sidebarOpen && <span>Settings</span>}
+            <span>Settings</span>
           </Link>
           <button
             onClick={async () => {
@@ -381,7 +427,7 @@ export default function DashboardLayout({
               {showNotifications && (
                 <div className="absolute top-full right-0 mt-2 w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden">
                   <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                    <h3 className="font-bold text-gray-900">Notifications</h3>
+                    <h3 className="font-bold text-gray-900">Notifications</h3><button onClick={async () => { await fetch('/api/notifications', { method: 'DELETE' }); window.location.reload(); }} className="text-xs text-indigo-600 font-bold ml-2 cursor-pointer">Clear All</button>
                     <button 
                       onClick={() => setShowNotifications(false)}
                       className="text-gray-400 hover:text-gray-600"
@@ -459,7 +505,14 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Welcome Guide Modal */}
+      <WelcomeGuideModal 
+        isOpen={showWelcomeGuide} 
+        onClose={() => setShowWelcomeGuide(false)} 
+        businessName={userData?.business?.name || 'Business'} 
+      />
+      <IncomingCallModal />
     </div>
   );
 }
-

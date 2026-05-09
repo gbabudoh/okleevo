@@ -277,6 +277,7 @@ export function HeroAnimation() {
             { icon: DollarSign, text: "Just £19.99/month - No Hidden Fees", color: "text-blue-500", bg: "bg-blue-50" },
             { icon: Sparkles, text: "AI-Powered Tools Included", color: "text-purple-500", bg: "bg-purple-50" },
             { icon: Shield, text: "UK-Based & GDPR Compliant", color: "text-orange-500", bg: "bg-orange-50" },
+            { icon: Users, text: "10 seats included – allows multiple users on one account, suitable for SMEs with small or large teams.", color: "text-indigo-500", bg: "bg-indigo-50" },
           ].map((feature, i) => (
             <motion.div
               key={i}

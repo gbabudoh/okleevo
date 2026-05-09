@@ -20,6 +20,7 @@ const publicRoutes = [
   '/forms',
   '/api/public',
   '/support',
+  '/guide',
 ];
 
 export async function middleware(request: NextRequest) {

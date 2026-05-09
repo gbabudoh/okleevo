@@ -34,6 +34,9 @@ export default function PricingPage() {
               <Link href="/pricing" className="text-primary-600 font-medium">
                 Pricing
               </Link>
+              <Link href="/guide" className="text-gray-700 hover:text-primary-600 transition-colors">
+                User Guide
+              </Link>
             </div>
             <div className="flex items-center gap-4">
               {isLoggedIn ? (
@@ -92,7 +95,7 @@ export default function PricingPage() {
              {/* Price Header */}
              <div className="text-center mb-12">
                <h2 className="text-3xl font-bold text-gray-900 mb-2">PRO All-In-One</h2>
-               <p className="text-gray-500 mb-8">Everything included. Unlimited Users.</p>
+               <p className="text-gray-500 mb-8">Everything included. 10 User Seats Included.</p>
                
                <div className="flex items-center justify-center gap-1 mb-6">
                   <span className="text-4xl text-gray-400 font-light line-through decoration-red-500/50 decoration-2 mr-4">£120+</span>
@@ -141,7 +144,7 @@ export default function PricingPage() {
               },
               {
                 q: "How many users can I add?",
-                a: "Unlimited! Add as many team members as you need at no extra cost."
+                a: "You can add up to 10 team members as part of the standard plan at no extra cost. This is perfect for small to medium staffing needs."
               },
               {
                 q: "Is my data secure?",
@@ -171,12 +174,17 @@ export default function PricingPage() {
           <Link href="/" className="flex items-center justify-center gap-2 mb-4">
              <Image src="/logo.png" alt="Okleevo" width={150} height={40} className="h-10 w-auto" />
           </Link>
+          <p className="text-gray-500 mb-4">Everything included. 10 User Seats Included.</p>
+          <p className="text-sm text-indigo-400 font-bold mb-8">
+            10 seats included – allows multiple users on one account, suitable for SMEs with small or large teams.
+          </p>
           <p className="text-gray-400 mb-6">
             The all-in-one business platform designed specifically for UK SMEs
           </p>
           <div className="flex justify-center gap-6 text-sm">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/guide" className="hover:text-white transition-colors">User Guide</Link>
             <Link 
               href={isLoggedIn ? "/dashboard/helpdesk" : "/support"} 
               className="hover:text-white transition-colors"

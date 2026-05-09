@@ -50,20 +50,21 @@ model User {
   sessions Session[]
 
   // Business Relations
-  invoices       Invoice[]
-  contacts       Contact[]
-  tasks          Task[]
-  notes          Note[]
-  expenses       Expense[]
-  tickets        Ticket[]
-  journalEntries JournalEntry[]
-  emailLogs      EmailLog[]
-  forms          Form[]
-  appointments   Appointment[]
-  ticketComments TicketComment[]
-  aiNotes        AINote[]
-  stockMovements StockMovement[]
-  notifications  Notification[]
+  invoices        Invoice[]
+  contacts        Contact[]
+  tasks           Task[]
+  notes           Note[]
+  expenses        Expense[]
+  tickets         Ticket[]
+  journalEntries  JournalEntry[]
+  emailLogs       EmailLog[]
+  forms           Form[]
+  appointments    Appointment[]
+  ticketComments  TicketComment[]
+  aiNotes         AINote[]
+  stockMovements  StockMovement[]
+  notifications   Notification[]
+  mailboxMessages MailboxMessage[]
 
   @@index([email])
   @@index([businessId])
@@ -152,24 +153,26 @@ model Business {
   updatedAt DateTime @updatedAt
 
   // Relations
-  users          User[]
-  invoices       Invoice[]
-  contacts       Contact[]
-  tasks          Task[]
-  notes          Note[]
-  expenses       Expense[]
-  inventory      InventoryItem[]
-  employees      Employee[]
-  suppliers      Supplier[]
-  campaigns      Campaign[]
-  tickets        Ticket[]
-  ledgerAccounts LedgerAccount[]
-  journalEntries JournalEntry[]
-  emailLogs      EmailLog[]
-  forms          Form[]
-  appointments   Appointment[]
-  aiNotes        AINote[]
-  stockMovements StockMovement[]
+  users           User[]
+  invoices        Invoice[]
+  contacts        Contact[]
+  tasks           Task[]
+  notes           Note[]
+  expenses        Expense[]
+  inventory       InventoryItem[]
+  employees       Employee[]
+  suppliers       Supplier[]
+  campaigns       Campaign[]
+  tickets         Ticket[]
+  ledgerAccounts  LedgerAccount[]
+  journalEntries  JournalEntry[]
+  emailLogs       EmailLog[]
+  forms           Form[]
+  appointments    Appointment[]
+  aiNotes         AINote[]
+  stockMovements  StockMovement[]
+  mailboxMessages MailboxMessage[]
+  enabledModules  String[]         @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
 
   @@index([name])
 }
@@ -575,6 +578,11 @@ enum CampaignType {
 // Helpdesk Module
 // =============================================================================
 
+enum TicketType {
+  CUSTOMER
+  PLATFORM
+}
+
 model Ticket {
   id String @id @default(cuid())
 
@@ -601,6 +609,8 @@ model Ticket {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  type TicketType @default(CUSTOMER)
+
   comments TicketComment[]
 
   @@index([businessId])
@@ -619,7 +629,8 @@ model TicketComment {
 
   authorName String
   authorRole String // 'customer' or 'agent'
-  content    String @db.Text
+  content    String  @db.Text
+  isInternal Boolean @default(false)
 
   createdAt DateTime @default(now())
 
@@ -1056,6 +1067,61 @@ model AINote {
 
   @@index([businessId])
   @@index([userId])
+}
+
+// =============================================================================
+// Business Inbox (Mailbox)
+// =============================================================================
+
+model MailboxMessage {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  userId String? // The user who sent/received it
+  user   User?   @relation(fields: [userId], references: [id])
+
+  messageId String @unique // IMAP/SMTP Message-ID
+  uid       Int? // IMAP UID
+
+  from    String // e.g. "John Doe <john@example.com>"
+  to      String // e.g. "sales@okleevo.com"
+  cc      String?
+  bcc     String?
+  subject String
+  body    String  @db.Text
+  html    String? @db.Text
+
+  folder MailFolder @default(INBOX)
+  status MailStatus @default(UNREAD)
+
+  date DateTime @default(now())
+
+  hasAttachments Boolean @default(false)
+  attachments    Json? // List of attachment metadata
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([folder])
+  @@index([status])
+  @@index([date])
+}
+
+enum MailFolder {
+  INBOX
+  SENT
+  DRAFTS
+  TRASH
+  SPAM
+}
+
+enum MailStatus {
+  READ
+  UNREAD
+  FLAGGED
 }
 
 // =============================================================================

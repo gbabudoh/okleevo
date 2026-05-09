@@ -352,7 +352,7 @@ export default function CampaignsPage() {
                         {c.name}
                       </h2>
                       {c.subject && (
-                        <p className="text-gray-500 font-medium text-sm truncate italic">"{c.subject}"</p>
+                        <p className="text-gray-400 font-medium text-sm truncate italic mt-1">{c.subject}</p>
                       )}
                       <div className="flex items-center gap-4 text-xs font-semibold text-gray-400 flex-wrap">
                         <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{c.audience}</span>
@@ -539,10 +539,60 @@ export default function CampaignsPage() {
                 type="button"
                 onClick={handleCreate}
                 disabled={!newCampaign.name.trim() || saving}
+                className="px-6 py-3 border-2 border-gray-900 text-gray-900 rounded-xl font-bold hover:bg-gray-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {newCampaign.scheduledAt ? 'Schedule' : 'Save as Draft'}
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!newCampaign.name.trim() || !newCampaign.subject.trim() || !newCampaign.content.trim()) {
+                    showFeedback('Missing Info', 'Please provide a name, subject, and content before sending.', 'error');
+                    return;
+                  }
+                  
+                  setSaving(true);
+                  try {
+                    // 1. Create the campaign first
+                    const createRes = await fetch('/api/campaigns', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(newCampaign),
+                    });
+                    
+                    if (!createRes.ok) throw new Error('Failed to create campaign');
+                    const saved = await createRes.json();
+                    
+                    // 2. Send it
+                    const sendRes = await fetch('/api/campaigns/send', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ campaignId: saved.id }),
+                    });
+                    
+                    const sendData = await sendRes.json();
+                    
+                    if (!sendRes.ok) {
+                      throw new Error(sendData.details || sendData.error || 'Failed to send campaign');
+                    }
+                    
+                    await fetchCampaigns(); // Refresh list
+                    setShowCreateModal(false);
+                    setNewCampaign(blank());
+                    showFeedback('Success!', `Campaign "${saved.name}" sent to ${sendData.stats.sent} recipients.`, 'success');
+                  } catch (err) {
+                    console.error('Campaign send error:', err);
+                    showFeedback('Sending Failed', err instanceof Error ? err.message : 'An unexpected error occurred.', 'error');
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                disabled={!newCampaign.name.trim() || saving || !!newCampaign.scheduledAt}
                 className="flex-[2] px-6 py-3 bg-gray-900 text-white rounded-xl font-bold shadow-lg hover:bg-black transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                {newCampaign.scheduledAt ? 'Schedule Campaign' : 'Save as Draft'}
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                Send Now via SMTP
               </button>
             </div>
           </div>
@@ -642,7 +692,10 @@ export default function CampaignsPage() {
                   {STATUS_CONFIG[selectedCampaign.status]?.label}
                 </span>
                 <h2 className="text-2xl font-black text-gray-900">{selectedCampaign.name}</h2>
-                {selectedCampaign.subject && <p className="text-gray-500 font-medium mt-1 italic">"{selectedCampaign.subject}"</p>}
+                {selectedCampaign.subject && <p className="text-gray-400 text-sm font-medium mt-1.5 italic flex items-center gap-2">
+                  <Megaphone className="w-3.5 h-3.5 text-gray-300" />
+                  {selectedCampaign.subject}
+                </p>}
               </div>
               <button type="button" onClick={() => setShowDetailModal(false)}
                 className="p-2.5 bg-gray-50 text-gray-400 hover:text-gray-900 rounded-xl transition-all cursor-pointer shrink-0">
@@ -714,9 +767,46 @@ export default function CampaignsPage() {
                 className="flex-1 px-5 py-3 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 transition-all cursor-pointer text-sm">
                 Close
               </button>
+              
+              {(selectedCampaign.status === 'draft' || selectedCampaign.status === 'scheduled') && (
+                <button 
+                  type="button" 
+                  disabled={saving}
+                  onClick={async () => {
+                    setSaving(true);
+                    try {
+                      const res = await fetch('/api/campaigns/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ campaignId: selectedCampaign.id }),
+                      });
+                      
+                      const data = await res.json();
+                      
+                      if (!res.ok) {
+                        throw new Error(data.details || data.error || 'Failed to send campaign');
+                      }
+                      
+                      await fetchCampaigns();
+                      setShowDetailModal(false);
+                      showFeedback('Success!', `Campaign sent to ${data.stats.sent} recipients.`, 'success');
+                    } catch (err) {
+                      console.error('Campaign detail send error:', err);
+                      showFeedback('Sending Failed', err instanceof Error ? err.message : 'An unexpected error occurred.', 'error');
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}
+                  className="flex-[2] px-5 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all cursor-pointer shadow-lg text-sm flex items-center justify-center gap-2"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  Send via SMTP
+                </button>
+              )}
+
               <button type="button" onClick={() => handleExportCsv(selectedCampaign)}
                 className="flex-1 px-5 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all cursor-pointer shadow-lg text-sm flex items-center justify-center gap-2">
-                <BarChart3 className="w-4 h-4" /> Export CSV
+                <BarChart3 className="w-4 h-4" /> Export
               </button>
             </div>
           </div>

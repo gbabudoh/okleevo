@@ -81,3 +81,25 @@ export const POST = withMultiTenancy(async (req, { user }) => {
     return NextResponse.json({ error: 'Failed to create notification' }, { status: 500 });
   }
 });
+
+/**
+ * DELETE - Clear all notifications (mark as read)
+ */
+export const DELETE = withMultiTenancy(async (_req, { user }) => {
+  try {
+    await prisma.notification.updateMany({
+      where: {
+        userId: user.id,
+        status: 'unread',
+      },
+      data: {
+        status: 'read',
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Notifications DELETE Error:', error);
+    return NextResponse.json({ error: 'Failed to clear notifications' }, { status: 500 });
+  }
+});

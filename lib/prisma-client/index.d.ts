@@ -164,6 +164,11 @@ export type FormResponse = $Result.DefaultSelection<Prisma.$FormResponsePayload>
  */
 export type AINote = $Result.DefaultSelection<Prisma.$AINotePayload>
 /**
+ * Model MailboxMessage
+ * 
+ */
+export type MailboxMessage = $Result.DefaultSelection<Prisma.$MailboxMessagePayload>
+/**
  * Model Notification
  * 
  */
@@ -397,6 +402,26 @@ export const FormStatus: {
 
 export type FormStatus = (typeof FormStatus)[keyof typeof FormStatus]
 
+
+export const MailFolder: {
+  INBOX: 'INBOX',
+  SENT: 'SENT',
+  DRAFTS: 'DRAFTS',
+  TRASH: 'TRASH',
+  SPAM: 'SPAM'
+};
+
+export type MailFolder = (typeof MailFolder)[keyof typeof MailFolder]
+
+
+export const MailStatus: {
+  READ: 'READ',
+  UNREAD: 'UNREAD',
+  FLAGGED: 'FLAGGED'
+};
+
+export type MailStatus = (typeof MailStatus)[keyof typeof MailStatus]
+
 }
 
 export type UserRole = $Enums.UserRole
@@ -490,6 +515,14 @@ export const EmailStatus: typeof $Enums.EmailStatus
 export type FormStatus = $Enums.FormStatus
 
 export const FormStatus: typeof $Enums.FormStatus
+
+export type MailFolder = $Enums.MailFolder
+
+export const MailFolder: typeof $Enums.MailFolder
+
+export type MailStatus = $Enums.MailStatus
+
+export const MailStatus: typeof $Enums.MailStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -908,6 +941,16 @@ export class PrismaClient<
     * ```
     */
   get aINote(): Prisma.AINoteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.mailboxMessage`: Exposes CRUD operations for the **MailboxMessage** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MailboxMessages
+    * const mailboxMessages = await prisma.mailboxMessage.findMany()
+    * ```
+    */
+  get mailboxMessage(): Prisma.MailboxMessageDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
@@ -1389,6 +1432,7 @@ export namespace Prisma {
     Form: 'Form',
     FormResponse: 'FormResponse',
     AINote: 'AINote',
+    MailboxMessage: 'MailboxMessage',
     Notification: 'Notification'
   };
 
@@ -1408,7 +1452,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "business" | "subscription" | "invoice" | "contact" | "note" | "expense" | "inventoryItem" | "stockMovement" | "employee" | "supplier" | "campaign" | "ticket" | "ticketComment" | "appointment" | "complianceItem" | "task" | "subTask" | "auditLog" | "workspaceVisibility" | "ledgerAccount" | "journalEntry" | "ledgerEntry" | "emailLog" | "form" | "formResponse" | "aINote" | "notification"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "business" | "subscription" | "invoice" | "contact" | "note" | "expense" | "inventoryItem" | "stockMovement" | "employee" | "supplier" | "campaign" | "ticket" | "ticketComment" | "appointment" | "complianceItem" | "task" | "subTask" | "auditLog" | "workspaceVisibility" | "ledgerAccount" | "journalEntry" | "ledgerEntry" | "emailLog" | "form" | "formResponse" | "aINote" | "mailboxMessage" | "notification"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3632,6 +3676,80 @@ export namespace Prisma {
           }
         }
       }
+      MailboxMessage: {
+        payload: Prisma.$MailboxMessagePayload<ExtArgs>
+        fields: Prisma.MailboxMessageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MailboxMessageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MailboxMessageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload>
+          }
+          findFirst: {
+            args: Prisma.MailboxMessageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MailboxMessageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload>
+          }
+          findMany: {
+            args: Prisma.MailboxMessageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload>[]
+          }
+          create: {
+            args: Prisma.MailboxMessageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload>
+          }
+          createMany: {
+            args: Prisma.MailboxMessageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MailboxMessageCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload>[]
+          }
+          delete: {
+            args: Prisma.MailboxMessageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload>
+          }
+          update: {
+            args: Prisma.MailboxMessageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload>
+          }
+          deleteMany: {
+            args: Prisma.MailboxMessageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MailboxMessageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MailboxMessageUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload>[]
+          }
+          upsert: {
+            args: Prisma.MailboxMessageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MailboxMessagePayload>
+          }
+          aggregate: {
+            args: Prisma.MailboxMessageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMailboxMessage>
+          }
+          groupBy: {
+            args: Prisma.MailboxMessageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MailboxMessageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MailboxMessageCountArgs<ExtArgs>
+            result: $Utils.Optional<MailboxMessageCountAggregateOutputType> | number
+          }
+        }
+      }
       Notification: {
         payload: Prisma.$NotificationPayload<ExtArgs>
         fields: Prisma.NotificationFieldRefs
@@ -3832,6 +3950,7 @@ export namespace Prisma {
     form?: FormOmit
     formResponse?: FormResponseOmit
     aINote?: AINoteOmit
+    mailboxMessage?: MailboxMessageOmit
     notification?: NotificationOmit
   }
 
@@ -3929,6 +4048,7 @@ export namespace Prisma {
     aiNotes: number
     stockMovements: number
     notifications: number
+    mailboxMessages: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3948,6 +4068,7 @@ export namespace Prisma {
     aiNotes?: boolean | UserCountOutputTypeCountAiNotesArgs
     stockMovements?: boolean | UserCountOutputTypeCountStockMovementsArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+    mailboxMessages?: boolean | UserCountOutputTypeCountMailboxMessagesArgs
   }
 
   // Custom InputTypes
@@ -4073,6 +4194,13 @@ export namespace Prisma {
     where?: NotificationWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountMailboxMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MailboxMessageWhereInput
+  }
+
 
   /**
    * Count Type BusinessCountOutputType
@@ -4097,6 +4225,7 @@ export namespace Prisma {
     appointments: number
     aiNotes: number
     stockMovements: number
+    mailboxMessages: number
   }
 
   export type BusinessCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4118,6 +4247,7 @@ export namespace Prisma {
     appointments?: boolean | BusinessCountOutputTypeCountAppointmentsArgs
     aiNotes?: boolean | BusinessCountOutputTypeCountAiNotesArgs
     stockMovements?: boolean | BusinessCountOutputTypeCountStockMovementsArgs
+    mailboxMessages?: boolean | BusinessCountOutputTypeCountMailboxMessagesArgs
   }
 
   // Custom InputTypes
@@ -4255,6 +4385,13 @@ export namespace Prisma {
    */
   export type BusinessCountOutputTypeCountStockMovementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: StockMovementWhereInput
+  }
+
+  /**
+   * BusinessCountOutputType without action
+   */
+  export type BusinessCountOutputTypeCountMailboxMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MailboxMessageWhereInput
   }
 
 
@@ -4760,6 +4897,7 @@ export namespace Prisma {
     aiNotes?: boolean | User$aiNotesArgs<ExtArgs>
     stockMovements?: boolean | User$stockMovementsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
+    mailboxMessages?: boolean | User$mailboxMessagesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4847,6 +4985,7 @@ export namespace Prisma {
     aiNotes?: boolean | User$aiNotesArgs<ExtArgs>
     stockMovements?: boolean | User$stockMovementsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
+    mailboxMessages?: boolean | User$mailboxMessagesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4876,6 +5015,7 @@ export namespace Prisma {
       aiNotes: Prisma.$AINotePayload<ExtArgs>[]
       stockMovements: Prisma.$StockMovementPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      mailboxMessages: Prisma.$MailboxMessagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5307,6 +5447,7 @@ export namespace Prisma {
     aiNotes<T extends User$aiNotesArgs<ExtArgs> = {}>(args?: Subset<T, User$aiNotesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AINotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockMovements<T extends User$stockMovementsArgs<ExtArgs> = {}>(args?: Subset<T, User$stockMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    mailboxMessages<T extends User$mailboxMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$mailboxMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6131,6 +6272,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * User.mailboxMessages
+   */
+  export type User$mailboxMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    where?: MailboxMessageWhereInput
+    orderBy?: MailboxMessageOrderByWithRelationInput | MailboxMessageOrderByWithRelationInput[]
+    cursor?: MailboxMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MailboxMessageScalarFieldEnum | MailboxMessageScalarFieldEnum[]
   }
 
   /**
@@ -9417,6 +9582,7 @@ export namespace Prisma {
     maxSeats: number
     createdAt: number
     updatedAt: number
+    enabledModules: number
     _all: number
   }
 
@@ -9477,6 +9643,7 @@ export namespace Prisma {
     maxSeats?: true
     createdAt?: true
     updatedAt?: true
+    enabledModules?: true
     _all?: true
   }
 
@@ -9580,6 +9747,7 @@ export namespace Prisma {
     maxSeats: number
     createdAt: Date
     updatedAt: Date
+    enabledModules: string[]
     _count: BusinessCountAggregateOutputType | null
     _avg: BusinessAvgAggregateOutputType | null
     _sum: BusinessSumAggregateOutputType | null
@@ -9615,6 +9783,7 @@ export namespace Prisma {
     maxSeats?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    enabledModules?: boolean
     subscription?: boolean | Business$subscriptionArgs<ExtArgs>
     users?: boolean | Business$usersArgs<ExtArgs>
     invoices?: boolean | Business$invoicesArgs<ExtArgs>
@@ -9634,6 +9803,7 @@ export namespace Prisma {
     appointments?: boolean | Business$appointmentsArgs<ExtArgs>
     aiNotes?: boolean | Business$aiNotesArgs<ExtArgs>
     stockMovements?: boolean | Business$stockMovementsArgs<ExtArgs>
+    mailboxMessages?: boolean | Business$mailboxMessagesArgs<ExtArgs>
     _count?: boolean | BusinessCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["business"]>
 
@@ -9651,6 +9821,7 @@ export namespace Prisma {
     maxSeats?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    enabledModules?: boolean
   }, ExtArgs["result"]["business"]>
 
   export type BusinessSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -9667,6 +9838,7 @@ export namespace Prisma {
     maxSeats?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    enabledModules?: boolean
   }, ExtArgs["result"]["business"]>
 
   export type BusinessSelectScalar = {
@@ -9683,9 +9855,10 @@ export namespace Prisma {
     maxSeats?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    enabledModules?: boolean
   }
 
-  export type BusinessOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "industry" | "size" | "address" | "city" | "postcode" | "country" | "subscriptionId" | "seatCount" | "maxSeats" | "createdAt" | "updatedAt", ExtArgs["result"]["business"]>
+  export type BusinessOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "industry" | "size" | "address" | "city" | "postcode" | "country" | "subscriptionId" | "seatCount" | "maxSeats" | "createdAt" | "updatedAt" | "enabledModules", ExtArgs["result"]["business"]>
   export type BusinessInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     subscription?: boolean | Business$subscriptionArgs<ExtArgs>
     users?: boolean | Business$usersArgs<ExtArgs>
@@ -9706,6 +9879,7 @@ export namespace Prisma {
     appointments?: boolean | Business$appointmentsArgs<ExtArgs>
     aiNotes?: boolean | Business$aiNotesArgs<ExtArgs>
     stockMovements?: boolean | Business$stockMovementsArgs<ExtArgs>
+    mailboxMessages?: boolean | Business$mailboxMessagesArgs<ExtArgs>
     _count?: boolean | BusinessCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BusinessIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -9733,6 +9907,7 @@ export namespace Prisma {
       appointments: Prisma.$AppointmentPayload<ExtArgs>[]
       aiNotes: Prisma.$AINotePayload<ExtArgs>[]
       stockMovements: Prisma.$StockMovementPayload<ExtArgs>[]
+      mailboxMessages: Prisma.$MailboxMessagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9748,6 +9923,7 @@ export namespace Prisma {
       maxSeats: number
       createdAt: Date
       updatedAt: Date
+      enabledModules: string[]
     }, ExtArgs["result"]["business"]>
     composites: {}
   }
@@ -10161,6 +10337,7 @@ export namespace Prisma {
     appointments<T extends Business$appointmentsArgs<ExtArgs> = {}>(args?: Subset<T, Business$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiNotes<T extends Business$aiNotesArgs<ExtArgs> = {}>(args?: Subset<T, Business$aiNotesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AINotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockMovements<T extends Business$stockMovementsArgs<ExtArgs> = {}>(args?: Subset<T, Business$stockMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    mailboxMessages<T extends Business$mailboxMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Business$mailboxMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10203,6 +10380,7 @@ export namespace Prisma {
     readonly maxSeats: FieldRef<"Business", 'Int'>
     readonly createdAt: FieldRef<"Business", 'DateTime'>
     readonly updatedAt: FieldRef<"Business", 'DateTime'>
+    readonly enabledModules: FieldRef<"Business", 'String[]'>
   }
     
 
@@ -11039,6 +11217,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: StockMovementScalarFieldEnum | StockMovementScalarFieldEnum[]
+  }
+
+  /**
+   * Business.mailboxMessages
+   */
+  export type Business$mailboxMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    where?: MailboxMessageWhereInput
+    orderBy?: MailboxMessageOrderByWithRelationInput | MailboxMessageOrderByWithRelationInput[]
+    cursor?: MailboxMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MailboxMessageScalarFieldEnum | MailboxMessageScalarFieldEnum[]
   }
 
   /**
@@ -40669,6 +40871,1303 @@ export namespace Prisma {
 
 
   /**
+   * Model MailboxMessage
+   */
+
+  export type AggregateMailboxMessage = {
+    _count: MailboxMessageCountAggregateOutputType | null
+    _avg: MailboxMessageAvgAggregateOutputType | null
+    _sum: MailboxMessageSumAggregateOutputType | null
+    _min: MailboxMessageMinAggregateOutputType | null
+    _max: MailboxMessageMaxAggregateOutputType | null
+  }
+
+  export type MailboxMessageAvgAggregateOutputType = {
+    uid: number | null
+  }
+
+  export type MailboxMessageSumAggregateOutputType = {
+    uid: number | null
+  }
+
+  export type MailboxMessageMinAggregateOutputType = {
+    id: string | null
+    businessId: string | null
+    userId: string | null
+    messageId: string | null
+    uid: number | null
+    from: string | null
+    to: string | null
+    cc: string | null
+    bcc: string | null
+    subject: string | null
+    body: string | null
+    html: string | null
+    folder: $Enums.MailFolder | null
+    status: $Enums.MailStatus | null
+    date: Date | null
+    hasAttachments: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type MailboxMessageMaxAggregateOutputType = {
+    id: string | null
+    businessId: string | null
+    userId: string | null
+    messageId: string | null
+    uid: number | null
+    from: string | null
+    to: string | null
+    cc: string | null
+    bcc: string | null
+    subject: string | null
+    body: string | null
+    html: string | null
+    folder: $Enums.MailFolder | null
+    status: $Enums.MailStatus | null
+    date: Date | null
+    hasAttachments: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type MailboxMessageCountAggregateOutputType = {
+    id: number
+    businessId: number
+    userId: number
+    messageId: number
+    uid: number
+    from: number
+    to: number
+    cc: number
+    bcc: number
+    subject: number
+    body: number
+    html: number
+    folder: number
+    status: number
+    date: number
+    hasAttachments: number
+    attachments: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type MailboxMessageAvgAggregateInputType = {
+    uid?: true
+  }
+
+  export type MailboxMessageSumAggregateInputType = {
+    uid?: true
+  }
+
+  export type MailboxMessageMinAggregateInputType = {
+    id?: true
+    businessId?: true
+    userId?: true
+    messageId?: true
+    uid?: true
+    from?: true
+    to?: true
+    cc?: true
+    bcc?: true
+    subject?: true
+    body?: true
+    html?: true
+    folder?: true
+    status?: true
+    date?: true
+    hasAttachments?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type MailboxMessageMaxAggregateInputType = {
+    id?: true
+    businessId?: true
+    userId?: true
+    messageId?: true
+    uid?: true
+    from?: true
+    to?: true
+    cc?: true
+    bcc?: true
+    subject?: true
+    body?: true
+    html?: true
+    folder?: true
+    status?: true
+    date?: true
+    hasAttachments?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type MailboxMessageCountAggregateInputType = {
+    id?: true
+    businessId?: true
+    userId?: true
+    messageId?: true
+    uid?: true
+    from?: true
+    to?: true
+    cc?: true
+    bcc?: true
+    subject?: true
+    body?: true
+    html?: true
+    folder?: true
+    status?: true
+    date?: true
+    hasAttachments?: true
+    attachments?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type MailboxMessageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MailboxMessage to aggregate.
+     */
+    where?: MailboxMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MailboxMessages to fetch.
+     */
+    orderBy?: MailboxMessageOrderByWithRelationInput | MailboxMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MailboxMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MailboxMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MailboxMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MailboxMessages
+    **/
+    _count?: true | MailboxMessageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MailboxMessageAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MailboxMessageSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MailboxMessageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MailboxMessageMaxAggregateInputType
+  }
+
+  export type GetMailboxMessageAggregateType<T extends MailboxMessageAggregateArgs> = {
+        [P in keyof T & keyof AggregateMailboxMessage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMailboxMessage[P]>
+      : GetScalarType<T[P], AggregateMailboxMessage[P]>
+  }
+
+
+
+
+  export type MailboxMessageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MailboxMessageWhereInput
+    orderBy?: MailboxMessageOrderByWithAggregationInput | MailboxMessageOrderByWithAggregationInput[]
+    by: MailboxMessageScalarFieldEnum[] | MailboxMessageScalarFieldEnum
+    having?: MailboxMessageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MailboxMessageCountAggregateInputType | true
+    _avg?: MailboxMessageAvgAggregateInputType
+    _sum?: MailboxMessageSumAggregateInputType
+    _min?: MailboxMessageMinAggregateInputType
+    _max?: MailboxMessageMaxAggregateInputType
+  }
+
+  export type MailboxMessageGroupByOutputType = {
+    id: string
+    businessId: string
+    userId: string | null
+    messageId: string
+    uid: number | null
+    from: string
+    to: string
+    cc: string | null
+    bcc: string | null
+    subject: string
+    body: string
+    html: string | null
+    folder: $Enums.MailFolder
+    status: $Enums.MailStatus
+    date: Date
+    hasAttachments: boolean
+    attachments: JsonValue | null
+    createdAt: Date
+    updatedAt: Date
+    _count: MailboxMessageCountAggregateOutputType | null
+    _avg: MailboxMessageAvgAggregateOutputType | null
+    _sum: MailboxMessageSumAggregateOutputType | null
+    _min: MailboxMessageMinAggregateOutputType | null
+    _max: MailboxMessageMaxAggregateOutputType | null
+  }
+
+  type GetMailboxMessageGroupByPayload<T extends MailboxMessageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MailboxMessageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MailboxMessageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MailboxMessageGroupByOutputType[P]>
+            : GetScalarType<T[P], MailboxMessageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MailboxMessageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    businessId?: boolean
+    userId?: boolean
+    messageId?: boolean
+    uid?: boolean
+    from?: boolean
+    to?: boolean
+    cc?: boolean
+    bcc?: boolean
+    subject?: boolean
+    body?: boolean
+    html?: boolean
+    folder?: boolean
+    status?: boolean
+    date?: boolean
+    hasAttachments?: boolean
+    attachments?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    user?: boolean | MailboxMessage$userArgs<ExtArgs>
+  }, ExtArgs["result"]["mailboxMessage"]>
+
+  export type MailboxMessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    businessId?: boolean
+    userId?: boolean
+    messageId?: boolean
+    uid?: boolean
+    from?: boolean
+    to?: boolean
+    cc?: boolean
+    bcc?: boolean
+    subject?: boolean
+    body?: boolean
+    html?: boolean
+    folder?: boolean
+    status?: boolean
+    date?: boolean
+    hasAttachments?: boolean
+    attachments?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    user?: boolean | MailboxMessage$userArgs<ExtArgs>
+  }, ExtArgs["result"]["mailboxMessage"]>
+
+  export type MailboxMessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    businessId?: boolean
+    userId?: boolean
+    messageId?: boolean
+    uid?: boolean
+    from?: boolean
+    to?: boolean
+    cc?: boolean
+    bcc?: boolean
+    subject?: boolean
+    body?: boolean
+    html?: boolean
+    folder?: boolean
+    status?: boolean
+    date?: boolean
+    hasAttachments?: boolean
+    attachments?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    user?: boolean | MailboxMessage$userArgs<ExtArgs>
+  }, ExtArgs["result"]["mailboxMessage"]>
+
+  export type MailboxMessageSelectScalar = {
+    id?: boolean
+    businessId?: boolean
+    userId?: boolean
+    messageId?: boolean
+    uid?: boolean
+    from?: boolean
+    to?: boolean
+    cc?: boolean
+    bcc?: boolean
+    subject?: boolean
+    body?: boolean
+    html?: boolean
+    folder?: boolean
+    status?: boolean
+    date?: boolean
+    hasAttachments?: boolean
+    attachments?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type MailboxMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "userId" | "messageId" | "uid" | "from" | "to" | "cc" | "bcc" | "subject" | "body" | "html" | "folder" | "status" | "date" | "hasAttachments" | "attachments" | "createdAt" | "updatedAt", ExtArgs["result"]["mailboxMessage"]>
+  export type MailboxMessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    user?: boolean | MailboxMessage$userArgs<ExtArgs>
+  }
+  export type MailboxMessageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    user?: boolean | MailboxMessage$userArgs<ExtArgs>
+  }
+  export type MailboxMessageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+    user?: boolean | MailboxMessage$userArgs<ExtArgs>
+  }
+
+  export type $MailboxMessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MailboxMessage"
+    objects: {
+      business: Prisma.$BusinessPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      businessId: string
+      userId: string | null
+      messageId: string
+      uid: number | null
+      from: string
+      to: string
+      cc: string | null
+      bcc: string | null
+      subject: string
+      body: string
+      html: string | null
+      folder: $Enums.MailFolder
+      status: $Enums.MailStatus
+      date: Date
+      hasAttachments: boolean
+      attachments: Prisma.JsonValue | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["mailboxMessage"]>
+    composites: {}
+  }
+
+  type MailboxMessageGetPayload<S extends boolean | null | undefined | MailboxMessageDefaultArgs> = $Result.GetResult<Prisma.$MailboxMessagePayload, S>
+
+  type MailboxMessageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MailboxMessageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MailboxMessageCountAggregateInputType | true
+    }
+
+  export interface MailboxMessageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MailboxMessage'], meta: { name: 'MailboxMessage' } }
+    /**
+     * Find zero or one MailboxMessage that matches the filter.
+     * @param {MailboxMessageFindUniqueArgs} args - Arguments to find a MailboxMessage
+     * @example
+     * // Get one MailboxMessage
+     * const mailboxMessage = await prisma.mailboxMessage.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MailboxMessageFindUniqueArgs>(args: SelectSubset<T, MailboxMessageFindUniqueArgs<ExtArgs>>): Prisma__MailboxMessageClient<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MailboxMessage that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MailboxMessageFindUniqueOrThrowArgs} args - Arguments to find a MailboxMessage
+     * @example
+     * // Get one MailboxMessage
+     * const mailboxMessage = await prisma.mailboxMessage.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MailboxMessageFindUniqueOrThrowArgs>(args: SelectSubset<T, MailboxMessageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MailboxMessageClient<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MailboxMessage that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MailboxMessageFindFirstArgs} args - Arguments to find a MailboxMessage
+     * @example
+     * // Get one MailboxMessage
+     * const mailboxMessage = await prisma.mailboxMessage.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MailboxMessageFindFirstArgs>(args?: SelectSubset<T, MailboxMessageFindFirstArgs<ExtArgs>>): Prisma__MailboxMessageClient<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MailboxMessage that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MailboxMessageFindFirstOrThrowArgs} args - Arguments to find a MailboxMessage
+     * @example
+     * // Get one MailboxMessage
+     * const mailboxMessage = await prisma.mailboxMessage.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MailboxMessageFindFirstOrThrowArgs>(args?: SelectSubset<T, MailboxMessageFindFirstOrThrowArgs<ExtArgs>>): Prisma__MailboxMessageClient<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MailboxMessages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MailboxMessageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MailboxMessages
+     * const mailboxMessages = await prisma.mailboxMessage.findMany()
+     * 
+     * // Get first 10 MailboxMessages
+     * const mailboxMessages = await prisma.mailboxMessage.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const mailboxMessageWithIdOnly = await prisma.mailboxMessage.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MailboxMessageFindManyArgs>(args?: SelectSubset<T, MailboxMessageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MailboxMessage.
+     * @param {MailboxMessageCreateArgs} args - Arguments to create a MailboxMessage.
+     * @example
+     * // Create one MailboxMessage
+     * const MailboxMessage = await prisma.mailboxMessage.create({
+     *   data: {
+     *     // ... data to create a MailboxMessage
+     *   }
+     * })
+     * 
+     */
+    create<T extends MailboxMessageCreateArgs>(args: SelectSubset<T, MailboxMessageCreateArgs<ExtArgs>>): Prisma__MailboxMessageClient<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MailboxMessages.
+     * @param {MailboxMessageCreateManyArgs} args - Arguments to create many MailboxMessages.
+     * @example
+     * // Create many MailboxMessages
+     * const mailboxMessage = await prisma.mailboxMessage.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MailboxMessageCreateManyArgs>(args?: SelectSubset<T, MailboxMessageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many MailboxMessages and returns the data saved in the database.
+     * @param {MailboxMessageCreateManyAndReturnArgs} args - Arguments to create many MailboxMessages.
+     * @example
+     * // Create many MailboxMessages
+     * const mailboxMessage = await prisma.mailboxMessage.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many MailboxMessages and only return the `id`
+     * const mailboxMessageWithIdOnly = await prisma.mailboxMessage.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MailboxMessageCreateManyAndReturnArgs>(args?: SelectSubset<T, MailboxMessageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a MailboxMessage.
+     * @param {MailboxMessageDeleteArgs} args - Arguments to delete one MailboxMessage.
+     * @example
+     * // Delete one MailboxMessage
+     * const MailboxMessage = await prisma.mailboxMessage.delete({
+     *   where: {
+     *     // ... filter to delete one MailboxMessage
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MailboxMessageDeleteArgs>(args: SelectSubset<T, MailboxMessageDeleteArgs<ExtArgs>>): Prisma__MailboxMessageClient<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MailboxMessage.
+     * @param {MailboxMessageUpdateArgs} args - Arguments to update one MailboxMessage.
+     * @example
+     * // Update one MailboxMessage
+     * const mailboxMessage = await prisma.mailboxMessage.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MailboxMessageUpdateArgs>(args: SelectSubset<T, MailboxMessageUpdateArgs<ExtArgs>>): Prisma__MailboxMessageClient<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MailboxMessages.
+     * @param {MailboxMessageDeleteManyArgs} args - Arguments to filter MailboxMessages to delete.
+     * @example
+     * // Delete a few MailboxMessages
+     * const { count } = await prisma.mailboxMessage.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MailboxMessageDeleteManyArgs>(args?: SelectSubset<T, MailboxMessageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MailboxMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MailboxMessageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MailboxMessages
+     * const mailboxMessage = await prisma.mailboxMessage.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MailboxMessageUpdateManyArgs>(args: SelectSubset<T, MailboxMessageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MailboxMessages and returns the data updated in the database.
+     * @param {MailboxMessageUpdateManyAndReturnArgs} args - Arguments to update many MailboxMessages.
+     * @example
+     * // Update many MailboxMessages
+     * const mailboxMessage = await prisma.mailboxMessage.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more MailboxMessages and only return the `id`
+     * const mailboxMessageWithIdOnly = await prisma.mailboxMessage.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MailboxMessageUpdateManyAndReturnArgs>(args: SelectSubset<T, MailboxMessageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one MailboxMessage.
+     * @param {MailboxMessageUpsertArgs} args - Arguments to update or create a MailboxMessage.
+     * @example
+     * // Update or create a MailboxMessage
+     * const mailboxMessage = await prisma.mailboxMessage.upsert({
+     *   create: {
+     *     // ... data to create a MailboxMessage
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MailboxMessage we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MailboxMessageUpsertArgs>(args: SelectSubset<T, MailboxMessageUpsertArgs<ExtArgs>>): Prisma__MailboxMessageClient<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MailboxMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MailboxMessageCountArgs} args - Arguments to filter MailboxMessages to count.
+     * @example
+     * // Count the number of MailboxMessages
+     * const count = await prisma.mailboxMessage.count({
+     *   where: {
+     *     // ... the filter for the MailboxMessages we want to count
+     *   }
+     * })
+    **/
+    count<T extends MailboxMessageCountArgs>(
+      args?: Subset<T, MailboxMessageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MailboxMessageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MailboxMessage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MailboxMessageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MailboxMessageAggregateArgs>(args: Subset<T, MailboxMessageAggregateArgs>): Prisma.PrismaPromise<GetMailboxMessageAggregateType<T>>
+
+    /**
+     * Group by MailboxMessage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MailboxMessageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MailboxMessageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MailboxMessageGroupByArgs['orderBy'] }
+        : { orderBy?: MailboxMessageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MailboxMessageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMailboxMessageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MailboxMessage model
+   */
+  readonly fields: MailboxMessageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MailboxMessage.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MailboxMessageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    business<T extends BusinessDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusinessDefaultArgs<ExtArgs>>): Prisma__BusinessClient<$Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends MailboxMessage$userArgs<ExtArgs> = {}>(args?: Subset<T, MailboxMessage$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MailboxMessage model
+   */
+  interface MailboxMessageFieldRefs {
+    readonly id: FieldRef<"MailboxMessage", 'String'>
+    readonly businessId: FieldRef<"MailboxMessage", 'String'>
+    readonly userId: FieldRef<"MailboxMessage", 'String'>
+    readonly messageId: FieldRef<"MailboxMessage", 'String'>
+    readonly uid: FieldRef<"MailboxMessage", 'Int'>
+    readonly from: FieldRef<"MailboxMessage", 'String'>
+    readonly to: FieldRef<"MailboxMessage", 'String'>
+    readonly cc: FieldRef<"MailboxMessage", 'String'>
+    readonly bcc: FieldRef<"MailboxMessage", 'String'>
+    readonly subject: FieldRef<"MailboxMessage", 'String'>
+    readonly body: FieldRef<"MailboxMessage", 'String'>
+    readonly html: FieldRef<"MailboxMessage", 'String'>
+    readonly folder: FieldRef<"MailboxMessage", 'MailFolder'>
+    readonly status: FieldRef<"MailboxMessage", 'MailStatus'>
+    readonly date: FieldRef<"MailboxMessage", 'DateTime'>
+    readonly hasAttachments: FieldRef<"MailboxMessage", 'Boolean'>
+    readonly attachments: FieldRef<"MailboxMessage", 'Json'>
+    readonly createdAt: FieldRef<"MailboxMessage", 'DateTime'>
+    readonly updatedAt: FieldRef<"MailboxMessage", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MailboxMessage findUnique
+   */
+  export type MailboxMessageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which MailboxMessage to fetch.
+     */
+    where: MailboxMessageWhereUniqueInput
+  }
+
+  /**
+   * MailboxMessage findUniqueOrThrow
+   */
+  export type MailboxMessageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which MailboxMessage to fetch.
+     */
+    where: MailboxMessageWhereUniqueInput
+  }
+
+  /**
+   * MailboxMessage findFirst
+   */
+  export type MailboxMessageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which MailboxMessage to fetch.
+     */
+    where?: MailboxMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MailboxMessages to fetch.
+     */
+    orderBy?: MailboxMessageOrderByWithRelationInput | MailboxMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MailboxMessages.
+     */
+    cursor?: MailboxMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MailboxMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MailboxMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MailboxMessages.
+     */
+    distinct?: MailboxMessageScalarFieldEnum | MailboxMessageScalarFieldEnum[]
+  }
+
+  /**
+   * MailboxMessage findFirstOrThrow
+   */
+  export type MailboxMessageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which MailboxMessage to fetch.
+     */
+    where?: MailboxMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MailboxMessages to fetch.
+     */
+    orderBy?: MailboxMessageOrderByWithRelationInput | MailboxMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MailboxMessages.
+     */
+    cursor?: MailboxMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MailboxMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MailboxMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MailboxMessages.
+     */
+    distinct?: MailboxMessageScalarFieldEnum | MailboxMessageScalarFieldEnum[]
+  }
+
+  /**
+   * MailboxMessage findMany
+   */
+  export type MailboxMessageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which MailboxMessages to fetch.
+     */
+    where?: MailboxMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MailboxMessages to fetch.
+     */
+    orderBy?: MailboxMessageOrderByWithRelationInput | MailboxMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MailboxMessages.
+     */
+    cursor?: MailboxMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MailboxMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MailboxMessages.
+     */
+    skip?: number
+    distinct?: MailboxMessageScalarFieldEnum | MailboxMessageScalarFieldEnum[]
+  }
+
+  /**
+   * MailboxMessage create
+   */
+  export type MailboxMessageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    /**
+     * The data needed to create a MailboxMessage.
+     */
+    data: XOR<MailboxMessageCreateInput, MailboxMessageUncheckedCreateInput>
+  }
+
+  /**
+   * MailboxMessage createMany
+   */
+  export type MailboxMessageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MailboxMessages.
+     */
+    data: MailboxMessageCreateManyInput | MailboxMessageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MailboxMessage createManyAndReturn
+   */
+  export type MailboxMessageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * The data used to create many MailboxMessages.
+     */
+    data: MailboxMessageCreateManyInput | MailboxMessageCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * MailboxMessage update
+   */
+  export type MailboxMessageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    /**
+     * The data needed to update a MailboxMessage.
+     */
+    data: XOR<MailboxMessageUpdateInput, MailboxMessageUncheckedUpdateInput>
+    /**
+     * Choose, which MailboxMessage to update.
+     */
+    where: MailboxMessageWhereUniqueInput
+  }
+
+  /**
+   * MailboxMessage updateMany
+   */
+  export type MailboxMessageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MailboxMessages.
+     */
+    data: XOR<MailboxMessageUpdateManyMutationInput, MailboxMessageUncheckedUpdateManyInput>
+    /**
+     * Filter which MailboxMessages to update
+     */
+    where?: MailboxMessageWhereInput
+    /**
+     * Limit how many MailboxMessages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MailboxMessage updateManyAndReturn
+   */
+  export type MailboxMessageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * The data used to update MailboxMessages.
+     */
+    data: XOR<MailboxMessageUpdateManyMutationInput, MailboxMessageUncheckedUpdateManyInput>
+    /**
+     * Filter which MailboxMessages to update
+     */
+    where?: MailboxMessageWhereInput
+    /**
+     * Limit how many MailboxMessages to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * MailboxMessage upsert
+   */
+  export type MailboxMessageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    /**
+     * The filter to search for the MailboxMessage to update in case it exists.
+     */
+    where: MailboxMessageWhereUniqueInput
+    /**
+     * In case the MailboxMessage found by the `where` argument doesn't exist, create a new MailboxMessage with this data.
+     */
+    create: XOR<MailboxMessageCreateInput, MailboxMessageUncheckedCreateInput>
+    /**
+     * In case the MailboxMessage was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MailboxMessageUpdateInput, MailboxMessageUncheckedUpdateInput>
+  }
+
+  /**
+   * MailboxMessage delete
+   */
+  export type MailboxMessageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+    /**
+     * Filter which MailboxMessage to delete.
+     */
+    where: MailboxMessageWhereUniqueInput
+  }
+
+  /**
+   * MailboxMessage deleteMany
+   */
+  export type MailboxMessageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MailboxMessages to delete
+     */
+    where?: MailboxMessageWhereInput
+    /**
+     * Limit how many MailboxMessages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MailboxMessage.user
+   */
+  export type MailboxMessage$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * MailboxMessage without action
+   */
+  export type MailboxMessageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MailboxMessage
+     */
+    select?: MailboxMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MailboxMessage
+     */
+    omit?: MailboxMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MailboxMessageInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Notification
    */
 
@@ -41888,7 +43387,8 @@ export namespace Prisma {
     seatCount: 'seatCount',
     maxSeats: 'maxSeats',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    enabledModules: 'enabledModules'
   };
 
   export type BusinessScalarFieldEnum = (typeof BusinessScalarFieldEnum)[keyof typeof BusinessScalarFieldEnum]
@@ -42355,6 +43855,31 @@ export namespace Prisma {
   };
 
   export type AINoteScalarFieldEnum = (typeof AINoteScalarFieldEnum)[keyof typeof AINoteScalarFieldEnum]
+
+
+  export const MailboxMessageScalarFieldEnum: {
+    id: 'id',
+    businessId: 'businessId',
+    userId: 'userId',
+    messageId: 'messageId',
+    uid: 'uid',
+    from: 'from',
+    to: 'to',
+    cc: 'cc',
+    bcc: 'bcc',
+    subject: 'subject',
+    body: 'body',
+    html: 'html',
+    folder: 'folder',
+    status: 'status',
+    date: 'date',
+    hasAttachments: 'hasAttachments',
+    attachments: 'attachments',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type MailboxMessageScalarFieldEnum = (typeof MailboxMessageScalarFieldEnum)[keyof typeof MailboxMessageScalarFieldEnum]
 
 
   export const NotificationScalarFieldEnum: {
@@ -42824,6 +44349,34 @@ export namespace Prisma {
    */
   export type ListEnumFormStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FormStatus[]'>
     
+
+
+  /**
+   * Reference to a field of type 'MailFolder'
+   */
+  export type EnumMailFolderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MailFolder'>
+    
+
+
+  /**
+   * Reference to a field of type 'MailFolder[]'
+   */
+  export type ListEnumMailFolderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MailFolder[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'MailStatus'
+   */
+  export type EnumMailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MailStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'MailStatus[]'
+   */
+  export type ListEnumMailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MailStatus[]'>
+    
   /**
    * Deep Input Types
    */
@@ -42868,6 +44421,7 @@ export namespace Prisma {
     aiNotes?: AINoteListRelationFilter
     stockMovements?: StockMovementListRelationFilter
     notifications?: NotificationListRelationFilter
+    mailboxMessages?: MailboxMessageListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -42906,6 +44460,7 @@ export namespace Prisma {
     aiNotes?: AINoteOrderByRelationAggregateInput
     stockMovements?: StockMovementOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
+    mailboxMessages?: MailboxMessageOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -42947,6 +44502,7 @@ export namespace Prisma {
     aiNotes?: AINoteListRelationFilter
     stockMovements?: StockMovementListRelationFilter
     notifications?: NotificationListRelationFilter
+    mailboxMessages?: MailboxMessageListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -43200,6 +44756,7 @@ export namespace Prisma {
     maxSeats?: IntFilter<"Business"> | number
     createdAt?: DateTimeFilter<"Business"> | Date | string
     updatedAt?: DateTimeFilter<"Business"> | Date | string
+    enabledModules?: StringNullableListFilter<"Business">
     subscription?: XOR<SubscriptionNullableScalarRelationFilter, SubscriptionWhereInput> | null
     users?: UserListRelationFilter
     invoices?: InvoiceListRelationFilter
@@ -43219,6 +44776,7 @@ export namespace Prisma {
     appointments?: AppointmentListRelationFilter
     aiNotes?: AINoteListRelationFilter
     stockMovements?: StockMovementListRelationFilter
+    mailboxMessages?: MailboxMessageListRelationFilter
   }
 
   export type BusinessOrderByWithRelationInput = {
@@ -43235,6 +44793,7 @@ export namespace Prisma {
     maxSeats?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    enabledModules?: SortOrder
     subscription?: SubscriptionOrderByWithRelationInput
     users?: UserOrderByRelationAggregateInput
     invoices?: InvoiceOrderByRelationAggregateInput
@@ -43254,6 +44813,7 @@ export namespace Prisma {
     appointments?: AppointmentOrderByRelationAggregateInput
     aiNotes?: AINoteOrderByRelationAggregateInput
     stockMovements?: StockMovementOrderByRelationAggregateInput
+    mailboxMessages?: MailboxMessageOrderByRelationAggregateInput
   }
 
   export type BusinessWhereUniqueInput = Prisma.AtLeast<{
@@ -43273,6 +44833,7 @@ export namespace Prisma {
     maxSeats?: IntFilter<"Business"> | number
     createdAt?: DateTimeFilter<"Business"> | Date | string
     updatedAt?: DateTimeFilter<"Business"> | Date | string
+    enabledModules?: StringNullableListFilter<"Business">
     subscription?: XOR<SubscriptionNullableScalarRelationFilter, SubscriptionWhereInput> | null
     users?: UserListRelationFilter
     invoices?: InvoiceListRelationFilter
@@ -43292,6 +44853,7 @@ export namespace Prisma {
     appointments?: AppointmentListRelationFilter
     aiNotes?: AINoteListRelationFilter
     stockMovements?: StockMovementListRelationFilter
+    mailboxMessages?: MailboxMessageListRelationFilter
   }, "id" | "subscriptionId">
 
   export type BusinessOrderByWithAggregationInput = {
@@ -43308,6 +44870,7 @@ export namespace Prisma {
     maxSeats?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    enabledModules?: SortOrder
     _count?: BusinessCountOrderByAggregateInput
     _avg?: BusinessAvgOrderByAggregateInput
     _max?: BusinessMaxOrderByAggregateInput
@@ -43332,6 +44895,7 @@ export namespace Prisma {
     maxSeats?: IntWithAggregatesFilter<"Business"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Business"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Business"> | Date | string
+    enabledModules?: StringNullableListFilter<"Business">
   }
 
   export type SubscriptionWhereInput = {
@@ -45745,6 +47309,136 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"AINote"> | Date | string
   }
 
+  export type MailboxMessageWhereInput = {
+    AND?: MailboxMessageWhereInput | MailboxMessageWhereInput[]
+    OR?: MailboxMessageWhereInput[]
+    NOT?: MailboxMessageWhereInput | MailboxMessageWhereInput[]
+    id?: StringFilter<"MailboxMessage"> | string
+    businessId?: StringFilter<"MailboxMessage"> | string
+    userId?: StringNullableFilter<"MailboxMessage"> | string | null
+    messageId?: StringFilter<"MailboxMessage"> | string
+    uid?: IntNullableFilter<"MailboxMessage"> | number | null
+    from?: StringFilter<"MailboxMessage"> | string
+    to?: StringFilter<"MailboxMessage"> | string
+    cc?: StringNullableFilter<"MailboxMessage"> | string | null
+    bcc?: StringNullableFilter<"MailboxMessage"> | string | null
+    subject?: StringFilter<"MailboxMessage"> | string
+    body?: StringFilter<"MailboxMessage"> | string
+    html?: StringNullableFilter<"MailboxMessage"> | string | null
+    folder?: EnumMailFolderFilter<"MailboxMessage"> | $Enums.MailFolder
+    status?: EnumMailStatusFilter<"MailboxMessage"> | $Enums.MailStatus
+    date?: DateTimeFilter<"MailboxMessage"> | Date | string
+    hasAttachments?: BoolFilter<"MailboxMessage"> | boolean
+    attachments?: JsonNullableFilter<"MailboxMessage">
+    createdAt?: DateTimeFilter<"MailboxMessage"> | Date | string
+    updatedAt?: DateTimeFilter<"MailboxMessage"> | Date | string
+    business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type MailboxMessageOrderByWithRelationInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    messageId?: SortOrder
+    uid?: SortOrderInput | SortOrder
+    from?: SortOrder
+    to?: SortOrder
+    cc?: SortOrderInput | SortOrder
+    bcc?: SortOrderInput | SortOrder
+    subject?: SortOrder
+    body?: SortOrder
+    html?: SortOrderInput | SortOrder
+    folder?: SortOrder
+    status?: SortOrder
+    date?: SortOrder
+    hasAttachments?: SortOrder
+    attachments?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    business?: BusinessOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type MailboxMessageWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    messageId?: string
+    AND?: MailboxMessageWhereInput | MailboxMessageWhereInput[]
+    OR?: MailboxMessageWhereInput[]
+    NOT?: MailboxMessageWhereInput | MailboxMessageWhereInput[]
+    businessId?: StringFilter<"MailboxMessage"> | string
+    userId?: StringNullableFilter<"MailboxMessage"> | string | null
+    uid?: IntNullableFilter<"MailboxMessage"> | number | null
+    from?: StringFilter<"MailboxMessage"> | string
+    to?: StringFilter<"MailboxMessage"> | string
+    cc?: StringNullableFilter<"MailboxMessage"> | string | null
+    bcc?: StringNullableFilter<"MailboxMessage"> | string | null
+    subject?: StringFilter<"MailboxMessage"> | string
+    body?: StringFilter<"MailboxMessage"> | string
+    html?: StringNullableFilter<"MailboxMessage"> | string | null
+    folder?: EnumMailFolderFilter<"MailboxMessage"> | $Enums.MailFolder
+    status?: EnumMailStatusFilter<"MailboxMessage"> | $Enums.MailStatus
+    date?: DateTimeFilter<"MailboxMessage"> | Date | string
+    hasAttachments?: BoolFilter<"MailboxMessage"> | boolean
+    attachments?: JsonNullableFilter<"MailboxMessage">
+    createdAt?: DateTimeFilter<"MailboxMessage"> | Date | string
+    updatedAt?: DateTimeFilter<"MailboxMessage"> | Date | string
+    business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "messageId">
+
+  export type MailboxMessageOrderByWithAggregationInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    messageId?: SortOrder
+    uid?: SortOrderInput | SortOrder
+    from?: SortOrder
+    to?: SortOrder
+    cc?: SortOrderInput | SortOrder
+    bcc?: SortOrderInput | SortOrder
+    subject?: SortOrder
+    body?: SortOrder
+    html?: SortOrderInput | SortOrder
+    folder?: SortOrder
+    status?: SortOrder
+    date?: SortOrder
+    hasAttachments?: SortOrder
+    attachments?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: MailboxMessageCountOrderByAggregateInput
+    _avg?: MailboxMessageAvgOrderByAggregateInput
+    _max?: MailboxMessageMaxOrderByAggregateInput
+    _min?: MailboxMessageMinOrderByAggregateInput
+    _sum?: MailboxMessageSumOrderByAggregateInput
+  }
+
+  export type MailboxMessageScalarWhereWithAggregatesInput = {
+    AND?: MailboxMessageScalarWhereWithAggregatesInput | MailboxMessageScalarWhereWithAggregatesInput[]
+    OR?: MailboxMessageScalarWhereWithAggregatesInput[]
+    NOT?: MailboxMessageScalarWhereWithAggregatesInput | MailboxMessageScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MailboxMessage"> | string
+    businessId?: StringWithAggregatesFilter<"MailboxMessage"> | string
+    userId?: StringNullableWithAggregatesFilter<"MailboxMessage"> | string | null
+    messageId?: StringWithAggregatesFilter<"MailboxMessage"> | string
+    uid?: IntNullableWithAggregatesFilter<"MailboxMessage"> | number | null
+    from?: StringWithAggregatesFilter<"MailboxMessage"> | string
+    to?: StringWithAggregatesFilter<"MailboxMessage"> | string
+    cc?: StringNullableWithAggregatesFilter<"MailboxMessage"> | string | null
+    bcc?: StringNullableWithAggregatesFilter<"MailboxMessage"> | string | null
+    subject?: StringWithAggregatesFilter<"MailboxMessage"> | string
+    body?: StringWithAggregatesFilter<"MailboxMessage"> | string
+    html?: StringNullableWithAggregatesFilter<"MailboxMessage"> | string | null
+    folder?: EnumMailFolderWithAggregatesFilter<"MailboxMessage"> | $Enums.MailFolder
+    status?: EnumMailStatusWithAggregatesFilter<"MailboxMessage"> | $Enums.MailStatus
+    date?: DateTimeWithAggregatesFilter<"MailboxMessage"> | Date | string
+    hasAttachments?: BoolWithAggregatesFilter<"MailboxMessage"> | boolean
+    attachments?: JsonNullableWithAggregatesFilter<"MailboxMessage">
+    createdAt?: DateTimeWithAggregatesFilter<"MailboxMessage"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"MailboxMessage"> | Date | string
+  }
+
   export type NotificationWhereInput = {
     AND?: NotificationWhereInput | NotificationWhereInput[]
     OR?: NotificationWhereInput[]
@@ -45865,6 +47559,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -45902,6 +47597,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -45939,6 +47635,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -45976,6 +47673,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -46248,6 +47946,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -46267,6 +47966,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateInput = {
@@ -46283,6 +47983,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -46302,6 +48003,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUpdateInput = {
@@ -46318,6 +48020,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -46337,6 +48040,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateInput = {
@@ -46353,6 +48057,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -46372,6 +48077,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateManyInput = {
@@ -46388,6 +48094,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
   }
 
   export type BusinessUpdateManyMutationInput = {
@@ -46404,6 +48111,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
   }
 
   export type BusinessUncheckedUpdateManyInput = {
@@ -46420,6 +48128,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
   }
 
   export type SubscriptionCreateInput = {
@@ -49134,6 +50843,158 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type MailboxMessageCreateInput = {
+    id?: string
+    messageId: string
+    uid?: number | null
+    from: string
+    to: string
+    cc?: string | null
+    bcc?: string | null
+    subject: string
+    body: string
+    html?: string | null
+    folder?: $Enums.MailFolder
+    status?: $Enums.MailStatus
+    date?: Date | string
+    hasAttachments?: boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    business: BusinessCreateNestedOneWithoutMailboxMessagesInput
+    user?: UserCreateNestedOneWithoutMailboxMessagesInput
+  }
+
+  export type MailboxMessageUncheckedCreateInput = {
+    id?: string
+    businessId: string
+    userId?: string | null
+    messageId: string
+    uid?: number | null
+    from: string
+    to: string
+    cc?: string | null
+    bcc?: string | null
+    subject: string
+    body: string
+    html?: string | null
+    folder?: $Enums.MailFolder
+    status?: $Enums.MailStatus
+    date?: Date | string
+    hasAttachments?: boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MailboxMessageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutMailboxMessagesNestedInput
+    user?: UserUpdateOneWithoutMailboxMessagesNestedInput
+  }
+
+  export type MailboxMessageUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MailboxMessageCreateManyInput = {
+    id?: string
+    businessId: string
+    userId?: string | null
+    messageId: string
+    uid?: number | null
+    from: string
+    to: string
+    cc?: string | null
+    bcc?: string | null
+    subject: string
+    body: string
+    html?: string | null
+    folder?: $Enums.MailFolder
+    status?: $Enums.MailStatus
+    date?: Date | string
+    hasAttachments?: boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MailboxMessageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MailboxMessageUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type NotificationCreateInput = {
     id?: string
     businessId: string
@@ -49421,6 +51282,12 @@ export namespace Prisma {
     none?: NotificationWhereInput
   }
 
+  export type MailboxMessageListRelationFilter = {
+    every?: MailboxMessageWhereInput
+    some?: MailboxMessageWhereInput
+    none?: MailboxMessageWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -49487,6 +51354,10 @@ export namespace Prisma {
   }
 
   export type NotificationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type MailboxMessageOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -49806,6 +51677,14 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
   export type SubscriptionNullableScalarRelationFilter = {
     is?: SubscriptionWhereInput | null
     isNot?: SubscriptionWhereInput | null
@@ -49885,6 +51764,7 @@ export namespace Prisma {
     maxSeats?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    enabledModules?: SortOrder
   }
 
   export type BusinessAvgOrderByAggregateInput = {
@@ -50206,14 +52086,6 @@ export namespace Prisma {
     in?: $Enums.ContactStatus[] | ListEnumContactStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.ContactStatus[] | ListEnumContactStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumContactStatusFilter<$PrismaModel> | $Enums.ContactStatus
-  }
-
-  export type StringNullableListFilter<$PrismaModel = never> = {
-    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    has?: string | StringFieldRefInput<$PrismaModel> | null
-    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
-    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
   }
 
   export type ContactCountOrderByAggregateInput = {
@@ -51771,6 +53643,112 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type EnumMailFolderFilter<$PrismaModel = never> = {
+    equals?: $Enums.MailFolder | EnumMailFolderFieldRefInput<$PrismaModel>
+    in?: $Enums.MailFolder[] | ListEnumMailFolderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MailFolder[] | ListEnumMailFolderFieldRefInput<$PrismaModel>
+    not?: NestedEnumMailFolderFilter<$PrismaModel> | $Enums.MailFolder
+  }
+
+  export type EnumMailStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.MailStatus | EnumMailStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.MailStatus[] | ListEnumMailStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MailStatus[] | ListEnumMailStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumMailStatusFilter<$PrismaModel> | $Enums.MailStatus
+  }
+
+  export type MailboxMessageCountOrderByAggregateInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    userId?: SortOrder
+    messageId?: SortOrder
+    uid?: SortOrder
+    from?: SortOrder
+    to?: SortOrder
+    cc?: SortOrder
+    bcc?: SortOrder
+    subject?: SortOrder
+    body?: SortOrder
+    html?: SortOrder
+    folder?: SortOrder
+    status?: SortOrder
+    date?: SortOrder
+    hasAttachments?: SortOrder
+    attachments?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MailboxMessageAvgOrderByAggregateInput = {
+    uid?: SortOrder
+  }
+
+  export type MailboxMessageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    userId?: SortOrder
+    messageId?: SortOrder
+    uid?: SortOrder
+    from?: SortOrder
+    to?: SortOrder
+    cc?: SortOrder
+    bcc?: SortOrder
+    subject?: SortOrder
+    body?: SortOrder
+    html?: SortOrder
+    folder?: SortOrder
+    status?: SortOrder
+    date?: SortOrder
+    hasAttachments?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MailboxMessageMinOrderByAggregateInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    userId?: SortOrder
+    messageId?: SortOrder
+    uid?: SortOrder
+    from?: SortOrder
+    to?: SortOrder
+    cc?: SortOrder
+    bcc?: SortOrder
+    subject?: SortOrder
+    body?: SortOrder
+    html?: SortOrder
+    folder?: SortOrder
+    status?: SortOrder
+    date?: SortOrder
+    hasAttachments?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MailboxMessageSumOrderByAggregateInput = {
+    uid?: SortOrder
+  }
+
+  export type EnumMailFolderWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MailFolder | EnumMailFolderFieldRefInput<$PrismaModel>
+    in?: $Enums.MailFolder[] | ListEnumMailFolderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MailFolder[] | ListEnumMailFolderFieldRefInput<$PrismaModel>
+    not?: NestedEnumMailFolderWithAggregatesFilter<$PrismaModel> | $Enums.MailFolder
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMailFolderFilter<$PrismaModel>
+    _max?: NestedEnumMailFolderFilter<$PrismaModel>
+  }
+
+  export type EnumMailStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MailStatus | EnumMailStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.MailStatus[] | ListEnumMailStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MailStatus[] | ListEnumMailStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumMailStatusWithAggregatesFilter<$PrismaModel> | $Enums.MailStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMailStatusFilter<$PrismaModel>
+    _max?: NestedEnumMailStatusFilter<$PrismaModel>
+  }
+
   export type NotificationCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -51929,6 +53907,13 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type MailboxMessageCreateNestedManyWithoutUserInput = {
+    create?: XOR<MailboxMessageCreateWithoutUserInput, MailboxMessageUncheckedCreateWithoutUserInput> | MailboxMessageCreateWithoutUserInput[] | MailboxMessageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MailboxMessageCreateOrConnectWithoutUserInput | MailboxMessageCreateOrConnectWithoutUserInput[]
+    createMany?: MailboxMessageCreateManyUserInputEnvelope
+    connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -52039,6 +54024,13 @@ export namespace Prisma {
     connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
     createMany?: NotificationCreateManyUserInputEnvelope
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type MailboxMessageUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<MailboxMessageCreateWithoutUserInput, MailboxMessageUncheckedCreateWithoutUserInput> | MailboxMessageCreateWithoutUserInput[] | MailboxMessageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MailboxMessageCreateOrConnectWithoutUserInput | MailboxMessageCreateOrConnectWithoutUserInput[]
+    createMany?: MailboxMessageCreateManyUserInputEnvelope
+    connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -52297,6 +54289,20 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type MailboxMessageUpdateManyWithoutUserNestedInput = {
+    create?: XOR<MailboxMessageCreateWithoutUserInput, MailboxMessageUncheckedCreateWithoutUserInput> | MailboxMessageCreateWithoutUserInput[] | MailboxMessageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MailboxMessageCreateOrConnectWithoutUserInput | MailboxMessageCreateOrConnectWithoutUserInput[]
+    upsert?: MailboxMessageUpsertWithWhereUniqueWithoutUserInput | MailboxMessageUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: MailboxMessageCreateManyUserInputEnvelope
+    set?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    disconnect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    delete?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    update?: MailboxMessageUpdateWithWhereUniqueWithoutUserInput | MailboxMessageUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: MailboxMessageUpdateManyWithWhereWithoutUserInput | MailboxMessageUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: MailboxMessageScalarWhereInput | MailboxMessageScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -52521,6 +54527,20 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type MailboxMessageUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<MailboxMessageCreateWithoutUserInput, MailboxMessageUncheckedCreateWithoutUserInput> | MailboxMessageCreateWithoutUserInput[] | MailboxMessageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MailboxMessageCreateOrConnectWithoutUserInput | MailboxMessageCreateOrConnectWithoutUserInput[]
+    upsert?: MailboxMessageUpsertWithWhereUniqueWithoutUserInput | MailboxMessageUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: MailboxMessageCreateManyUserInputEnvelope
+    set?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    disconnect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    delete?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    update?: MailboxMessageUpdateWithWhereUniqueWithoutUserInput | MailboxMessageUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: MailboxMessageUpdateManyWithWhereWithoutUserInput | MailboxMessageUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: MailboxMessageScalarWhereInput | MailboxMessageScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput
@@ -52555,6 +54575,10 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutSessionsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSessionsInput, UserUpdateWithoutSessionsInput>, UserUncheckedUpdateWithoutSessionsInput>
+  }
+
+  export type BusinessCreateenabledModulesInput = {
+    set: string[]
   }
 
   export type SubscriptionCreateNestedOneWithoutBusinessInput = {
@@ -52689,6 +54713,13 @@ export namespace Prisma {
     connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
   }
 
+  export type MailboxMessageCreateNestedManyWithoutBusinessInput = {
+    create?: XOR<MailboxMessageCreateWithoutBusinessInput, MailboxMessageUncheckedCreateWithoutBusinessInput> | MailboxMessageCreateWithoutBusinessInput[] | MailboxMessageUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: MailboxMessageCreateOrConnectWithoutBusinessInput | MailboxMessageCreateOrConnectWithoutBusinessInput[]
+    createMany?: MailboxMessageCreateManyBusinessInputEnvelope
+    connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+  }
+
   export type SubscriptionUncheckedCreateNestedOneWithoutBusinessInput = {
     create?: XOR<SubscriptionCreateWithoutBusinessInput, SubscriptionUncheckedCreateWithoutBusinessInput>
     connectOrCreate?: SubscriptionCreateOrConnectWithoutBusinessInput
@@ -52821,12 +54852,24 @@ export namespace Prisma {
     connect?: StockMovementWhereUniqueInput | StockMovementWhereUniqueInput[]
   }
 
+  export type MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput = {
+    create?: XOR<MailboxMessageCreateWithoutBusinessInput, MailboxMessageUncheckedCreateWithoutBusinessInput> | MailboxMessageCreateWithoutBusinessInput[] | MailboxMessageUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: MailboxMessageCreateOrConnectWithoutBusinessInput | MailboxMessageCreateOrConnectWithoutBusinessInput[]
+    createMany?: MailboxMessageCreateManyBusinessInputEnvelope
+    connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type BusinessUpdateenabledModulesInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type SubscriptionUpdateOneWithoutBusinessNestedInput = {
@@ -53091,6 +55134,20 @@ export namespace Prisma {
     deleteMany?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
   }
 
+  export type MailboxMessageUpdateManyWithoutBusinessNestedInput = {
+    create?: XOR<MailboxMessageCreateWithoutBusinessInput, MailboxMessageUncheckedCreateWithoutBusinessInput> | MailboxMessageCreateWithoutBusinessInput[] | MailboxMessageUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: MailboxMessageCreateOrConnectWithoutBusinessInput | MailboxMessageCreateOrConnectWithoutBusinessInput[]
+    upsert?: MailboxMessageUpsertWithWhereUniqueWithoutBusinessInput | MailboxMessageUpsertWithWhereUniqueWithoutBusinessInput[]
+    createMany?: MailboxMessageCreateManyBusinessInputEnvelope
+    set?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    disconnect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    delete?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    update?: MailboxMessageUpdateWithWhereUniqueWithoutBusinessInput | MailboxMessageUpdateWithWhereUniqueWithoutBusinessInput[]
+    updateMany?: MailboxMessageUpdateManyWithWhereWithoutBusinessInput | MailboxMessageUpdateManyWithWhereWithoutBusinessInput[]
+    deleteMany?: MailboxMessageScalarWhereInput | MailboxMessageScalarWhereInput[]
+  }
+
   export type SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput = {
     create?: XOR<SubscriptionCreateWithoutBusinessInput, SubscriptionUncheckedCreateWithoutBusinessInput>
     connectOrCreate?: SubscriptionCreateOrConnectWithoutBusinessInput
@@ -53351,6 +55408,20 @@ export namespace Prisma {
     update?: StockMovementUpdateWithWhereUniqueWithoutBusinessInput | StockMovementUpdateWithWhereUniqueWithoutBusinessInput[]
     updateMany?: StockMovementUpdateManyWithWhereWithoutBusinessInput | StockMovementUpdateManyWithWhereWithoutBusinessInput[]
     deleteMany?: StockMovementScalarWhereInput | StockMovementScalarWhereInput[]
+  }
+
+  export type MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput = {
+    create?: XOR<MailboxMessageCreateWithoutBusinessInput, MailboxMessageUncheckedCreateWithoutBusinessInput> | MailboxMessageCreateWithoutBusinessInput[] | MailboxMessageUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: MailboxMessageCreateOrConnectWithoutBusinessInput | MailboxMessageCreateOrConnectWithoutBusinessInput[]
+    upsert?: MailboxMessageUpsertWithWhereUniqueWithoutBusinessInput | MailboxMessageUpsertWithWhereUniqueWithoutBusinessInput[]
+    createMany?: MailboxMessageCreateManyBusinessInputEnvelope
+    set?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    disconnect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    delete?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+    update?: MailboxMessageUpdateWithWhereUniqueWithoutBusinessInput | MailboxMessageUpdateWithWhereUniqueWithoutBusinessInput[]
+    updateMany?: MailboxMessageUpdateManyWithWhereWithoutBusinessInput | MailboxMessageUpdateManyWithWhereWithoutBusinessInput[]
+    deleteMany?: MailboxMessageScalarWhereInput | MailboxMessageScalarWhereInput[]
   }
 
   export type BusinessCreateNestedOneWithoutSubscriptionInput = {
@@ -54461,6 +56532,44 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAiNotesInput, UserUpdateWithoutAiNotesInput>, UserUncheckedUpdateWithoutAiNotesInput>
   }
 
+  export type BusinessCreateNestedOneWithoutMailboxMessagesInput = {
+    create?: XOR<BusinessCreateWithoutMailboxMessagesInput, BusinessUncheckedCreateWithoutMailboxMessagesInput>
+    connectOrCreate?: BusinessCreateOrConnectWithoutMailboxMessagesInput
+    connect?: BusinessWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutMailboxMessagesInput = {
+    create?: XOR<UserCreateWithoutMailboxMessagesInput, UserUncheckedCreateWithoutMailboxMessagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMailboxMessagesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumMailFolderFieldUpdateOperationsInput = {
+    set?: $Enums.MailFolder
+  }
+
+  export type EnumMailStatusFieldUpdateOperationsInput = {
+    set?: $Enums.MailStatus
+  }
+
+  export type BusinessUpdateOneRequiredWithoutMailboxMessagesNestedInput = {
+    create?: XOR<BusinessCreateWithoutMailboxMessagesInput, BusinessUncheckedCreateWithoutMailboxMessagesInput>
+    connectOrCreate?: BusinessCreateOrConnectWithoutMailboxMessagesInput
+    upsert?: BusinessUpsertWithoutMailboxMessagesInput
+    connect?: BusinessWhereUniqueInput
+    update?: XOR<XOR<BusinessUpdateToOneWithWhereWithoutMailboxMessagesInput, BusinessUpdateWithoutMailboxMessagesInput>, BusinessUncheckedUpdateWithoutMailboxMessagesInput>
+  }
+
+  export type UserUpdateOneWithoutMailboxMessagesNestedInput = {
+    create?: XOR<UserCreateWithoutMailboxMessagesInput, UserUncheckedCreateWithoutMailboxMessagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMailboxMessagesInput
+    upsert?: UserUpsertWithoutMailboxMessagesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMailboxMessagesInput, UserUpdateWithoutMailboxMessagesInput>, UserUncheckedUpdateWithoutMailboxMessagesInput>
+  }
+
   export type UserCreateNestedOneWithoutNotificationsInput = {
     create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
     connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
@@ -55145,6 +57254,40 @@ export namespace Prisma {
     _max?: NestedEnumFormStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumMailFolderFilter<$PrismaModel = never> = {
+    equals?: $Enums.MailFolder | EnumMailFolderFieldRefInput<$PrismaModel>
+    in?: $Enums.MailFolder[] | ListEnumMailFolderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MailFolder[] | ListEnumMailFolderFieldRefInput<$PrismaModel>
+    not?: NestedEnumMailFolderFilter<$PrismaModel> | $Enums.MailFolder
+  }
+
+  export type NestedEnumMailStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.MailStatus | EnumMailStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.MailStatus[] | ListEnumMailStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MailStatus[] | ListEnumMailStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumMailStatusFilter<$PrismaModel> | $Enums.MailStatus
+  }
+
+  export type NestedEnumMailFolderWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MailFolder | EnumMailFolderFieldRefInput<$PrismaModel>
+    in?: $Enums.MailFolder[] | ListEnumMailFolderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MailFolder[] | ListEnumMailFolderFieldRefInput<$PrismaModel>
+    not?: NestedEnumMailFolderWithAggregatesFilter<$PrismaModel> | $Enums.MailFolder
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMailFolderFilter<$PrismaModel>
+    _max?: NestedEnumMailFolderFilter<$PrismaModel>
+  }
+
+  export type NestedEnumMailStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MailStatus | EnumMailStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.MailStatus[] | ListEnumMailStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MailStatus[] | ListEnumMailStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumMailStatusWithAggregatesFilter<$PrismaModel> | $Enums.MailStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMailStatusFilter<$PrismaModel>
+    _max?: NestedEnumMailStatusFilter<$PrismaModel>
+  }
+
   export type BusinessCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -55159,6 +57302,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
     contacts?: ContactCreateNestedManyWithoutBusinessInput
@@ -55177,6 +57321,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutUsersInput = {
@@ -55193,6 +57338,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
     contacts?: ContactUncheckedCreateNestedManyWithoutBusinessInput
@@ -55211,6 +57357,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutUsersInput = {
@@ -55840,6 +57987,58 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type MailboxMessageCreateWithoutUserInput = {
+    id?: string
+    messageId: string
+    uid?: number | null
+    from: string
+    to: string
+    cc?: string | null
+    bcc?: string | null
+    subject: string
+    body: string
+    html?: string | null
+    folder?: $Enums.MailFolder
+    status?: $Enums.MailStatus
+    date?: Date | string
+    hasAttachments?: boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    business: BusinessCreateNestedOneWithoutMailboxMessagesInput
+  }
+
+  export type MailboxMessageUncheckedCreateWithoutUserInput = {
+    id?: string
+    businessId: string
+    messageId: string
+    uid?: number | null
+    from: string
+    to: string
+    cc?: string | null
+    bcc?: string | null
+    subject: string
+    body: string
+    html?: string | null
+    folder?: $Enums.MailFolder
+    status?: $Enums.MailStatus
+    date?: Date | string
+    hasAttachments?: boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MailboxMessageCreateOrConnectWithoutUserInput = {
+    where: MailboxMessageWhereUniqueInput
+    create: XOR<MailboxMessageCreateWithoutUserInput, MailboxMessageUncheckedCreateWithoutUserInput>
+  }
+
+  export type MailboxMessageCreateManyUserInputEnvelope = {
+    data: MailboxMessageCreateManyUserInput | MailboxMessageCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type BusinessUpsertWithoutUsersInput = {
     update: XOR<BusinessUpdateWithoutUsersInput, BusinessUncheckedUpdateWithoutUsersInput>
     create: XOR<BusinessCreateWithoutUsersInput, BusinessUncheckedCreateWithoutUsersInput>
@@ -55865,6 +58064,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
     contacts?: ContactUpdateManyWithoutBusinessNestedInput
@@ -55883,6 +58083,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutUsersInput = {
@@ -55899,6 +58100,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutBusinessNestedInput
@@ -55917,6 +58119,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
@@ -56464,6 +58667,47 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
+  export type MailboxMessageUpsertWithWhereUniqueWithoutUserInput = {
+    where: MailboxMessageWhereUniqueInput
+    update: XOR<MailboxMessageUpdateWithoutUserInput, MailboxMessageUncheckedUpdateWithoutUserInput>
+    create: XOR<MailboxMessageCreateWithoutUserInput, MailboxMessageUncheckedCreateWithoutUserInput>
+  }
+
+  export type MailboxMessageUpdateWithWhereUniqueWithoutUserInput = {
+    where: MailboxMessageWhereUniqueInput
+    data: XOR<MailboxMessageUpdateWithoutUserInput, MailboxMessageUncheckedUpdateWithoutUserInput>
+  }
+
+  export type MailboxMessageUpdateManyWithWhereWithoutUserInput = {
+    where: MailboxMessageScalarWhereInput
+    data: XOR<MailboxMessageUpdateManyMutationInput, MailboxMessageUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type MailboxMessageScalarWhereInput = {
+    AND?: MailboxMessageScalarWhereInput | MailboxMessageScalarWhereInput[]
+    OR?: MailboxMessageScalarWhereInput[]
+    NOT?: MailboxMessageScalarWhereInput | MailboxMessageScalarWhereInput[]
+    id?: StringFilter<"MailboxMessage"> | string
+    businessId?: StringFilter<"MailboxMessage"> | string
+    userId?: StringNullableFilter<"MailboxMessage"> | string | null
+    messageId?: StringFilter<"MailboxMessage"> | string
+    uid?: IntNullableFilter<"MailboxMessage"> | number | null
+    from?: StringFilter<"MailboxMessage"> | string
+    to?: StringFilter<"MailboxMessage"> | string
+    cc?: StringNullableFilter<"MailboxMessage"> | string | null
+    bcc?: StringNullableFilter<"MailboxMessage"> | string | null
+    subject?: StringFilter<"MailboxMessage"> | string
+    body?: StringFilter<"MailboxMessage"> | string
+    html?: StringNullableFilter<"MailboxMessage"> | string | null
+    folder?: EnumMailFolderFilter<"MailboxMessage"> | $Enums.MailFolder
+    status?: EnumMailStatusFilter<"MailboxMessage"> | $Enums.MailStatus
+    date?: DateTimeFilter<"MailboxMessage"> | Date | string
+    hasAttachments?: BoolFilter<"MailboxMessage"> | boolean
+    attachments?: JsonNullableFilter<"MailboxMessage">
+    createdAt?: DateTimeFilter<"MailboxMessage"> | Date | string
+    updatedAt?: DateTimeFilter<"MailboxMessage"> | Date | string
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     email: string
@@ -56498,6 +58742,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -56534,6 +58779,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -56586,6 +58832,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -56622,6 +58869,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -56658,6 +58906,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -56694,6 +58943,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -56746,6 +58996,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -56782,6 +59033,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SubscriptionCreateWithoutBusinessInput = {
@@ -56857,6 +59109,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBusinessInput = {
@@ -56893,6 +59146,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBusinessInput = {
@@ -57641,6 +59895,58 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type MailboxMessageCreateWithoutBusinessInput = {
+    id?: string
+    messageId: string
+    uid?: number | null
+    from: string
+    to: string
+    cc?: string | null
+    bcc?: string | null
+    subject: string
+    body: string
+    html?: string | null
+    folder?: $Enums.MailFolder
+    status?: $Enums.MailStatus
+    date?: Date | string
+    hasAttachments?: boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user?: UserCreateNestedOneWithoutMailboxMessagesInput
+  }
+
+  export type MailboxMessageUncheckedCreateWithoutBusinessInput = {
+    id?: string
+    userId?: string | null
+    messageId: string
+    uid?: number | null
+    from: string
+    to: string
+    cc?: string | null
+    bcc?: string | null
+    subject: string
+    body: string
+    html?: string | null
+    folder?: $Enums.MailFolder
+    status?: $Enums.MailStatus
+    date?: Date | string
+    hasAttachments?: boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MailboxMessageCreateOrConnectWithoutBusinessInput = {
+    where: MailboxMessageWhereUniqueInput
+    create: XOR<MailboxMessageCreateWithoutBusinessInput, MailboxMessageUncheckedCreateWithoutBusinessInput>
+  }
+
+  export type MailboxMessageCreateManyBusinessInputEnvelope = {
+    data: MailboxMessageCreateManyBusinessInput | MailboxMessageCreateManyBusinessInput[]
+    skipDuplicates?: boolean
+  }
+
   export type SubscriptionUpsertWithoutBusinessInput = {
     update: XOR<SubscriptionUpdateWithoutBusinessInput, SubscriptionUncheckedUpdateWithoutBusinessInput>
     create: XOR<SubscriptionCreateWithoutBusinessInput, SubscriptionUncheckedCreateWithoutBusinessInput>
@@ -58110,6 +60416,22 @@ export namespace Prisma {
     data: XOR<StockMovementUpdateManyMutationInput, StockMovementUncheckedUpdateManyWithoutBusinessInput>
   }
 
+  export type MailboxMessageUpsertWithWhereUniqueWithoutBusinessInput = {
+    where: MailboxMessageWhereUniqueInput
+    update: XOR<MailboxMessageUpdateWithoutBusinessInput, MailboxMessageUncheckedUpdateWithoutBusinessInput>
+    create: XOR<MailboxMessageCreateWithoutBusinessInput, MailboxMessageUncheckedCreateWithoutBusinessInput>
+  }
+
+  export type MailboxMessageUpdateWithWhereUniqueWithoutBusinessInput = {
+    where: MailboxMessageWhereUniqueInput
+    data: XOR<MailboxMessageUpdateWithoutBusinessInput, MailboxMessageUncheckedUpdateWithoutBusinessInput>
+  }
+
+  export type MailboxMessageUpdateManyWithWhereWithoutBusinessInput = {
+    where: MailboxMessageScalarWhereInput
+    data: XOR<MailboxMessageUpdateManyMutationInput, MailboxMessageUncheckedUpdateManyWithoutBusinessInput>
+  }
+
   export type BusinessCreateWithoutSubscriptionInput = {
     id?: string
     name: string
@@ -58124,6 +60446,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
     contacts?: ContactCreateNestedManyWithoutBusinessInput
@@ -58142,6 +60465,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSubscriptionInput = {
@@ -58158,6 +60482,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
     contacts?: ContactUncheckedCreateNestedManyWithoutBusinessInput
@@ -58176,6 +60501,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSubscriptionInput = {
@@ -58208,6 +60534,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
     contacts?: ContactUpdateManyWithoutBusinessNestedInput
@@ -58226,6 +60553,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSubscriptionInput = {
@@ -58242,6 +60570,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutBusinessNestedInput
@@ -58260,6 +60589,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutInvoicesInput = {
@@ -58276,6 +60606,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     contacts?: ContactCreateNestedManyWithoutBusinessInput
@@ -58294,6 +60625,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutInvoicesInput = {
@@ -58310,6 +60642,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     contacts?: ContactUncheckedCreateNestedManyWithoutBusinessInput
@@ -58328,6 +60661,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutInvoicesInput = {
@@ -58369,6 +60703,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInvoicesInput = {
@@ -58405,6 +60740,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInvoicesInput = {
@@ -58470,6 +60806,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     contacts?: ContactUpdateManyWithoutBusinessNestedInput
@@ -58488,6 +60825,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutInvoicesInput = {
@@ -58504,6 +60842,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutBusinessNestedInput
@@ -58522,6 +60861,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutInvoicesInput = {
@@ -58569,6 +60909,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInvoicesInput = {
@@ -58605,6 +60946,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type JournalEntryUpsertWithoutInvoiceInput = {
@@ -58660,6 +61002,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -58678,6 +61021,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutContactsInput = {
@@ -58694,6 +61038,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -58712,6 +61057,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutContactsInput = {
@@ -58753,6 +61099,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutContactsInput = {
@@ -58789,6 +61136,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutContactsInput = {
@@ -58821,6 +61169,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -58839,6 +61188,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutContactsInput = {
@@ -58855,6 +61205,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -58873,6 +61224,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutContactsInput = {
@@ -58920,6 +61272,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutContactsInput = {
@@ -58956,6 +61309,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutNotesInput = {
@@ -58972,6 +61326,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -58990,6 +61345,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutNotesInput = {
@@ -59006,6 +61362,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -59024,6 +61381,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutNotesInput = {
@@ -59065,6 +61423,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotesInput = {
@@ -59101,6 +61460,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotesInput = {
@@ -59133,6 +61493,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -59151,6 +61512,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutNotesInput = {
@@ -59167,6 +61529,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -59185,6 +61548,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutNotesInput = {
@@ -59232,6 +61596,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotesInput = {
@@ -59268,6 +61633,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutExpensesInput = {
@@ -59284,6 +61650,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -59302,6 +61669,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutExpensesInput = {
@@ -59318,6 +61686,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -59336,6 +61705,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutExpensesInput = {
@@ -59377,6 +61747,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutExpensesInput = {
@@ -59413,6 +61784,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutExpensesInput = {
@@ -59478,6 +61850,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -59496,6 +61869,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutExpensesInput = {
@@ -59512,6 +61886,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -59530,6 +61905,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutExpensesInput = {
@@ -59577,6 +61953,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutExpensesInput = {
@@ -59613,6 +61990,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type JournalEntryUpsertWithoutExpenseInput = {
@@ -59668,6 +62046,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -59686,6 +62065,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutInventoryInput = {
@@ -59702,6 +62082,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -59720,6 +62101,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutInventoryInput = {
@@ -59819,6 +62201,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -59837,6 +62220,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutInventoryInput = {
@@ -59853,6 +62237,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -59871,6 +62256,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type SupplierUpsertWithoutInventoryItemsInput = {
@@ -59944,6 +62330,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -59962,6 +62349,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutStockMovementsInput = {
@@ -59978,6 +62366,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -59996,6 +62385,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutStockMovementsInput = {
@@ -60096,6 +62486,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutStockMovementsInput = {
@@ -60132,6 +62523,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutStockMovementsInput = {
@@ -60164,6 +62556,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -60182,6 +62575,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutStockMovementsInput = {
@@ -60198,6 +62592,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -60216,6 +62611,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type InventoryItemUpsertWithoutMovementsInput = {
@@ -60328,6 +62724,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStockMovementsInput = {
@@ -60364,6 +62761,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutEmployeesInput = {
@@ -60380,6 +62778,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -60398,6 +62797,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutEmployeesInput = {
@@ -60414,6 +62814,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -60432,6 +62833,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutEmployeesInput = {
@@ -60464,6 +62866,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -60482,6 +62885,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutEmployeesInput = {
@@ -60498,6 +62902,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -60516,6 +62921,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutSuppliersInput = {
@@ -60532,6 +62938,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -60550,6 +62957,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSuppliersInput = {
@@ -60566,6 +62974,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -60584,6 +62993,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSuppliersInput = {
@@ -60680,6 +63090,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -60698,6 +63109,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSuppliersInput = {
@@ -60714,6 +63126,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -60732,6 +63145,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type InventoryItemUpsertWithWhereUniqueWithoutSupplierInput = {
@@ -60764,6 +63178,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -60782,6 +63197,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutCampaignsInput = {
@@ -60798,6 +63214,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -60816,6 +63233,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutCampaignsInput = {
@@ -60848,6 +63266,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -60866,6 +63285,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutCampaignsInput = {
@@ -60882,6 +63302,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -60900,6 +63321,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutTicketsInput = {
@@ -60916,6 +63338,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -60934,6 +63357,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutTicketsInput = {
@@ -60950,6 +63374,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -60968,6 +63393,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutTicketsInput = {
@@ -61009,6 +63435,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTicketsInput = {
@@ -61045,6 +63472,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTicketsInput = {
@@ -61107,6 +63535,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -61125,6 +63554,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutTicketsInput = {
@@ -61141,6 +63571,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -61159,6 +63590,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutTicketsInput = {
@@ -61206,6 +63638,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTicketsInput = {
@@ -61242,6 +63675,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TicketCommentUpsertWithWhereUniqueWithoutTicketInput = {
@@ -61335,6 +63769,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTicketCommentsInput = {
@@ -61371,6 +63806,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTicketCommentsInput = {
@@ -61470,6 +63906,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTicketCommentsInput = {
@@ -61506,6 +63943,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutAppointmentsInput = {
@@ -61522,6 +63960,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -61540,6 +63979,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutAppointmentsInput = {
@@ -61556,6 +63996,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -61574,6 +64015,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutAppointmentsInput = {
@@ -61615,6 +64057,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAppointmentsInput = {
@@ -61651,6 +64094,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAppointmentsInput = {
@@ -61683,6 +64127,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -61701,6 +64146,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutAppointmentsInput = {
@@ -61717,6 +64163,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -61735,6 +64182,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutAppointmentsInput = {
@@ -61782,6 +64230,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAppointmentsInput = {
@@ -61818,6 +64267,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutTasksInput = {
@@ -61834,6 +64284,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -61852,6 +64303,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutTasksInput = {
@@ -61868,6 +64320,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -61886,6 +64339,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutTasksInput = {
@@ -61927,6 +64381,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTasksInput = {
@@ -61963,6 +64418,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTasksInput = {
@@ -62021,6 +64477,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -62039,6 +64496,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutTasksInput = {
@@ -62055,6 +64513,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -62073,6 +64532,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutTasksInput = {
@@ -62120,6 +64580,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTasksInput = {
@@ -62156,6 +64617,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SubTaskUpsertWithWhereUniqueWithoutTaskInput = {
@@ -62276,6 +64738,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -62294,6 +64757,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutLedgerAccountsInput = {
@@ -62310,6 +64774,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -62328,6 +64793,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutLedgerAccountsInput = {
@@ -62388,6 +64854,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -62406,6 +64873,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutLedgerAccountsInput = {
@@ -62422,6 +64890,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -62440,6 +64909,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutAccountInput = {
@@ -62485,6 +64955,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -62503,6 +64974,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutJournalEntriesInput = {
@@ -62519,6 +64991,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -62537,6 +65010,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutJournalEntriesInput = {
@@ -62578,6 +65052,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutJournalEntriesInput = {
@@ -62614,6 +65089,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutJournalEntriesInput = {
@@ -62750,6 +65226,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -62768,6 +65245,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutJournalEntriesInput = {
@@ -62784,6 +65262,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -62802,6 +65281,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutJournalEntriesInput = {
@@ -62849,6 +65329,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJournalEntriesInput = {
@@ -62885,6 +65366,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutJournalEntryInput = {
@@ -63149,6 +65631,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -63167,6 +65650,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutEmailLogsInput = {
@@ -63183,6 +65667,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -63201,6 +65686,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutEmailLogsInput = {
@@ -63242,6 +65728,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEmailLogsInput = {
@@ -63278,6 +65765,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEmailLogsInput = {
@@ -63310,6 +65798,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -63328,6 +65817,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutEmailLogsInput = {
@@ -63344,6 +65834,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -63362,6 +65853,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutEmailLogsInput = {
@@ -63409,6 +65901,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEmailLogsInput = {
@@ -63445,6 +65938,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutFormsInput = {
@@ -63461,6 +65955,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -63479,6 +65974,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutFormsInput = {
@@ -63495,6 +65991,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -63513,6 +66010,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutFormsInput = {
@@ -63554,6 +66052,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFormsInput = {
@@ -63590,6 +66089,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFormsInput = {
@@ -63644,6 +66144,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -63662,6 +66163,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutFormsInput = {
@@ -63678,6 +66180,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -63696,6 +66199,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutFormsInput = {
@@ -63743,6 +66247,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFormsInput = {
@@ -63779,6 +66284,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type FormResponseUpsertWithWhereUniqueWithoutFormInput = {
@@ -63897,6 +66403,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
     users?: UserCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceCreateNestedManyWithoutBusinessInput
@@ -63915,6 +66422,7 @@ export namespace Prisma {
     forms?: FormCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutAiNotesInput = {
@@ -63931,6 +66439,7 @@ export namespace Prisma {
     maxSeats?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
     users?: UserUncheckedCreateNestedManyWithoutBusinessInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
@@ -63949,6 +66458,7 @@ export namespace Prisma {
     forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutAiNotesInput = {
@@ -63990,6 +66500,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiNotesInput = {
@@ -64026,6 +66537,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiNotesInput = {
@@ -64058,6 +66570,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
     users?: UserUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
@@ -64076,6 +66589,7 @@ export namespace Prisma {
     forms?: FormUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutAiNotesInput = {
@@ -64092,6 +66606,7 @@ export namespace Prisma {
     maxSeats?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
     subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
     users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
@@ -64110,6 +66625,7 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutAiNotesInput = {
@@ -64157,6 +66673,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiNotesInput = {
@@ -64191,6 +66708,331 @@ export namespace Prisma {
     forms?: FormUncheckedUpdateManyWithoutUserNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type BusinessCreateWithoutMailboxMessagesInput = {
+    id?: string
+    name: string
+    industry: string
+    size: string
+    address?: string | null
+    city?: string | null
+    postcode?: string | null
+    country?: string
+    subscriptionId?: string | null
+    seatCount?: number
+    maxSeats?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
+    subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
+    users?: UserCreateNestedManyWithoutBusinessInput
+    invoices?: InvoiceCreateNestedManyWithoutBusinessInput
+    contacts?: ContactCreateNestedManyWithoutBusinessInput
+    tasks?: TaskCreateNestedManyWithoutBusinessInput
+    notes?: NoteCreateNestedManyWithoutBusinessInput
+    expenses?: ExpenseCreateNestedManyWithoutBusinessInput
+    inventory?: InventoryItemCreateNestedManyWithoutBusinessInput
+    employees?: EmployeeCreateNestedManyWithoutBusinessInput
+    suppliers?: SupplierCreateNestedManyWithoutBusinessInput
+    campaigns?: CampaignCreateNestedManyWithoutBusinessInput
+    tickets?: TicketCreateNestedManyWithoutBusinessInput
+    ledgerAccounts?: LedgerAccountCreateNestedManyWithoutBusinessInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutBusinessInput
+    emailLogs?: EmailLogCreateNestedManyWithoutBusinessInput
+    forms?: FormCreateNestedManyWithoutBusinessInput
+    appointments?: AppointmentCreateNestedManyWithoutBusinessInput
+    aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+  }
+
+  export type BusinessUncheckedCreateWithoutMailboxMessagesInput = {
+    id?: string
+    name: string
+    industry: string
+    size: string
+    address?: string | null
+    city?: string | null
+    postcode?: string | null
+    country?: string
+    subscriptionId?: string | null
+    seatCount?: number
+    maxSeats?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
+    subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
+    users?: UserUncheckedCreateNestedManyWithoutBusinessInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutBusinessInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutBusinessInput
+    notes?: NoteUncheckedCreateNestedManyWithoutBusinessInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutBusinessInput
+    inventory?: InventoryItemUncheckedCreateNestedManyWithoutBusinessInput
+    employees?: EmployeeUncheckedCreateNestedManyWithoutBusinessInput
+    suppliers?: SupplierUncheckedCreateNestedManyWithoutBusinessInput
+    campaigns?: CampaignUncheckedCreateNestedManyWithoutBusinessInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutBusinessInput
+    ledgerAccounts?: LedgerAccountUncheckedCreateNestedManyWithoutBusinessInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutBusinessInput
+    emailLogs?: EmailLogUncheckedCreateNestedManyWithoutBusinessInput
+    forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
+    aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+  }
+
+  export type BusinessCreateOrConnectWithoutMailboxMessagesInput = {
+    where: BusinessWhereUniqueInput
+    create: XOR<BusinessCreateWithoutMailboxMessagesInput, BusinessUncheckedCreateWithoutMailboxMessagesInput>
+  }
+
+  export type UserCreateWithoutMailboxMessagesInput = {
+    id?: string
+    email: string
+    emailVerified?: Date | string | null
+    password?: string | null
+    name?: string | null
+    firstName: string
+    lastName: string
+    phone?: string | null
+    image?: string | null
+    role?: $Enums.UserRole
+    status?: $Enums.UserStatus
+    timezone?: string
+    avatar?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
+    business: BusinessCreateNestedOneWithoutUsersInput
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    invoices?: InvoiceCreateNestedManyWithoutUserInput
+    contacts?: ContactCreateNestedManyWithoutUserInput
+    tasks?: TaskCreateNestedManyWithoutUserInput
+    notes?: NoteCreateNestedManyWithoutUserInput
+    expenses?: ExpenseCreateNestedManyWithoutUserInput
+    tickets?: TicketCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
+    emailLogs?: EmailLogCreateNestedManyWithoutUserInput
+    forms?: FormCreateNestedManyWithoutUserInput
+    appointments?: AppointmentCreateNestedManyWithoutUserInput
+    ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
+    aiNotes?: AINoteCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutMailboxMessagesInput = {
+    id?: string
+    email: string
+    emailVerified?: Date | string | null
+    password?: string | null
+    name?: string | null
+    firstName: string
+    lastName: string
+    phone?: string | null
+    image?: string | null
+    role?: $Enums.UserRole
+    status?: $Enums.UserStatus
+    businessId: string
+    timezone?: string
+    avatar?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutUserInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutUserInput
+    notes?: NoteUncheckedCreateNestedManyWithoutUserInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutUserInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
+    emailLogs?: EmailLogUncheckedCreateNestedManyWithoutUserInput
+    forms?: FormUncheckedCreateNestedManyWithoutUserInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutUserInput
+    ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
+    aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutMailboxMessagesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutMailboxMessagesInput, UserUncheckedCreateWithoutMailboxMessagesInput>
+  }
+
+  export type BusinessUpsertWithoutMailboxMessagesInput = {
+    update: XOR<BusinessUpdateWithoutMailboxMessagesInput, BusinessUncheckedUpdateWithoutMailboxMessagesInput>
+    create: XOR<BusinessCreateWithoutMailboxMessagesInput, BusinessUncheckedCreateWithoutMailboxMessagesInput>
+    where?: BusinessWhereInput
+  }
+
+  export type BusinessUpdateToOneWithWhereWithoutMailboxMessagesInput = {
+    where?: BusinessWhereInput
+    data: XOR<BusinessUpdateWithoutMailboxMessagesInput, BusinessUncheckedUpdateWithoutMailboxMessagesInput>
+  }
+
+  export type BusinessUpdateWithoutMailboxMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    industry?: StringFieldUpdateOperationsInput | string
+    size?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
+    seatCount?: IntFieldUpdateOperationsInput | number
+    maxSeats?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
+    subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
+    users?: UserUpdateManyWithoutBusinessNestedInput
+    invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
+    contacts?: ContactUpdateManyWithoutBusinessNestedInput
+    tasks?: TaskUpdateManyWithoutBusinessNestedInput
+    notes?: NoteUpdateManyWithoutBusinessNestedInput
+    expenses?: ExpenseUpdateManyWithoutBusinessNestedInput
+    inventory?: InventoryItemUpdateManyWithoutBusinessNestedInput
+    employees?: EmployeeUpdateManyWithoutBusinessNestedInput
+    suppliers?: SupplierUpdateManyWithoutBusinessNestedInput
+    campaigns?: CampaignUpdateManyWithoutBusinessNestedInput
+    tickets?: TicketUpdateManyWithoutBusinessNestedInput
+    ledgerAccounts?: LedgerAccountUpdateManyWithoutBusinessNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutBusinessNestedInput
+    emailLogs?: EmailLogUpdateManyWithoutBusinessNestedInput
+    forms?: FormUpdateManyWithoutBusinessNestedInput
+    appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
+    aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+  }
+
+  export type BusinessUncheckedUpdateWithoutMailboxMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    industry?: StringFieldUpdateOperationsInput | string
+    size?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
+    seatCount?: IntFieldUpdateOperationsInput | number
+    maxSeats?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
+    subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
+    users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutBusinessNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutBusinessNestedInput
+    notes?: NoteUncheckedUpdateManyWithoutBusinessNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutBusinessNestedInput
+    inventory?: InventoryItemUncheckedUpdateManyWithoutBusinessNestedInput
+    employees?: EmployeeUncheckedUpdateManyWithoutBusinessNestedInput
+    suppliers?: SupplierUncheckedUpdateManyWithoutBusinessNestedInput
+    campaigns?: CampaignUncheckedUpdateManyWithoutBusinessNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutBusinessNestedInput
+    ledgerAccounts?: LedgerAccountUncheckedUpdateManyWithoutBusinessNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutBusinessNestedInput
+    emailLogs?: EmailLogUncheckedUpdateManyWithoutBusinessNestedInput
+    forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
+    aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+  }
+
+  export type UserUpsertWithoutMailboxMessagesInput = {
+    update: XOR<UserUpdateWithoutMailboxMessagesInput, UserUncheckedUpdateWithoutMailboxMessagesInput>
+    create: XOR<UserCreateWithoutMailboxMessagesInput, UserUncheckedCreateWithoutMailboxMessagesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutMailboxMessagesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutMailboxMessagesInput, UserUncheckedUpdateWithoutMailboxMessagesInput>
+  }
+
+  export type UserUpdateWithoutMailboxMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    timezone?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    business?: BusinessUpdateOneRequiredWithoutUsersNestedInput
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    invoices?: InvoiceUpdateManyWithoutUserNestedInput
+    contacts?: ContactUpdateManyWithoutUserNestedInput
+    tasks?: TaskUpdateManyWithoutUserNestedInput
+    notes?: NoteUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUpdateManyWithoutUserNestedInput
+    tickets?: TicketUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
+    emailLogs?: EmailLogUpdateManyWithoutUserNestedInput
+    forms?: FormUpdateManyWithoutUserNestedInput
+    appointments?: AppointmentUpdateManyWithoutUserNestedInput
+    ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
+    aiNotes?: AINoteUpdateManyWithoutUserNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutMailboxMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    businessId?: StringFieldUpdateOperationsInput | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutUserNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutUserNestedInput
+    notes?: NoteUncheckedUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
+    emailLogs?: EmailLogUncheckedUpdateManyWithoutUserNestedInput
+    forms?: FormUncheckedUpdateManyWithoutUserNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutUserNestedInput
+    ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
+    aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -64229,6 +67071,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
     aiNotes?: AINoteCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -64265,6 +67108,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutUserInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutUserInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -64317,6 +67161,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -64353,6 +67198,7 @@ export namespace Prisma {
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -64576,6 +67422,27 @@ export namespace Prisma {
     status?: string
     link?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MailboxMessageCreateManyUserInput = {
+    id?: string
+    businessId: string
+    messageId: string
+    uid?: number | null
+    from: string
+    to: string
+    cc?: string | null
+    bcc?: string | null
+    subject: string
+    body: string
+    html?: string | null
+    folder?: $Enums.MailFolder
+    status?: $Enums.MailStatus
+    date?: Date | string
+    hasAttachments?: boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -65267,6 +68134,69 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type MailboxMessageUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutMailboxMessagesNestedInput
+  }
+
+  export type MailboxMessageUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MailboxMessageUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateManyBusinessInput = {
     id?: string
     email: string
@@ -65561,6 +68491,27 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type MailboxMessageCreateManyBusinessInput = {
+    id?: string
+    userId?: string | null
+    messageId: string
+    uid?: number | null
+    from: string
+    to: string
+    cc?: string | null
+    bcc?: string | null
+    subject: string
+    body: string
+    html?: string | null
+    folder?: $Enums.MailFolder
+    status?: $Enums.MailStatus
+    date?: Date | string
+    hasAttachments?: boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserUpdateWithoutBusinessInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -65595,6 +68546,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBusinessInput = {
@@ -65631,6 +68583,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutBusinessInput = {
@@ -66491,6 +69444,69 @@ export namespace Prisma {
     reason?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MailboxMessageUpdateWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutMailboxMessagesNestedInput
+  }
+
+  export type MailboxMessageUncheckedUpdateWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MailboxMessageUncheckedUpdateManyWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: StringFieldUpdateOperationsInput | string
+    uid?: NullableIntFieldUpdateOperationsInput | number | null
+    from?: StringFieldUpdateOperationsInput | string
+    to?: StringFieldUpdateOperationsInput | string
+    cc?: NullableStringFieldUpdateOperationsInput | string | null
+    bcc?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    html?: NullableStringFieldUpdateOperationsInput | string | null
+    folder?: EnumMailFolderFieldUpdateOperationsInput | $Enums.MailFolder
+    status?: EnumMailStatusFieldUpdateOperationsInput | $Enums.MailStatus
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachments?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StockMovementCreateManyItemInput = {

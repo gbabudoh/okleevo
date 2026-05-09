@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 /**
  * Get current user profile with business information
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
 
@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
             country: true,
             seatCount: true,
             maxSeats: true,
+            enabledModules: true,
             createdAt: true,
           },
         },
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
       status: user.status,
       business: user.business,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Profile fetch error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch profile' },

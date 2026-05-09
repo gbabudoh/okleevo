@@ -473,10 +473,16 @@ export default function DashboardPage() {
             ))}
           </div>
           
-          <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+          <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center justify-between">
             <p className="text-sm text-indigo-800 dark:text-indigo-300">
               <strong>Collaboration Enabled:</strong> All team members can see and share business data within {userData?.business?.name || 'your organization'}.
             </p>
+            <button 
+              onClick={() => router.push('/dashboard/collaboration')}
+              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-200 active:scale-95 cursor-pointer"
+            >
+              collab
+            </button>
           </div>
         </div>
       )}

@@ -34,6 +34,9 @@ export default function Home() {
               <Link href="/pricing" className="text-gray-700 hover:text-primary-600 transition-colors">
                 Pricing
               </Link>
+              <Link href="/guide" className="text-gray-700 hover:text-primary-600 transition-colors">
+                User Guide
+              </Link>
             </div>
             <div className="flex items-center gap-4">
               {isLoggedIn ? (
@@ -94,7 +97,7 @@ export default function Home() {
               Start Your Free Trial Today
             </Link>
             <p className="mt-4 text-gray-600">
-              No credit card required • 14-day free trial • Cancel anytime
+              No credit card required • 14-day free trial • 10 User Seats Included
             </p>
           </div>
         </div>
@@ -112,12 +115,17 @@ export default function Home() {
               className="h-10 w-auto" 
             />
           </Link>
+          <p className="text-gray-500 mb-4">Everything included. 10 User Seats Included.</p>
+          <p className="text-sm text-indigo-400 font-bold mb-8">
+            10 seats included – allows multiple users on one account, suitable for SMEs with small or large teams.
+          </p>
           <p className="text-gray-400 mb-6">
             The all-in-one business platform designed specifically for UK SMEs
           </p>
           <div className="flex justify-center gap-6 text-sm">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/guide" className="hover:text-white transition-colors">User Guide</Link>
             <Link 
               href={isLoggedIn ? "/dashboard/helpdesk" : "/support"} 
               className="hover:text-white transition-colors"

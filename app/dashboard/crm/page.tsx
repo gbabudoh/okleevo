@@ -51,6 +51,7 @@ export default function CRMPage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -930,21 +931,21 @@ export default function CRMPage() {
                     <Mail className="w-5 h-5 text-orange-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-gray-900 mb-1">Ready to send</p>
+                    <p className="text-sm font-bold text-gray-900 mb-1">Direct Secure Send</p>
                     <p className="text-xs text-gray-600 leading-relaxed">
-                      This will open your default email client (Outlook, Gmail, etc.) with all the information pre-filled. 
-                      You can review and make final changes before sending.
+                      This email will be sent directly through the Okleevo SMTP engine. 
+                      It will arrive in a professional branded template with your business name.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Footer */}
             <div className="sticky bottom-0 bg-gray-50 border-t-2 border-gray-200 px-6 py-4 flex gap-3">
               <button 
                 type="button"
-                onClick={() => {
+                disabled={sendingEmail}
+                onClick={async () => {
                   if (!emailData.to.trim()) {
                     setStatusModal({
                       isOpen: true,
@@ -963,19 +964,58 @@ export default function CRMPage() {
                     });
                     return;
                   }
-                  window.location.href = `mailto:${emailData.to}?subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.message)}`;
-                  setStatusModal({
-                    isOpen: true,
-                    title: 'Email Opened',
-                    message: 'The default email client has been opened successfully.',
-                    type: 'success'
-                  });
-                  setShowEmailModal(false);
+
+                  try {
+                    setSendingEmail(true);
+                    const response = await fetch('/api/email/send', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        to: emailData.to,
+                        subject: emailData.subject,
+                        html: emailData.message.replace(/\n/g, '<br/>'), // Basic text to HTML conversion
+                        text: emailData.message
+                      })
+                    });
+
+                    if (!response.ok) {
+                      const err = await response.json();
+                      throw new Error(err.error || 'Failed to send email');
+                    }
+
+                    setStatusModal({
+                      isOpen: true,
+                      title: 'Email Sent',
+                      message: `The email has been successfully sent to ${emailData.to.split(',').length} recipient(s) via the Okleevo SMTP engine.`,
+                      type: 'success'
+                    });
+                    setShowEmailModal(false);
+                    setEmailData({ to: '', subject: '', message: '' });
+                  } catch (error) {
+                    console.error('Email direct send error:', error);
+                    setStatusModal({
+                      isOpen: true,
+                      title: 'Sending Failed',
+                      message: error instanceof Error ? error.message : 'Could not send email. Please check your SMTP settings.',
+                      type: 'error'
+                    });
+                  } finally {
+                    setSendingEmail(false);
+                  }
                 }}
-                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className={`flex-1 px-6 py-3.5 ${sendingEmail ? 'bg-orange-400' : 'bg-gradient-to-r from-orange-500 to-orange-600'} text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed`}
               >
-                <Mail className="w-5 h-5" />
-                Open in Email Client
+                {sendingEmail ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-5 h-5" />
+                    <span>Send via Internal SMTP</span>
+                  </>
+                )}
               </button>
               <button 
                 type="button"

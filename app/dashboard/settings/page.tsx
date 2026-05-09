@@ -8,8 +8,10 @@ import {
   Save, X, Check, AlertCircle, Settings as SettingsIcon,
   Zap, Download, Upload,
   Trash2, LogOut, Key, Smartphone, Monitor, Users, Crown,
-  FileText, Link, Code, Plus,
-  Edit3, UserPlus, UserCheck
+  FileText, Link, Code, Plus, Sparkles,
+  Edit3, UserPlus, UserCheck, Package, Truck, MessageSquare,
+  Shield as ShieldIcon, Receipt, Calculator, FormInput, Calendar as CalendarIcon,
+  CheckSquare, FileEdit, BarChart3, PenTool, TrendingUp
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { usePresence } from '@/components/hooks/use-presence';
@@ -139,6 +141,9 @@ export default function SettingsPage() {
     language: 'English'
   });
 
+  const [enabledModules, setEnabledModules] = useState<string[]>([]);
+  const [updatingModules, setUpdatingModules] = useState(false);
+
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   function showToast(message: string, type: 'success' | 'error' = 'success') {
@@ -176,6 +181,7 @@ export default function SettingsPage() {
             timezone: 'Europe/London', // Default, can be updated from user preferences later
             language: 'English'
           });
+          setEnabledModules(data.business?.enabledModules || []);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -433,6 +439,7 @@ export default function SettingsPage() {
     { id: 'security', name: 'Security', icon: Shield, roles: ['OWNER', 'ADMIN', 'MANAGER', 'MEMBER'] },
     { id: 'notifications', name: 'Notifications', icon: Bell, roles: ['OWNER', 'ADMIN'] },
     { id: 'billing', name: 'Billing', icon: CreditCard, roles: ['OWNER'] },
+    { id: 'modules', name: 'Modules', icon: Zap, roles: ['OWNER', 'ADMIN'] },
     { id: 'preferences', name: 'Preferences', icon: SettingsIcon, roles: ['OWNER', 'ADMIN'] },
     { id: 'integrations', name: 'Integrations', icon: Link, roles: ['OWNER', 'ADMIN'] },
   ];
@@ -1241,6 +1248,116 @@ export default function SettingsPage() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* Modules Tab */}
+      {activeTab === 'modules' && (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-amber-50 rounded-2xl">
+                  <Zap className="w-6 h-6 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900">Module Manager</h3>
+                  <p className="text-sm font-medium text-gray-500">Enable or disable platform features to tailor your experience</p>
+                </div>
+              </div>
+              <button 
+                onClick={async () => {
+                  setUpdatingModules(true);
+                  try {
+                    const response = await fetch('/api/business/modules', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ enabledModules }),
+                    });
+                    if (response.ok) {
+                      showToast('Modules updated successfully! Reloading dashboard...');
+                      setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                      showToast('Failed to update modules', 'error');
+                    }
+                  } catch {
+                    showToast('Connection error', 'error');
+                  } finally {
+                    setUpdatingModules(false);
+                  }
+                }}
+                disabled={updatingModules}
+                className="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer flex items-center gap-2 disabled:opacity-50"
+              >
+                {updatingModules ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                Save Module Configuration
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                { id: 'invoicing', label: 'Invoicing', icon: Receipt, category: 'Finance', desc: 'Create and manage professional invoices.' },
+                { id: 'accounting', label: 'Accounting', icon: Calculator, category: 'Finance', desc: 'Double-entry bookkeeping and ledgers.' },
+                { id: 'taxation', label: 'Taxation', icon: FileText, category: 'Finance', desc: 'Tax calculations and reporting.' },
+                { id: 'cashflow', label: 'Cashflow', icon: TrendingUp, category: 'Finance', desc: 'Monitor your business liquidity.' },
+                { id: 'expenses', label: 'Expenses', icon: FileText, category: 'Finance', desc: 'Track business spending and receipts.' },
+                { id: 'vat-tools', label: 'VAT Tools', icon: Calculator, category: 'Finance', desc: 'VAT returns and MTD tools.' },
+                
+                { id: 'crm', label: 'CRM', icon: Users, category: 'Customer', desc: 'Manage your leads and customers.' },
+                { id: 'forms', label: 'Forms', icon: FormInput, category: 'Customer', desc: 'Custom intake and lead forms.' },
+                { id: 'booking', label: 'Booking', icon: CalendarIcon, category: 'Customer', desc: 'Online appointment scheduling.' },
+                { id: 'helpdesk', label: 'Helpdesk', icon: MessageSquare, category: 'Customer', desc: 'Customer support ticket system.' },
+                { id: 'campaigns', label: 'Campaigns', icon: Mail, category: 'Customer', desc: 'Email marketing and outreach.' },
+
+                { id: 'tasks', label: 'Tasks', icon: CheckSquare, category: 'Productivity', desc: 'Project and task management.' },
+                { id: 'ai-content', label: 'AI Content', icon: Sparkles, category: 'Productivity', desc: 'Generate marketing copy with AI.' },
+                { id: 'ai-notes', label: 'AI Notes', icon: FileEdit, category: 'Productivity', desc: 'Smart note-taking and summaries.' },
+                { id: 'kpi-dashboard', label: 'KPI Dashboard', icon: BarChart3, category: 'Productivity', desc: 'Business performance metrics.' },
+
+                { id: 'inventory', label: 'Inventory', icon: Package, category: 'Operations', desc: 'Stock levels and warehouse tracking.' },
+                { id: 'suppliers', label: 'Suppliers', icon: Truck, category: 'Operations', desc: 'Manage vendor relationships.' },
+                { id: 'hr-records', label: 'HR Records', icon: UserCheck, category: 'Operations', desc: 'Employee data and HR management.' },
+                { id: 'e-signature', label: 'E-Signature', icon: PenTool, category: 'Operations', desc: 'Sign documents electronically.' },
+                { id: 'micro-pages', label: 'Micro Pages', icon: Globe, category: 'Operations', desc: 'Mini-websites for your business.' },
+                { id: 'compliance', label: 'Compliance', icon: ShieldIcon, category: 'Operations', desc: 'Legal and regulatory reminders.' },
+              ].map((module) => (
+                <div 
+                  key={module.id}
+                  className={`p-6 rounded-[2rem] border-2 transition-all cursor-pointer group ${
+                    enabledModules.includes(module.id) 
+                    ? 'bg-white border-indigo-500 shadow-md ring-4 ring-indigo-50' 
+                    : 'bg-gray-50 border-gray-100 hover:border-gray-200'
+                  }`}
+                  onClick={() => {
+                    if (module.id === 'dashboard') return; // Dashboard is mandatory
+                    setEnabledModules(prev => 
+                      prev.includes(module.id) 
+                      ? prev.filter(id => id !== module.id) 
+                      : [...prev, module.id]
+                    );
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 rounded-2xl transition-colors ${
+                      enabledModules.includes(module.id) ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400 group-hover:text-gray-600'
+                    }`}>
+                      <module.icon className="w-6 h-6" />
+                    </div>
+                    <div className={`w-12 h-6 rounded-full relative transition-colors ${
+                      enabledModules.includes(module.id) ? 'bg-indigo-600' : 'bg-gray-200'
+                    }`}>
+                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                        enabledModules.includes(module.id) ? 'translate-x-7' : 'translate-x-1'
+                      }`} />
+                    </div>
+                  </div>
+                  <h4 className="font-bold text-gray-900">{module.label}</h4>
+                  <p className="text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">{module.category}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed mt-2">{module.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
