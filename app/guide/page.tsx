@@ -8,7 +8,7 @@ import {
   Users, FormInput, Calendar, MessageSquare, Mail,
   CheckSquare, FileEdit, BarChart3, Package,
   Truck, UserCheck, PenTool, Globe, Shield,
-  ArrowUpRight, Zap, Download
+  ArrowUpRight, Zap, Download, Video
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -171,6 +171,55 @@ export default function PublicUserGuidePage() {
                   {group}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Built-In Communication Engine (Value Prop) */}
+      <div className="max-w-7xl mx-auto px-6 mt-16">
+        <div className="bg-gradient-to-br from-indigo-900 via-gray-900 to-black rounded-[3rem] p-10 md:p-16 relative overflow-hidden shadow-2xl">
+          {/* Abstract glow */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+          
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-rose-500/10 border border-rose-500/20 rounded-full text-rose-400 text-xs font-black uppercase tracking-widest mb-6">
+                <Sparkles className="w-4 h-4" />
+                Zero Third-Party Costs
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-white leading-tight mb-6">
+                Everything you need to communicate is <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">built right in.</span>
+              </h2>
+              <p className="text-lg text-gray-400 font-medium leading-relaxed mb-8">
+                Why pay for separate subscriptions when your CRM can do it all? Okleevo handles your email routing and team meetings natively, saving your business thousands of dollars a year.
+              </p>
+            </div>
+            
+            <div className="flex flex-col gap-6">
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-indigo-500/20 rounded-2xl">
+                    <Mail className="w-6 h-6 text-indigo-400" />
+                  </div>
+                  <h3 className="text-xl font-black text-white">Enterprise Mailbox</h3>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Cancel your Mailchimp and Zendesk. Send and receive emails directly from your Okleevo CRM using our dedicated, high-speed HTTP API engine.
+                </p>
+              </div>
+
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-teal-500/20 rounded-2xl">
+                    <Video className="w-6 h-6 text-teal-400" />
+                  </div>
+                  <h3 className="text-xl font-black text-white">Video & Chat Collaboration</h3>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Cancel Slack and Zoom. Hop on instant WebRTC video calls and team chats directly inside your Okleevo workspace without downloading any apps.
+                </p>
+              </div>
             </div>
           </div>
         </div>

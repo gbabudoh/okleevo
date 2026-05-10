@@ -8,6 +8,7 @@ import {
   ChevronLeft, Loader2,
   Inbox as InboxIcon, Send as SendIcon, 
   Trash as TrashIcon, AlertTriangle as SpamIcon,
+  X, Send as SendActionIcon
 } from 'lucide-react';
 
 interface EmailMessage {
@@ -31,6 +32,11 @@ export default function MailboxPage() {
   const [selectedMessage, setSelectedMessage] = useState<EmailMessage | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Compose Modal State
+  const [showCompose, setShowCompose] = useState(false);
+  const [composeData, setComposeData] = useState({ to: '', subject: '', content: '' });
+  const [sending, setSending] = useState(false);
+
   const fetchMessages = async (forceSync = false) => {
     if (forceSync) setSyncing(true);
     try {
@@ -50,6 +56,65 @@ export default function MailboxPage() {
   useEffect(() => {
     fetchMessages();
   }, []);
+
+  const updateMessage = async (id: string, updates: Partial<EmailMessage>) => {
+    // Optimistic update
+    setMessages(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+    if (selectedMessage?.id === id) {
+      setSelectedMessage(prev => prev ? { ...prev, ...updates } : null);
+    }
+    
+    try {
+      await fetch(`/api/email/inbox/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+    } catch (err) {
+      console.error('Failed to update message:', err);
+    }
+  };
+
+  const handleMessageClick = (msg: EmailMessage) => {
+    setSelectedMessage(msg);
+    if (msg.status === 'UNREAD') {
+      updateMessage(msg.id, { status: 'READ' });
+    }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    try {
+      const res = await fetch('/api/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(composeData)
+      });
+      if (res.ok) {
+        setShowCompose(false);
+        setComposeData({ to: '', subject: '', content: '' });
+      }
+    } catch (err) {
+      console.error('Failed to send:', err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleReply = () => {
+    if (!selectedMessage) return;
+    
+    const match = selectedMessage.from.match(/<([^>]+)>/);
+    const toEmail = match ? match[1] : selectedMessage.from;
+    
+    setComposeData({
+      to: toEmail,
+      subject: selectedMessage.subject.startsWith('Re:') ? selectedMessage.subject : `Re: ${selectedMessage.subject}`,
+      content: `\n\n\n--- Original Message ---\nFrom: ${selectedMessage.from}\nDate: ${new Date(selectedMessage.date).toLocaleString()}\n\n${selectedMessage.body}`
+    });
+    setShowCompose(true);
+  };
 
   const filteredMessages = messages
     .filter(m => m.folder === selectedFolder)
@@ -100,7 +165,10 @@ export default function MailboxPage() {
             <RefreshCw className={`w-5 h-5 ${syncing ? 'animate-spin text-indigo-600' : ''}`} />
           </button>
           <div className="h-8 w-px bg-gray-100 mx-2" />
-          <button className="px-5 py-2 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-black transition-all shadow-lg hover:shadow-indigo-200">
+          <button 
+            onClick={() => { setComposeData({ to: '', subject: '', content: '' }); setShowCompose(true); }}
+            className="px-5 py-2 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-black transition-all shadow-lg hover:shadow-indigo-200 cursor-pointer"
+          >
             Compose
           </button>
         </div>
@@ -168,7 +236,7 @@ export default function MailboxPage() {
               filteredMessages.map((msg) => (
                 <div 
                   key={msg.id}
-                  onClick={() => setSelectedMessage(msg)}
+                  onClick={() => handleMessageClick(msg)}
                   className={`group relative flex items-center gap-4 px-6 py-4 cursor-pointer transition-all hover:bg-gray-50 ${
                     selectedMessage?.id === msg.id ? 'bg-indigo-50/50' : ''
                   } ${msg.status === 'UNREAD' ? 'bg-white' : 'bg-gray-50/30 opacity-70'}`}
@@ -221,13 +289,13 @@ export default function MailboxPage() {
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-1">
-                  <button className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer"><Star className="w-5 h-5" /></button>
-                  <button className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"><Trash2 className="w-5 h-5" /></button>
-                  <button className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all cursor-pointer"><AlertCircle className="w-5 h-5" /></button>
+                  <button onClick={() => updateMessage(selectedMessage.id, { status: 'FLAGGED' })} className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer"><Star className={`w-5 h-5 ${selectedMessage.status === 'FLAGGED' ? 'fill-indigo-600 text-indigo-600' : ''}`} /></button>
+                  <button onClick={() => { updateMessage(selectedMessage.id, { folder: 'TRASH' }); setSelectedMessage(null); }} className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"><Trash2 className="w-5 h-5" /></button>
+                  <button onClick={() => { updateMessage(selectedMessage.id, { folder: 'SPAM' }); setSelectedMessage(null); }} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all cursor-pointer"><AlertCircle className="w-5 h-5" /></button>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-black rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all">
+                <button onClick={handleReply} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-black rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all cursor-pointer">
                   <Reply className="w-3.5 h-3.5" />
                   Reply
                 </button>
@@ -292,6 +360,74 @@ export default function MailboxPage() {
         )}
 
       </div>
+
+      {/* ── Compose Modal ── */}
+      {showCompose && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowCompose(false)} />
+          <div className="bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+              <h3 className="text-xl font-black text-gray-900 tracking-tight">New Message</h3>
+              <button onClick={() => setShowCompose(false)} className="p-2 text-gray-400 hover:bg-gray-200 rounded-xl transition-all cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSend} className="p-8">
+              <div className="space-y-4">
+                <div className="flex items-center border-b border-gray-100 pb-2">
+                  <label className="w-16 text-[10px] font-black text-gray-400 uppercase tracking-widest">To:</label>
+                  <input 
+                    type="email" 
+                    required
+                    value={composeData.to}
+                    onChange={(e) => setComposeData({ ...composeData, to: e.target.value })}
+                    className="flex-1 bg-transparent border-none focus:outline-none font-medium text-gray-900 text-sm"
+                    placeholder="recipient@example.com"
+                  />
+                </div>
+                <div className="flex items-center border-b border-gray-100 pb-2">
+                  <label className="w-16 text-[10px] font-black text-gray-400 uppercase tracking-widest">Subject:</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={composeData.subject}
+                    onChange={(e) => setComposeData({ ...composeData, subject: e.target.value })}
+                    className="flex-1 bg-transparent border-none focus:outline-none font-bold text-gray-900"
+                    placeholder="Enter subject here..."
+                  />
+                </div>
+                <div className="pt-4">
+                  <textarea 
+                    required
+                    value={composeData.content}
+                    onChange={(e) => setComposeData({ ...composeData, content: e.target.value })}
+                    className="w-full h-64 bg-transparent border-none focus:outline-none resize-none font-medium text-gray-700 text-sm"
+                    placeholder="Write your message..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
+                <div className="flex items-center gap-2">
+                  <button type="button" className="p-3 text-gray-400 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
+                    <Paperclip className="w-5 h-5" />
+                  </button>
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={sending}
+                  className="flex items-center gap-3 px-8 py-3.5 bg-indigo-600 text-white font-black text-sm rounded-xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <SendActionIcon className="w-4 h-4" />}
+                  Send Message
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

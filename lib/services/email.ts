@@ -71,16 +71,99 @@ const createTransporter = () => {
   });
 };
 
+// ─── Postal HTTP API Integration ───────────────────────────────────────────────
+
+async function sendViaPostal(options: EmailOptions): Promise<EmailResult> {
+  const apiUrl = process.env.POSTAL_API_URL;
+  const apiKey = process.env.POSTAL_API_KEY;
+  
+  if (!apiUrl || !apiKey) {
+    return { success: false, error: 'Postal API credentials missing' };
+  }
+
+  const fromEmail = process.env.POSTAL_FROM_EMAIL || process.env.EMAIL_FROM || 'noreply@okleevo.com';
+  const fromName = process.env.POSTAL_FROM_NAME || process.env.EMAIL_FROM_NAME || 'Okleevo';
+
+  // Format attachments for Postal (requires base64 data)
+  const postalAttachments = [];
+  if (options.attachments && options.attachments.length > 0) {
+    for (const att of options.attachments) {
+      if (att.content) {
+        let base64Data = '';
+        if (Buffer.isBuffer(att.content)) {
+          base64Data = att.content.toString('base64');
+        } else if (typeof att.content === 'string') {
+          base64Data = Buffer.from(att.content).toString('base64');
+        }
+        
+        if (base64Data) {
+          postalAttachments.push({
+            name: att.filename,
+            content_type: att.contentType || 'application/octet-stream',
+            data: base64Data
+          });
+        }
+      }
+      // Note: If using path/URL, it needs to be fetched and converted to base64 first.
+      // We skip path-only attachments for the Postal HTTP API in this basic implementation
+      // unless we add a fetcher here, but MinIO presigned URLs are usually fetched before this step.
+    }
+  }
+
+  const payload = {
+    to: Array.isArray(options.to) ? options.to : [options.to],
+    cc: options.cc ? (Array.isArray(options.cc) ? options.cc : [options.cc]) : [],
+    bcc: options.bcc ? (Array.isArray(options.bcc) ? options.bcc : [options.bcc]) : [],
+    from: `${fromName} <${fromEmail}>`,
+    subject: options.subject,
+    html_body: options.html,
+    plain_body: options.text || options.html.replace(/<[^>]*>/g, ''),
+    reply_to: options.replyTo,
+    attachments: postalAttachments.length > 0 ? postalAttachments : undefined
+  };
+
+  try {
+    const response = await fetch(`${apiUrl}/api/v1/send/message`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Server-API-Key': apiKey,
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      console.log('✅ Email sent via Postal HTTP API to:', options.to, '| MessageID:', data.data.message_id);
+      return { success: true, messageId: data.data.message_id };
+    } else {
+      console.error('❌ Postal API Error:', data.data.message || data.data.code);
+      return { success: false, error: data.data.message || 'Postal API Error' };
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('❌ Postal API Request Failed:', message);
+    return { success: false, error: message };
+  }
+}
+
 // ─── Core Send ───────────────────────────────────────────────────────────────
 
 export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
   try {
+    // 1. Prefer Postal HTTP API if configured
+    if (process.env.POSTAL_API_URL && process.env.POSTAL_API_KEY) {
+      return await sendViaPostal(options);
+    }
+
+    // 2. Fallback to standard SMTP
     const transporter = createTransporter();
 
     if (!transporter) {
-      console.warn('Email not configured. SMTP_HOST, SMTP_USER, or SMTP_PASS missing.');
+      console.warn('Email not configured. SMTP/Postal credentials missing.');
       console.log('Would send email:', { to: options.to, subject: options.subject });
-      return { success: false, error: 'SMTP not configured' };
+      return { success: false, error: 'Email service not configured' };
     }
 
     const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@okleevo.com';
@@ -108,7 +191,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
     }
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully to:', options.to, '| MessageID:', info.messageId);
+    console.log('✅ Email sent successfully via SMTP to:', options.to, '| MessageID:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

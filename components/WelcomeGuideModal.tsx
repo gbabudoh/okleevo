@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, ChevronRight, ChevronLeft, Sparkles, 
   Users, PoundSterling, CheckSquare,
-  Zap, Rocket, Heart
+  Zap, Rocket, Heart, Mail, Video
 } from 'lucide-react';
 
 interface WelcomeGuideModalProps {
@@ -16,7 +16,7 @@ interface WelcomeGuideModalProps {
 
 export default function WelcomeGuideModal({ isOpen, onClose, businessName }: WelcomeGuideModalProps) {
   const [step, setStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   if (!isOpen) return null;
 
@@ -121,8 +121,53 @@ export default function WelcomeGuideModal({ isOpen, onClose, businessName }: Wel
               </motion.div>
             )}
 
-            {/* Step 3: Module Manager */}
+            {/* Step 3: Zero Integration */}
             {step === 3 && (
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="p-12 space-y-8"
+              >
+                <div className="text-center">
+                  <h3 className="text-2xl font-black text-gray-900">Zero Third-Party Costs</h3>
+                  <p className="text-gray-500 font-medium">Everything you need to communicate is built right in.</p>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="flex items-start gap-4 p-4 rounded-2xl border border-gray-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all">
+                    <div className="p-3 rounded-xl bg-rose-50 text-rose-600">
+                      <Mail className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">Enterprise Mailbox</h4>
+                      <p className="text-sm text-gray-500">Cancel your Mailchimp and Zendesk. Send and receive emails directly from your CRM using our high-speed API.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4 p-4 rounded-2xl border border-gray-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all">
+                    <div className="p-3 rounded-xl bg-teal-50 text-teal-600">
+                      <Video className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">Video & Chat Collaboration</h4>
+                      <p className="text-sm text-gray-500">Cancel Slack and Zoom. Hop on instant video calls and team chats directly inside your Okleevo workspace.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <button onClick={prevStep} className="px-6 py-3 text-gray-500 font-bold hover:text-gray-900 transition-colors cursor-pointer flex items-center gap-2">
+                    <ChevronLeft className="w-5 h-5" /> Back
+                  </button>
+                  <button onClick={nextStep} className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-lg cursor-pointer flex items-center gap-2">
+                    Next <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Module Manager */}
+            {step === 4 && (
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -153,8 +198,8 @@ export default function WelcomeGuideModal({ isOpen, onClose, businessName }: Wel
               </motion.div>
             )}
 
-            {/* Step 4: Final */}
-            {step === 4 && (
+            {/* Step 5: Final */}
+            {step === 5 && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
