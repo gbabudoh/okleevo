@@ -224,17 +224,7 @@ export default function CRMPage() {
     }
   };
 
-  const getStageColor = (stage: string) => {
-    switch (stage.toLowerCase()) {
-      case 'new': return 'bg-blue-50 text-blue-600 border-blue-100';
-      case 'contacted': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
-      case 'proposal': return 'bg-purple-50 text-purple-600 border-purple-100';
-      case 'negotiation': return 'bg-amber-50 text-amber-600 border-amber-100';
-      case 'closed-won': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case 'closed-lost': return 'bg-red-50 text-red-600 border-red-100';
-      default: return 'bg-gray-50 text-gray-600';
-    }
-  };
+
 
   const handleAddClient = async () => {
     try {
@@ -368,22 +358,22 @@ export default function CRMPage() {
 
       <div className="relative z-10 space-y-8 p-8 max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className="bg-white/70 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/50 relative overflow-hidden group">
+        <div className="bg-white/70 backdrop-blur-2xl rounded-3xl p-5 md:p-8 shadow-2xl border border-white/50 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-500">
+          <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left w-full md:w-auto">
+              <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-500 shrink-0">
                 <Users className="w-8 h-8 text-white" />
               </div>
-              <div className="space-y-1 text-center md:text-left">
-                <h1 className="text-3xl font-black text-gray-900 tracking-tight">
-                  CRM <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Dashboard</span>
+              <div className="space-y-1.5">
+                <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-none">
+                  CRM <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 whitespace-nowrap">Dashboard</span>
                 </h1>
-                <p className="text-gray-500 font-medium">Manage relationships and track pipeline performance</p>
+                <p className="text-sm md:text-base text-gray-500 font-medium">Manage relationships and track pipeline performance</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="grid grid-cols-2 md:flex md:items-center gap-3 w-full md:w-auto">
               <button 
                 type="button"
                 onClick={() => {
@@ -395,18 +385,18 @@ export default function CRMPage() {
                   });
                   setShowEmailModal(true);
                 }}
-                className="flex-1 md:flex-none px-6 py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl transition-all font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
+                className="w-full md:w-auto px-4 md:px-6 py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl transition-all font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
               >
-                <Mail className="w-5 h-5" />
-                <span>Bulk Email</span>
+                <Mail className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                <span className="text-sm md:text-base">Bulk Email</span>
               </button>
               <button 
                 type="button"
                 onClick={() => setShowAddModal(true)}
-                className="flex-1 md:flex-none px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl hover:shadow-blue-500/25 transition-all font-bold flex items-center justify-center gap-2 hover:-translate-y-0.5 cursor-pointer"
+                className="w-full md:w-auto px-4 md:px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl hover:shadow-blue-500/25 transition-all font-bold flex items-center justify-center gap-2 hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
               >
-                <Plus className="w-5 h-5" />
-                Add Client
+                <Plus className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                <span className="text-sm md:text-base">Add Client</span>
               </button>
             </div>
           </div>
@@ -802,30 +792,30 @@ export default function CRMPage() {
             </div>
           ) : (
             <div className="flex-[0.8] h-full flex flex-col">
-              <div className="p-8 border-b border-gray-100 bg-white/70 backdrop-blur-2xl rounded-t-3xl">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Communication Engine</h2>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Live Global Interaction Feed</p>
+              <div className="p-5 md:p-8 border-b border-gray-100 bg-white/70 backdrop-blur-2xl rounded-t-3xl">
+                <div className="flex items-start md:items-center justify-between gap-3 mb-4">
+                  <div className="flex-1">
+                    <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight leading-none mb-1">Communication Engine</h2>
+                    <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mt-1.5 leading-tight">Live Global Interaction Feed</p>
                   </div>
-                  <div className="p-3 bg-blue-50 rounded-2xl">
-                    <InboxIcon className="w-6 h-6 text-blue-600" />
+                  <div className="p-2.5 md:p-3 bg-blue-50 rounded-2xl shrink-0 mt-1 md:mt-0">
+                    <InboxIcon className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
-                    <p className="text-[10px] font-black text-blue-600 uppercase mb-1">Total Sent</p>
-                    <p className="text-2xl font-black text-blue-900">{globalTimeline.filter(e => e.type === 'SENT').length}</p>
+                <div className="grid grid-cols-2 gap-3 md:gap-4 mt-5 md:mt-6">
+                  <div className="p-3 md:p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col justify-center">
+                    <p className="text-[9px] md:text-[10px] font-black text-blue-600 uppercase mb-1 truncate">Total Sent</p>
+                    <p className="text-xl md:text-2xl font-black text-blue-900 leading-none">{globalTimeline.filter(e => e.type === 'SENT').length}</p>
                   </div>
-                  <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                    <p className="text-[10px] font-black text-indigo-600 uppercase mb-1">Total Received</p>
-                    <p className="text-2xl font-black text-indigo-900">{globalTimeline.filter(e => e.type === 'RECEIVED').length}</p>
+                  <div className="p-3 md:p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex flex-col justify-center">
+                    <p className="text-[9px] md:text-[10px] font-black text-indigo-600 uppercase mb-1 truncate">Total Received</p>
+                    <p className="text-xl md:text-2xl font-black text-indigo-900 leading-none">{globalTimeline.filter(e => e.type === 'RECEIVED').length}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-6 bg-white/40 backdrop-blur-xl rounded-b-3xl">
+              <div className="flex-1 overflow-y-auto p-5 md:p-8 custom-scrollbar space-y-6 bg-white/40 backdrop-blur-xl rounded-b-3xl">
                 {loadingGlobal ? (
                   <div className="flex flex-col items-center justify-center py-20 gap-4">
                     <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />

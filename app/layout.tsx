@@ -4,6 +4,7 @@ import { SessionProvider } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner";
 import Analytics from "@/components/Analytics";
+import PublicMobileNav from "@/components/navigation/PublicMobileNav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -83,6 +84,7 @@ export default function RootLayout({
           <SessionProvider>
             <ServiceWorkerCleaner />
             {children}
+            <PublicMobileNav />
           </SessionProvider>
         </ThemeProvider>
       </body>

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import WelcomeGuideModal from '@/components/WelcomeGuideModal';
 import IncomingCallModal from '@/components/collaboration/IncomingCallModal';
+import MobileBottomNav from '@/components/navigation/MobileBottomNav';
 
 interface UserData {
   firstName: string;
@@ -181,8 +182,8 @@ export default function DashboardLayout({
         <div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] bg-purple-400/20 rounded-full blur-[100px] animate-blob animation-delay-4000 mix-blend-multiply" />
       </div>
 
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-64 bg-white/60 backdrop-blur-xl border-r border-white/20 z-40 transition-all duration-300 shadow-sm flex flex-col">
+      {/* Sidebar (Desktop Only) */}
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white/60 backdrop-blur-xl border-r border-white/20 z-40 transition-all duration-300 shadow-sm flex-col">
         <div className="p-6 border-b border-white/20 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Image src="/logo.png" alt="Okleevo" width={120} height={32} className="h-8 w-auto" />
@@ -378,7 +379,7 @@ export default function DashboardLayout({
       </aside>
       
       {/* Main Content */}
-      <div className={`ml-64 h-screen overflow-y-auto relative ${sidebarOpen ? 'z-10' : 'z-20'}`} id="main-content">
+      <div className={`ml-0 md:ml-64 h-screen pb-20 md:pb-0 overflow-y-auto relative ${sidebarOpen ? 'z-10' : 'z-20'}`} id="main-content">
         {/* Header */}
         <header className="sticky top-0 z-30 bg-white/60 backdrop-blur-md border-b border-white/20">
           <div className="px-6 py-3 flex items-center justify-between">
@@ -513,6 +514,7 @@ export default function DashboardLayout({
         businessName={userData?.business?.name || 'Business'} 
       />
       <IncomingCallModal />
+      <MobileBottomNav />
     </div>
   );
 }
