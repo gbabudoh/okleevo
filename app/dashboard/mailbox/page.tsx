@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { sanitizeHtml } from '@/lib/sanitize';
 import {
   Mail, Trash2, Search, RefreshCw, Star,
   MoreVertical, Reply, Paperclip,
@@ -403,7 +404,7 @@ export default function MailboxPage() {
 
               <div className="text-sm text-gray-700 leading-relaxed">
                 {selectedMessage.html ? (
-                  <div dangerouslySetInnerHTML={{ __html: selectedMessage.html }} />
+                  <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedMessage.html) }} />
                 ) : (
                   <pre className="whitespace-pre-wrap font-sans text-sm bg-gray-50 p-4 rounded-xl border border-gray-100">
                     {selectedMessage.body}

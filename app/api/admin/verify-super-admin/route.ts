@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
  * GET - Verify and fix super admin user
  * This endpoint checks if super admin exists and fixes any issues
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const email = 'admin@okleevo.com';
     const password = 'Admin123!@#';
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       message: issues.length === 0 && fixes.length === 0
         ? 'Super admin user is properly configured!'
         : 'Super admin user has been fixed!',
-      loginUrl: 'http://localhost:3000/admin/access',
+      loginUrl: `${process.env.NEXT_PUBLIC_APP_URL || ''}/admin/access`,
     });
   } catch (error: any) {
     console.error('Error verifying super admin:', error);

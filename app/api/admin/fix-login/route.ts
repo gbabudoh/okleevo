@@ -182,9 +182,9 @@ export async function POST() {
         email,
         password,
       },
-      loginUrl: 'http://localhost:3000/admin/access',
+      loginUrl: `${process.env.NEXT_PUBLIC_APP_URL || ''}/admin/access`,
       instructions: [
-        '1. Go to: http://localhost:3000/admin/access',
+        `1. Go to: ${process.env.NEXT_PUBLIC_APP_URL || ''}/admin/access`,
         '2. Enter email: admin@okleevo.com',
         '3. Enter password: Admin123!@#',
         '4. Click Sign In',

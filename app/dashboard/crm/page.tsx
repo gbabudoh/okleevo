@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { sanitizeHtml } from '@/lib/sanitize';
 import {
   Plus, Search, Mail, PoundSterling,
   Users, TrendingUp, Star, Edit, Trash2, X, Tag, AlertCircle,
@@ -326,7 +327,7 @@ export default function CRMPage() {
                         <span className="text-[10px] text-gray-400">{new Date(item.date).toLocaleDateString()}</span>
                       </div>
                       <h4 className="text-xs font-bold text-gray-900 mb-1">{item.subject}</h4>
-                      <div className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.body }} />
+                      <div className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body) }} />
                     </div>
                   ))}
                 </div>
@@ -700,7 +701,7 @@ export default function CRMPage() {
                       </div>
                     </div>
                     <h4 className="text-xs font-bold text-gray-900 mb-1 truncate">{item.subject}</h4>
-                    <div className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.body }} />
+                    <div className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body) }} />
                   </div>
                 ))}
               </div>
