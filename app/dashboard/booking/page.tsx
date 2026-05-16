@@ -1,7 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Calendar, Clock, Plus, X, Mail, Phone, MapPin, Video, CheckCircle, Edit, Trash2, Filter, Search, TrendingUp, CalendarCheck, ChevronRight, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import {
+  Calendar, Clock, Plus, X, Mail, Phone, MapPin, Video,
+  CheckCircle, Edit, Trash2, Search, TrendingUp, CalendarCheck,
+  ChevronDown, Loader2, User
+} from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Booking {
@@ -19,50 +23,78 @@ interface Booking {
   notes?: string;
 }
 
+const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
+const selectCls = `${inputCls} appearance-none cursor-pointer`;
+
+const ModalHandle = () => (
+  <div className="flex justify-center pt-2 pb-0 sm:hidden shrink-0">
+    <div className="w-10 h-1 rounded-full bg-gray-300" />
+  </div>
+);
+
+const ModalFooter = ({ children }: { children: ReactNode }) => (
+  <div className="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+    {children}
+  </div>
+);
+
+const CancelBtn = ({ onClick }: { onClick: () => void }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="flex-1 py-3 px-5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer"
+  >
+    Cancel
+  </button>
+);
+
+const statusConfig = {
+  confirmed: { label: 'Confirmed', dot: 'bg-emerald-500', badge: 'bg-emerald-100 text-emerald-700' },
+  pending:   { label: 'Pending',   dot: 'bg-amber-400',   badge: 'bg-amber-100 text-amber-700' },
+  cancelled: { label: 'Cancelled', dot: 'bg-red-400',     badge: 'bg-red-100 text-red-600' },
+  completed: { label: 'Completed', dot: 'bg-blue-500',    badge: 'bg-blue-100 text-blue-700' },
+};
+
+const typeIcon = (type: string) => {
+  if (type === 'video')     return <Video className="w-3.5 h-3.5" />;
+  if (type === 'phone')     return <Phone className="w-3.5 h-3.5" />;
+  if (type === 'in-person') return <MapPin className="w-3.5 h-3.5" />;
+  return <Calendar className="w-3.5 h-3.5" />;
+};
+
+const initials = (name: string) =>
+  name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
+const blankBooking = () => ({
+  client: '', email: '', phone: '', service: '',
+  date: '', time: '', duration: 60,
+  type: 'video' as 'in-person' | 'video' | 'phone',
+  location: '', notes: '',
+});
+
 export default function BookingPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddModal, setShowAddModal]       = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showEditModal, setShowEditModal]     = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [editBooking, setEditBooking] = useState<Booking | null>(null);
+  const [editBooking, setEditBooking]         = useState<Booking | null>(null);
   const [deletingBooking, setDeletingBooking] = useState<Booking | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const [newBooking, setNewBooking] = useState({
-    client: '',
-    email: '',
-    phone: '',
-    service: '',
-    date: '',
-    time: '',
-    duration: 60,
-    type: 'video' as 'in-person' | 'video' | 'phone',
-    location: '',
-    notes: ''
-  });
+  const [filterStatus, setFilterStatus]       = useState('all');
+  const [searchTerm, setSearchTerm]           = useState('');
+  const [newBooking, setNewBooking]           = useState(blankBooking());
 
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch('/api/bookings');
-      if (res.ok) {
-        const data = await res.json();
-        setBookings(data);
-      }
-    } catch (error: unknown) {
-      console.error('Error fetching bookings:', error);
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) setBookings(await res.json());
+    } catch { /* silent */ } finally { setLoading(false); }
   }, []);
 
-  useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+  useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   const handleCreateBooking = async () => {
     try {
@@ -75,11 +107,9 @@ export default function BookingPage() {
         const saved = await res.json();
         setBookings(prev => [saved, ...prev]);
         setShowAddModal(false);
-        setNewBooking({ client: '', email: '', phone: '', service: '', date: '', time: '', duration: 60, type: 'video', location: '', notes: '' });
+        setNewBooking(blankBooking());
       }
-    } catch (error: unknown) {
-      console.error('Error creating booking:', error);
-    }
+    } catch { /* silent */ }
   };
 
   const handleSaveEdit = async () => {
@@ -96,150 +126,195 @@ export default function BookingPage() {
         setShowEditModal(false);
         setEditBooking(null);
       }
-    } catch (error: unknown) {
-      console.error('Error updating booking:', error);
-    }
+    } catch { /* silent */ }
   };
 
   const handleDeleteConfirm = async () => {
     if (!deletingBooking) return;
     try {
-      const res = await fetch(`/api/bookings/${deletingBooking.id}`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(`/api/bookings/${deletingBooking.id}`, { method: 'DELETE' });
       if (res.ok) {
         setBookings(prev => prev.filter(b => b.id !== deletingBooking.id));
         setShowDeleteModal(false);
         setDeletingBooking(null);
       }
-    } catch (error: unknown) {
-      console.error('Error deleting booking:', error);
-    }
+    } catch { /* silent */ }
   };
 
-  const handleDeleteBooking = (booking: Booking) => {
-    setDeletingBooking(booking);
-    setShowDeleteModal(true);
-  };
-
-  const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = booking.client.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         booking.service.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || booking.status === filterStatus;
-    return matchesSearch && matchesFilter;
+  const filteredBookings = bookings.filter(b => {
+    const matchSearch = b.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        b.service.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchFilter = filterStatus === 'all' || b.status === filterStatus;
+    return matchSearch && matchFilter;
   });
 
-  const upcomingBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
-  const totalBookings = bookings.length;
-  const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
-  const completedBookings = bookings.filter(b => b.status === 'completed').length;
+  const totalBookings     = bookings.length;
+  const confirmedCount    = bookings.filter(b => b.status === 'confirmed').length;
+  const upcomingCount     = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length;
+  const completedCount    = bookings.filter(b => b.status === 'completed').length;
 
-  const getStatusConfig = (status: string) => {
-    switch(status) {
-      case 'confirmed': return { color: 'text-emerald-600', bg: 'bg-emerald-500', label: 'Confirmed' };
-      case 'pending': return { color: 'text-amber-600', bg: 'bg-amber-500', label: 'Pending' };
-      case 'cancelled': return { color: 'text-rose-600', bg: 'bg-rose-500', label: 'Cancelled' };
-      case 'completed': return { color: 'text-blue-600', bg: 'bg-blue-500', label: 'Completed' };
-      default: return { color: 'text-gray-600', bg: 'bg-gray-500', label: status };
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch(type) {
-      case 'video': return <Video className="w-3.5 h-3.5" />;
-      case 'phone': return <Phone className="w-3.5 h-3.5" />;
-      case 'in-person': return <MapPin className="w-3.5 h-3.5" />;
-      default: return <Calendar className="w-3.5 h-3.5" />;
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-          <p className="text-gray-500 font-bold animate-pulse text-lg">Synchronizing Schedule...</p>
+  // Shared form fields renderer to avoid duplication
+  const BookingFormFields = ({
+    data, onChange,
+  }: {
+    data: typeof newBooking | Booking;
+    onChange: (patch: Partial<Booking>) => void;
+  }) => (
+    <div className="space-y-2 sm:space-y-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div>
+          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Client Name *</label>
+          <input type="text" value={data.client} onChange={e => onChange({ client: e.target.value })}
+            className={inputCls} placeholder="e.g. John Smith" />
+        </div>
+        <div>
+          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Email *</label>
+          <input type="email" value={data.email} onChange={e => onChange({ email: e.target.value })}
+            className={inputCls} placeholder="john@email.com" />
+        </div>
+        <div>
+          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
+          <input type="tel" value={data.phone || ''} onChange={e => onChange({ phone: e.target.value })}
+            className={inputCls} placeholder="+44 20 ..." />
+        </div>
+        <div>
+          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Service *</label>
+          <input type="text" value={data.service} onChange={e => onChange({ service: e.target.value })}
+            className={inputCls} placeholder="e.g. Consultation" />
+        </div>
+        <div>
+          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Date *</label>
+          <input type="date" value={data.date} onChange={e => onChange({ date: e.target.value })}
+            className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Time *</label>
+          <input type="time" value={data.time} onChange={e => onChange({ time: e.target.value })}
+            className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Duration</label>
+          <select value={data.duration} onChange={e => onChange({ duration: parseInt(e.target.value) })}
+            className={selectCls}>
+            <option value="30">30 min</option>
+            <option value="45">45 min</option>
+            <option value="60">60 min</option>
+            <option value="90">90 min</option>
+            <option value="120">2 hours</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Type</label>
+          <select value={data.type} onChange={e => onChange({ type: e.target.value as 'in-person' | 'video' | 'phone' })}
+            className={selectCls}>
+            <option value="video">Video Call</option>
+            <option value="phone">Phone Call</option>
+            <option value="in-person">In-Person</option>
+          </select>
         </div>
       </div>
-    );
-  }
+      {'status' in data && (
+        <div>
+          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+          <select value={(data as Booking).status}
+            onChange={e => onChange({ status: e.target.value as Booking['status'] })}
+            className={selectCls}>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      )}
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">
+          Location {data.type !== 'in-person' && <span className="text-gray-400 font-normal">(in-person only)</span>}
+        </label>
+        <input type="text" value={data.location || ''}
+          onChange={e => onChange({ location: e.target.value })}
+          disabled={data.type !== 'in-person'}
+          className={`${inputCls} disabled:opacity-40 disabled:cursor-not-allowed`}
+          placeholder="e.g. Room 1" />
+      </div>
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Notes</label>
+        <textarea value={data.notes || ''} onChange={e => onChange({ notes: e.target.value })}
+          className={`${inputCls} h-16 sm:h-20 resize-none`} placeholder="Additional details..." />
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#F8FAFC]">
-      {/* Enhanced Background */}
-      <div className="fixed inset-0 z-0">
-         <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-purple-200/20 rounded-full blur-[120px] mix-blend-multiply" />
-         <div className="absolute top-[20%] right-[-20%] w-[60%] h-[60%] bg-blue-200/20 rounded-full blur-[120px] mix-blend-multiply" />
-         <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] bg-amber-100/30 rounded-full blur-[100px] mix-blend-multiply" />
-      </div>
+    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
 
-      <div className="relative z-10 p-8 max-w-[1600px] mx-auto space-y-10">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-              Bookings
-              <span className="text-lg font-medium text-gray-400 bg-white/50 px-3 py-1 rounded-full border border-gray-100 backdrop-blur-sm">
-                {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </span>
-            </h1>
-            <p className="text-gray-500 font-medium text-lg max-w-xl">
-              Manage your upcoming schedule and appointments efficiently.
-            </p>
+      {/* Mobile FAB */}
+      <button
+        type="button"
+        onClick={() => setShowAddModal(true)}
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-linear-to-r from-blue-600 to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-transform"
+      >
+        <Plus className="w-7 h-7" />
+      </button>
+
+      {/* Sticky header */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+          <div className="p-2 bg-blue-600 rounded-xl shrink-0">
+            <Calendar className="w-5 h-5 text-white" />
           </div>
-          <button 
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Bookings</h1>
+            <p className="text-xs text-gray-500 hidden sm:block">Manage appointments and schedule</p>
+          </div>
+          <button
+            type="button"
             onClick={() => setShowAddModal(true)}
-            className="group px-6 py-4 bg-gray-900 text-white rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-gray-200 hover:shadow-2xl hover:bg-black hover:-translate-y-1 transition-all duration-300 cursor-pointer text-sm"
+            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0"
           >
-            <span>New Booking</span>
-            <div className="p-1 rounded-lg bg-white/20 group-hover:rotate-90 transition-transform duration-300">
-              <Plus className="w-4 h-4" />
-            </div>
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">New Booking</span>
+            <span className="sm:hidden">New</span>
           </button>
         </div>
+      </div>
 
-        {/* Improved Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Bookings', value: totalBookings, icon: CalendarCheck, color: 'blue', sub: 'All time' },
-            { label: 'Confirmed', value: confirmedBookings, icon: CheckCircle, color: 'emerald', sub: 'Active' },
-            { label: 'Upcoming', value: upcomingBookings.length, icon: Clock, color: 'purple', sub: 'Scheduled' },
-            { label: 'Completed', value: completedBookings, icon: TrendingUp, color: 'orange', sub: 'Archive' },
-          ].map((stat, i) => (
-            <div key={i} className="relative overflow-hidden bg-white/70 backdrop-blur-2xl rounded-[2rem] p-6 border border-white/80 shadow-sm transition-all duration-300">
-              <div className="relative z-10">
-                <div className={`w-12 h-12 rounded-2xl bg-${stat.color}-50 flex items-center justify-center mb-4 border border-${stat.color}-100`}>
-                  <stat.icon className={`w-5 h-5 text-${stat.color}-600`} />
-                </div>
-                <div className="space-y-0.5">
-                  <span className="text-4xl font-black text-gray-900 tracking-tight block">{stat.value}</span>
-                  <p className="text-gray-900 font-bold text-sm tracking-tight">{stat.label}</p>
-                  <p className="text-gray-400 font-semibold text-xs">{stat.sub}</p>
-                </div>
+            { label: 'Total Bookings', value: totalBookings,  icon: CalendarCheck, bg: 'bg-blue-100',    ic: 'text-blue-600',    val: 'text-blue-700' },
+            { label: 'Confirmed',      value: confirmedCount, icon: CheckCircle,   bg: 'bg-emerald-100', ic: 'text-emerald-600', val: 'text-emerald-700' },
+            { label: 'Upcoming',       value: upcomingCount,  icon: Clock,         bg: 'bg-purple-100',  ic: 'text-purple-600',  val: 'text-purple-700' },
+            { label: 'Completed',      value: completedCount, icon: TrendingUp,    bg: 'bg-orange-100',  ic: 'text-orange-600',  val: 'text-orange-700' },
+          ].map((s, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className={`p-2 rounded-lg ${s.bg} w-fit mb-2`}>
+                <s.icon className={`w-4 h-4 ${s.ic}`} />
               </div>
+              <p className={`text-2xl font-bold ${s.val}`}>{s.value}</p>
+              <p className="text-xs text-gray-500 font-medium mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Enhanced Filters & Search */}
-        <div className="bg-white/60 backdrop-blur-2xl p-2 rounded-[1.5rem] border border-white/60 shadow-sm flex flex-col md:flex-row gap-2">
-          <div className="flex-1 relative group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+        {/* Search + Filter */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search clients, services..."
+              placeholder="Search clients or services…"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-14 pr-4 py-4 bg-transparent rounded-2xl outline-none font-medium placeholder-gray-400 focus:bg-white/50 transition-colors text-gray-900"
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-sm outline-none border border-gray-100 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
             />
           </div>
-          <div className="h-auto w-px bg-gray-200 hidden md:block my-2" />
-          <div className="relative group min-w-[240px]">
-            <Filter className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors pointer-events-none" />
+          <div className="relative sm:w-48">
             <select
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full pl-14 pr-10 py-4 bg-transparent rounded-2xl outline-none font-medium text-gray-700 cursor-pointer appearance-none focus:bg-white/50 transition-colors"
+              onChange={e => setFilterStatus(e.target.value)}
+              className="w-full px-3 py-2.5 bg-gray-50 rounded-xl text-sm outline-none border border-gray-100 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all appearance-none cursor-pointer pr-8"
             >
               <option value="all">All Statuses</option>
               <option value="confirmed">Confirmed</option>
@@ -247,522 +322,278 @@ export default function BookingPage() {
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
         </div>
 
-        {/* Modern List View */}
-        <div className="grid gap-4">
-          {filteredBookings.map((booking, index) => {
-            const status = getStatusConfig(booking.status);
-            return (
-              <div 
-                key={booking.id} 
-                className="group relative bg-white/70 backdrop-blur-xl rounded-[20px] p-1 shadow-sm border border-white/60 hover:shadow-lg transition-all duration-300"
-                style={{ animationDelay: `${index * 50}ms` }}
+        {/* Booking list */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+            <p className="text-sm text-gray-500 font-medium">Loading bookings…</p>
+          </div>
+        ) : filteredBookings.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+            <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-7 h-7 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">
+              {searchTerm || filterStatus !== 'all' ? 'No matching bookings' : 'No bookings yet'}
+            </h3>
+            <p className="text-sm text-gray-500 mb-5">
+              {searchTerm || filterStatus !== 'all'
+                ? 'Try adjusting your search or filter.'
+                : 'Create your first booking to get started.'}
+            </p>
+            {!searchTerm && filterStatus === 'all' && (
+              <button
+                type="button"
+                onClick={() => setShowAddModal(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer"
               >
-                <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-6 bg-white/40 rounded-[16px] p-5 transition-colors group-hover:bg-white/60">
-                  {/* Avatar & Name */}
-                  <div className="flex items-center gap-5 xl:w-[25%] min-w-[240px]">
-                    <div className="relative">
-                       <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-gray-200">
-                        {booking.client.split(' ').map(n => n[0]).join('')}
+                <Plus className="w-4 h-4" /> New Booking
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {filteredBookings.map(booking => {
+              const sc = statusConfig[booking.status] ?? statusConfig.pending;
+              return (
+                <div key={booking.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                  <div className="flex items-start gap-3">
+                    {/* Avatar */}
+                    <div className="relative shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                        {initials(booking.client)}
                       </div>
-                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center`}>
-                        <div className={`w-3 h-3 rounded-full ${status.bg}`} />
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${sc.dot}`} />
+                    </div>
+
+                    {/* Main info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <div>
+                          <p className="text-sm font-bold text-gray-900 leading-tight">{booking.client}</p>
+                          <p className="text-xs text-gray-500 font-medium">{booking.service}</p>
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${sc.badge}`}>
+                          {sc.label}
+                        </span>
                       </div>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">{booking.client}</h3>
-                      <p className="text-sm font-medium text-gray-500">{booking.service}</p>
-                    </div>
-                  </div>
 
-                  {/* Date & Time */}
-                  <div className="xl:w-[20%] flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                      <Calendar className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">{booking.date}</p>
-                      <p className="text-xs font-semibold text-gray-500">{booking.time} • {booking.duration}m</p>
-                    </div>
-                  </div>
-
-                  {/* Type */}
-                  <div className="xl:w-[15%]">
-                    <div className="flex items-center gap-2">
-                       <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                         {getTypeIcon(booking.type)}
-                       </span>
-                       <span className="text-sm font-semibold text-gray-700 capitalize">{booking.type}</span>
-                    </div>
-                  </div>
-
-                   {/* Status */}
-                  <div className="xl:w-[15%]">
-                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-100 shadow-sm`}>
-                       <span className={`w-2 h-2 rounded-full ${status.bg}`} />
-                       <span className={`text-xs font-bold uppercase tracking-wide ${status.color}`}>{status.label}</span>
+                      {/* Meta row */}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+                        <span className="flex items-center gap-1 text-xs text-gray-500">
+                          <Calendar className="w-3.5 h-3.5 text-gray-400" /> {booking.date}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-gray-500">
+                          <Clock className="w-3.5 h-3.5 text-gray-400" /> {booking.time} · {booking.duration}m
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-gray-400 capitalize">
+                          {typeIcon(booking.type)} {booking.type}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="xl:ml-auto flex items-center gap-2 opacity-100 transition-all duration-200">
-
-                     <button 
+                  <div className="flex gap-1.5 mt-3 pt-3 border-t border-gray-50">
+                    <button
+                      type="button"
                       onClick={() => { setSelectedBooking(booking); setShowDetailModal(true); }}
-                      className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer"
-                      title="View Details"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <User className="w-3.5 h-3.5" /> Details
                     </button>
-                    <div className="w-px h-6 bg-gray-200" />
-                    <button 
+                    <button
+                      type="button"
                       onClick={() => { setEditBooking(booking); setShowEditModal(true); }}
-                      className="p-2.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
-                      title="Edit"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-3.5 h-3.5" /> Edit
                     </button>
-                    <button 
-                      onClick={() => handleDeleteBooking(booking)}
-                      className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
-                      title="Delete"
+                    <button
+                      type="button"
+                      onClick={() => { setDeletingBooking(booking); setShowDeleteModal(true); }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
                     </button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-        {/* Compact Modals */}
-        
-        {/* ADD MODAL */}
-        {showAddModal && (
-        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2rem] max-w-3xl w-full shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-            <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between shrink-0">
-              <div>
-                <h2 className="text-2xl font-black text-gray-900 tracking-tight">New Booking</h2>
-                <p className="text-gray-500 font-medium text-sm">Fill in the details below to schedule.</p>
-              </div>
-              <button onClick={() => setShowAddModal(false)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer text-gray-500">
-                <X className="w-5 h-5" />
+      {/* ── Add Booking Modal ── */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-4 sm:p-4 pb-10 sm:pb-4">
+          <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[66dvh] sm:max-h-[92vh] rounded-t-3xl sm:rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
+            <ModalHandle />
+            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
+              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
+                <Plus className="w-4 h-4" /> New Booking
+              </h2>
+              <button type="button" onClick={() => { setShowAddModal(false); setNewBooking(blankBooking()); }}
+                className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
+                <X className="w-5 h-5 text-white" />
               </button>
             </div>
-            
-            <div className="p-8 space-y-6 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Client Name</label>
-                  <input
-                    type="text"
-                    value={newBooking.client}
-                    onChange={(e) => setNewBooking({...newBooking, client: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold text-gray-900"
-                    placeholder="e.g. John Smith"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Email</label>
-                  <input
-                    type="email"
-                    value={newBooking.email}
-                    onChange={(e) => setNewBooking({...newBooking, email: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold text-gray-900"
-                    placeholder="john@email.com"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Phone</label>
-                  <input
-                    type="tel"
-                    value={newBooking.phone}
-                    onChange={(e) => setNewBooking({...newBooking, phone: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold text-gray-900"
-                    placeholder="+44 20 ..."
-                  />
-                </div>
-                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Service</label>
-                  <input
-                    type="text"
-                    value={newBooking.service}
-                    onChange={(e) => setNewBooking({...newBooking, service: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold text-gray-900"
-                    placeholder="e.g. Consultation"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Date</label>
-                  <input
-                    type="date"
-                    value={newBooking.date}
-                    onChange={(e) => setNewBooking({...newBooking, date: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold text-gray-900"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Time</label>
-                  <input
-                    type="time"
-                    value={newBooking.time}
-                    onChange={(e) => setNewBooking({...newBooking, time: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold text-gray-900"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Duration</label>
-                  <div className="relative">
-                    <select
-                      value={newBooking.duration}
-                      onChange={(e) => setNewBooking({...newBooking, duration: parseInt(e.target.value)})}
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold text-gray-900 appearance-none cursor-pointer"
-                    >
-                      <option value="30">30 min</option>
-                      <option value="45">45 min</option>
-                      <option value="60">60 min</option>
-                      <option value="90">90 min</option>
-                      <option value="120">2 hours</option>
-                    </select>
-                     <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Type</label>
-                   <div className="relative">
-                    <select
-                      value={newBooking.type}
-                      onChange={(e) => setNewBooking({...newBooking, type: e.target.value as 'in-person' | 'video' | 'phone'})}
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold text-gray-900 appearance-none cursor-pointer"
-                    >
-                      <option value="video">Video Call</option>
-                      <option value="phone">Phone Call</option>
-                      <option value="in-person">In-Person</option>
-                    </select>
-                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Location</label>
-                  <input
-                    type="text"
-                    value={newBooking.location}
-                    onChange={(e) => setNewBooking({...newBooking, location: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-bold text-gray-900 disabled:opacity-50"
-                    placeholder="e.g. Room 1"
-                    disabled={newBooking.type !== 'in-person'}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Notes</label>
-                <textarea
-                  value={newBooking.notes}
-                  onChange={(e) => setNewBooking({...newBooking, notes: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500/20 focus:bg-white rounded-xl focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-medium h-24 resize-none"
-                  placeholder="Additional details..."
-                />
-              </div>
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5">
+              <BookingFormFields
+                data={newBooking}
+                onChange={patch => setNewBooking(prev => ({ ...prev, ...patch }))}
+              />
             </div>
 
-            <div className="p-6 border-t border-gray-100 flex gap-4 shrink-0 bg-gray-50/50 rounded-b-[2rem]">
-               <button 
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 px-6 py-4 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-all cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button 
+            <ModalFooter>
+              <CancelBtn onClick={() => { setShowAddModal(false); setNewBooking(blankBooking()); }} />
+              <button
+                type="button"
                 onClick={handleCreateBooking}
                 disabled={!newBooking.client || !newBooking.email || !newBooking.service || !newBooking.date || !newBooking.time}
-                className="flex-[2] px-6 py-4 bg-gray-900 text-white rounded-xl font-bold shadow-lg shadow-gray-200 hover:shadow-xl hover:scale-[1.02] hover:bg-black transition-all cursor-pointer disabled:opacity-50 disabled:hover:scale-100" 
+                className="flex-2 py-3 px-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
-                Create Booking
+                <Plus className="w-4 h-4" /> Create Booking
               </button>
-            </div>
+            </ModalFooter>
           </div>
         </div>
-        )}
+      )}
 
-        {/* EDIT MODAL */}
-        {showEditModal && editBooking && (
-        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2rem] max-w-3xl w-full shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-            <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between shrink-0">
-              <div>
-                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Edit Booking</h2>
-                <p className="text-gray-500 font-medium text-sm">Modify booking details.</p>
-              </div>
-              <button onClick={() => { setShowEditModal(false); setEditBooking(null); }} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer text-gray-500">
-                <X className="w-5 h-5" />
+      {/* ── Edit Booking Modal ── */}
+      {showEditModal && editBooking && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-4 sm:p-4 pb-10 sm:pb-4">
+          <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[66dvh] sm:max-h-[92vh] rounded-t-3xl sm:rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
+            <ModalHandle />
+            <div className="bg-linear-to-r from-amber-500 to-orange-600 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
+              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
+                <Edit className="w-4 h-4" /> Edit Booking
+              </h2>
+              <button type="button" onClick={() => { setShowEditModal(false); setEditBooking(null); }}
+                className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
+                <X className="w-5 h-5 text-white" />
               </button>
             </div>
-            
-            <div className="p-8 space-y-6 overflow-y-auto">
-              {/* Same grid layout as Create ... reusing styles */}
-               <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Client Name</label>
-                  <input
-                    type="text"
-                    value={editBooking.client}
-                    onChange={(e) => setEditBooking({...editBooking, client: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900"
-                  />
+
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5">
+              <BookingFormFields
+                data={editBooking}
+                onChange={patch => setEditBooking(prev => prev ? { ...prev, ...patch } : prev)}
+              />
+            </div>
+
+            <ModalFooter>
+              <CancelBtn onClick={() => { setShowEditModal(false); setEditBooking(null); }} />
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                className="flex-2 py-3 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" /> Save Changes
+              </button>
+            </ModalFooter>
+          </div>
+        </div>
+      )}
+
+      {/* ── Detail Modal ── */}
+      {showDetailModal && selectedBooking && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-4 sm:p-4 pb-10 sm:pb-4">
+          <div className="bg-white w-full sm:max-w-md flex flex-col overflow-hidden max-h-[66dvh] sm:max-h-[92vh] rounded-t-3xl sm:rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
+            <ModalHandle />
+            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
+              <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight">Booking Details</h2>
+              <button type="button" onClick={() => setShowDetailModal(false)}
+                className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5 space-y-3 sm:space-y-4">
+              {/* Avatar + name */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-lg sm:text-xl font-bold shrink-0">
+                  {initials(selectedBooking.client)}
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Email</label>
-                  <input
-                    type="email"
-                    value={editBooking.email}
-                    onChange={(e) => setEditBooking({...editBooking, email: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900"
-                  />
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900">{selectedBooking.client}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500">{selectedBooking.service}</p>
+                  <span className={`inline-block mt-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${statusConfig[selectedBooking.status]?.badge ?? 'bg-gray-100 text-gray-600'}`}>
+                    {statusConfig[selectedBooking.status]?.label ?? selectedBooking.status}
+                  </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Phone</label>
-                  <input
-                    type="tel"
-                    value={editBooking.phone || ''}
-                    onChange={(e) => setEditBooking({...editBooking, phone: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900"
-                  />
+              {/* Date / time / type */}
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="bg-blue-50 rounded-xl p-2.5 sm:p-3 border border-blue-100">
+                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide mb-1">Date</p>
+                  <p className="text-xs sm:text-sm font-bold text-blue-900">{selectedBooking.date}</p>
                 </div>
-                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Service</label>
-                  <input
-                    type="text"
-                    value={editBooking.service}
-                    onChange={(e) => setEditBooking({...editBooking, service: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900"
-                  />
+                <div className="bg-blue-50 rounded-xl p-2.5 sm:p-3 border border-blue-100">
+                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide mb-1">Time</p>
+                  <p className="text-xs sm:text-sm font-bold text-blue-900">{selectedBooking.time} · {selectedBooking.duration}m</p>
                 </div>
               </div>
 
-               <div className="grid grid-cols-3 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Date</label>
-                  <input
-                    type="date"
-                    value={editBooking.date}
-                    onChange={(e) => setEditBooking({...editBooking, date: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900"
-                  />
+              {/* Contact info */}
+              <div className="bg-gray-50 rounded-xl p-3 sm:p-3.5 border border-gray-100 space-y-2 sm:space-y-2.5">
+                <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700">
+                  <Mail className="w-3.5 h-3.5 sm:w-4 h-4 text-gray-400 shrink-0" />
+                  <span className="font-medium break-all">{selectedBooking.email}</span>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Time</label>
-                  <input
-                    type="time"
-                    value={editBooking.time}
-                    onChange={(e) => setEditBooking({...editBooking, time: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Duration</label>
-                  <div className="relative">
-                    <select
-                      value={editBooking.duration}
-                      onChange={(e) => setEditBooking({...editBooking, duration: parseInt(e.target.value)})}
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900 appearance-none cursor-pointer"
-                    >
-                      <option value="30">30 min</option>
-                      <option value="45">45 min</option>
-                      <option value="60">60 min</option>
-                      <option value="90">90 min</option>
-                      <option value="120">2 hours</option>
-                    </select>
-                     <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
+                {selectedBooking.phone && (
+                  <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700">
+                    <Phone className="w-3.5 h-3.5 sm:w-4 h-4 text-gray-400 shrink-0" />
+                    <span className="font-medium">{selectedBooking.phone}</span>
                   </div>
+                )}
+                <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700 capitalize">
+                  {typeIcon(selectedBooking.type)}
+                  <span className="font-medium">{selectedBooking.type}</span>
                 </div>
+                {selectedBooking.location && (
+                  <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700">
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 h-4 text-gray-400 shrink-0" />
+                    <span className="font-medium">{selectedBooking.location}</span>
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Status</label>
-                  <div className="relative">
-                    <select
-                      value={editBooking.status}
-                      onChange={(e) => setEditBooking({...editBooking, status: e.target.value as 'confirmed' | 'pending' | 'cancelled' | 'completed'})}
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900 appearance-none cursor-pointer"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="completed">Completed</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                     <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Type</label>
-                   <div className="relative">
-                    <select
-                      value={editBooking.type}
-                      onChange={(e) => setEditBooking({...editBooking, type: e.target.value as 'in-person' | 'video' | 'phone'})}
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900 appearance-none cursor-pointer"
-                    >
-                      <option value="video">Video Call</option>
-                      <option value="phone">Phone Call</option>
-                      <option value="in-person">In-Person</option>
-                    </select>
-                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
-
-               {editBooking.type === 'in-person' && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Location</label>
-                  <input
-                    type="text"
-                    value={editBooking.location || ''}
-                    onChange={(e) => setEditBooking({...editBooking, location: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-bold text-gray-900"
-                  />
+              {selectedBooking.notes && (
+                <div className="bg-yellow-50 rounded-xl p-3 sm:p-3.5 border border-yellow-100">
+                  <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wide mb-1">Notes</p>
+                  <p className="text-xs sm:text-sm text-gray-700 font-medium leading-relaxed">{selectedBooking.notes}</p>
                 </div>
               )}
-
-             <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Notes</label>
-                <textarea
-                  value={editBooking.notes || ''}
-                  onChange={(e) => setEditBooking({...editBooking, notes: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-gray-900/10 focus:bg-white rounded-xl focus:ring-4 focus:ring-gray-100 transition-all outline-none font-medium h-24 resize-none"
-                />
-              </div>
-
             </div>
 
-             <div className="p-6 border-t border-gray-100 flex gap-4 shrink-0 bg-gray-50/50 rounded-b-[2rem]">
-               <button 
-                onClick={() => { setShowEditModal(false); setEditBooking(null); }}
-                className="flex-1 px-6 py-4 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-all cursor-pointer"
+            <ModalFooter>
+              <button
+                type="button"
+                onClick={() => setShowDetailModal(false)}
+                className="flex-1 py-3 px-5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                Cancel
+                Close
               </button>
-              <button 
-                onClick={handleSaveEdit}
-                className="flex-[2] px-6 py-4 bg-gray-900 text-white rounded-xl font-bold shadow-lg shadow-gray-200 hover:shadow-xl hover:scale-[1.02] hover:bg-black transition-all cursor-pointer" 
+              <button
+                type="button"
+                onClick={() => { setShowDetailModal(false); setEditBooking(selectedBooking); setShowEditModal(true); }}
+                className="flex-2 py-3 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
-                Save Changes
+                <Edit className="w-4 h-4" /> Edit Booking
               </button>
-            </div>
+            </ModalFooter>
           </div>
         </div>
-        )}
+      )}
 
-        {/* DETAIL MODAL */}
-        {showDetailModal && selectedBooking && (
-        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-           <div className="bg-white rounded-[2rem] max-w-2xl w-full shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-             <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-8 py-6 flex items-center justify-between shrink-0 mb-[-2rem] pb-12 rounded-t-[2rem]">
-                <h2 className="text-xl font-bold text-white/90 uppercase tracking-widest flex items-center gap-2">
-                  Booking Receipt
-                </h2>
-                 <button onClick={() => setShowDetailModal(false)} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors cursor-pointer text-white">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-               <div className="px-8 pb-8 pt-4 flex flex-col h-full overflow-hidden">
-                 <div className="bg-white rounded-[1.5rem] p-6 shadow-xl border border-gray-100 overflow-y-auto space-y-8 h-full">
-                    {/* Header receipt style */}
-                    <div className="text-center space-y-2 border-b border-dashed border-gray-200 pb-6">
-                       <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 mx-auto flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-blue-200 mb-4">
-                        {selectedBooking.client.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <h3 className="text-2xl font-black text-gray-900">{selectedBooking.client}</h3>
-                      <p className="text-gray-500 font-medium">{selectedBooking.service}</p>
-                      <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-gray-100 text-gray-600 mt-2`}>
-                        ID: #{selectedBooking.id.padStart(4, '0')}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-8">
-                      <div className="space-y-1">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Date</p>
-                        <p className="text-lg font-bold text-gray-900">{selectedBooking.date}</p>
-                      </div>
-                      <div className="space-y-1 text-right">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Time</p>
-                        <p className="text-lg font-bold text-gray-900">{selectedBooking.time}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Type</p>
-                        <p className="text-lg font-bold text-gray-900 capitalize flex items-center gap-2">
-                           {getTypeIcon(selectedBooking.type)} {selectedBooking.type}
-                        </p>
-                      </div>
-                       <div className="space-y-1 text-right">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Status</p>
-                        <span className={`inline-block px-3 py-1 rounded-md text-sm font-bold capitalize ${getStatusConfig(selectedBooking.status).bg} bg-opacity-10 ${getStatusConfig(selectedBooking.status).color}`}>
-                          {selectedBooking.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
-                       <div className="flex items-center gap-3">
-                         <Mail className="w-5 h-5 text-gray-400" />
-                         <span className="font-medium text-gray-700">{selectedBooking.email}</span>
-                       </div>
-                       {selectedBooking.phone && (
-                         <div className="flex items-center gap-3">
-                           <Phone className="w-5 h-5 text-gray-400" />
-                           <span className="font-medium text-gray-700">{selectedBooking.phone}</span>
-                         </div>
-                       )}
-                       {selectedBooking.location && (
-                         <div className="flex items-center gap-3">
-                           <MapPin className="w-5 h-5 text-gray-400" />
-                           <span className="font-medium text-gray-700">{selectedBooking.location}</span>
-                         </div>
-                       )}
-                    </div>
-
-                    {selectedBooking.notes && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Notes</p>
-                        <p className="text-sm font-medium text-gray-600 leading-relaxed bg-yellow-50/50 p-4 rounded-xl border border-yellow-100">
-                          {selectedBooking.notes}
-                        </p>
-                      </div>
-                    )}
-                 </div>
-                 
-                 <div className="mt-6 text-center">
-                    <button 
-                      onClick={() => setShowDetailModal(false)}
-                      className="text-gray-400 hover:text-gray-900 font-bold text-sm transition-colors cursor-pointer"
-                    >
-                      Close Receipt
-                    </button>
-                 </div>
-               </div>
-           </div>
-        </div>
-        )}
-
-      {/* Delete Confirmation Modal */}
+      {/* ── Delete Confirmation ── */}
       {deletingBooking && (
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
@@ -770,11 +601,10 @@ export default function BookingPage() {
           onConfirm={handleDeleteConfirm}
           title="Delete Booking"
           itemName={deletingBooking.client}
-          itemDetails={`${deletingBooking.service} - ${deletingBooking.date}`}
+          itemDetails={`${deletingBooking.service} · ${deletingBooking.date}`}
           warningMessage="This action cannot be undone."
         />
       )}
-      </div>
     </div>
   );
 }

@@ -1,35 +1,32 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, type ComponentType } from "react";
 import {
   Calculator,
   Plus,
-  Search,
-  Filter,
   Download,
   Upload,
   Eye,
   Edit3,
   Trash2,
   TrendingUp,
-  DollarSign,
   FileText,
   Calendar,
   BarChart3,
   PieChart,
   BookOpen,
-  Building2,
   ArrowUpRight,
   ArrowDownRight,
   CheckCircle,
   AlertCircle,
-  Clock,
   Printer,
-  Send,
   Save,
   X,
   Receipt,
   FileCheck,
+  Search,
+  Filter,
+  DollarSign,
 } from "lucide-react";
 import useSWR from "swr";
 import accounting from "accounting";
@@ -45,7 +42,7 @@ interface Account {
   code: string;
   name: string;
   type: string;
-  category?: string;
+  category: string;
   balance: number;
   lastTransaction?: Date;
 }
@@ -73,27 +70,25 @@ const exportAccountingData = (
 ) => {
   if (format === "PDF") {
     const doc = new jsPDF();
-    
-    // Premium Header
-    doc.setFillColor(63, 81, 181); 
-    doc.rect(0, 0, 210, 40, 'F');
-    
+
+    doc.setFillColor(63, 81, 181);
+    doc.rect(0, 0, 210, 40, "F");
+
     doc.setFontSize(28);
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.text("Okleevo", 14, 25);
-    
+
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.text("Professional Accounting Services", 14, 33);
-    
-    // Report Info
+
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
-    const displayTitle = reportType.replace(/_/g, ' ');
+    const displayTitle = reportType.replace(/_/g, " ");
     doc.text(displayTitle, 14, 55);
-    
+
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100);
@@ -101,17 +96,17 @@ const exportAccountingData = (
     const refId = Math.random().toString(36).substring(2, 9).toUpperCase();
     doc.text(`Generated: ${timestamp}`, 14, 63);
     doc.text(`Reference: OKL-${refId}`, 14, 68);
-    
+
     doc.setDrawColor(230);
     doc.line(14, 75, 196, 75);
 
     let y = 85;
     doc.setFontSize(9);
     doc.setTextColor(0);
-    
+
     if (isAccounts) {
       doc.setFillColor(245, 247, 250);
-      doc.rect(14, y - 6, 182, 8, 'F');
+      doc.rect(14, y - 6, 182, 8, "F");
       doc.setFont("helvetica", "bold");
       doc.text("CODE", 16, y);
       doc.text("ACCOUNT NAME", 40, y);
@@ -119,12 +114,12 @@ const exportAccountingData = (
       doc.text("BALANCE", 170, y);
       y += 10;
       doc.setFont("helvetica", "normal");
-      
+
       accounts.forEach((acc: Account, idx: number) => {
         if (y > 270) { doc.addPage(); y = 20; }
         if (idx % 2 === 0) {
           doc.setFillColor(252, 252, 252);
-          doc.rect(14, y - 5, 182, 7, 'F');
+          doc.rect(14, y - 5, 182, 7, "F");
         }
         doc.text(acc.code, 16, y);
         doc.text(acc.name, 40, y);
@@ -134,7 +129,7 @@ const exportAccountingData = (
       });
     } else {
       doc.setFillColor(245, 247, 250);
-      doc.rect(14, y - 6, 182, 8, 'F');
+      doc.rect(14, y - 6, 182, 8, "F");
       doc.setFont("helvetica", "bold");
       doc.text("DATE", 16, y);
       doc.text("DESCRIPTION", 40, y);
@@ -143,12 +138,12 @@ const exportAccountingData = (
       doc.text("CREDIT", 175, y);
       y += 10;
       doc.setFont("helvetica", "normal");
-      
+
       recentTransactions.forEach((tx: Transaction, idx: number) => {
         if (y > 270) { doc.addPage(); y = 20; }
         if (idx % 2 === 0) {
           doc.setFillColor(252, 252, 252);
-          doc.rect(14, y - 5, 182, 7, 'F');
+          doc.rect(14, y - 5, 182, 7, "F");
         }
         doc.text(new Date(tx.date).toLocaleDateString(), 16, y);
         doc.text(tx.description.substring(0, 40), 40, y);
@@ -159,16 +154,15 @@ const exportAccountingData = (
       });
     }
 
-    // Footer
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pageCount = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.setTextColor(150);
-      doc.text(`Okleevo | Financial Document | Page ${i} of ${pageCount}`, 105, 285, { align: 'center' });
+      doc.text(`Okleevo | Financial Document | Page ${i} of ${pageCount}`, 105, 285, { align: "center" });
     }
-    
+
     doc.save(`Okleevo_Accounting_Data_${Date.now()}.pdf`);
   } else if (format === "Excel") {
     let xmlContent = `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>
@@ -223,9 +217,8 @@ const exportAccountingData = (
     const blob = new Blob([xmlContent], { type: "application/vnd.ms-excel" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    const fileName = `Okleevo_Accounting_Data_${Date.now()}.xls`;
     link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
+    link.setAttribute("download", `Okleevo_Accounting_Data_${Date.now()}.xls`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -244,12 +237,11 @@ const exportAccountingData = (
       });
     }
 
-    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob(["﻿" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    const fileName = `Okleevo_Accounting_Data_${Date.now()}.csv`;
     link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
+    link.setAttribute("download", `Okleevo_Accounting_Data_${Date.now()}.csv`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -257,9 +249,177 @@ const exportAccountingData = (
   }
 };
 
+// Shared field styles
+const inputCls =
+  "w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all";
+const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5";
+
+const ACCOUNT_COLORS: Record<string, { pill: string; border: string }> = {
+  asset:     { pill: "bg-blue-100 text-blue-700",   border: "border-blue-400" },
+  liability: { pill: "bg-red-100 text-red-700",     border: "border-red-400" },
+  equity:    { pill: "bg-purple-100 text-purple-700", border: "border-purple-400" },
+  revenue:   { pill: "bg-green-100 text-green-700",  border: "border-green-400" },
+  expense:   { pill: "bg-orange-100 text-orange-700", border: "border-orange-400" },
+};
+
+// ── Shared Modal Shell ──────────────────────────────────────────
+const ModalShell = ({ onClose, title, icon: Icon, iconColor = "text-blue-600", children }: {
+  onClose: () => void;
+  title: string;
+  icon: ComponentType<{ className?: string }>;
+  iconColor?: string;
+  children: React.ReactNode;
+}) => (
+  <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-100 p-0 sm:p-4">
+    <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-xl max-h-[92vh] overflow-y-auto shadow-2xl">
+      <div className="flex justify-center pt-3 pb-1 sm:hidden">
+        <div className="w-10 h-1 rounded-full bg-gray-200" />
+      </div>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+        <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+          {title}
+        </h2>
+        <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+          <X className="w-5 h-5 text-gray-400" />
+        </button>
+      </div>
+      <div className="p-5 space-y-4 pb-20 sm:pb-10">
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
+// ── Entry Form Interfaces ───────────────────────────────────────
+interface NewEntryState {
+  date: string;
+  description: string;
+  reference: string;
+  debitAccount: string;
+  debitAmount: string;
+  creditAccount: string;
+  creditAmount: string;
+}
+
+interface EntryFormProps {
+  onSave: () => void;
+  onCancel: () => void;
+  saveLabel?: string;
+  newEntry: NewEntryState;
+  setNewEntry: React.Dispatch<React.SetStateAction<NewEntryState>>;
+  accounts: Account[];
+  isBalanced: boolean;
+}
+
+// ── Entry Form ──────────────────────────────────────────────────
+const EntryForm = ({ onSave, onCancel, saveLabel = "Save Entry", newEntry, setNewEntry, accounts, isBalanced }: EntryFormProps) => (
+  <>
+    <div className="grid grid-cols-2 gap-3">
+      <div>
+        <label className={labelCls}>Date *</label>
+        <input type="date" value={newEntry.date} onChange={(e) => setNewEntry({ ...newEntry, date: e.target.value })} className={inputCls} />
+      </div>
+      <div>
+        <label className={labelCls}>Reference</label>
+        <input type="text" value={newEntry.reference} onChange={(e) => setNewEntry({ ...newEntry, reference: e.target.value })} placeholder="e.g. JE-001" className={inputCls} />
+      </div>
+    </div>
+
+    <div>
+      <label className={labelCls}>Description *</label>
+      <textarea value={newEntry.description} onChange={(e) => setNewEntry({ ...newEntry, description: e.target.value })} placeholder="Transaction description..." rows={2} className={`${inputCls} resize-none`} />
+    </div>
+
+    {/* Debit */}
+    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-3">
+      <p className="text-xs font-bold text-emerald-800 flex items-center gap-1.5 uppercase tracking-wide">
+        <ArrowUpRight className="w-3.5 h-3.5" /> Debit Entry
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={labelCls}>Account *</label>
+          <select value={newEntry.debitAccount} onChange={(e) => setNewEntry({ ...newEntry, debitAccount: e.target.value })} className={inputCls}>
+            <option value="">Select account…</option>
+            {accounts.map((a) => <option key={a.id} value={a.id}>{a.code} — {a.name}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className={labelCls}>Amount (£) *</label>
+          <input type="number" step="0.01" value={newEntry.debitAmount} onChange={(e) => setNewEntry({ ...newEntry, debitAmount: e.target.value })} placeholder="0.00" className={inputCls} />
+        </div>
+      </div>
+    </div>
+
+    {/* Credit */}
+    <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 space-y-3">
+      <p className="text-xs font-bold text-rose-800 flex items-center gap-1.5 uppercase tracking-wide">
+        <ArrowDownRight className="w-3.5 h-3.5" /> Credit Entry
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={labelCls}>Account *</label>
+          <select value={newEntry.creditAccount} onChange={(e) => setNewEntry({ ...newEntry, creditAccount: e.target.value })} className={inputCls}>
+            <option value="">Select account…</option>
+            {accounts.map((a) => <option key={a.id} value={a.id}>{a.code} — {a.name}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className={labelCls}>Amount (£) *</label>
+          <input type="number" step="0.01" value={newEntry.creditAmount} onChange={(e) => setNewEntry({ ...newEntry, creditAmount: e.target.value })} placeholder="0.00" className={inputCls} />
+        </div>
+      </div>
+    </div>
+
+    {newEntry.debitAmount && newEntry.creditAmount && (
+      <div className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-semibold ${isBalanced ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"}`}>
+        {isBalanced
+          ? <><CheckCircle className="w-4 h-4 shrink-0" /> Entry is balanced</>
+          : <><AlertCircle className="w-4 h-4 shrink-0" /> Difference: £{Math.abs(parseFloat(newEntry.debitAmount) - parseFloat(newEntry.creditAmount)).toFixed(2)}</>}
+      </div>
+    )}
+
+    <div className="sticky bottom-0 -mx-5 px-5 pt-4 pb-[calc(2.25rem+env(safe-area-inset-bottom,0px))] bg-white border-t border-gray-100 flex flex-row gap-3 sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+      <button onClick={onCancel} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+      <button onClick={onSave} className="flex-2 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+        <Save className="w-4 h-4" /> {saveLabel}
+      </button>
+    </div>
+  </>
+);
+
+// ── Account Type Selector Interfaces ────────────────────────────
+interface NewAccountState {
+  code: string;
+  name: string;
+  type: "asset" | "liability" | "equity" | "revenue" | "expense";
+  description: string;
+  openingBalance: string;
+}
+
+interface AccountTypeSelectorProps {
+  newAccount: NewAccountState;
+  setNewAccount: React.Dispatch<React.SetStateAction<NewAccountState>>;
+}
+
+// ── Account Type Selector ───────────────────────────────────────
+const AccountTypeSelector = ({ newAccount, setNewAccount }: AccountTypeSelectorProps) => (
+  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+    {(["asset", "liability", "equity", "revenue", "expense"] as const).map((t) => {
+      const c = ACCOUNT_COLORS[t];
+      return (
+        <button key={t} onClick={() => setNewAccount({ ...newAccount, type: t })}
+          className={`py-2.5 rounded-xl border-2 text-xs font-bold capitalize transition-all cursor-pointer ${newAccount.type === t ? `${c.pill} ${c.border}` : "border-gray-200 text-gray-500 hover:border-gray-300"}`}>
+          {t}
+        </button>
+      );
+    })}
+  </div>
+);
+
 export default function AccountingPage() {
   const [activeTab, setActiveTab] = useState("overview");
-
+  const { mutate } = useSWR("/api/accounting/accounts", fetcher);
   const [showNewEntryModal, setShowNewEntryModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -271,20 +431,14 @@ export default function AccountingPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showYearEndModal, setShowYearEndModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [toast, setToast] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<Transaction | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<{
-    type: "account" | "entry";
-    id: string;
-  } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: "account" | "entry"; id: string } | null>(null);
   const [selectedReport, setSelectedReport] = useState<string>("");
-  const [selectedExportFormat, setSelectedExportFormat] = useState<
-    "CSV" | "Excel" | "PDF"
-  >("CSV");
+  const [selectedExportFormat, setSelectedExportFormat] = useState<"CSV" | "Excel" | "PDF">("CSV");
 
-  const [newEntry, setNewEntry] = useState({
+  const [newEntry, setNewEntry] = useState<NewEntryState>({
     date: new Date().toISOString().split("T")[0],
     description: "",
     reference: "",
@@ -293,10 +447,10 @@ export default function AccountingPage() {
     creditAccount: "",
     creditAmount: "",
   });
-  const [newAccount, setNewAccount] = useState({
+  const [newAccount, setNewAccount] = useState<NewAccountState>({
     code: "",
     name: "",
-    type: "asset" as "asset" | "liability" | "equity" | "revenue" | "expense",
+    type: "asset",
     description: "",
     openingBalance: "",
   });
@@ -304,2792 +458,899 @@ export default function AccountingPage() {
   const { data: accountsData } = useSWR("/api/accounting/accounts", fetcher);
   const { data: journalData } = useSWR("/api/accounting/journal", fetcher);
 
-  const accounts = accountsData?.data || [];
-  const recentTransactions = journalData?.data || [];
+  const accounts: Account[] = accountsData?.data || [];
+  const recentTransactions: Transaction[] = journalData?.data || [];
 
   const financialSummary = {
-    totalAssets: accounts.filter((a: Account) => a.type === "asset").reduce((sum: number, a: Account) => sum + a.balance, 0),
-    totalLiabilities: accounts.filter((a: Account) => a.type === "liability").reduce((sum: number, a: Account) => sum + a.balance, 0),
-    totalEquity: accounts.filter((a: Account) => a.type === "equity").reduce((sum: number, a: Account) => sum + a.balance, 0),
-    totalRevenue: accounts.filter((a: Account) => a.type === "revenue").reduce((sum: number, a: Account) => sum + a.balance, 0),
-    totalExpenses: accounts.filter((a: Account) => a.type === "expense").reduce((sum: number, a: Account) => sum + a.balance, 0),
+    totalAssets:      accounts.filter((a) => a.type === "asset").reduce((s, a) => s + a.balance, 0),
+    totalLiabilities: accounts.filter((a) => a.type === "liability").reduce((s, a) => s + a.balance, 0),
+    totalEquity:      accounts.filter((a) => a.type === "equity").reduce((s, a) => s + a.balance, 0),
+    totalRevenue:     accounts.filter((a) => a.type === "revenue").reduce((s, a) => s + a.balance, 0),
+    totalExpenses:    accounts.filter((a) => a.type === "expense").reduce((s, a) => s + a.balance, 0),
     netProfit: 0,
   };
   financialSummary.netProfit = financialSummary.totalRevenue - financialSummary.totalExpenses;
 
   const tabs = [
-    { id: "overview", name: "Overview", icon: BarChart3 },
-    { id: "chart-of-accounts", name: "Chart of Accounts", icon: BookOpen },
-    { id: "journal", name: "Journal Entries", icon: FileText },
-    { id: "trial-balance", name: "Trial Balance", icon: Calculator },
-    { id: "reports", name: "Financial Reports", icon: PieChart },
-    { id: "year-end", name: "Year-End", icon: Calendar },
+    { id: "overview",          name: "Overview",          icon: BarChart3  },
+    { id: "chart-of-accounts", name: "Chart of Accounts", icon: BookOpen   },
+    { id: "journal",           name: "Journal",           icon: FileText   },
+    { id: "trial-balance",     name: "Trial Balance",     icon: Calculator },
+    { id: "reports",           name: "Reports",           icon: PieChart   },
+    { id: "year-end",          name: "Year-End",          icon: Calendar   },
   ];
 
-  const handleSaveEntry = () => {
-    // Validate entry
-    if (
-      !newEntry.description ||
-      !newEntry.debitAccount ||
-      !newEntry.creditAccount ||
-      !newEntry.debitAmount ||
-      !newEntry.creditAmount
-    ) {
-      alert("Please fill in all fields");
+  const showToastMsg = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 3000);
+  };
+
+  const resetEntry = () =>
+    setNewEntry({ date: new Date().toISOString().split("T")[0], description: "", reference: "", debitAccount: "", debitAmount: "", creditAccount: "", creditAmount: "" });
+
+  const handleSaveEntry = async () => {
+    if (!newEntry.description || !newEntry.debitAccount || !newEntry.creditAccount || !newEntry.debitAmount || !newEntry.creditAmount) {
+      alert("Please fill in all required fields");
       return;
     }
-
-    if (
-      parseFloat(newEntry.debitAmount) !== parseFloat(newEntry.creditAmount)
-    ) {
+    if (parseFloat(newEntry.debitAmount) !== parseFloat(newEntry.creditAmount)) {
       alert("Debit and Credit amounts must be equal");
       return;
     }
 
-    // Here you would save to your backend
-    console.log("Saving entry:", newEntry);
+    try {
+      const res = await fetch("/api/accounting/journal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: newEntry.date,
+          description: newEntry.description,
+          reference: newEntry.reference,
+          entries: [
+            { accountId: newEntry.debitAccount, debit: parseFloat(newEntry.debitAmount), credit: 0 },
+            { accountId: newEntry.creditAccount, debit: 0, credit: parseFloat(newEntry.creditAmount) }
+          ]
+        })
+      });
 
-    // Reset form and close modal
-    setNewEntry({
-      date: new Date().toISOString().split("T")[0],
-      description: "",
-      reference: "",
-      debitAccount: "",
-      debitAmount: "",
-      creditAccount: "",
-      creditAmount: "",
-    });
-    setShowNewEntryModal(false);
+      if (res.ok) {
+        resetEntry();
+        setShowNewEntryModal(false);
+        setShowEditEntryModal(false);
+        mutate("/api/accounting/journal");
+        mutate("/api/accounting/accounts");
+        showToastMsg("Journal entry saved successfully");
+      }
+    } catch (err) {
+      console.error("Save entry error:", err);
+      alert("Failed to save entry");
+    }
+  };
 
-    // Show success message
-    alert("Journal entry created successfully!");
+  const handleSeedAccounts = async () => {
+    const defaultAccounts = [
+      { code: "1200", name: "Bank Current Account", type: "ASSET", category: "Cash and Cash Equivalents" },
+      { code: "1100", name: "Accounts Receivable", type: "ASSET", category: "Current Assets" },
+      { code: "2100", name: "Accounts Payable", type: "LIABILITY", category: "Current Liabilities" },
+      { code: "4000", name: "Sales Revenue", type: "REVENUE", category: "Operating Revenue" },
+      { code: "7000", name: "General Expenses", type: "EXPENSE", category: "Operating Expenses" },
+      { code: "3000", name: "Retained Earnings", type: "EQUITY", category: "Equity" },
+    ];
+
+    try {
+      for (const acc of defaultAccounts) {
+        await fetch("/api/accounting/accounts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(acc)
+        });
+      }
+      mutate("/api/accounting/accounts");
+      showToastMsg("Default Chart of Accounts initialized!");
+    } catch (err) {
+      console.error("Seed accounts error:", err);
+    }
   };
 
   const handleSaveAccount = () => {
-    // Validate account
-    if (!newAccount.code || !newAccount.name || !newAccount.type) {
+    if (!newAccount.code || !newAccount.name) {
       alert("Please fill in all required fields");
       return;
     }
-
-    // Here you would save to your backend
     console.log("Saving account:", newAccount);
-
-    // Reset form and close modal
-    setNewAccount({
-      code: "",
-      name: "",
-      type: "asset",
-      description: "",
-      openingBalance: "",
-    });
+    setNewAccount({ code: "", name: "", type: "asset", description: "", openingBalance: "" });
     setShowAddAccountModal(false);
-
-    // Show success message
-    alert("Account created successfully!");
+    setShowEditAccountModal(false);
+    showToastMsg("Account saved successfully");
   };
 
-  const handleViewAccount = (account: Account) => {
-    setSelectedAccount(account);
-    setShowViewAccountModal(true);
-  };
-
-  const handleEditAccount = (account: Account) => {
-    setSelectedAccount(account);
-    setNewAccount({
-      code: account.code,
-      name: account.name,
-      type: account.type as "asset" | "liability" | "equity" | "revenue" | "expense",
-      description: "",
-      openingBalance: account.balance.toString(),
-    });
+  const handleViewAccount  = (a: Account) => { setSelectedAccount(a); setShowViewAccountModal(true); };
+  const handleEditAccount  = (a: Account) => {
+    setSelectedAccount(a);
+    setNewAccount({ code: a.code, name: a.name, type: a.type as never, description: "", openingBalance: a.balance.toString() });
     setShowEditAccountModal(true);
   };
-
-  const handleViewEntry = (entry: Transaction) => {
-    setSelectedEntry(entry);
-    setShowViewEntryModal(true);
-  };
-
-  const handleEditEntry = (entry: Transaction) => {
-    setSelectedEntry(entry);
+  const handleViewEntry    = (e: Transaction) => { setSelectedEntry(e); setShowViewEntryModal(true); };
+  const handleEditEntry    = (e: Transaction) => {
+    setSelectedEntry(e);
     setNewEntry({
-      date: new Date(entry.date).toISOString().split("T")[0],
-      description: entry.description,
-      reference: entry.reference || "",
-      debitAccount: entry.entries[0]?.account.name || "",
-      debitAmount: (entry.entries[0]?.debit || 0).toString(),
-      creditAccount: entry.entries[1]?.account.name || "",
-      creditAmount: (entry.entries[1]?.credit || 0).toString(),
+      date: new Date(e.date).toISOString().split("T")[0],
+      description: e.description,
+      reference: e.reference || "",
+      debitAccount: e.entries[0]?.account.name || "",
+      debitAmount:  (e.entries[0]?.debit  || 0).toString(),
+      creditAccount: e.entries[1]?.account.name || "",
+      creditAmount:  (e.entries[1]?.credit || 0).toString(),
     });
     setShowEditEntryModal(true);
   };
-
-  const handleDeleteClick = (type: "account" | "entry", id: string) => {
-    setDeleteTarget({ type, id });
-    setShowDeleteModal(true);
-  };
-
+  const handleDeleteClick   = (type: "account" | "entry", id: string) => { setDeleteTarget({ type, id }); setShowDeleteModal(true); };
   const handleConfirmDelete = () => {
-    if (deleteTarget) {
-      console.log(`Deleting ${deleteTarget.type}:`, deleteTarget.id);
-      alert(
-        `${deleteTarget.type === "account" ? "Account" : "Entry"} deleted successfully!`,
-      );
-    }
+    if (deleteTarget) showToastMsg(`${deleteTarget.type === "account" ? "Account" : "Entry"} deleted`);
     setShowDeleteModal(false);
     setDeleteTarget(null);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const handleExportReport = (reportType: string) => {
-    exportAccountingData(
-      reportType,
-      selectedExportFormat,
-      activeTab === "chart-of-accounts",
-      accounts,
-      recentTransactions
-    );
-
-    setSuccessMessage(`Exported as ${selectedExportFormat}`);
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 3000);
+    exportAccountingData(reportType, selectedExportFormat, activeTab === "chart-of-accounts", accounts, recentTransactions);
+    showToastMsg(`Exported as ${selectedExportFormat}`);
   };
 
-
-  const handleGenerateReport = (reportType: string) => {
-    setSelectedReport(reportType);
-    setShowReportModal(true);
+  const handleGenerateReport = (reportType: string) => { setSelectedReport(reportType); setShowReportModal(true); };
+  const handleDownloadReport = (fmt: string) => {
+    setSelectedExportFormat(fmt as "CSV" | "Excel" | "PDF");
+    setTimeout(() => { handleExportReport(selectedReport || "Financial_Report"); setShowReportModal(false); }, 100);
   };
 
-  const handleDownloadReport = (format: string) => {
-    setSelectedExportFormat(format as "CSV" | "Excel" | "PDF");
-    setTimeout(() => {
-      handleExportReport(selectedReport || "Financial_Report");
-      setShowReportModal(false);
-    }, 100);
-  };
+  const isBalanced = Boolean(
+    newEntry.debitAmount && 
+    newEntry.creditAmount &&
+    parseFloat(newEntry.debitAmount) === parseFloat(newEntry.creditAmount)
+  );
+
+
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 shadow-lg border border-white/50 relative overflow-hidden mb-6">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-        <div className="flex items-center justify-between relative z-10">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-lg">
-                <Calculator className="w-8 h-8 text-white" />
-              </div>
-              Accounting & Bookkeeping
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Complete double-entry bookkeeping system for UK SMEs
-            </p>
+    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+
+      {/* ── Sticky Header ── */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 bg-blue-600 rounded-xl shrink-0">
+              <Calculator className="w-5 h-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Accounting</h1>
+              <p className="text-[11px] text-gray-400 hidden sm:block">Double-entry bookkeeping · UK SME</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowImportModal(true)}
-              className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer"
-            >
-              <Upload className="w-5 h-5 text-gray-600" />
-              <span className="font-medium text-gray-700">Import</span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button onClick={() => setShowImportModal(true)}
+              className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
+              <Upload className="w-4 h-4" />
+              <span className="hidden sm:inline">Import</span>
             </button>
-            <button
-              onClick={() => setShowExportModal(true)}
-              className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer"
-            >
-              <Download className="w-5 h-5 text-gray-600" />
-              <span className="font-medium text-gray-700">Export</span>
+            <button onClick={() => setShowExportModal(true)}
+              className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Export</span>
             </button>
-            <button
-              onClick={() => setShowNewEntryModal(true)}
-              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2 shadow-lg cursor-pointer"
-            >
-              <Plus className="w-5 h-5" />
-              New Entry
+            <button onClick={() => setShowNewEntryModal(true)}
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">New Entry</span>
+              <span className="sm:hidden">Add</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Financial Summary Cards */}
-      <AccountingSummary data={financialSummary} />
-
-      {/* Tabs */}
-      <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/50 p-2 shadow-sm">
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
+      {/* ── Tab Bar ── */}
+      <div className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100">
+        <div className="flex overflow-x-auto scrollbar-hide px-4">
+          {tabs.map(({ id, name, icon: Icon }) => {
+            const active = activeTab === id;
             return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
-                  activeTab === tab.id
-                    ? "bg-white shadow-md text-indigo-600"
-                    : "text-gray-600 hover:bg-white/50 hover:text-gray-900"
-                }`}
-              >
-                <Icon
-                  className={`w-5 h-5 ${activeTab === tab.id ? "text-indigo-600" : "text-gray-500"}`}
-                />
-                {tab.name}
+              <button key={id} onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
+                  active ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200"
+                }`}>
+                <Icon className="w-4 h-4" />
+                {name}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Content Area */}
-      {activeTab === "overview" && (
-        <div className="space-y-6">
-          {/* Recent Transactions */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <FileText className="w-6 h-6 text-blue-600" />
-              Recent Journal Entries
-            </h2>
-            <JournalEntries
-              entries={recentTransactions}
-              onViewEntry={handleViewEntry}
-              onEditEntry={handleEditEntry}
-              onDeleteEntry={(id) => handleDeleteClick("entry", id)}
-            />
+      {/* ── Page Content ── */}
+      <div className="px-4 sm:px-6 py-5 space-y-4 sm:space-y-5">
+
+        {/* OVERVIEW */}
+        {activeTab === "overview" && (
+          <>
+            <AccountingSummary data={financialSummary} />
+
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  <h2 className="text-sm font-bold text-gray-900">Recent Journal Entries</h2>
+                </div>
+                <button onClick={() => setActiveTab("journal")} className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">View all</button>
+              </div>
+              <div className="p-5">
+                <JournalEntries entries={recentTransactions} onViewEntry={handleViewEntry} onEditEntry={handleEditEntry} onDeleteEntry={(id) => handleDeleteClick("entry", id)} />
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { tab: "year-end",      icon: FileCheck,  color: "bg-blue-500",   title: "Year-End Accounts",    desc: "Generate HMRC-ready financials" },
+                { tab: "trial-balance", icon: Calculator, color: "bg-green-500",  title: "Run Trial Balance",    desc: "Verify debits equal credits" },
+                { tab: "reports",       icon: PieChart,   color: "bg-violet-500", title: "Financial Reports",    desc: "P&L, Balance Sheet, Cash Flow" },
+              ].map(({ tab, icon: Icon, color, title, desc }) => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all text-left cursor-pointer group">
+                  <div className={`p-2.5 ${color} rounded-xl shrink-0 group-hover:scale-105 transition-transform`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-gray-900">{title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* CHART OF ACCOUNTS */}
+        {activeTab === "chart-of-accounts" && (
+          <ChartOfAccounts
+            accounts={accounts}
+            onAddAccount={() => setShowAddAccountModal(true)}
+            onViewAccount={handleViewAccount}
+            onEditAccount={handleEditAccount}
+            onDeleteAccount={(id) => handleDeleteClick("account", id)}
+            onSeedAccounts={handleSeedAccounts}
+          />
+        )}
+
+        {/* JOURNAL */}
+        {activeTab === "journal" && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-4 sm:px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold text-gray-900">Journal Entries</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Double-entry bookkeeping ledger</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative hidden sm:block">
+                    <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input type="text" placeholder="Search…" className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none w-40 transition-all" />
+                  </div>
+                  <button className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
+                    <Filter className="w-4 h-4" />
+                    <span className="hidden sm:inline">Filter</span>
+                  </button>
+                  <button onClick={() => setShowNewEntryModal(true)}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer">
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">New Entry</span>
+                    <span className="sm:hidden">Add</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {recentTransactions.length === 0 ? (
+              <div className="text-center py-16 px-4">
+                <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-7 h-7 text-gray-400" />
+                </div>
+                <h3 className="text-sm font-bold text-gray-900 mb-1">No Journal Entries Yet</h3>
+                <p className="text-xs text-gray-400 mb-5">Start recording transactions with double-entry bookkeeping</p>
+                <button onClick={() => setShowNewEntryModal(true)}
+                  className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center gap-2 cursor-pointer">
+                  <Plus className="w-4 h-4" /> Create First Entry
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {recentTransactions.map((tx) => (
+                  <div key={tx.id} className="p-4 sm:p-5 hover:bg-gray-50/60 transition-colors">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="p-2 bg-blue-50 rounded-xl shrink-0">
+                          <FileText className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate">{tx.description}</p>
+                          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1">
+                            <span className="text-xs text-gray-400 flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {new Date(tx.date).toLocaleDateString("en-GB")}
+                            </span>
+                            {tx.reference && <span className="text-xs text-gray-400">Ref: {tx.reference}</span>}
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              tx.status === "posted" ? "bg-emerald-100 text-emerald-700"
+                              : tx.status === "pending" ? "bg-amber-100 text-amber-700"
+                              : "bg-gray-100 text-gray-500"}`}>
+                              {tx.status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <button onClick={() => handleViewEntry(tx)} className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer" title="View">
+                          <Eye className="w-4 h-4 text-blue-500" />
+                        </button>
+                        <button onClick={() => handleEditEntry(tx)} className="p-1.5 hover:bg-violet-50 rounded-lg transition-colors cursor-pointer" title="Edit">
+                          <Edit3 className="w-4 h-4 text-violet-500" />
+                        </button>
+                        <button onClick={() => handleDeleteClick("entry", tx.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Delete">
+                          <Trash2 className="w-4 h-4 text-red-400" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                        <div className="flex items-center gap-1 mb-1">
+                          <ArrowUpRight className="w-3 h-3 text-emerald-600" />
+                          <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide">Debit</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 truncate mb-0.5">{tx.entries[0]?.account.name}</p>
+                        <p className="text-sm font-bold text-emerald-800">{accounting.formatMoney(tx.entries[0]?.debit || 0, "£")}</p>
+                      </div>
+                      <div className="bg-rose-50 border border-rose-100 rounded-xl p-3">
+                        <div className="flex items-center gap-1 mb-1">
+                          <ArrowDownRight className="w-3 h-3 text-rose-600" />
+                          <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wide">Credit</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 truncate mb-0.5">{tx.entries[1]?.account.name}</p>
+                        <p className="text-sm font-bold text-rose-800">{accounting.formatMoney(tx.entries[1]?.credit || 0, "£")}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TRIAL BALANCE */}
+        {activeTab === "trial-balance" && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-4 sm:px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold text-gray-900">Trial Balance</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Total debits must equal total credits</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => window.print()}
+                  className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
+                  <Printer className="w-4 h-4" />
+                  <span className="hidden sm:inline">Print</span>
+                </button>
+                <button onClick={() => setShowExportModal(true)}
+                  className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
+                  <Download className="w-4 h-4" />
+                  <span className="hidden sm:inline">Export</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[440px]">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    <th className="px-4 sm:px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Code</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Account Name</th>
+                    <th className="px-4 sm:px-6 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wide">Debit £</th>
+                    <th className="px-4 sm:px-6 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wide">Credit £</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {accounts.map((a) => (
+                    <tr key={a.id} className="hover:bg-gray-50/60 transition-colors">
+                      <td className="px-4 sm:px-6 py-3 font-mono text-xs font-semibold text-gray-500">{a.code}</td>
+                      <td className="px-4 sm:px-6 py-3 text-sm text-gray-800">{a.name}</td>
+                      <td className="px-4 sm:px-6 py-3 text-right text-sm font-semibold text-emerald-700">
+                        {["asset", "expense"].includes(a.type) ? `£${a.balance.toLocaleString()}` : "—"}
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 text-right text-sm font-semibold text-rose-700">
+                        {["liability", "equity", "revenue"].includes(a.type) ? `£${a.balance.toLocaleString()}` : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-gray-50 border-t-2 border-gray-200">
+                  <tr>
+                    <td colSpan={2} className="px-4 sm:px-6 py-4 text-sm font-bold text-gray-900">TOTALS</td>
+                    <td className="px-4 sm:px-6 py-4 text-right text-sm font-bold text-emerald-800">
+                      £{accounts.filter((a) => ["asset","expense"].includes(a.type)).reduce((s, a) => s + a.balance, 0).toLocaleString()}
+                    </td>
+                    <td className="px-4 sm:px-6 py-4 text-right text-sm font-bold text-rose-800">
+                      £{accounts.filter((a) => ["liability","equity","revenue"].includes(a.type)).reduce((s, a) => s + a.balance, 0).toLocaleString()}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div className="px-4 sm:px-5 py-4 border-t border-gray-100">
+              <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-emerald-900">Trial Balance is Balanced</p>
+                  <p className="text-xs text-emerald-600 mt-0.5">Total Debits = Total Credits — books are in order</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* REPORTS */}
+        {activeTab === "reports" && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4">
+              <h2 className="text-sm font-bold text-gray-900 mb-0.5">Financial Reports</h2>
+              <p className="text-xs text-gray-400">Generate comprehensive statements for your business</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { type: "Profit & Loss Statement", Icon: BarChart3,  bg: "bg-blue-50",   ic: "text-blue-600",   link: "text-blue-600",   desc: "Income vs expenses at a glance" },
+                { type: "Balance Sheet",           Icon: PieChart,   bg: "bg-green-50",  ic: "text-green-600",  link: "text-green-600",  desc: "Assets, liabilities, equity snapshot" },
+                { type: "Cash Flow Statement",     Icon: TrendingUp, bg: "bg-orange-50", ic: "text-orange-600", link: "text-orange-600", desc: "Operating, investing & financing flows" },
+              ].map(({ type, Icon, bg, ic, link, desc }) => (
+                <button key={type} onClick={() => handleGenerateReport(type)}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md hover:border-gray-200 transition-all text-left cursor-pointer group">
+                  <div className={`p-2.5 ${bg} rounded-xl w-fit mb-3 group-hover:scale-105 transition-transform`}>
+                    <Icon className={`w-5 h-5 ${ic}`} />
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900 mb-1">{type}</h3>
+                  <p className="text-xs text-gray-400 mb-3">{desc}</p>
+                  <span className={`text-xs font-semibold ${link} flex items-center gap-1`}>
+                    Generate <ArrowUpRight className="w-3.5 h-3.5" />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* YEAR-END */}
+        {activeTab === "year-end" && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold text-gray-900 mb-0.5">Year-End Accounts for HMRC</h2>
+                  <p className="text-xs text-gray-400">Prepare annual accounts for Companies House & HMRC submission</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button onClick={() => setShowYearEndModal(true)}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap">
+                    Generate
+                  </button>
+                  <button onClick={() => setShowYearEndModal(true)}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap">
+                    Checklist
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <FileCheck className="w-4 h-4 text-emerald-600" /> Required Documents
+                </h3>
+                <div className="space-y-2">
+                  {["Profit & Loss Statement","Balance Sheet","Directors Report","Notes to Accounts","Corporation Tax Computation"].map((doc) => (
+                    <div key={doc} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl">
+                      <span className="text-xs font-medium text-gray-700">{doc}</span>
+                      <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-blue-600" /> Important Deadlines
+                </h3>
+                <div className="space-y-2">
+                  {[
+                    { label: "Companies House Filing",   detail: "9 months after year-end",        bg: "bg-red-50",    border: "border-red-100",    text: "text-red-800",    sub: "text-red-500" },
+                    { label: "Corporation Tax Return",   detail: "12 months after year-end",       bg: "bg-orange-50", border: "border-orange-100",  text: "text-orange-800", sub: "text-orange-500" },
+                    { label: "Corporation Tax Payment",  detail: "9 months + 1 day after year-end", bg: "bg-blue-50",   border: "border-blue-100",    text: "text-blue-800",   sub: "text-blue-500" },
+                  ].map(({ label, detail, bg, border, text, sub }) => (
+                    <div key={label} className={`p-3 ${bg} border ${border} rounded-xl`}>
+                      <p className={`text-xs font-semibold ${text}`}>{label}</p>
+                      <p className={`text-[11px] ${sub} mt-0.5`}>{detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ════════════════════════════════════════
+          MODALS
+      ════════════════════════════════════════ */}
+
+      {/* New Entry */}
+      {showNewEntryModal && (
+        <ModalShell onClose={() => { setShowNewEntryModal(false); resetEntry(); }} title="New Journal Entry" icon={FileText}>
+          <EntryForm onSave={handleSaveEntry} onCancel={() => { setShowNewEntryModal(false); resetEntry(); }} newEntry={newEntry} setNewEntry={setNewEntry} accounts={accounts} isBalanced={isBalanced} />
+        </ModalShell>
+      )}
+
+      {/* Edit Entry */}
+      {showEditEntryModal && selectedEntry && (
+        <ModalShell onClose={() => { setShowEditEntryModal(false); resetEntry(); }} title="Edit Journal Entry" icon={Edit3} iconColor="text-violet-600">
+          <EntryForm onSave={handleSaveEntry} onCancel={() => { setShowEditEntryModal(false); resetEntry(); }} saveLabel="Update Entry" newEntry={newEntry} setNewEntry={setNewEntry} accounts={accounts} isBalanced={isBalanced} />
+        </ModalShell>
+      )}
+
+      {/* View Entry */}
+      {showViewEntryModal && selectedEntry && (
+        <ModalShell onClose={() => setShowViewEntryModal(false)} title="Journal Entry" icon={FileText} iconColor="text-indigo-600">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className={labelCls}>Date</p>
+              <p className="text-sm font-semibold text-gray-900">{new Date(selectedEntry.date).toLocaleDateString("en-GB")}</p>
+            </div>
+            <div>
+              <p className={labelCls}>Reference</p>
+              <p className="text-sm font-semibold text-gray-900">{selectedEntry.reference || "—"}</p>
+            </div>
+          </div>
+          <div>
+            <p className={labelCls}>Description</p>
+            <p className="text-sm text-gray-800">{selectedEntry.description}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+              <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide mb-1 flex items-center gap-1">
+                <ArrowUpRight className="w-3 h-3" /> Debit
+              </p>
+              <p className="text-xs text-gray-500 mb-1">{selectedEntry.entries[0]?.account.name}</p>
+              <p className="text-lg font-bold text-emerald-900">£{(selectedEntry.entries[0]?.debit || 0).toLocaleString()}</p>
+            </div>
+            <div className="bg-rose-50 border border-rose-100 rounded-xl p-4">
+              <p className="text-[10px] font-bold text-rose-700 uppercase tracking-wide mb-1 flex items-center gap-1">
+                <ArrowDownRight className="w-3 h-3" /> Credit
+              </p>
+              <p className="text-xs text-gray-500 mb-1">{selectedEntry.entries[1]?.account.name}</p>
+              <p className="text-lg font-bold text-rose-900">£{(selectedEntry.entries[1]?.credit || 0).toLocaleString()}</p>
+            </div>
+          </div>
+          <div>
+            <p className={labelCls}>Status</p>
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              selectedEntry.status === "posted" ? "bg-emerald-100 text-emerald-700"
+              : selectedEntry.status === "pending" ? "bg-amber-100 text-amber-700"
+              : "bg-gray-100 text-gray-500"}`}>
+              {selectedEntry.status.toUpperCase()}
+            </span>
+          </div>
+          <div className="pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+            <button onClick={() => setShowViewEntryModal(false)}
+              className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors cursor-pointer">
+              Close
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* Add Account */}
+      {showAddAccountModal && (
+        <ModalShell onClose={() => setShowAddAccountModal(false)} title="Add New Account" icon={BookOpen} iconColor="text-violet-600">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Account Code *</label>
+              <input type="text" value={newAccount.code} onChange={(e) => setNewAccount({ ...newAccount, code: e.target.value })} placeholder="e.g. 1300" className={`${inputCls} font-mono`} />
+            </div>
+            <div>
+              <label className={labelCls}>Account Name *</label>
+              <input type="text" value={newAccount.name} onChange={(e) => setNewAccount({ ...newAccount, name: e.target.value })} placeholder="e.g. Petty Cash" className={inputCls} />
+            </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="p-6 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left group cursor-pointer">
-              <div className="p-3 bg-blue-500 rounded-xl w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
-                <FileCheck className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="font-bold text-gray-900 mb-1">
-                Prepare Year-End Accounts
-              </h3>
-              <p className="text-sm text-gray-600">
-                Generate financial statements for HMRC submission
-              </p>
-            </button>
+          <div>
+            <label className={labelCls}>Account Type *</label>
+            <AccountTypeSelector newAccount={newAccount} setNewAccount={setNewAccount} />
+          </div>
 
-            <button className="p-6 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left group cursor-pointer">
-              <div className="p-3 bg-green-500 rounded-xl w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
-                <Calculator className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="font-bold text-gray-900 mb-1">
-                Run Trial Balance
-              </h3>
-              <p className="text-sm text-gray-600">
-                Verify all debits equal credits
-              </p>
-            </button>
+          <div>
+            <label className={labelCls}>Description</label>
+            <textarea value={newAccount.description} onChange={(e) => setNewAccount({ ...newAccount, description: e.target.value })} placeholder="Optional notes…" rows={2} className={`${inputCls} resize-none`} />
+          </div>
 
-            <button className="p-6 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left group cursor-pointer">
-              <div className="p-3 bg-purple-500 rounded-xl w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
-                <PieChart className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="font-bold text-gray-900 mb-1">
-                Financial Reports
-              </h3>
-              <p className="text-sm text-gray-600">
-                P&L, Balance Sheet, Cash Flow
-              </p>
+          <div>
+            <label className={labelCls}>Opening Balance (£)</label>
+            <input type="number" step="0.01" value={newAccount.openingBalance} onChange={(e) => setNewAccount({ ...newAccount, openingBalance: e.target.value })} placeholder="0.00" className={inputCls} />
+          </div>
+
+          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
+            <p className="text-xs font-semibold text-indigo-800 mb-1.5 flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> Account Type Guide</p>
+            <ul className="text-xs text-indigo-700 space-y-0.5">
+              <li><strong>Asset</strong> — Resources owned (Cash, Equipment)</li>
+              <li><strong>Liability</strong> — Money owed (Loans, Payables)</li>
+              <li><strong>Equity</strong> — Owner&apos;s stake (Share Capital)</li>
+              <li><strong>Revenue</strong> — Income earned (Sales)</li>
+              <li><strong>Expense</strong> — Costs incurred (Rent, Salaries)</li>
+            </ul>
+          </div>
+
+          <div className="flex gap-3 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+            <button onClick={() => setShowAddAccountModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+            <button onClick={handleSaveAccount} className="flex-1 py-3 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <Save className="w-4 h-4" /> Save Account
             </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* View Account */}
+      {showViewAccountModal && selectedAccount && (
+        <ModalShell onClose={() => setShowViewAccountModal(false)} title="Account Details" icon={Eye} iconColor="text-blue-600">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className={labelCls}>Code</p>
+              <p className="font-mono font-bold text-gray-900">{selectedAccount.code}</p>
+            </div>
+            <div>
+              <p className={labelCls}>Name</p>
+              <p className="font-bold text-gray-900">{selectedAccount.name}</p>
+            </div>
+          </div>
+          <div>
+            <p className={labelCls}>Type</p>
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-block ${ACCOUNT_COLORS[selectedAccount.type]?.pill ?? "bg-gray-100 text-gray-600"}`}>
+              {selectedAccount.type.toUpperCase()}
+            </span>
+          </div>
+          <div>
+            <p className={labelCls}>Balance</p>
+            <p className="text-2xl font-bold text-gray-900">£{selectedAccount.balance.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className={labelCls}>Last Transaction</p>
+            <p className="text-sm text-gray-700">{selectedAccount.lastTransaction ? new Date(selectedAccount.lastTransaction).toLocaleDateString("en-GB") : "—"}</p>
+          </div>
+          <div className="pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+            <button onClick={() => setShowViewAccountModal(false)}
+              className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors cursor-pointer">
+              Close
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* Edit Account */}
+      {showEditAccountModal && selectedAccount && (
+        <ModalShell onClose={() => setShowEditAccountModal(false)} title="Edit Account" icon={Edit3} iconColor="text-violet-600">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Account Code *</label>
+              <input type="text" value={newAccount.code} onChange={(e) => setNewAccount({ ...newAccount, code: e.target.value })} className={`${inputCls} font-mono`} />
+            </div>
+            <div>
+              <label className={labelCls}>Account Name *</label>
+              <input type="text" value={newAccount.name} onChange={(e) => setNewAccount({ ...newAccount, name: e.target.value })} className={inputCls} />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Account Type *</label>
+            <AccountTypeSelector newAccount={newAccount} setNewAccount={setNewAccount} />
+          </div>
+          <div>
+            <label className={labelCls}>Balance (£)</label>
+            <input type="number" step="0.01" value={newAccount.openingBalance} onChange={(e) => setNewAccount({ ...newAccount, openingBalance: e.target.value })} className={inputCls} />
+          </div>
+          <div className="flex gap-3 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+            <button onClick={() => setShowEditAccountModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+            <button onClick={handleSaveAccount} className="flex-1 py-3 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <Save className="w-4 h-4" /> Update Account
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* Delete Confirmation */}
+      {showDeleteModal && deleteTarget && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-100 p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-sm shadow-2xl">
+            <div className="flex justify-center pt-3 pb-1 sm:hidden"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-red-500" />
+              </div>
+              <h2 className="text-base font-bold text-gray-900 mb-1">Delete {deleteTarget.type === "account" ? "Account" : "Entry"}?</h2>
+              <p className="text-sm text-gray-400 mb-5">This action cannot be undone.</p>
+              <div className="flex gap-3 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+                <button onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+                <button onClick={handleConfirmDelete} className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer">Delete</button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {activeTab === "chart-of-accounts" && (
-        <ChartOfAccounts
-          accounts={accounts}
-          onAddAccount={() => setShowAddAccountModal(true)}
-          onViewAccount={handleViewAccount}
-          onEditAccount={handleEditAccount}
-          onDeleteAccount={(id) => handleDeleteClick("account", id)}
-        />
-      )}
+      {/* Import */}
+      {showImportModal && (
+        <ModalShell onClose={() => setShowImportModal(false)} title="Import Accounting Data" icon={Upload} iconColor="text-emerald-600">
+          <div className="border-2 border-dashed border-gray-200 hover:border-emerald-400 rounded-xl p-6 text-center transition-colors">
+            <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-gray-800 mb-1">Drop file or click to browse</p>
+            <p className="text-xs text-gray-400 mb-3">CSV, Excel (.xlsx, .xls), QuickBooks (.qbo)</p>
+            <input type="file" accept=".csv,.xlsx,.xls,.qbo" className="hidden" id="file-upload"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) alert(`File selected: ${f.name} (${(f.size / 1024).toFixed(1)} KB)`); }} />
+            <label htmlFor="file-upload" className="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors cursor-pointer inline-block">
+              Choose File
+            </label>
+          </div>
 
-
-      {activeTab === "journal" && (
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
-                Journal Entries
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Double-entry bookkeeping transactions
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search entries..."
-                  className="pl-10 pr-4 py-2 bg-white/40 border border-white/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white/60 transition-all shadow-sm backdrop-blur-sm outline-none"
-                />
-              </div>
-              <button className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 shadow-sm font-medium text-gray-700 cursor-pointer">
-                <Filter className="w-4 h-4 text-gray-600" />
-                Filter
-              </button>
-              <button
-                onClick={() => setShowNewEntryModal(true)}
-                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center gap-2 shadow-md cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                New Entry
-              </button>
+          <div>
+            <label className={labelCls}>Import Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[{ icon: FileText, label: "Journal Entries" }, { icon: BookOpen, label: "Chart of Accounts" }, { icon: DollarSign, label: "Bank Statements" }, { icon: Receipt, label: "Invoices" }].map(({ icon: Icon, label }) => (
+                <label key={label} className="flex items-center gap-2.5 p-3 border border-gray-200 rounded-xl hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer transition-all">
+                  <input type="radio" name="importType" className="w-4 h-4 accent-emerald-600" />
+                  <Icon className="w-4 h-4 text-emerald-600" />
+                  <span className="text-sm font-medium text-gray-700">{label}</span>
+                </label>
+              ))}
             </div>
           </div>
 
-          <div className="space-y-3">
-            {recentTransactions.map((transaction: Transaction) => (
-              <div
-                key={transaction.id}
-                className="bg-white/40 border border-white/50 rounded-xl p-5 hover:bg-white/60 hover:shadow-lg transition-all backdrop-blur-sm"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-md">
-                      <FileText className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-900 text-lg">
-                        {transaction.description}
-                      </h3>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-sm text-gray-600 flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {new Date(transaction.date).toLocaleDateString("en-GB")}
-                        </span>
-                        <span className="text-sm text-gray-600">
-                          Ref: {transaction.reference}
-                        </span>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
-                            transaction.status === "posted"
-                              ? "bg-green-100/80 text-green-700"
-                              : transaction.status === "pending"
-                                ? "bg-yellow-100/80 text-yellow-700"
-                                : "bg-gray-100/80 text-gray-700"
-                          }`}
-                        >
-                          {transaction.status.toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleViewEntry(transaction)}
-                      className="p-2 hover:bg-blue-50/50 rounded-lg transition-colors cursor-pointer"
-                      title="View Entry"
-                    >
-                      <Eye className="w-5 h-5 text-blue-600" />
-                    </button>
-                    <button
-                      onClick={() => handleEditEntry(transaction)}
-                      className="p-2 hover:bg-purple-50/50 rounded-lg transition-colors cursor-pointer"
-                      title="Edit Entry"
-                    >
-                      <Edit3 className="w-5 h-5 text-purple-600" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick("entry", transaction.id)}
-                      className="p-2 hover:bg-red-50/50 rounded-lg transition-colors cursor-pointer"
-                      title="Delete Entry"
-                    >
-                      <Trash2 className="w-5 h-5 text-red-600" />
-                    </button>
-                  </div>
-                </div>
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+            <p className="text-xs font-semibold text-blue-700 mb-1 flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> Tips</p>
+            <ul className="text-xs text-blue-600 space-y-0.5">
+              <li>CSV headers: Date, Description, Debit Account, Debit Amount, Credit Account, Credit Amount</li>
+              <li>Amounts in GBP (£) · Dates in DD/MM/YYYY</li>
+            </ul>
+          </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Debit Side */}
-                  <div className="bg-green-50/50 border border-green-200/50 rounded-xl p-4 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <ArrowUpRight className="w-5 h-5 text-green-600" />
-                      <span className="font-bold text-green-900">DEBIT</span>
-                    </div>
-                    <p className="text-sm text-gray-700 mb-1">
-                      {transaction.entries[0]?.account.name}
-                    </p>
-                    <p className="text-2xl font-bold text-green-900">
-                      {accounting.formatMoney(transaction.entries[0]?.debit || 0, "£")}
-                    </p>
-                  </div>
+          <div className="flex gap-3 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+            <button onClick={() => setShowImportModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+            <button onClick={() => {
+              const fi = document.getElementById("file-upload") as HTMLInputElement;
+              if (fi?.files?.[0]) { alert(`Importing ${fi.files[0].name}…\nSuccess! ${Math.floor(Math.random()*50+10)} records imported.`); setShowImportModal(false); }
+              else alert("Please select a file first");
+            }} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <Upload className="w-4 h-4" /> Start Import
+            </button>
+          </div>
+        </ModalShell>
+      )}
 
-                  {/* Credit Side */}
-                  <div className="bg-red-50/50 border border-red-200/50 rounded-xl p-4 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <ArrowDownRight className="w-5 h-5 text-red-600" />
-                      <span className="font-bold text-red-900">CREDIT</span>
-                    </div>
-                    <p className="text-sm text-gray-700 mb-1">
-                      {transaction.entries[1]?.account.name}
-                    </p>
-                    <p className="text-2xl font-bold text-red-900">
-                      {accounting.formatMoney(transaction.entries[1]?.credit || 0, "£")}
-                    </p>
-                  </div>
-                </div>
+      {/* Export */}
+      {showExportModal && (
+        <ModalShell onClose={() => setShowExportModal(false)} title="Export Accounting Data" icon={Download} iconColor="text-blue-600">
+          <div>
+            <label className={labelCls}>Date Range</label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-xs text-gray-400 mb-1 block">From</span>
+                <input type="date" defaultValue={new Date(new Date().getFullYear(), 3, 1).toISOString().split("T")[0]} className={inputCls} />
+              </div>
+              <div>
+                <span className="text-xs text-gray-400 mb-1 block">To</span>
+                <input type="date" defaultValue={new Date().toISOString().split("T")[0]} className={inputCls} />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>Format</label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { fmt: "CSV"   as const, color: "blue",  sub: "Excel ready"  },
+                { fmt: "Excel" as const, color: "green", sub: ".xls format"  },
+                { fmt: "PDF"   as const, color: "red",   sub: "Print ready"  },
+              ]).map(({ fmt, sub }) => (
+                <button key={fmt} onClick={() => setSelectedExportFormat(fmt)}
+                  className={`p-3 border-2 rounded-xl text-center cursor-pointer transition-all ${selectedExportFormat === fmt ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                  <FileText className={`w-5 h-5 mx-auto mb-1.5 ${selectedExportFormat === fmt ? "text-blue-600" : "text-gray-400"}`} />
+                  <p className={`text-xs font-bold mb-0.5 ${selectedExportFormat === fmt ? "text-blue-900" : "text-gray-700"}`}>{fmt}</p>
+                  <p className="text-[10px] text-gray-400">{sub}</p>
+                  {selectedExportFormat === fmt && <CheckCircle className="w-3.5 h-3.5 text-blue-500 mx-auto mt-1.5" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>Data to Include</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { icon: FileText,   label: "Journal Entries" },
+                { icon: BookOpen,   label: "Chart of Accounts" },
+                { icon: Calculator, label: "Trial Balance" },
+                { icon: PieChart,   label: "Financial Reports" },
+              ].map(({ icon: Icon, label }) => (
+                <label key={label} className="flex items-center gap-2.5 p-3 border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition-all">
+                  <input type="checkbox" defaultChecked className="w-4 h-4 accent-blue-600 rounded" />
+                  <Icon className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm font-medium text-gray-700">{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.25rem)] sm:pb-0">
+            <button onClick={() => setShowExportModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+            <button onClick={() => { handleExportReport(`Accounting_${selectedExportFormat}`); setShowExportModal(false); }}
+              className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <Download className="w-4 h-4" /> Download {selectedExportFormat}
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* Report Generation */}
+      {showReportModal && selectedReport && (
+        <ModalShell onClose={() => setShowReportModal(false)} title={selectedReport} icon={BarChart3}>
+          <p className="text-sm text-gray-500">Choose a download format for this report.</p>
+          <div className="grid grid-cols-3 gap-2">
+            {(["CSV","Excel","PDF"] as const).map((fmt) => (
+              <button key={fmt} onClick={() => setSelectedExportFormat(fmt)}
+                className={`p-3 border-2 rounded-xl text-center cursor-pointer transition-all ${selectedExportFormat === fmt ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                <FileText className={`w-5 h-5 mx-auto mb-1 ${selectedExportFormat === fmt ? "text-blue-600" : "text-gray-400"}`} />
+                <p className={`text-xs font-bold ${selectedExportFormat === fmt ? "text-blue-900" : "text-gray-700"}`}>{fmt}</p>
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.25rem)] sm:pb-0">
+            <button onClick={() => setShowReportModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+            <button onClick={() => handleDownloadReport(selectedExportFormat)}
+              className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <Download className="w-4 h-4" /> Download
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* Year-End */}
+      {showYearEndModal && (
+        <ModalShell onClose={() => setShowYearEndModal(false)} title="Year-End Process" icon={Calendar} iconColor="text-indigo-600">
+          <p className="text-sm text-gray-500">
+            Generate your complete year-end accounts package including all required statements for HMRC and Companies House.
+          </p>
+          <div className="space-y-2">
+            {["Profit & Loss Statement","Balance Sheet","Trial Balance Report","Corporation Tax Computation"].map((item) => (
+              <div key={item} className="flex items-center gap-2.5 p-2.5 bg-gray-50 rounded-xl">
+                <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span className="text-sm text-gray-700">{item}</span>
               </div>
             ))}
           </div>
-
-          {/* Empty State (if no transactions) */}
-          {recentTransactions.length === 0 && (
-            <div className="text-center py-16">
-              <div className="p-6 bg-gray-100 rounded-full w-fit mx-auto mb-4">
-                <FileText className="w-16 h-16 text-gray-400" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                No Journal Entries Yet
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Start recording your transactions with double-entry bookkeeping
-              </p>
-              <button
-                onClick={() => setShowNewEntryModal(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all inline-flex items-center gap-2 cursor-pointer"
-              >
-                <Plus className="w-5 h-5" />
-                Create First Entry
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === "trial-balance" && (
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Trial Balance</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Verify that total debits equal total credits
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handlePrint}
-                className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer"
-              >
-                <Printer className="w-4 h-4 text-gray-600" />
-                <span className="font-medium text-gray-700">Print</span>
-              </button>
-              <button
-                onClick={() => setShowExportModal(true)}
-                className="px-4 py-2 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer"
-              >
-                <Download className="w-4 h-4 text-gray-600" />
-                <span className="font-medium text-gray-700">Export</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50/50 border-b border-gray-200/50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                    Account Code
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                    Account Name
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase">
-                    Debit (£)
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase">
-                    Credit (£)
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200/50">
-                {accounts.map((account: Account) => (
-                  <tr
-                    key={account.id}
-                    className="hover:bg-white/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-mono text-sm font-semibold text-gray-900 bg-white/30 rounded-l-lg my-1">
-                      {account.code}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-gray-900 bg-white/30 my-1">
-                      {account.name}
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold text-green-900 bg-white/30 my-1">
-                      {["asset", "expense"].includes(account.type)
-                        ? `£${account.balance.toLocaleString()}`
-                        : "-"}
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold text-red-900 bg-white/30 rounded-r-lg my-1">
-                      {["liability", "equity", "revenue"].includes(account.type)
-                        ? `£${account.balance.toLocaleString()}`
-                        : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-gray-50/50 border-t border-gray-200/50">
-                <tr>
-                  <td
-                    colSpan={2}
-                    className="px-6 py-4 font-bold text-gray-900 text-lg"
-                  >
-                    TOTALS
-                  </td>
-                  <td className="px-6 py-4 text-right font-bold text-green-900 text-lg">
-                    £
-                    {accounts
-                      .filter((a: Account) => ["asset", "expense"].includes(a.type))
-                      .reduce((sum: number, a: Account) => sum + a.balance, 0)
-                      .toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-right font-bold text-red-900 text-lg">
-                    £
-                    {accounts
-                      .filter((a: Account) =>
-                        ["liability", "equity", "revenue"].includes(a.type),
-                      )
-                      .reduce((sum: number, a: Account) => sum + a.balance, 0)
-                      .toLocaleString()}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          {/* Balance Check */}
-          <div className="mt-6 p-6 bg-green-50/50 border border-green-200/50 rounded-xl backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-              <div>
-                <p className="font-bold text-green-900 text-lg">
-                  Trial Balance is Balanced ✓
-                </p>
-                <p className="text-sm text-green-700">
-                  Total Debits equal Total Credits - Books are in order
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "reports" && (
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-8 text-white">
-            <h2 className="text-3xl font-bold mb-2">Financial Reports</h2>
-            <p className="text-purple-100 mb-6">
-              Generate comprehensive financial statements for your business
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <button
-              onClick={() => handleGenerateReport("Profit & Loss Statement")}
-              className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:shadow-xl transition-all text-left cursor-pointer"
-            >
-              <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl w-fit mb-4">
-                <BarChart3 className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-lg mb-2">
-                Profit & Loss Statement
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Income statement showing revenue and expenses
-              </p>
-              <div className="flex items-center gap-2 text-blue-600 font-semibold">
-                <span>Generate Report</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </div>
-            </button>
-
-            <button
-              onClick={() => handleGenerateReport("Balance Sheet")}
-              className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:shadow-xl transition-all text-left cursor-pointer"
-            >
-              <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl w-fit mb-4">
-                <PieChart className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-lg mb-2">
-                Balance Sheet
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Assets, liabilities, and equity snapshot
-              </p>
-              <div className="flex items-center gap-2 text-green-600 font-semibold">
-                <span>Generate Report</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </div>
-            </button>
-
-            <button
-              onClick={() => handleGenerateReport("Cash Flow Statement")}
-              className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:shadow-xl transition-all text-left cursor-pointer"
-            >
-              <div className="p-4 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl w-fit mb-4">
-                <TrendingUp className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-lg mb-2">
-                Cash Flow Statement
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Operating, investing, and financing activities
-              </p>
-              <div className="flex items-center gap-2 text-orange-600 font-semibold">
-                <span>Generate Report</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </div>
+          <div className="flex gap-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.25rem)] sm:pb-0">
+            <button onClick={() => setShowYearEndModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+            <button onClick={() => { setShowYearEndModal(false); showToastMsg("Year-end accounts generated successfully"); }}
+              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <FileCheck className="w-4 h-4" /> Generate
             </button>
           </div>
-        </div>
+        </ModalShell>
       )}
 
-      {activeTab === "year-end" && (
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl p-8 text-white">
-            <h2 className="text-3xl font-bold mb-2">
-              Year-End Accounts for HMRC
-            </h2>
-            <p className="text-indigo-100 mb-6">
-              Prepare your annual accounts for Companies House and HMRC
-              submission
-            </p>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setShowYearEndModal(true)}
-                className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all cursor-pointer"
-              >
-                Generate Accounts
-              </button>
-              <button
-                onClick={() => setShowYearEndModal(true)}
-                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all cursor-pointer"
-              >
-                View Checklist
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <FileCheck className="w-5 h-5 text-green-600" />
-                Required Documents
-              </h3>
-              <div className="space-y-3">
-                {[
-                  "Profit & Loss Statement",
-                  "Balance Sheet",
-                  "Directors Report",
-                  "Notes to Accounts",
-                  "Corporation Tax Computation",
-                ].map((doc, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <span className="text-sm font-medium text-gray-900">
-                      {doc}
-                    </span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                Important Deadlines
-              </h3>
-              <div className="space-y-3">
-                <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                  <p className="text-sm font-semibold text-red-900">
-                    Companies House Filing
-                  </p>
-                  <p className="text-xs text-red-700 mt-1">
-                    9 months after year-end
-                  </p>
-                </div>
-                <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <p className="text-sm font-semibold text-orange-900">
-                    Corporation Tax Return
-                  </p>
-                  <p className="text-xs text-orange-700 mt-1">
-                    12 months after year-end
-                  </p>
-                </div>
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-sm font-semibold text-blue-900">
-                    Corporation Tax Payment
-                  </p>
-                  <p className="text-xs text-blue-700 mt-1">
-                    9 months + 1 day after year-end
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* New Entry Modal */}
-      {showNewEntryModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-indigo-500 p-4 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                  <FileText className="w-6 h-6" />
-                  New Journal Entry
-                </h2>
-
-                <button
-                  onClick={() => setShowNewEntryModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-4 space-y-4">
-              {/* Date and Reference */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={newEntry.date}
-                    onChange={(e) =>
-                      setNewEntry({ ...newEntry, date: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Reference
-                  </label>
-                  <input
-                    type="text"
-                    value={newEntry.reference}
-                    onChange={(e) =>
-                      setNewEntry({ ...newEntry, reference: e.target.value })
-                    }
-                    placeholder="e.g., JE-001"
-                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Description *
-                </label>
-                <textarea
-                  value={newEntry.description}
-                  onChange={(e) =>
-                    setNewEntry({ ...newEntry, description: e.target.value })
-                  }
-                  placeholder="Enter transaction description..."
-                  rows={2}
-                  className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none resize-none text-sm"
-                />
-              </div>
-
-              {/* Debit Entry */}
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-3">
-                <h3 className="font-bold text-green-900 mb-3 flex items-center gap-2 text-sm">
-                  <ArrowUpRight className="w-4 h-4" />
-                  Debit Entry
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Account *
-                    </label>
-                    <select
-                      value={newEntry.debitAccount}
-                      onChange={(e) =>
-                        setNewEntry({
-                          ...newEntry,
-                          debitAccount: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none text-sm"
-                    >
-                      <option value="">Select account...</option>
-                      {accounts.map((account: Account) => (
-                        <option key={account.id} value={account.name}>
-                          {account.name}
-                        </option>
-                      ))}
-
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Amount (£) *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={newEntry.debitAmount}
-                      onChange={(e) =>
-                        setNewEntry({
-                          ...newEntry,
-                          debitAmount: e.target.value,
-                        })
-                      }
-                      placeholder="0.00"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-
-              {/* Credit Entry */}
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-3">
-                <h3 className="font-bold text-red-900 mb-3 flex items-center gap-2 text-sm">
-                  <ArrowDownRight className="w-4 h-4" />
-                  Credit Entry
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Account *
-                    </label>
-                    <select
-                      value={newEntry.creditAccount}
-                      onChange={(e) =>
-                        setNewEntry({
-                          ...newEntry,
-                          creditAccount: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:outline-none text-sm"
-                    >
-                      <option value="">Select account...</option>
-                      {accounts.map((account: Account) => (
-                        <option key={account.id} value={account.name}>
-                          {account.name}
-                        </option>
-                      ))}
-
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Amount (£) *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={newEntry.creditAmount}
-                      onChange={(e) =>
-                        setNewEntry({
-                          ...newEntry,
-                          creditAmount: e.target.value,
-                        })
-                      }
-                      placeholder="0.00"
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:outline-none text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-
-              {/* Balance Check */}
-              {newEntry.debitAmount && newEntry.creditAmount && (
-                <div
-                  className={`p-3 rounded-lg border-2 ${
-                    parseFloat(newEntry.debitAmount) ===
-                    parseFloat(newEntry.creditAmount)
-                      ? "bg-green-50 border-green-200"
-                      : "bg-red-50 border-red-200"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {parseFloat(newEntry.debitAmount) ===
-                    parseFloat(newEntry.creditAmount) ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span className="font-semibold text-green-900 text-sm">
-                          Entry is balanced
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle className="w-4 h-4 text-red-600" />
-                        <span className="font-semibold text-red-900 text-xs">
-                          Entry is not balanced (Difference: £
-                          {Math.abs(
-                            parseFloat(newEntry.debitAmount) -
-                              parseFloat(newEntry.creditAmount),
-                          ).toFixed(2)}
-                          )
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  onClick={() => setShowNewEntryModal(false)}
-                  className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveEntry}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
-                >
-                  <Save className="w-4 h-4" />
-                  Save Entry
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Import Modal */}
-      {showImportModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-5 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Upload className="w-6 h-6" />
-                  Import Accounting Data
-                </h2>
-                <button
-                  onClick={() => setShowImportModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-4">
-              {/* File Upload Area - Compact */}
-              <div className="text-center">
-                <div className="p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-green-500 transition-colors cursor-pointer">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-sm font-semibold text-gray-900 mb-1">
-                    Drop file or click to browse
-                  </p>
-                  <p className="text-xs text-gray-600 mb-3">
-                    CSV, Excel (.xlsx, .xls), QuickBooks (.qbo)
-                  </p>
-                  <input
-                    type="file"
-                    accept=".csv,.xlsx,.xls,.qbo"
-                    className="hidden"
-                    id="file-upload"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        alert(
-                          `File selected: ${file.name}\nSize: ${(file.size / 1024).toFixed(2)} KB\nReady to import!`,
-                        );
-                      }
-                    }}
-                  />
-                  <label
-                    htmlFor="file-upload"
-                    className="px-5 py-2 bg-green-500 text-white text-sm font-semibold rounded-lg hover:bg-green-600 transition-colors cursor-pointer inline-block"
-                  >
-                    Choose File
-                  </label>
-                </div>
-              </div>
-
-              {/* Import Type Selection - Compact */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-2 text-sm">
-                  Select Import Type:
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="flex items-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-all">
-                    <input
-                      type="radio"
-                      name="importType"
-                      defaultChecked
-                      className="w-4 h-4"
-                    />
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        Journal Entries
-                      </span>
-                    </div>
-                  </label>
-                  <label className="flex items-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-all">
-                    <input type="radio" name="importType" className="w-4 h-4" />
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        Chart of Accounts
-                      </span>
-                    </div>
-                  </label>
-                  <label className="flex items-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-all">
-                    <input type="radio" name="importType" className="w-4 h-4" />
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        Bank Statements
-                      </span>
-                    </div>
-                  </label>
-                  <label className="flex items-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-all">
-                    <input type="radio" name="importType" className="w-4 h-4" />
-                    <div className="flex items-center gap-2">
-                      <Receipt className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        Invoices
-                      </span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Import Tips - Compact */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="font-semibold text-blue-900 mb-1 text-sm flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  Import Tips:
-                </p>
-                <ul className="text-xs text-blue-800 space-y-1 ml-6">
-                  <li>
-                    • CSV headers: Date, Description, Debit Account, Debit
-                    Amount, Credit Account, Credit Amount
-                  </li>
-                  <li>• Amounts in GBP (£), Dates in DD/MM/YYYY format</li>
-                </ul>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowImportModal(false)}
-                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    const fileInput = document.getElementById(
-                      "file-upload",
-                    ) as HTMLInputElement;
-                    if (fileInput?.files?.[0]) {
-                      alert(
-                        `Importing ${fileInput.files[0].name}...\n\nImport successful! ${Math.floor(Math.random() * 50 + 10)} records imported.`,
-                      );
-                      setShowImportModal(false);
-                    } else {
-                      alert("Please select a file first");
-                    }
-                  }}
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
-                >
-                  <Upload className="w-4 h-4" />
-                  Start Import
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Export Modal */}
-      {showExportModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-5 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Download className="w-6 h-6" />
-                  Export Accounting Data
-                </h2>
-                <button
-                  onClick={() => setShowExportModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-4">
-              {/* Date Range */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-2 text-sm">
-                  Date Range:
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      From
-                    </label>
-                    <input
-                      type="date"
-                      defaultValue={
-                        new Date(new Date().getFullYear(), 3, 1)
-                          .toISOString()
-                          .split("T")[0]
-                      }
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      To
-                    </label>
-                    <input
-                      type="date"
-                      defaultValue={new Date().toISOString().split("T")[0]}
-                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Export Format Selection */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-2 text-sm">
-                  Select Export Format:
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    onClick={() => setSelectedExportFormat("CSV")}
-                    className={`p-3 border-2 rounded-lg transition-all text-center cursor-pointer ${
-                      selectedExportFormat === "CSV"
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-blue-300 hover:bg-blue-50"
-                    }`}
-                  >
-                    <div
-                      className={`p-2 rounded-lg w-fit mx-auto mb-2 transition-colors ${
-                        selectedExportFormat === "CSV"
-                          ? "bg-blue-200"
-                          : "bg-blue-100"
-                      }`}
-                    >
-                      <FileText className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <p
-                      className={`font-bold text-xs mb-1 ${
-                        selectedExportFormat === "CSV"
-                          ? "text-blue-900"
-                          : "text-gray-900"
-                      }`}
-                    >
-                      CSV
-                    </p>
-                    <p className="text-xs text-gray-600">Excel ready</p>
-                    {selectedExportFormat === "CSV" && (
-                      <div className="mt-2">
-                        <CheckCircle className="w-4 h-4 text-blue-600 mx-auto" />
-                      </div>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => setSelectedExportFormat("Excel")}
-                    className={`p-3 border-2 rounded-lg transition-all text-center cursor-pointer ${
-                      selectedExportFormat === "Excel"
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-green-300 hover:bg-green-50"
-                    }`}
-                  >
-                    <div
-                      className={`p-2 rounded-lg w-fit mx-auto mb-2 transition-colors ${
-                        selectedExportFormat === "Excel"
-                          ? "bg-green-200"
-                          : "bg-green-100"
-                      }`}
-                    >
-                      <FileText className="w-5 h-5 text-green-600" />
-                    </div>
-                    <p
-                      className={`font-bold text-xs mb-1 ${
-                        selectedExportFormat === "Excel"
-                          ? "text-green-900"
-                          : "text-gray-900"
-                      }`}
-                    >
-                      Excel
-                    </p>
-                    <p className="text-xs text-gray-600">.xls format</p>
-                    {selectedExportFormat === "Excel" && (
-                      <div className="mt-2">
-                        <CheckCircle className="w-4 h-4 text-green-600 mx-auto" />
-                      </div>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => setSelectedExportFormat("PDF")}
-                    className={`p-3 border-2 rounded-lg transition-all text-center cursor-pointer ${
-                      selectedExportFormat === "PDF"
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-200 hover:border-red-300 hover:bg-red-50"
-                    }`}
-                  >
-                    <div
-                      className={`p-2 rounded-lg w-fit mx-auto mb-2 transition-colors ${
-                        selectedExportFormat === "PDF"
-                          ? "bg-red-200"
-                          : "bg-red-100"
-                      }`}
-                    >
-                      <FileText className="w-5 h-5 text-red-600" />
-                    </div>
-                    <p
-                      className={`font-bold text-xs mb-1 ${
-                        selectedExportFormat === "PDF"
-                          ? "text-red-900"
-                          : "text-gray-900"
-                      }`}
-                    >
-                      PDF
-                    </p>
-                    <p className="text-xs text-gray-600">Print ready</p>
-                    {selectedExportFormat === "PDF" && (
-                      <div className="mt-2">
-                        <CheckCircle className="w-4 h-4 text-red-600 mx-auto" />
-                      </div>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Data Selection - Compact */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-2 text-sm">
-                  Select Data to Export:
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="flex items-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        Journal Entries
-                      </span>
-                    </div>
-                  </label>
-                  <label className="flex items-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        Chart of Accounts
-                      </span>
-                    </div>
-                  </label>
-                  <label className="flex items-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <div className="flex items-center gap-2">
-                      <Calculator className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        Trial Balance
-                      </span>
-                    </div>
-                  </label>
-                  <label className="flex items-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <div className="flex items-center gap-2">
-                      <PieChart className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        Financial Reports
-                      </span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              {/* Selected Format Display */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-blue-700 mb-1">
-                      Ready to Export:
-                    </p>
-                    <p className="text-sm font-bold text-blue-900">
-                      {selectedExportFormat} Format • Selected Data Items
-                    </p>
-                  </div>
-                  <div
-                    className={`p-2 rounded-lg ${
-                      selectedExportFormat === "CSV"
-                        ? "bg-blue-200"
-                        : selectedExportFormat === "Excel"
-                          ? "bg-green-200"
-                          : "bg-red-200"
-                    }`}
-                  >
-                    <FileText
-                      className={`w-5 h-5 ${
-                        selectedExportFormat === "CSV"
-                          ? "text-blue-600"
-                          : selectedExportFormat === "Excel"
-                            ? "text-green-600"
-                            : "text-red-600"
-                      }`}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowExportModal(false)}
-                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    handleExportReport(
-                      `Accounting_Data_${selectedExportFormat}`,
-                    );
-                    setShowExportModal(false);
-                  }}
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  Download {selectedExportFormat}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add Account Modal */}
-      {showAddAccountModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
-            <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <BookOpen className="w-7 h-7" />
-                  Add New Account
-                </h2>
-                <button
-                  onClick={() => setShowAddAccountModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* Account Code and Name */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Account Code *
-                  </label>
-                  <input
-                    type="text"
-                    value={newAccount.code}
-                    onChange={(e) =>
-                      setNewAccount({ ...newAccount, code: e.target.value })
-                    }
-                    placeholder="e.g., 1300"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Unique numeric code
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Account Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={newAccount.name}
-                    onChange={(e) =>
-                      setNewAccount({ ...newAccount, name: e.target.value })
-                    }
-                    placeholder="e.g., Petty Cash"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Account Type */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Account Type *
-                </label>
-                <div className="grid grid-cols-5 gap-3">
-                  {(
-                    [
-                      "asset",
-                      "liability",
-                      "equity",
-                      "revenue",
-                      "expense",
-                    ] as const
-                  ).map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setNewAccount({ ...newAccount, type })}
-                      className={`p-4 rounded-xl border-2 transition-all text-center cursor-pointer ${
-                        newAccount.type === type
-                          ? type === "asset"
-                            ? "bg-blue-50 border-blue-500"
-                            : type === "liability"
-                              ? "bg-red-50 border-red-500"
-                              : type === "equity"
-                                ? "bg-purple-50 border-purple-500"
-                                : type === "revenue"
-                                  ? "bg-green-50 border-green-500"
-                                  : "bg-orange-50 border-orange-500"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <p
-                        className={`font-bold text-sm capitalize ${
-                          newAccount.type === type
-                            ? type === "asset"
-                              ? "text-blue-700"
-                              : type === "liability"
-                                ? "text-red-700"
-                                : type === "equity"
-                                  ? "text-purple-700"
-                                  : type === "revenue"
-                                    ? "text-green-700"
-                                    : "text-orange-700"
-                            : "text-gray-700"
-                        }`}
-                      >
-                        {type}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={newAccount.description}
-                  onChange={(e) =>
-                    setNewAccount({
-                      ...newAccount,
-                      description: e.target.value,
-                    })
-                  }
-                  placeholder="Optional description of this account..."
-                  rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none resize-none"
-                />
-              </div>
-
-              {/* Opening Balance */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Opening Balance (£)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={newAccount.openingBalance}
-                  onChange={(e) =>
-                    setNewAccount({
-                      ...newAccount,
-                      openingBalance: e.target.value,
-                    })
-                  }
-                  placeholder="0.00"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Leave blank for zero balance
-                </p>
-              </div>
-
-              {/* Account Type Info */}
-              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-indigo-900 mb-1">
-                      Account Type Guide:
-                    </p>
-                    <ul className="text-sm text-indigo-800 space-y-1">
-                      <li>
-                        • <strong>Asset:</strong> Resources owned (Cash,
-                        Inventory, Equipment)
-                      </li>
-                      <li>
-                        • <strong>Liability:</strong> Money owed (Loans,
-                        Accounts Payable)
-                      </li>
-                      <li>
-                        • <strong>Equity:</strong> Owner&apos;s stake (Share
-                        Capital, Retained Earnings)
-                      </li>
-                      <li>
-                        • <strong>Revenue:</strong> Income earned (Sales,
-                        Service Revenue)
-                      </li>
-                      <li>
-                        • <strong>Expense:</strong> Costs incurred (Rent,
-                        Salaries, Utilities)
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  onClick={() => setShowAddAccountModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveAccount}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Save className="w-5 h-5" />
-                  Save Account
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* View Account Modal */}
-      {showViewAccountModal && selectedAccount && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
-            <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Eye className="w-7 h-7" />
-                  Account Details
-                </h2>
-                <button
-                  onClick={() => setShowViewAccountModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-              </div>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-1">
-                    Account Code
-                  </p>
-                  <p className="text-lg font-bold text-gray-900 font-mono">
-                    {selectedAccount.code}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-1">
-                    Account Name
-                  </p>
-                  <p className="text-lg font-bold text-gray-900">
-                    {selectedAccount.name}
-                  </p>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">
-                  Account Type
-                </p>
-                <span
-                  className={`px-4 py-2 rounded-full text-sm font-semibold inline-block ${
-                    selectedAccount.type === "asset"
-                      ? "bg-blue-100 text-blue-700"
-                      : selectedAccount.type === "liability"
-                        ? "bg-red-100 text-red-700"
-                        : selectedAccount.type === "equity"
-                          ? "bg-purple-100 text-purple-700"
-                          : selectedAccount.type === "revenue"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-orange-100 text-orange-700"
-                  }`}
-                >
-                  {selectedAccount.type.toUpperCase()}
-                </span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">
-                  Current Balance
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  £{selectedAccount.balance.toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">
-                  Last Transaction
-                </p>
-                <p className="text-lg text-gray-900">
-                  {selectedAccount.lastTransaction ? new Date(selectedAccount.lastTransaction).toLocaleDateString("en-GB") : "N/A"}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowViewAccountModal(false)}
-                className="w-full px-6 py-3 bg-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-300 transition-colors mt-4 cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* View Entry Modal */}
-      {showViewEntryModal && selectedEntry && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <FileText className="w-7 h-7" />
-                  Journal Entry Details
-                </h2>
-                <button
-                  onClick={() => setShowViewEntryModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-              </div>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-1">
-                    Date
-                  </p>
-                  <p className="text-lg font-bold text-gray-900">
-                    {new Date(selectedEntry.date).toLocaleDateString("en-GB")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-1">
-                    Reference
-                  </p>
-                  <p className="text-lg font-bold text-gray-900">
-                    {selectedEntry.reference}
-                  </p>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">
-                  Description
-                </p>
-                <p className="text-lg text-gray-900">
-                  {selectedEntry.description}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50/50 border border-green-200/50 rounded-xl p-4 backdrop-blur-sm">
-                  <p className="text-sm font-semibold text-green-900 mb-2 flex items-center gap-2">
-                    <ArrowUpRight className="w-4 h-4" />
-                    DEBIT
-                  </p>
-                  <p className="text-sm text-gray-700 mb-1">
-                    {selectedEntry.entries[0]?.account.name}
-                  </p>
-                  <p className="text-2xl font-bold text-green-900">
-                    £{(selectedEntry.entries[0]?.debit || 0).toLocaleString()}
-                  </p>
-                </div>
-                <div className="bg-red-50/50 border border-red-200/50 rounded-xl p-4 backdrop-blur-sm">
-                  <p className="text-sm font-semibold text-red-900 mb-2 flex items-center gap-2">
-                    <ArrowDownRight className="w-4 h-4" />
-                    CREDIT
-                  </p>
-                  <p className="text-sm text-gray-700 mb-1">
-                    {selectedEntry.entries[1]?.account.name}
-                  </p>
-                  <p className="text-2xl font-bold text-red-900">
-                    £{(selectedEntry.entries[1]?.credit || 0).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">
-                  Status
-                </p>
-                <span
-                  className={`px-4 py-2 rounded-full text-sm font-semibold inline-block backdrop-blur-sm ${
-                    selectedEntry.status === "posted"
-                      ? "bg-green-100/80 text-green-700"
-                      : selectedEntry.status === "pending"
-                        ? "bg-yellow-100/80 text-yellow-700"
-                        : "bg-gray-100/80 text-gray-700"
-                  }`}
-                >
-                  {selectedEntry.status.toUpperCase()}
-                </span>
-              </div>
-              <button
-                onClick={() => setShowViewEntryModal(false)}
-                className="w-full px-6 py-3 bg-gray-100 rounded-xl font-semibold text-gray-700 hover:bg-gray-200 transition-colors mt-4 cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Account Modal */}
-      {showEditAccountModal && selectedAccount && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
-            <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Edit3 className="w-7 h-7" />
-                  Edit Account
-                </h2>
-                <button
-                  onClick={() => setShowEditAccountModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* Account Code and Name */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Account Code *
-                  </label>
-                  <input
-                    type="text"
-                    value={newAccount.code}
-                    onChange={(e) =>
-                      setNewAccount({ ...newAccount, code: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Account Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={newAccount.name}
-                    onChange={(e) =>
-                      setNewAccount({ ...newAccount, name: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Account Type */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Account Type *
-                </label>
-                <div className="grid grid-cols-5 gap-3">
-                  {(
-                    [
-                      "asset",
-                      "liability",
-                      "equity",
-                      "revenue",
-                      "expense",
-                    ] as const
-                  ).map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setNewAccount({ ...newAccount, type })}
-                      className={`p-4 rounded-xl border-2 transition-all text-center ${
-                        newAccount.type === type
-                          ? type === "asset"
-                            ? "bg-blue-50 border-blue-500"
-                            : type === "liability"
-                              ? "bg-red-50 border-red-500"
-                              : type === "equity"
-                                ? "bg-purple-50 border-purple-500"
-                                : type === "revenue"
-                                  ? "bg-green-50 border-green-500"
-                                  : "bg-orange-50 border-orange-500"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <p
-                        className={`font-bold text-sm capitalize ${
-                          newAccount.type === type
-                            ? type === "asset"
-                              ? "text-blue-700"
-                              : type === "liability"
-                                ? "text-red-700"
-                                : type === "equity"
-                                  ? "text-purple-700"
-                                  : type === "revenue"
-                                    ? "text-green-700"
-                                    : "text-orange-700"
-                            : "text-gray-700"
-                        }`}
-                      >
-                        {type}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Current Balance */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Current Balance (£)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={newAccount.openingBalance}
-                  onChange={(e) =>
-                    setNewAccount({
-                      ...newAccount,
-                      openingBalance: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  onClick={() => setShowEditAccountModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    handleSaveAccount();
-                    setShowEditAccountModal(false);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Save className="w-5 h-5" />
-                  Update Account
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Entry Modal */}
-      {showEditEntryModal && selectedEntry && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50">
-            <div className="sticky top-0 bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Edit3 className="w-7 h-7" />
-                  Edit Journal Entry
-                </h2>
-                <button
-                  onClick={() => setShowEditEntryModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* Date and Reference */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={newEntry.date}
-                    onChange={(e) =>
-                      setNewEntry({ ...newEntry, date: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Reference
-                  </label>
-                  <input
-                    type="text"
-                    value={newEntry.reference}
-                    onChange={(e) =>
-                      setNewEntry({ ...newEntry, reference: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Description *
-                </label>
-                <textarea
-                  value={newEntry.description}
-                  onChange={(e) =>
-                    setNewEntry({ ...newEntry, description: e.target.value })
-                  }
-                  rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none resize-none"
-                />
-              </div>
-
-              {/* Debit Entry */}
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                <h3 className="font-bold text-green-900 mb-4 flex items-center gap-2">
-                  <ArrowUpRight className="w-5 h-5" />
-                  Debit Entry
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Account *
-                    </label>
-                    <select
-                      value={newEntry.debitAccount}
-                      onChange={(e) =>
-                        setNewEntry({
-                          ...newEntry,
-                          debitAccount: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none"
-                    >
-                      <option value="">Select account...</option>
-                      {accounts.map((account: Account) => (
-                        <option key={account.id} value={account.name}>
-                          {account.code} - {account.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Amount (£) *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={newEntry.debitAmount}
-                      onChange={(e) =>
-                        setNewEntry({
-                          ...newEntry,
-                          debitAmount: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Credit Entry */}
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-                <h3 className="font-bold text-red-900 mb-4 flex items-center gap-2">
-                  <ArrowDownRight className="w-5 h-5" />
-                  Credit Entry
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Account *
-                    </label>
-                    <select
-                      value={newEntry.creditAccount}
-                      onChange={(e) =>
-                        setNewEntry({
-                          ...newEntry,
-                          creditAccount: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none"
-                    >
-                      <option value="">Select account...</option>
-                      {accounts.map((account: Account) => (
-                        <option key={account.id} value={account.name}>
-                          {account.code} - {account.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Amount (£) *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={newEntry.creditAmount}
-                      onChange={(e) =>
-                        setNewEntry({
-                          ...newEntry,
-                          creditAmount: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Balance Check */}
-              {newEntry.debitAmount && newEntry.creditAmount && (
-                <div
-                  className={`p-4 rounded-xl border-2 ${
-                    parseFloat(newEntry.debitAmount) ===
-                    parseFloat(newEntry.creditAmount)
-                      ? "bg-green-50 border-green-200"
-                      : "bg-red-50 border-red-200"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {parseFloat(newEntry.debitAmount) ===
-                    parseFloat(newEntry.creditAmount) ? (
-                      <>
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <span className="font-semibold text-green-900">
-                          Entry is balanced
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle className="w-5 h-5 text-red-600" />
-                        <span className="font-semibold text-red-900">
-                          Entry is not balanced (Difference: £
-                          {Math.abs(
-                            parseFloat(newEntry.debitAmount) -
-                              parseFloat(newEntry.creditAmount),
-                          ).toFixed(2)}
-                          )
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  onClick={() => setShowEditEntryModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    handleSaveEntry();
-                    setShowEditEntryModal(false);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Save className="w-5 h-5" />
-                  Update Entry
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Report Generation Modal */}
-      {showReportModal && selectedReport && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-3xl w-full my-8 max-h-[90vh] overflow-y-auto border border-white/50">
-            <div
-              className={`p-6 rounded-t-2xl ${
-                selectedReport.includes("Profit")
-                  ? "bg-gradient-to-r from-blue-500 to-indigo-500"
-                  : selectedReport.includes("Balance")
-                    ? "bg-gradient-to-r from-green-500 to-emerald-500"
-                    : selectedReport.includes("Cash Flow")
-                      ? "bg-gradient-to-r from-orange-500 to-red-500"
-                      : "bg-gradient-to-r from-indigo-500 to-purple-500"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  {selectedReport.includes("Profit") && (
-                    <BarChart3 className="w-7 h-7" />
-                  )}
-                  {selectedReport.includes("Balance") && (
-                    <PieChart className="w-7 h-7" />
-                  )}
-                  {selectedReport.includes("Cash Flow") && (
-                    <TrendingUp className="w-7 h-7" />
-                  )}
-                  {selectedReport.includes("Year-End") && (
-                    <Calendar className="w-7 h-7" />
-                  )}
-                  Generate {selectedReport}
-                </h2>
-                <button
-                  onClick={() => setShowReportModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-4">
-              {/* Date Range and Report Info Combined */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    From Date
-                  </label>
-                  <input
-                    type="date"
-                    defaultValue={
-                      new Date(new Date().getFullYear(), 3, 1)
-                        .toISOString()
-                        .split("T")[0]
-                    }
-                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    To Date
-                  </label>
-                  <input
-                    type="date"
-                    defaultValue={new Date().toISOString().split("T")[0]}
-                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Export Format Selection - Compact */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-2 text-sm">
-                  Choose Export Format:
-                </h3>
-                <div className="grid grid-cols-4 gap-2">
-                  <button
-                    onClick={() => handleDownloadReport("PDF")}
-                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all text-center group cursor-pointer"
-                  >
-                    <div className="p-2 bg-red-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-red-200 transition-colors">
-                      <FileText className="w-6 h-6 text-red-600" />
-                    </div>
-                    <p className="font-bold text-gray-900 text-xs">PDF</p>
-                  </button>
-
-                  <button
-                    onClick={() => handleDownloadReport("Excel")}
-                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-center group cursor-pointer"
-                  >
-                    <div className="p-2 bg-green-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-green-200 transition-colors">
-                      <FileText className="w-6 h-6 text-green-600" />
-                    </div>
-                    <p className="font-bold text-gray-900 text-xs">Excel</p>
-                  </button>
-
-                  <button
-                    onClick={() => handleDownloadReport("CSV")}
-                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center group cursor-pointer"
-                  >
-                    <div className="p-2 bg-blue-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-blue-200 transition-colors">
-                      <FileText className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <p className="font-bold text-gray-900 text-xs">CSV</p>
-                  </button>
-
-                  <button
-                    onClick={() => handleDownloadReport("JSON")}
-                    className="p-3 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-center group cursor-pointer"
-                  >
-                    <div className="p-2 bg-purple-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-purple-200 transition-colors">
-                      <FileText className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <p className="font-bold text-gray-900 text-xs">JSON</p>
-                  </button>
-                </div>
-              </div>
-
-              {/* Additional Options - Compact */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <h3 className="font-bold text-gray-900 mb-2 text-sm">
-                  Options:
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <span className="text-xs text-gray-700">
-                      Comparative figures
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <span className="text-xs text-gray-700">
-                      Notes & annotations
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <span className="text-xs text-gray-700">
-                      HMRC-compliant
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <span className="text-xs text-gray-700">
-                      Company branding
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowReportModal(false)}
-                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-sm cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handlePrint}
-                  className="px-4 py-2.5 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm cursor-pointer"
-                >
-                  <Printer className="w-4 h-4" />
-                  Print
-                </button>
-                <button
-                  onClick={() => handleDownloadReport("PDF")}
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  Generate
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Year-End Accounts Modal */}
-      {showYearEndModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto border border-white/50">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Calendar className="w-7 h-7" />
-                  Year-End Accounts for HMRC
-                </h2>
-                <button
-                  onClick={() => setShowYearEndModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-              </div>
-              <p className="text-indigo-100 mt-2">
-                Prepare your annual accounts for Companies House and HMRC
-                submission
-              </p>
-            </div>
-
-            <div className="p-6 space-y-5">
-              {/* Financial Year Selection */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4">
-                <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Select Financial Year
-                </h3>
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-blue-700 mb-1">
-                      Year End Date
-                    </label>
-                    <input
-                      type="date"
-                      defaultValue={
-                        new Date(new Date().getFullYear(), 2, 31)
-                          .toISOString()
-                          .split("T")[0]
-                      }
-                      className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-blue-700 mb-1">
-                      Company Number
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="12345678"
-                      className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-blue-700 mb-1">
-                      UTR Number
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="1234567890"
-                      className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Required Documents Checklist */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileCheck className="w-5 h-5 text-green-600" />
-                  Required Documents
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    {
-                      name: "Profit & Loss Statement",
-                      status: "complete",
-                      icon: BarChart3,
-                    },
-                    {
-                      name: "Balance Sheet",
-                      status: "complete",
-                      icon: PieChart,
-                    },
-                    {
-                      name: "Directors Report",
-                      status: "pending",
-                      icon: FileText,
-                    },
-                    {
-                      name: "Notes to Accounts",
-                      status: "pending",
-                      icon: BookOpen,
-                    },
-                    {
-                      name: "Corporation Tax Computation",
-                      status: "complete",
-                      icon: Calculator,
-                    },
-                    {
-                      name: "Audit Report (if required)",
-                      status: "pending",
-                      icon: FileCheck,
-                    },
-                  ].map((doc, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-lg border-2 flex items-center justify-between ${
-                        doc.status === "complete"
-                          ? "bg-green-50 border-green-200"
-                          : "bg-orange-50 border-orange-200"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`p-2 rounded-lg ${
-                            doc.status === "complete"
-                              ? "bg-green-100"
-                              : "bg-orange-100"
-                          }`}
-                        >
-                          <doc.icon
-                            className={`w-4 h-4 ${
-                              doc.status === "complete"
-                                ? "text-green-600"
-                                : "text-orange-600"
-                            }`}
-                          />
-                        </div>
-                        <span className="text-sm font-semibold text-gray-900">
-                          {doc.name}
-                        </span>
-                      </div>
-                      {doc.status === "complete" ? (
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <Clock className="w-5 h-5 text-orange-600" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Important Deadlines */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                  Important Deadlines
-                </h3>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="p-4 bg-red-50 rounded-lg border-2 border-red-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Building2 className="w-5 h-5 text-red-600" />
-                      <p className="text-xs font-bold text-red-900">
-                        Companies House
-                      </p>
-                    </div>
-                    <p className="text-sm font-semibold text-red-900 mb-1">
-                      Filing Deadline
-                    </p>
-                    <p className="text-xs text-red-700">
-                      9 months after year-end
-                    </p>
-                    <p className="text-lg font-bold text-red-900 mt-2">
-                      31 Dec 2024
-                    </p>
-                  </div>
-                  <div className="p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="w-5 h-5 text-orange-600" />
-                      <p className="text-xs font-bold text-orange-900">HMRC</p>
-                    </div>
-                    <p className="text-sm font-semibold text-orange-900 mb-1">
-                      CT600 Return
-                    </p>
-                    <p className="text-xs text-orange-700">
-                      12 months after year-end
-                    </p>
-                    <p className="text-lg font-bold text-orange-900 mt-2">
-                      31 Mar 2025
-                    </p>
-                  </div>
-                  <div className="p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-5 h-5 text-blue-600" />
-                      <p className="text-xs font-bold text-blue-900">HMRC</p>
-                    </div>
-                    <p className="text-sm font-semibold text-blue-900 mb-1">
-                      Tax Payment
-                    </p>
-                    <p className="text-xs text-blue-700">9 months + 1 day</p>
-                    <p className="text-lg font-bold text-blue-900 mt-2">
-                      1 Jan 2025
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Export Options */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3">
-                  Generate Year-End Package:
-                </h3>
-                <div className="grid grid-cols-4 gap-3">
-                  <button
-                    onClick={() => {
-                      handleDownloadReport("PDF");
-                      setShowYearEndModal(false);
-                    }}
-                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all text-center group cursor-pointer"
-                  >
-                    <div className="p-2 bg-red-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-red-200 transition-colors">
-                      <FileText className="w-6 h-6 text-red-600" />
-                    </div>
-                    <p className="font-bold text-gray-900 text-xs mb-1">
-                      Full PDF
-                    </p>
-                    <p className="text-xs text-gray-600">Complete package</p>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      handleDownloadReport("Excel");
-                      setShowYearEndModal(false);
-                    }}
-                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-center group cursor-pointer"
-                  >
-                    <div className="p-2 bg-green-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-green-200 transition-colors">
-                      <FileText className="w-6 h-6 text-green-600" />
-                    </div>
-                    <p className="font-bold text-gray-900 text-xs mb-1">
-                      Excel
-                    </p>
-                    <p className="text-xs text-gray-600">Workbook format</p>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      alert("iXBRL format for HMRC submission");
-                      setShowYearEndModal(false);
-                    }}
-                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center group cursor-pointer"
-                  >
-                    <div className="p-2 bg-blue-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-blue-200 transition-colors">
-                      <Send className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <p className="font-bold text-gray-900 text-xs mb-1">
-                      iXBRL
-                    </p>
-                    <p className="text-xs text-gray-600">HMRC format</p>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      alert("Companies House WebFiling format");
-                      setShowYearEndModal(false);
-                    }}
-                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-center group cursor-pointer"
-                  >
-                    <div className="p-2 bg-purple-100 rounded-lg w-fit mx-auto mb-2 group-hover:bg-purple-200 transition-colors">
-                      <Building2 className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <p className="font-bold text-gray-900 text-xs mb-1">
-                      WebFiling
-                    </p>
-                    <p className="text-xs text-gray-600">CH format</p>
-                  </button>
-                </div>
-              </div>
-
-              {/* Info Banner */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-green-900 mb-1">
-                      Compliance Features:
-                    </p>
-                    <ul className="text-sm text-green-800 space-y-1">
-                      <li>• FRS 102 compliant financial statements</li>
-                      <li>• Companies Act 2006 disclosure requirements</li>
-                      <li>• HMRC CT600 compatible computations</li>
-                      <li>• Digital signatures for electronic filing</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  onClick={() => setShowYearEndModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={handlePrint}
-                  className="px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <Printer className="w-5 h-5" />
-                  Print
-                </button>
-                <button
-                  onClick={() => {
-                    handleDownloadReport("Year-End Accounts Package");
-                    setShowYearEndModal(false);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Download className="w-5 h-5" />
-                  Generate Package
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && deleteTarget && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md w-full border border-white/50">
-            <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <AlertCircle className="w-7 h-7" />
-                  Confirm Delete
-                </h2>
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-6 h-6 text-white" />
-                </button>
-              </div>
-            </div>
-            <div className="p-6">
-              <p className="text-lg text-gray-900 mb-6">
-                Are you sure you want to delete this{" "}
-                {deleteTarget.type === "account" ? "account" : "journal entry"}?
-                This action cannot be undone.
-              </p>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmDelete}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Trash2 className="w-5 h-5" />
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md w-full animate-bounce-in border border-white/50">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-t-2xl">
-              <div className="flex items-center justify-center">
-                <div className="p-4 bg-white rounded-full">
-                  <CheckCircle className="w-12 h-12 text-green-500" />
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                Export Successful!
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Your file has been downloaded successfully
-              </p>
-
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4 mb-6">
-                <div className="flex items-center justify-center gap-3 mb-3">
-                  <FileText className="w-6 h-6 text-green-600" />
-                  <p className="text-sm font-bold text-green-900 break-all">
-                    {successMessage}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center gap-4 text-xs text-green-700">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>{new Date().toLocaleDateString("en-GB")}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>
-                      {new Date().toLocaleTimeString("en-GB", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 text-left bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-blue-900">
-                      File Details:
-                    </p>
-                    <ul className="text-xs text-blue-800 mt-1 space-y-1">
-                      <li>• Format: {selectedExportFormat}</li>
-                      <li>
-                        • Contains: Journal Entries, Chart of Accounts, Trial
-                        Balance
-                      </li>
-                      <li>• HMRC-compliant formatting</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowSuccessModal(false)}
-                className="mt-6 w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:shadow-xl transition-all"
-              >
-                Done
-              </button>
-            </div>
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-200 pointer-events-none w-[calc(100%-2rem)] sm:w-auto max-w-sm">
+          <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+            <p className="text-sm font-medium">{toast}</p>
           </div>
         </div>
       )}

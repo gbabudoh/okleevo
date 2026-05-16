@@ -5,14 +5,43 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { 
-  LayoutDashboard, Users, PoundSterling, Calculator, FileText, 
-  TrendingUp, FormInput, Calendar, MessageSquare, Mail, 
-  CheckSquare, Sparkles, FileEdit, BarChart3, Package, 
+import {
+  LayoutDashboard, Users, PoundSterling, Calculator, FileText,
+  TrendingUp, FormInput, Calendar, MessageSquare, Mail,
+  CheckSquare, Sparkles, FileEdit, BarChart3, Package,
   Truck, UserCheck, PenTool, Globe, Shield, X, Inbox,
-  LogOut, Settings, Building2, 
+  LogOut, Settings, Building2,
   LifeBuoy, Rocket, BookOpen, Bell, Cpu, UsersRound, AtSign
 } from 'lucide-react';
+
+const PAGE_TITLES: Record<string, string> = {
+  '/dashboard':                  'Home',
+  '/dashboard/invoicing':        'Invoicing',
+  '/dashboard/accounting':       'Accounting',
+  '/dashboard/taxation':         'Taxation',
+  '/dashboard/cashflow':         'Cashflow',
+  '/dashboard/expenses':         'Expenses',
+  '/dashboard/vat-tools':        'VAT Tools',
+  '/dashboard/crm':              'CRM',
+  '/dashboard/mailbox':          'Mailbox',
+  '/dashboard/forms':            'Forms',
+  '/dashboard/booking':          'Booking',
+  '/dashboard/helpdesk':         'Helpdesk',
+  '/dashboard/campaigns':        'Campaigns',
+  '/dashboard/collaboration':    'Collaboration',
+  '/dashboard/tasks':            'Tasks',
+  '/dashboard/ai-content':       'AI Content',
+  '/dashboard/ai-notes':         'AI Notes',
+  '/dashboard/kpi-dashboard':    'KPI Dashboard',
+  '/dashboard/inventory':        'Inventory',
+  '/dashboard/suppliers':        'Suppliers',
+  '/dashboard/hr-records':       'HR Records',
+  '/dashboard/e-signature':      'E-Signature',
+  '/dashboard/micro-pages':      'Micro Pages',
+  '/dashboard/compliance':       'Compliance',
+  '/dashboard/settings':         'Settings',
+  '/dashboard/support':          'Support',
+};
 import WelcomeGuideModal from '@/components/WelcomeGuideModal';
 import IncomingCallModal from '@/components/collaboration/IncomingCallModal';
 import MobileBottomNav from '@/components/navigation/MobileBottomNav';
@@ -127,6 +156,15 @@ export default function DashboardLayout({
 
     fetchUserData();
   }, [session, status]);
+
+  // Presence heartbeat — keeps this user marked "online" on every dashboard page
+  useEffect(() => {
+    if (status === 'loading' || !session?.user?.id) return;
+    const sendHeartbeat = () => fetch('/api/presence', { method: 'POST' }).catch(() => {});
+    sendHeartbeat(); // immediate on mount
+    const interval = setInterval(sendHeartbeat, 15000);
+    return () => clearInterval(interval);
+  }, [session?.user?.id, status]);
 
   // Fetch notifications
   useEffect(() => {
@@ -426,75 +464,80 @@ export default function DashboardLayout({
 
               {/* Notifications Dropdown */}
               {showNotifications && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden">
-                  <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                    <h3 className="font-bold text-gray-900">Notifications</h3><button onClick={async () => { await fetch('/api/notifications', { method: 'DELETE' }); window.location.reload(); }} className="text-xs text-indigo-600 font-bold ml-2 cursor-pointer">Clear All</button>
-                    <button 
-                      onClick={() => setShowNotifications(false)}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="max-h-96 overflow-y-auto">
-                    {notifications.length > 0 ? (
-                      notifications.map((notification) => (
-                        <div 
-                          key={notification.id} 
-                          className="p-4 border-b border-gray-50 hover:bg-slate-50 transition-colors cursor-pointer group flex items-start gap-3"
+                <>
+                  {/* Mobile backdrop */}
+                  <div className="fixed inset-0 bg-black/30 z-40 sm:hidden" onClick={() => setShowNotifications(false)} />
+                  <div className="fixed left-1/2 -translate-x-1/2 top-16 w-[calc(100%-2rem)] max-w-sm z-50 sm:absolute sm:left-auto sm:translate-x-0 sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                      <h3 className="font-bold text-gray-900">Notifications</h3>
+                      <div className="flex items-center gap-3">
+                        <button onClick={async () => { const res = await fetch('/api/notifications', { method: 'DELETE' }); if (res.ok) setNotifications([]); }} className="text-xs text-indigo-600 font-bold cursor-pointer">Clear All</button>
+                        <button 
+                          onClick={() => setShowNotifications(false)}
+                          className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto">
+                      {notifications.length > 0 ? (
+                        notifications.map((notification) => (
+                          <div 
+                            key={notification.id} 
+                            className="p-4 border-b border-gray-50 hover:bg-slate-50 transition-colors cursor-pointer group flex items-start gap-3"
+                            onClick={() => {
+                              if (notification.link) router.push(notification.link);
+                              markAsRead(notification.id);
+                              setShowNotifications(false);
+                            }}
+                          >
+                            <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
+                              notification.type === 'error' ? 'bg-red-500' : 
+                              notification.type === 'success' ? 'bg-emerald-500' : 
+                              'bg-blue-500'
+                            }`} />
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
+                              <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
+                              <p className="text-[10px] text-gray-400 mt-1">
+                                {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markAsRead(notification.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded text-red-400 transition-all"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-8 text-center text-gray-500">
+                          <p className="text-sm">All caught up!</p>
+                        </div>
+                      )}
+                    </div>
+                    {notifications.length > 0 && (
+                      <div className="p-3 bg-slate-50 text-center border-t border-gray-100">
+                        <button 
                           onClick={() => {
-                            // Handle click (e.g. navigate to link)
-                            if (notification.link) router.push(notification.link);
-                            markAsRead(notification.id);
                             setShowNotifications(false);
                           }}
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-700"
                         >
-                          <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
-                            notification.type === 'error' ? 'bg-red-500' : 
-                            notification.type === 'success' ? 'bg-emerald-500' : 
-                            'bg-blue-500'
-                          }`} />
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
-                            <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
-                            <p className="text-[10px] text-gray-400 mt-1">
-                              {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              markAsRead(notification.id);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded text-red-400 transition-all"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-8 text-center text-gray-500">
-                        <p className="text-sm">All caught up!</p>
+                          View all notifications
+                        </button>
                       </div>
                     )}
                   </div>
-                  {notifications.length > 0 && (
-                    <div className="p-3 bg-slate-50 text-center border-t border-gray-100">
-                      <button 
-                        onClick={() => {
-                          // Mark all as read logic could go here
-                          setShowNotifications(false);
-                        }}
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                      >
-                        View all notifications
-                      </button>
-                    </div>
-                  )}
-                </div>
+                </>
               )}
               </div>
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-sm font-semibold shadow-md">
+              <div className="w-9 h-9 rounded-full bg-linear-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-sm font-semibold shadow-md">
                 {userData?.firstName?.charAt(0) || 'U'}
               </div>
             </div>

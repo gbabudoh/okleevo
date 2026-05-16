@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { 
   User, Mail, Phone, MapPin, Building2, Briefcase, Lock,
@@ -66,6 +66,8 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -427,6 +429,36 @@ export default function SettingsPage() {
     marketingEmails: false
   });
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('folder', 'avatars');
+      const uploadRes = await fetch('/api/storage/upload', { method: 'POST', body: form });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok || !uploadData.url) throw new Error(uploadData.error || 'Upload failed');
+
+      const patchRes = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar: uploadData.url }),
+      });
+      const patchData = await patchRes.json();
+      if (!patchRes.ok) throw new Error(patchData.error || 'Failed to save avatar');
+
+      setProfile(prev => ({ ...prev, avatar: uploadData.url }));
+      showToast('Profile photo updated', 'success');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Upload failed', 'error');
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
+  };
+
   const handleSave = () => {
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
@@ -456,199 +488,181 @@ export default function SettingsPage() {
   }, [userRole, activeTab]);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 pb-24 space-y-8 font-sans text-gray-900">
-      {/* Premium Header */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-100 p-6 rounded-[2rem] shadow-sm sticky top-4 z-40 transition-all duration-300">
-         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-               <div className="relative group cursor-pointer">
-                  <div className="absolute inset-0 bg-indigo-500/20 rounded-2xl blur-lg transition-all duration-300 group-hover:bg-indigo-500/30"></div>
-                  <div className="relative p-4 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-lg border border-white/20 group-hover:scale-105 transition-transform duration-300 ring-4 ring-indigo-50/50">
-                     <SettingsIcon className="w-8 h-8 text-white" />
-                  </div>
-               </div>
-               <div>
-                  <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                     Settings <span className="text-gray-300 font-light">|</span> <span className="text-indigo-600">Command Center</span>
-                  </h1>
-                  <p className="text-sm font-medium text-gray-500 mt-1 flex items-center gap-2">
-                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                     System Preferences & Configuration
-                  </p>
-               </div>
-            </div>
+    <div className="min-h-[calc(100vh-4rem)] space-y-4 md:space-y-6">
 
-            <div className="flex items-center gap-3">
-               {saveSuccess && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-xl shadow-sm">
-                     <div className="p-1 bg-green-500 rounded-full">
-                        <Check className="w-3 h-3 text-white" />
-                     </div>
-                     <span className="text-sm font-bold text-green-700">Changes Saved</span>
-                  </div>
-               )}
+      {/* ── Hero Banner ── */}
+      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-linear-to-br from-gray-900 via-indigo-950 to-gray-900 px-5 py-7 md:px-10 md:py-10">
+        <div className="pointer-events-none absolute -top-12 -right-12 w-48 h-48 md:w-72 md:h-72 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-10 -left-10 w-40 h-40 md:w-60 md:h-60 rounded-full bg-purple-500/15 blur-3xl" />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1">
+              <SettingsIcon className="h-3.5 w-3.5 text-indigo-400" />
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-indigo-300">Command Center</span>
             </div>
-         </div>
+            <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">
+              Account <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-purple-400">Settings</span>
+            </h1>
+            <p className="mt-1 text-[11px] font-semibold uppercase tracking-widest text-gray-400 flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+              {userRole} · System preferences &amp; configuration
+            </p>
+          </div>
+          {saveSuccess && (
+            <div className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2.5 w-fit">
+              <Check className="h-4 w-4 text-emerald-400" />
+              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-300">Changes Saved</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Navigation Pills */}
-      <div className="bg-white/60 backdrop-blur-md rounded-[20px] p-2 border border-gray-100 flex items-center gap-2 overflow-x-auto shadow-sm sticky top-32 z-30">
-        {tabs.map((tab) => {
+      {/* ── Tab Navigation ── */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 relative overflow-hidden group cursor-pointer whitespace-nowrap ${
+              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-black uppercase tracking-wider transition shrink-0 cursor-pointer ${
                 isActive
-                  ? 'bg-gray-900 text-white shadow-lg scale-100'
-                  : 'text-gray-500 hover:bg-white hover:text-gray-900 hover:shadow-md'
+                  ? 'bg-gray-900 text-white shadow-sm'
+                  : 'bg-white border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-400' : 'text-gray-400 group-hover:text-indigo-600'} transition-colors`} />
-              <span>{tab.name}</span>
-              {isActive && (
-                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-              )}
+              <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-indigo-400' : 'text-gray-400'}`} />
+              {tab.name}
             </button>
           );
         })}
       </div>
 
-      {/* Profile Tab */}
+      {/* ── Profile Tab ── */}
       {activeTab === 'profile' && (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {loading ? (
-            <div className="text-center py-12">
-               <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
-               <p className="text-gray-500 font-medium">Loading profile data...</p>
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white py-20">
+              <div className="h-10 w-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+              <p className="mt-3 text-sm font-medium text-gray-500">Loading profile…</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-               {/* Left Column - Avatar & Quick Actions */}
-               <div className="lg:col-span-4 space-y-6">
-                  <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm text-center relative overflow-hidden group">
-                     <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/50 to-transparent"></div>
-                     <div className="relative">
-                        <div className="w-32 h-32 mx-auto bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full p-1 shadow-xl mb-4 relative group-hover:scale-105 transition-transform duration-500">
-                           <div className="w-full h-full bg-white rounded-full p-1">
-                              <div className="w-full h-full bg-indigo-50 rounded-full flex items-center justify-center text-4xl font-black text-indigo-600 overflow-hidden">
-                                 {profile.avatar ? (
-                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
-                                 ) : (
-                                    <>{profile.firstName ? profile.firstName.charAt(0) : ''}{profile.lastName ? profile.lastName.charAt(0) : ''}</>
-                                 )}
-                              </div>
-                           </div>
-                           <button className="absolute bottom-0 right-0 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors cursor-pointer ring-4 ring-white">
-                              <Camera className="w-4 h-4" />
-                           </button>
-                        </div>
-                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-                           {profile.firstName || 'User'} {profile.lastName}
-                        </h2>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">
-                           {profile.position || 'Full Stack Developer'}
-                        </p>
-                        
-                        <div className="mt-6 flex flex-col gap-3">
-                           {(userRole === 'OWNER' || userRole === 'ADMIN') && (
-                              <button 
-                                 type="button"
-                                 onClick={() => showToast('Upload photo functionality', 'error')}
-                                 className="w-full py-3 bg-indigo-50 text-indigo-700 font-bold rounded-xl hover:bg-indigo-100 transition-colors cursor-pointer flex items-center justify-center gap-2"
-                              >
-                                 <Upload className="w-4 h-4" />
-                                 Upload New Photo
-                              </button>
-                           )}
-                           <div className="p-4 bg-gray-50 rounded-2xl text-left border border-gray-100">
-                              <div className="flex items-center gap-2 mb-2">
-                                 <Shield className="w-4 h-4 text-green-500" />
-                                 <span className="text-xs font-bold text-gray-900 uppercase tracking-wide">Account Status</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                 <span className="text-sm font-medium text-gray-600">Plan</span>
-                                 <span className="text-sm font-bold text-indigo-600">Pro Enterprise</span>
-                              </div>
-                              <div className="flex items-center justify-between mt-1">
-                                 <span className="text-sm font-medium text-gray-600">Verified</span>
-                                 <span className="text-xs font-bold text-white bg-green-500 px-2 py-0.5 rounded-full">Yes</span>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
+            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 md:gap-6">
+              {/* Avatar card */}
+              <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex flex-col items-center text-center gap-4">
+                {/* Hidden file input */}
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                />
+                <div className="relative">
+                  <div className="h-24 w-24 bg-linear-to-br from-indigo-400 to-purple-500 rounded-2xl flex items-center justify-center text-3xl font-black text-white shadow-lg overflow-hidden">
+                    {uploadingAvatar ? (
+                      <div className="h-7 w-7 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : profile.avatar ? (
+                      <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <>{profile.firstName?.charAt(0)}{profile.lastName?.charAt(0)}</>
+                    )}
                   </div>
-               </div>
-
-               {/* Right Column - Profile Details */}
-               <div className="lg:col-span-8">
-                  <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden">
-                     <div className="flex items-center justify-between mb-8">
-                        <div>
-                           <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
-                              <User className="w-5 h-5 text-indigo-500" />
-                              Personal Information
-                           </h3>
-                           <p className="text-gray-500 text-sm font-medium mt-1">Manage your public profile and private details</p>
-                        </div>
-                        {(userRole === 'OWNER' || userRole === 'ADMIN') && (
-                           <button 
-                              type="button"
-                              onClick={handleSave}
-                              className="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer flex items-center gap-2"
-                           >
-                              <Save className="w-4 h-4" />
-                              Save Changes
-                           </button>
-                        )}
-                     </div>
-
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {[
-                           { label: 'First Name', value: profile.firstName, key: 'firstName', icon: User },
-                           { label: 'Last Name', value: profile.lastName, key: 'lastName', icon: User },
-                           { label: 'Email Address', value: profile.email, key: 'email', icon: Mail, type: 'email' },
-                           { label: 'Phone Number', value: profile.phone, key: 'phone', icon: Phone, type: 'tel' },
-                           { label: 'Company Name', value: profile.company, key: 'company', icon: Building2 },
-                           { label: 'Job Title', value: profile.position, key: 'position', icon: Briefcase },
-                           { label: 'Address', value: profile.address, key: 'address', icon: MapPin, colSpan: 2 },
-                           { label: 'City', value: profile.city, key: 'city', icon: Building2 },
-                           { label: 'Country', value: profile.country, key: 'country', icon: Globe },
-                        ].map((field) => (
-                           <div key={field.key} className={field.colSpan ? `md:col-span-${field.colSpan}` : ''}>
-                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">{field.label}</label>
-                              <div className="relative group">
-                                 <field.icon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
-                                 <input
-                                    type={field.type || 'text'}
-                                    value={field.value}
-                                    onChange={(e) => setProfile({ ...profile, [field.key]: e.target.value })}
-                                    disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
-                                    className={`w-full pl-12 pr-4 py-4 bg-gray-50/50 border-2 border-gray-100 rounded-xl font-bold text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all ${
-                                       (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'opacity-60 cursor-not-allowed' : ''
-                                    }`}
-                                 />
-                              </div>
-                           </div>
-                        ))}
-                     </div>
-
-                     {(userRole === 'MANAGER' || userRole === 'MEMBER') && (
-                        <div className="mt-8 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl flex items-center gap-3">
-                           <div className="p-2 bg-blue-100 rounded-lg">
-                              <AlertCircle className="w-5 h-5 text-blue-600" />
-                           </div>
-                           <div>
-                              <p className="text-sm font-bold text-blue-900">View Only Access</p>
-                              <p className="text-xs font-medium text-blue-700">Contact your administrator to update profile details.</p>
-                           </div>
-                        </div>
-                     )}
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="absolute -bottom-2 -right-2 p-2 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition cursor-pointer ring-2 ring-white disabled:opacity-60 disabled:cursor-not-allowed">
+                    <Camera className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <div>
+                  <p className="text-lg font-black text-gray-900">{profile.firstName || 'User'} {profile.lastName}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-0.5">{profile.position || 'Team Member'}</p>
+                </div>
+                {(userRole === 'OWNER' || userRole === 'ADMIN') && (
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="w-full py-2.5 rounded-xl bg-indigo-50 text-indigo-700 text-[11px] font-black uppercase tracking-wider hover:bg-indigo-100 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                    {uploadingAvatar
+                      ? <><div className="h-3.5 w-3.5 border-2 border-indigo-300 border-t-indigo-700 rounded-full animate-spin" /> Uploading…</>
+                      : <><Upload className="h-3.5 w-3.5" /> Upload Photo</>}
+                  </button>
+                )}
+                <div className="w-full rounded-xl bg-gray-50 border border-gray-100 p-4 text-left space-y-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Shield className="h-3.5 w-3.5 text-emerald-500" />
+                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-500">Account Status</span>
                   </div>
-               </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-600">Plan</span>
+                    <span className="font-black text-indigo-600">Pro Enterprise</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-600">Verified</span>
+                    <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-black text-white">Yes</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personal info form */}
+              <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-base font-black text-gray-900 flex items-center gap-2"><User className="h-4 w-4 text-indigo-500" /> Personal Information</h3>
+                    <p className="text-xs font-medium text-gray-400 mt-0.5">Manage your public profile and private details</p>
+                  </div>
+                  {(userRole === 'OWNER' || userRole === 'ADMIN') && (
+                    <button type="button" onClick={handleSave}
+                      className="flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-[11px] font-black uppercase tracking-wider text-white hover:bg-gray-800 transition shadow-sm cursor-pointer">
+                      <Save className="h-3.5 w-3.5" /> Save
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { label: 'First Name', value: profile.firstName, key: 'firstName', icon: User },
+                    { label: 'Last Name', value: profile.lastName, key: 'lastName', icon: User },
+                    { label: 'Email Address', value: profile.email, key: 'email', icon: Mail, type: 'email' },
+                    { label: 'Phone Number', value: profile.phone, key: 'phone', icon: Phone, type: 'tel' },
+                    { label: 'Company Name', value: profile.company, key: 'company', icon: Building2 },
+                    { label: 'Job Title', value: profile.position, key: 'position', icon: Briefcase },
+                    { label: 'Address', value: profile.address, key: 'address', icon: MapPin, full: true },
+                    { label: 'City', value: profile.city, key: 'city', icon: Building2 },
+                    { label: 'Country', value: profile.country, key: 'country', icon: Globe },
+                  ].map(field => (
+                    <div key={field.key} className={field.full ? 'sm:col-span-2' : ''}>
+                      <label className="block text-[10px] font-black uppercase tracking-[0.18em] text-gray-400 mb-2">{field.label}</label>
+                      <div className="relative">
+                        <field.icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input
+                          type={field.type || 'text'}
+                          value={field.value}
+                          onChange={e => setProfile({ ...profile, [field.key]: e.target.value })}
+                          disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                          className={`w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition ${
+                            (userRole === 'MANAGER' || userRole === 'MEMBER') ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {(userRole === 'MANAGER' || userRole === 'MEMBER') && (
+                  <div className="mt-5 flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
+                    <AlertCircle className="h-4 w-4 text-blue-500 shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-blue-900">View Only Access</p>
+                      <p className="text-xs text-blue-700">Contact your administrator to update profile details.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -659,7 +673,7 @@ export default function SettingsPage() {
         <div className="space-y-8">
           {/* Stats & Capacity Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-             <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden group">
+             <div className="bg-linear-to-br from-indigo-600 to-purple-600 rounded-4xl p-6 text-white shadow-xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-700">
                    <Users className="w-32 h-32" />
                 </div>
@@ -690,7 +704,7 @@ export default function SettingsPage() {
                 </div>
              </div>
 
-             <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm relative overflow-hidden group">
+             <div className="bg-white rounded-4xl p-6 border border-gray-100 shadow-sm relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-6 opacity-5 transform translate-x-2 -translate-y-2 group-hover:rotate-12 transition-transform duration-500">
                    <UserCheck className="w-24 h-24 text-green-600" />
                 </div>
@@ -717,7 +731,7 @@ export default function SettingsPage() {
                 </div>
              </div>
 
-             <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm flex flex-col justify-center items-center text-center space-y-4 group hover:shadow-md transition-all">
+             <div className="bg-white rounded-4xl p-6 border border-gray-100 shadow-sm flex flex-col justify-center items-center text-center space-y-4 group hover:shadow-md transition-all">
                 <div className="p-4 bg-indigo-50 rounded-full group-hover:bg-indigo-100 transition-colors">
                    <UserPlus className="w-8 h-8 text-indigo-600" />
                 </div>
@@ -755,7 +769,7 @@ export default function SettingsPage() {
              {loadingTeam ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                    {[1, 2, 3].map(i => (
-                      <div key={i} className="h-48 bg-gray-100 rounded-[2rem] animate-pulse"></div>
+                      <div key={i} className="h-48 bg-gray-100 rounded-4xl animate-pulse"></div>
                    ))}
                 </div>
              ) : (
@@ -767,7 +781,7 @@ export default function SettingsPage() {
                                       'bg-gray-100 text-gray-700 border-gray-200';
                       
                       return (
-                         <div key={member.id} className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                         <div key={member.id} className="bg-white rounded-4xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
                             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                {member.role !== 'OWNER' && (
                                   <>
@@ -792,7 +806,7 @@ export default function SettingsPage() {
 
                             <div className="flex items-center gap-4 mb-4">
                                <div className="relative">
-                                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center text-xl font-black text-indigo-600 shadow-inner">
+                                  <div className="w-16 h-16 bg-linear-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center text-xl font-black text-indigo-600 shadow-inner">
                                      {member.firstName?.charAt(0)}{member.lastName?.charAt(0)}
                                   </div>
                                   {isOnline && (
@@ -971,7 +985,7 @@ export default function SettingsPage() {
             {/* Right Column - 2FA & Danger Zone */}
             <div className="space-y-6">
                {/* 2FA Card */}
-               <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
+               <div className="bg-linear-to-br from-indigo-600 to-purple-700 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-12 opacity-10">
                      <Shield className="w-32 h-32" />
                   </div>
@@ -1098,7 +1112,7 @@ export default function SettingsPage() {
                             onChange={(e) => setNotifications({ ...notifications, [item.key]: e.target.checked })}
                             className="sr-only peer"
                          />
-                         <div className="w-14 h-8 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600 peer-checked:shadow-lg"></div>
+                         <div className="w-14 h-8 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600 peer-checked:shadow-lg"></div>
                       </label>
                    </div>
                 ))}
@@ -1118,7 +1132,7 @@ export default function SettingsPage() {
           ) : (
             <>
               {/* Current Plan */}
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl p-6 text-white shadow-lg">
+              <div className="bg-linear-to-br from-indigo-500 to-purple-500 rounded-xl p-6 text-white shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h2 className="text-2xl font-bold">{billingInfo?.plan?.name || 'All-in-One Plan'}</h2>
@@ -1323,7 +1337,7 @@ export default function SettingsPage() {
               ].map((module) => (
                 <div 
                   key={module.id}
-                  className={`p-6 rounded-[2rem] border-2 transition-all cursor-pointer group ${
+                  className={`p-6 rounded-4xl border-2 transition-all cursor-pointer group ${
                     enabledModules.includes(module.id) 
                     ? 'bg-white border-indigo-500 shadow-md ring-4 ring-indigo-50' 
                     : 'bg-gray-50 border-gray-100 hover:border-gray-200'
@@ -1402,7 +1416,7 @@ export default function SettingsPage() {
           <button 
             type="button"
             onClick={handleSave}
-            className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Save className="w-5 h-5" />
             Save Preferences
@@ -1457,7 +1471,7 @@ export default function SettingsPage() {
           <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6">API Access</h2>
             <div className="space-y-4">
-              <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+              <div className="p-4 bg-linear-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
                 <div className="flex items-center gap-3 mb-3">
                   <Code className="w-5 h-5 text-purple-600" />
                   <h3 className="font-bold text-purple-900">API Key</h3>
@@ -1539,7 +1553,7 @@ export default function SettingsPage() {
       {showExportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-orange-500 to-red-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+            <div className="bg-linear-to-r from-orange-500 to-red-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
                   <Download className="w-7 h-7 text-white" />
@@ -1560,9 +1574,9 @@ export default function SettingsPage() {
             
             <div className="p-6 space-y-5">
               {/* Account Info Preview */}
-              <div className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-xl p-5">
+              <div className="bg-linear-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-xl p-5">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                  <div className="w-16 h-16 bg-linear-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
                     {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
                   </div>
                   <div className="flex-1">
@@ -1631,7 +1645,7 @@ export default function SettingsPage() {
                       URL.revokeObjectURL(url);
                       setShowExportModal(false);
                     }}
-                    className="group relative px-5 py-4 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                    className="group relative px-5 py-4 bg-linear-to-br from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
                     <div className="p-3 bg-white bg-opacity-20 rounded-lg">
@@ -1660,7 +1674,7 @@ export default function SettingsPage() {
                       URL.revokeObjectURL(url);
                       setShowExportModal(false);
                     }}
-                    className="group relative px-5 py-4 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                    className="group relative px-5 py-4 bg-linear-to-br from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
                     <div className="p-3 bg-white bg-opacity-20 rounded-lg">
@@ -1731,7 +1745,7 @@ Confidential - For Personal Use Only
                       URL.revokeObjectURL(url);
                       setShowExportModal(false);
                     }}
-                    className="group relative px-5 py-4 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                    className="group relative px-5 py-4 bg-linear-to-br from-red-500 to-pink-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
                     <div className="p-3 bg-white bg-opacity-20 rounded-lg">
@@ -1760,7 +1774,7 @@ Confidential - For Personal Use Only
                       URL.revokeObjectURL(url);
                       setShowExportModal(false);
                     }}
-                    className="group relative px-5 py-4 bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
+                    className="group relative px-5 py-4 bg-linear-to-br from-gray-600 to-gray-800 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all flex flex-col items-center gap-2 font-semibold cursor-pointer overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
                     <div className="p-3 bg-white bg-opacity-20 rounded-lg">
@@ -1776,7 +1790,7 @@ Confidential - For Personal Use Only
 
               {/* Info Banner */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                 <div className="text-xs text-blue-800">
                   <p className="font-semibold mb-1">Data Privacy Notice</p>
                   <p>Your exported data contains sensitive personal information. Store it securely and do not share it with unauthorized parties.</p>
@@ -1800,7 +1814,7 @@ Confidential - For Personal Use Only
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+            <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl border border-white/10">
                   <UserPlus className="w-6 h-6 text-white" />
@@ -1897,7 +1911,7 @@ Confidential - For Personal Use Only
               <div className="flex items-center gap-3 pt-4">
                 <button
                   onClick={handleAddEmployee}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
+                  className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
                 >
                   Add Employee
                 </button>
@@ -1927,7 +1941,7 @@ Confidential - For Personal Use Only
       {showEditModal && editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+            <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl border border-white/10">
                   <Edit3 className="w-6 h-6 text-white" />
@@ -2028,7 +2042,7 @@ Confidential - For Personal Use Only
               <div className="flex items-center gap-3 pt-4">
                 <button
                   onClick={handleUpdateEmployee}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
+                  className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
                 >
                   Save Changes
                 </button>
@@ -2068,7 +2082,7 @@ Confidential - For Personal Use Only
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100]"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-100"
           >
             <div className={`px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border flex items-center gap-3 min-w-[320px] transition-all
               ${toast.type === 'success' 

@@ -388,17 +388,17 @@ export default function DashboardPage() {
         {/* Email */}
         <div className="flex items-center gap-2">
           <AtSign className="w-4 h-4 text-amber-300" />
-          <span className="text-sm font-medium text-white">{email}</span>
+          <span className="text-sm font-medium text-white truncate max-w-[160px] sm:max-w-none">{email}</span>
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-4 sm:space-y-8 pb-8">
       {/* Company Header */}
       {/* Company Header */}
-      <div className="rounded-2xl p-6 md:p-8 text-white shadow-lg overflow-hidden relative bg-gradient-to-r from-slate-800/90 via-slate-700/90 to-slate-800/90 backdrop-blur-md border border-white/20">
+      <div className="rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-lg overflow-hidden relative bg-gradient-to-r from-slate-800/90 via-slate-700/90 to-slate-800/90 backdrop-blur-md border border-white/20">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 right-0 w-72 h-72 bg-white rounded-full -mr-36 -mt-36"></div>
@@ -433,9 +433,9 @@ export default function DashboardPage() {
 
       {/* Team Collaboration Widget */}
       {presence && presence.presence && presence.presence.length > 0 && (
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Users className="w-5 h-5 text-indigo-600" />
               Team Collaboration
             </h2>
@@ -487,7 +487,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           const TrendIcon = stat.trend === 'up' ? ArrowUpRight : ArrowDownRight;
@@ -496,26 +496,26 @@ export default function DashboardPage() {
           return (
             <div
               key={index}
-              className={`relative bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group backdrop-blur-sm ${isHydrating ? 'opacity-70' : 'opacity-100'}`}
+              className={`relative bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-3 sm:p-4 md:p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group backdrop-blur-sm ${isHydrating ? 'opacity-70' : 'opacity-100'}`}
             >
                 {/* Background decoration */}
                 <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full group-hover:scale-150 transition-transform`} />
                 
                 <div className="relative">
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg`}>
-                      <Icon className="w-6 h-6 text-white" />
+                    <div className={`p-2 sm:p-3 rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg`}>
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div className={`flex items-center gap-1 px-3 py-1 rounded-lg ${
+                    <div className={`flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg ${
                       stat.trend === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }`}>
-                      <TrendIcon className="w-4 h-4" />
-                      <span className="text-sm font-bold">{stat.change}</span>
+                      <TrendIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="text-xs sm:text-sm font-bold">{stat.change}</span>
                     </div>
                   </div>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">{stat.title}</p>
-                  <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</p>
+                  <p className="text-xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{stat.period}</p>
                 </div>
               </div>
@@ -524,13 +524,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
+      <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 sm:mb-6">
           <Zap className="w-6 h-6 text-yellow-500" />
           Quick Actions
         </h2>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             
@@ -538,16 +538,16 @@ export default function DashboardPage() {
               <button
                 key={index}
                 onClick={() => router.push(action.href)}
-                className="group relative p-6 rounded-2xl border border-white/40 bg-white/40 hover:bg-white/60 hover:border-transparent hover:shadow-2xl transition-all text-center overflow-hidden cursor-pointer"
+                className="group relative p-3 sm:p-6 rounded-2xl border border-white/40 bg-white/40 hover:bg-white/60 hover:border-transparent hover:shadow-2xl transition-all text-center overflow-hidden cursor-pointer"
               >
                 {/* Hover gradient background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                 
                 <div className="relative">
-                  <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
-                    <Icon className="w-8 h-8 text-white" />
+                  <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
+                    <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                   </div>
-                  <p className="font-bold text-gray-900 dark:text-white group-hover:text-white transition-colors mb-1">{action.name}</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white group-hover:text-white transition-colors mb-1">{action.name}</p>
                   <p className="text-xs text-gray-500 group-hover:text-white group-hover:text-opacity-90 transition-colors">{action.description}</p>
                 </div>
               </button>
@@ -557,9 +557,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Recent Activity - Takes 2 columns */}
-        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
+        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Activity className="w-6 h-6 text-blue-600" />
@@ -613,8 +613,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Upcoming Tasks - Takes 1 column */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
               <CheckSquare className="w-5 h-5 text-green-600" />
               Upcoming Tasks
@@ -681,13 +681,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Performance Metrics */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         {/* Revenue Chart */}
         <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-blue-100 text-sm mb-1">Monthly Revenue</p>
-              <p className="text-3xl font-bold">{stats[0]?.value || '£0'}</p>
+              <p className="text-2xl sm:text-3xl font-bold">{stats[0]?.value || '£0'}</p>
             </div>
             <div className="p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl">
               <LineChart className="w-6 h-6" />
@@ -707,7 +707,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-purple-100 text-sm mb-1">Customer Growth</p>
-              <p className="text-3xl font-bold">{stats[1]?.change || '0%'}</p>
+              <p className="text-2xl sm:text-3xl font-bold">{stats[1]?.change || '0%'}</p>
             </div>
             <div className="p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl">
               <Users className="w-6 h-6" />
@@ -727,7 +727,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-green-100 text-sm mb-1">Conversion Rate</p>
-              <p className="text-3xl font-bold">{stats[2]?.value || '0'}</p>
+              <p className="text-2xl sm:text-3xl font-bold">{stats[2]?.value || '0'}</p>
             </div>
             <div className="p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl">
               <Target className="w-6 h-6" />
@@ -744,10 +744,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom Section */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {/* Top Performing Products */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2">
             <Award className="w-5 h-5 text-yellow-500" />
             Top Performing
           </h2>
@@ -779,8 +779,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Notifications */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-lg">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2">
             <Bell className="w-5 h-5 text-red-500 cursor-pointer" />
             Notifications
             {notifications.length > 0 && (
@@ -838,10 +838,13 @@ export default function DashboardPage() {
 
       {/* New Project Modal */}
       {showNewProjectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-2xl w-full shadow-2xl">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-t-3xl sm:rounded-3xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-center pt-3 pb-1 sm:hidden">
+              <div className="w-10 h-1 rounded-full bg-gray-300" />
+            </div>
+            <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl">
                   <Plus className="w-6 h-6 text-white" />
                 </div>
@@ -859,7 +862,7 @@ export default function DashboardPage() {
               </button>
             </div>
             
-            <div className="p-6 space-y-5">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
                   Project Name *

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   FileText, Plus, Download, Calculator, Calendar, DollarSign, TrendingUp, AlertCircle, CheckCircle,
   Clock, Building2, User, Users, Briefcase, BarChart3, Shield, Send, X, Receipt, Home, History,
@@ -373,125 +373,95 @@ export default function TaxationPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 shadow-lg border border-white/50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-        <div className="flex items-center justify-between relative z-10">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3 text-gray-900">
-              <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg ring-4 ring-green-500/10">
-                <FileText className="w-8 h-8 text-white" />
-              </div>
-              UK Taxation Management
-            </h1>
-            <p className="text-gray-600 text-lg">Complete tax management system for UK businesses</p>
+    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      {/* ── Sticky Header ────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 bg-emerald-600 rounded-xl shrink-0">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">UK Taxation</h1>
+              <p className="text-xs text-gray-400 hidden sm:block">Complete tax management for UK businesses</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => {
-                setSelectedReportType('Self Assessment'); // Default or could be dynamic
-                setShowDownloadModal(true);
-              }}
-              className="px-6 py-3 bg-white/40 border border-white/50 rounded-xl hover:bg-white/60 transition-all flex items-center gap-2 backdrop-blur-sm shadow-sm cursor-pointer font-semibold text-gray-700"
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => { setSelectedReportType('Self Assessment'); setShowDownloadModal(true); }}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
             >
-              <Download className="w-5 h-5" />
-              <span>Export Reports</span>
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Export</span>
             </button>
-
-            <button 
+            <button
               onClick={() => setShowNewReturnModal(true)}
-              className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors cursor-pointer"
             >
-              <Plus className="w-5 h-5" />
-              New Return
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">New Return</span>
+              <span className="sm:hidden">New</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Tax Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white/60 backdrop-blur-xl rounded-xl p-5 border border-white/50 cursor-pointer hover:shadow-lg transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg shadow-md">
-              <Building2 className="w-5 h-5 text-white" />
+      {/* ── Stats ──────────────────────────────────────────────────── */}
+      <div className="px-4 sm:px-6 pt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Corporation Tax', value: `£${taxSummary.corporationTax.toLocaleString()}`, icon: Building2,   bg: 'bg-blue-500'    },
+            { label: 'VAT Liability',   value: `£${taxSummary.vatLiability.toLocaleString()}`,   icon: Receipt,      bg: 'bg-purple-500'  },
+            { label: 'PAYE & NI',       value: `£${taxSummary.payeNI.toLocaleString()}`,          icon: Users,        bg: 'bg-emerald-500' },
+            { label: 'Outstanding',     value: `£${taxSummary.taxOutstanding.toLocaleString()}`,  icon: AlertCircle,  bg: 'bg-orange-500'  },
+          ].map(({ label, value, icon: Icon, bg }) => (
+            <div key={label} className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
+              <div className={`p-2 ${bg} rounded-xl w-fit mb-2`}>
+                <Icon className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
+              <p className="text-lg sm:text-xl font-bold text-gray-900 leading-tight mt-0.5">{value}</p>
             </div>
-          </div>
-          <p className="text-sm text-blue-600 font-medium mb-1">Corporation Tax</p>
-          <p className="text-2xl font-bold text-blue-900">£{taxSummary.corporationTax.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-white/60 backdrop-blur-xl rounded-xl p-5 border border-white/50 cursor-pointer hover:shadow-lg transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-md">
-              <Receipt className="w-5 h-5 text-white" />
-            </div>
-          </div>
-          <p className="text-sm text-purple-600 font-medium mb-1">VAT Liability</p>
-          <p className="text-2xl font-bold text-purple-900">£{taxSummary.vatLiability.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-white/60 backdrop-blur-xl rounded-xl p-5 border border-white/50 cursor-pointer hover:shadow-lg transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg shadow-md">
-              <Users className="w-5 h-5 text-white" />
-            </div>
-          </div>
-          <p className="text-sm text-green-600 font-medium mb-1">PAYE & NI</p>
-          <p className="text-2xl font-bold text-green-900">£{taxSummary.payeNI.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-white/60 backdrop-blur-xl rounded-xl p-5 border border-white/50 cursor-pointer hover:shadow-lg transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg shadow-md">
-              <AlertCircle className="w-5 h-5 text-white" />
-            </div>
-          </div>
-          <p className="text-sm text-orange-600 font-medium mb-1">Outstanding</p>
-          <p className="text-2xl font-bold text-orange-900">£{taxSummary.taxOutstanding.toLocaleString()}</p>
+          ))}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white/40 backdrop-blur-xl rounded-xl border border-white/50 p-2">
-        <div className="flex items-center gap-2 overflow-x-auto">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
+      {/* ── Tab Bar ──────────────────────────────────────────────────── */}
+      <div className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100 mt-4">
+        <div className="flex overflow-x-auto scrollbar-hide px-4">
+          {tabs.map(({ id, name, icon: Icon }) => {
+            const active = activeTab === id;
             return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
-                  activeTab === tab.id
-                    ? 'bg-white shadow-md text-green-600'
-                    : 'text-gray-600 hover:bg-white/50 hover:text-gray-900'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                {tab.name}
+              <button key={id} onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
+                  active ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'
+                }`}>
+                <Icon className="w-4 h-4" />
+                <span className="hidden sm:inline">{name}</span>
+                <span className="sm:hidden text-xs">{name.split(' ')[0]}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Content Area */}
+      {/* ── Tab Content ──────────────────────────────────────────────── */}
+      <div className="px-4 sm:px-6 py-4">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
           className="min-h-[400px]"
         >
           {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Upcoming Tax Obligations */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Calendar className="w-6 h-6 text-green-600" />
+          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               {loading ? 'Loading...' : 'Upcoming Tax Obligations'}
             </h2>
             {loading ? (
@@ -507,7 +477,7 @@ export default function TaxationPage() {
                   </div>
                 ) : (
                   taxObligations.map((obligation) => (
-                    <div key={obligation.id} className="flex items-center justify-between p-4 bg-white/40 border border-white/30 rounded-xl hover:bg-white/60 hover:shadow-lg transition-all cursor-pointer">
+                    <div key={obligation.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 p-3 sm:p-4 bg-white/40 border border-white/30 rounded-xl hover:bg-white/60 hover:shadow-lg transition-all cursor-pointer">
                       <div className="flex items-center gap-4">
                         <div className={`p-3 rounded-lg ${
                           obligation.status === 'paid' ? 'bg-green-100' :
@@ -527,7 +497,7 @@ export default function TaxationPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="flex items-center justify-between sm:justify-end sm:text-right">
                         <p className="text-lg font-bold text-gray-900">£{obligation.amount.toLocaleString()}</p>
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           obligation.status === 'paid' ? 'bg-green-100 text-green-700' :
@@ -545,7 +515,7 @@ export default function TaxationPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <button className="p-6 bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
               <div className="p-3 bg-blue-500 rounded-lg w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <Calculator className="w-6 h-6 text-white" />
@@ -572,15 +542,15 @@ export default function TaxationPage() {
           </div>
 
           {/* MTD Compliance */}
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl p-8 text-white">
+          <div className="bg-linear-to-br from-indigo-500 to-purple-500 rounded-xl p-5 sm:p-8 text-white">
             <div className="flex items-center gap-3 mb-4">
               <Shield className="w-8 h-8" />
               <div>
-                <h2 className="text-2xl font-bold">Making Tax Digital (MTD) Compliant</h2>
+                <h2 className="text-lg sm:text-2xl font-bold">Making Tax Digital (MTD) Compliant</h2>
                 <p className="text-indigo-100">Your system is fully compliant with HMRC MTD requirements</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
               <button 
                 onClick={() => setShowComplianceModal(true)}
                 className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 hover:shadow-lg transition-all cursor-pointer"
@@ -626,16 +596,16 @@ export default function TaxationPage() {
                 />
               </div>
             </div>
-            <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-              <div className="flex items-center justify-between">
+            <div className="mt-6 p-6 bg-linear-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <p className="text-sm text-green-600 font-medium mb-1">Estimated Corporation Tax</p>
-                  <p className="text-4xl font-bold text-green-900">£{(Number(ctProfit) * 0.19).toLocaleString()}</p>
+                  <p className="text-2xl sm:text-4xl font-bold text-green-900">£{(Number(ctProfit) * 0.19).toLocaleString()}</p>
                   <p className="text-xs text-green-600 mt-1">At 19% rate</p>
                 </div>
                 <button 
                   onClick={() => setShowCT600Modal(true)}
-                  className="px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all cursor-pointer text-center"
                 >
                   Generate CT600
                 </button>
@@ -681,15 +651,15 @@ export default function TaxationPage() {
       {activeTab === 'self-assessment' && (
         <div className="space-y-6">
           {/* Self Assessment Overview */}
-          <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-8 text-white">
+          <div className="bg-linear-to-br from-purple-500 to-pink-500 rounded-xl p-5 sm:p-8 text-white">
             <div className="flex items-center gap-3 mb-4">
               <User className="w-8 h-8" />
               <div>
-                <h2 className="text-2xl font-bold">Self Assessment Tax Return</h2>
-                <p className="text-purple-100">Individual tax return for sole traders, partners, and directors</p>
+                <h2 className="text-lg sm:text-2xl font-bold">Self Assessment Tax Return</h2>
+                <p className="text-purple-100 text-sm sm:text-base">Individual tax return for sole traders, partners, and directors</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
               <button 
                 onClick={() => {
                   setNewReturnData({ ...newReturnData, type: 'Self Assessment' });
@@ -713,7 +683,7 @@ export default function TaxationPage() {
           <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Mini Calendar */}
-              <div className="lg:w-72 flex-shrink-0">
+              <div className="lg:w-72 shrink-0">
                 <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                   {/* Calendar Header */}
                   <div className="flex items-center justify-between mb-4">
@@ -846,7 +816,7 @@ export default function TaxationPage() {
           <div className={`transition-all duration-300 ${isSwitchingYear ? 'opacity-30 blur-sm translate-y-2' : 'opacity-100 translate-y-0'}`}>
             <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6 mb-6">
             <h3 className="font-bold text-gray-900 mb-4">Income Sources</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div 
                 onClick={() => { setEditingSource({ id: 'self-employment', name: 'Self-Employment', value: saSelfEmployment }); setShowEditIncomeModal(true); }}
                 className="p-4 bg-white/40 border border-white/50 rounded-xl hover:bg-blue-50/50 hover:border-blue-200 hover:shadow-lg transition-all group cursor-pointer"
@@ -953,7 +923,7 @@ export default function TaxationPage() {
                 <span className="font-semibold text-blue-900">Taxable Income</span>
                 <span className="font-bold text-blue-900 text-xl">£{taxableIncomeValue.toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-lg border border-purple-200/50 hover:from-purple-500/20 hover:to-pink-500/20 transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-4 bg-linear-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-lg border border-purple-200/50 hover:from-purple-500/20 hover:to-pink-500/20 transition-all cursor-pointer">
                 <div>
                   <p className="font-semibold text-purple-900">Total Tax Due</p>
                   <p className="text-xs text-purple-700">Including NI contributions</p>
@@ -966,7 +936,7 @@ export default function TaxationPage() {
 
           {/* Important Deadlines */}
           <div className={`transition-all duration-300 delay-150 ${isSwitchingYear ? 'opacity-30 blur-sm translate-y-2' : 'opacity-100 translate-y-0'}`}>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-red-50/50 backdrop-blur-sm border border-red-200/50 rounded-xl p-5 hover:bg-red-50/80 hover:shadow-lg transition-all cursor-pointer">
               <div className="flex items-center gap-2 mb-3">
                 <AlertCircle className="w-6 h-6 text-red-600" />
@@ -1036,7 +1006,7 @@ export default function TaxationPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
               onClick={() => setShowCalculatorModal(true)}
               className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all text-center cursor-pointer group"
@@ -1064,9 +1034,9 @@ export default function TaxationPage() {
 
       {/* Tax Calculator Modal */}
       {showCalculatorModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-white/50">
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-5 rounded-t-2xl shadow-lg">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85dvh] flex flex-col border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
+            <div className="bg-linear-to-r from-purple-600 to-pink-600 p-5 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -1128,13 +1098,13 @@ export default function TaxationPage() {
 
                   setCalculatedTax(Math.round(tax + ni));
                 }}
-                className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer shadow-lg"
+                className="w-full px-6 py-3 bg-linear-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer shadow-lg"
               >
                 Calculate Tax
               </button>
 
               {calculatedTax > 0 && (
-                <div className="bg-gradient-to-br from-purple-50/50 to-pink-50/50 border border-purple-200/50 backdrop-blur-sm rounded-xl p-6">
+                <div className="bg-linear-to-br from-purple-50/50 to-pink-50/50 border border-purple-200/50 backdrop-blur-sm rounded-xl p-6">
                   <h3 className="font-bold text-purple-900 mb-4 text-center">Your Tax Calculation</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-white/60 rounded-lg">
@@ -1175,13 +1145,13 @@ export default function TaxationPage() {
       )}
 
       {showDownloadModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-xl w-full max-h-[95vh] overflow-y-auto border border-white/50">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-xl max-h-[85dvh] flex flex-col border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
 
 
 
 
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-t-2xl shadow-lg">
+            <div className="bg-linear-to-r from-blue-600 to-indigo-600 p-4 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-3">
                   <Download className="w-5 h-5" />
@@ -1225,7 +1195,7 @@ export default function TaxationPage() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5">
+              <div className="bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5">
                 <h3 className="font-bold text-blue-900 mb-2.5 text-xs">{selectedReportType} Details:</h3>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[15px]">
                   {selectedReportType === 'Self Assessment' ? (
@@ -1306,7 +1276,7 @@ export default function TaxationPage() {
               </div>
 
               {/* Ready to Download Display */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5">
+              <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-semibold text-blue-700 mb-0.5">Ready to Download:</p>
@@ -1442,7 +1412,7 @@ export default function TaxationPage() {
                     });
                     setShowSuccessModal(true);
                   }}
-                  className="flex-[1.5] px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-base rounded-2xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 cursor-pointer"
+                  className="flex-[1.5] px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold text-base rounded-2xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 cursor-pointer"
                 >
                   <Download className="w-5 h-5" />
                   Download
@@ -1460,9 +1430,9 @@ export default function TaxationPage() {
 
       {/* Submit to HMRC Modal */}
       {showSubmitModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md w-full border border-white/50">
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl shadow-lg">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full flex flex-col border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
+            <div className="bg-linear-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -1500,7 +1470,7 @@ export default function TaxationPage() {
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
                 <div className="flex gap-2">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-semibold text-yellow-900 mb-1">Before Submitting:</p>
                     <ul className="text-xs text-yellow-800 space-y-1">
@@ -1530,7 +1500,7 @@ export default function TaxationPage() {
                     });
                     setShowSuccessModal(true);
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 px-6 py-3 bg-linear-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Send className="w-5 h-5" />
                   Submit Now
@@ -1544,7 +1514,7 @@ export default function TaxationPage() {
       {activeTab === 'paye' && (
         <div className="space-y-6">
           {/* PAYE Overview */}
-          <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl p-8 text-white">
+          <div className="bg-linear-to-br from-green-500 to-emerald-500 rounded-xl p-8 text-white">
             <div className="flex items-center gap-3 mb-4">
               <Users className="w-8 h-8" />
               <div>
@@ -1711,7 +1681,7 @@ export default function TaxationPage() {
                 <span className="text-gray-700">Employer NI (15% over £9,100)</span>
                 <span className="font-bold text-gray-900">£1,000.00</span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gradient-to-br from-green-50/50 to-emerald-50/50 backdrop-blur-sm rounded-lg border border-green-200/50 hover:from-green-50/80 hover:to-emerald-50/80 transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-4 bg-linear-to-br from-green-50/50 to-emerald-50/50 backdrop-blur-sm rounded-lg border border-green-200/50 hover:from-green-50/80 hover:to-emerald-50/80 transition-all cursor-pointer">
                 <div>
                   <p className="font-semibold text-green-900">Total Payment Due to HMRC</p>
                   <p className="text-xs text-green-700">Due: 22 February 2026</p>
@@ -1722,7 +1692,7 @@ export default function TaxationPage() {
           </div>
 
           {/* Important Information */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-blue-50/50 backdrop-blur-sm border border-blue-200/50 rounded-xl p-5 hover:bg-blue-50/80 hover:shadow-lg transition-all cursor-pointer">
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="w-6 h-6 text-blue-600" />
@@ -1745,7 +1715,7 @@ export default function TaxationPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button 
               onClick={() => setShowRTIModal(true)}
               className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-center cursor-pointer group"
@@ -1780,7 +1750,7 @@ export default function TaxationPage() {
       {activeTab === 'vat' && (
         <div className="space-y-6">
           {/* VAT Header */}
-          <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-8 text-white">
+          <div className="bg-linear-to-br from-purple-500 to-pink-500 rounded-xl p-8 text-white">
             <div className="flex items-center gap-3 mb-4">
               <Receipt className="w-8 h-8" />
               <div>
@@ -1885,7 +1855,7 @@ export default function TaxationPage() {
           </div>
 
           {/* VAT Scheme Info */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-5 text-center cursor-pointer hover:shadow-lg transition-all">
               <p className="text-xs text-gray-600 mb-1">Your Scheme</p>
               <p className="font-bold text-gray-900">Standard VAT</p>
@@ -1905,7 +1875,7 @@ export default function TaxationPage() {
       {activeTab === 'capital-gains' && (
         <div className="space-y-6">
           {/* CGT Header */}
-          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl p-8 text-white">
+          <div className="bg-linear-to-br from-orange-500 to-red-500 rounded-xl p-8 text-white">
             <div className="flex items-center gap-3 mb-4">
               <TrendingUp className="w-8 h-8" />
               <div>
@@ -1929,7 +1899,7 @@ export default function TaxationPage() {
             </h3>
             
             {/* Annual Exempt Amount */}
-            <div className="mb-6 p-6 bg-gradient-to-br from-orange-50/50 to-red-50/50 backdrop-blur-sm rounded-xl border border-orange-200/50">
+            <div className="mb-6 p-6 bg-linear-to-br from-orange-50/50 to-red-50/50 backdrop-blur-sm rounded-xl border border-orange-200/50">
               <p className="text-sm text-orange-700 mb-2">Annual Exempt Amount (AEA)</p>
               <p className="text-4xl font-bold text-orange-900">£3,000</p>
               <p className="text-xs text-orange-700 mt-2">Reduced from £6,000 in 2024/25</p>
@@ -2057,8 +2027,8 @@ export default function TaxationPage() {
             <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
-                  <X className="w-5 h-5 text-gray-400 rotate-45" /> {/* Using X as a placeholder or Chevron if re-imported */}
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
@@ -2069,23 +2039,23 @@ export default function TaxationPage() {
                 </div>
                 
                 <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
               </div>
 
-              <div className="grid grid-cols-7 gap-2 mb-2">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
                 {dayNames.map(day => (
-                  <div key={day} className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest py-2">
+                  <div key={day} className="text-center text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest py-1 sm:py-2">
                     {day}
                   </div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {Array.from({ length: firstDayOfMonth }, (_, i) => (
-                  <div key={`empty-${i}`} className="h-20 bg-gray-50/30 rounded-xl"></div>
+                  <div key={`empty-${i}`} className="h-14 sm:h-20 bg-gray-50/30 rounded-xl"></div>
                 ))}
                 
                 {Array.from({ length: daysInMonth }, (_, i) => {
@@ -2099,7 +2069,7 @@ export default function TaxationPage() {
                     <div 
                       key={dayNum}
                       onClick={() => setSelectedCalendarDay(dayNum)}
-                      className={`h-20 rounded-xl p-2 transition-all cursor-pointer relative group ${
+                      className={`h-14 sm:h-20 rounded-xl p-1.5 sm:p-2 transition-all cursor-pointer relative group ${
                         isSelected 
                           ? 'ring-2 ring-indigo-500 bg-white shadow-lg z-10' 
                           : isTodayCell
@@ -2109,16 +2079,16 @@ export default function TaxationPage() {
                               : 'bg-white hover:bg-gray-50 border border-gray-100'
                       }`}
                     >
-                      <div className={`text-sm font-black ${isTodayCell ? 'text-indigo-600' : 'text-gray-900'}`}>
+                      <div className={`text-xs sm:text-sm font-black ${isTodayCell ? 'text-indigo-600' : 'text-gray-900'}`}>
                         {dayNum}
                       </div>
                       
                       {event && (
-                        <div className={`w-1.5 h-1.5 rounded-full bg-${event.color}-500 mt-1 shadow-sm`}></div>
+                        <div className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-${event.color}-500 mt-0.5 sm:mt-1 shadow-sm`}></div>
                       )}
                       
                       {isTodayCell && (
-                        <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-indigo-500 text-[8px] font-black text-white rounded uppercase">
+                        <div className="absolute bottom-1 right-1 px-1 py-0.5 bg-indigo-500 text-[6px] sm:text-[8px] font-black text-white rounded uppercase">
                           Today
                         </div>
                       )}
@@ -2130,7 +2100,7 @@ export default function TaxationPage() {
               <div className="mt-8 flex justify-center">
                 <button 
                   onClick={goToToday}
-                  className="px-6 py-2.5 bg-gray-900 text-white text-xs font-black rounded-xl hover:bg-black transition-all cursor-pointer shadow-lg shadow-gray-200 uppercase tracking-widest"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white text-xs font-black rounded-xl hover:bg-black transition-all cursor-pointer shadow-lg shadow-gray-200 uppercase tracking-widest"
                 >
                   Return to Today
                 </button>
@@ -2139,12 +2109,12 @@ export default function TaxationPage() {
 
             {/* Day Details Sidebar */}
             <div className="space-y-6">
-              <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-sm h-full">
+              <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-sm h-auto sm:h-full">
                 <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Day Details</h3>
                 
                 {selectedCalendarDay ? (
                   <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200">
+                    <div className="bg-linear-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200">
                       <p className="text-sm font-bold text-gray-500">{monthNames[calendarMonth]}</p>
                       <h4 className="text-4xl font-black text-gray-900 mt-1">{selectedCalendarDay}</h4>
                       <p className="text-xs font-bold text-gray-400 uppercase mt-1">2026 Tax Insight</p>
@@ -2271,12 +2241,13 @@ export default function TaxationPage() {
       })()}
         </motion.div>
       </AnimatePresence>
+      </div>
       {/* New Return Modal */}
       {showNewReturnModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-white/50 relative">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[85dvh] flex flex-col border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl sticky top-0 z-10 shadow-lg">
+            <div className="bg-linear-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl sticky top-0 z-10 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -2312,7 +2283,7 @@ export default function TaxationPage() {
               </div>
             </div>
 
-            <div className="p-8">
+            <div className="p-5 sm:p-8 space-y-6 flex-1 overflow-y-auto pb-32 sm:pb-10 custom-scrollbar">
               {/* Step 1: Select Type */}
               {newReturnStep === 1 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
@@ -2329,7 +2300,7 @@ export default function TaxationPage() {
                           setNewReturnData({ ...newReturnData, type: item.name });
                           setNewReturnStep(2);
                         }}
-                        className={`p-6 border-2 rounded-2xl text-left transition-all cursor-pointer group flex items-start gap-4 ${
+                        className={`p-4 sm:p-6 border-2 rounded-2xl text-left transition-all cursor-pointer group flex items-start gap-3 sm:gap-4 ${
                           newReturnData.type === item.name 
                             ? `border-${item.color}-500 bg-${item.color}-50/50` 
                             : 'border-white/50 bg-white/40 hover:border-gray-300 hover:bg-white'
@@ -2434,11 +2405,11 @@ export default function TaxationPage() {
               {/* Step 4: Review */}
               {newReturnStep === 4 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                  <div className="bg-white/40 border border-white/50 rounded-2xl overflow-hidden backdrop-blur-sm">
-                    <div className="bg-gray-50 border-b border-gray-100 px-6 py-4">
+                  <div className="bg-white/40 border border-white/50 rounded-2xl overflow-hidden backdrop-blur-sm shadow-sm">
+                    <div className="bg-gray-50 border-b border-gray-100 px-5 sm:px-6 py-4">
                       <h3 className="font-bold text-gray-900">Submission Summary</h3>
                     </div>
-                    <div className="p-6 space-y-4">
+                    <div className="p-5 sm:p-6 space-y-4">
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
                         <span className="text-gray-600">Tax Type</span>
                         <span className="font-bold text-gray-900">{newReturnData.type}</span>
@@ -2459,16 +2430,16 @@ export default function TaxationPage() {
                         <span className="text-gray-600">Expenses</span>
                         <span className="font-bold text-gray-900">£{Number(newReturnData.expenses).toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between items-center py-3 bg-green-50 -mx-6 px-6">
+                      <div className="flex justify-between items-center py-3 bg-green-50 -mx-5 sm:-mx-6 px-5 sm:px-6">
                         <span className="text-green-800 font-bold">Total Liability (Estimated)</span>
-                        <span className="text-2xl font-black text-green-900">
+                        <span className="text-xl sm:text-2xl font-black text-green-900">
                           £{(Math.max(0, Number(newReturnData.turnover) - Number(newReturnData.expenses)) * 0.19).toLocaleString()}
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-2 p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                    <Shield className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                    <Shield className="w-5 h-5 text-blue-600 shrink-0" />
                     <p className="text-xs text-blue-800">
                       By submitting this return, you confirm that all figures provided are accurate to the best of your knowledge and comply with HMRC guidelines.
                     </p>
@@ -2476,8 +2447,10 @@ export default function TaxationPage() {
                 </div>
               )}
 
-              {/* Modal Footer */}
-              <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
+            </div>
+
+            {/* Modal Footer — sticky so always visible */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 sm:px-8 py-4 flex items-center justify-between gap-3 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
                 <button
                   onClick={() => {
                     if (newReturnStep === 1) {
@@ -2486,7 +2459,7 @@ export default function TaxationPage() {
                       setNewReturnStep(newReturnStep - 1);
                     }
                   }}
-                  className="px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="flex-1 sm:flex-none px-6 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   {newReturnStep === 1 ? 'Cancel' : 'Back'}
                 </button>
@@ -2495,7 +2468,6 @@ export default function TaxationPage() {
                     if (newReturnStep < 4) {
                       setNewReturnStep(newReturnStep + 1);
                     } else {
-                      // Final Submission
                       setShowNewReturnModal(false);
                       setNewReturnStep(1);
                       setSuccessContent({
@@ -2505,14 +2477,13 @@ export default function TaxationPage() {
                       setShowSuccessModal(true);
                     }
                   }}
-                  className={`px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2 cursor-pointer shadow-lg ${
+                  className={`flex-1 sm:flex-none px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer ${
                     newReturnStep === 1 && !newReturnData.type ? 'opacity-50 pointer-events-none' : ''
                   }`}
                 >
                   {newReturnStep === 4 ? 'Confirm & Submit' : 'Continue'}
-                  <TrendingUp className="w-5 h-5" />
+                  <TrendingUp className="w-4 h-4" />
                 </button>
-              </div>
             </div>
           </div>
         </div>
@@ -2520,10 +2491,10 @@ export default function TaxationPage() {
 
       {/* Corporation Tax (CT600) Modal */}
       {showCT600Modal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-white/50 relative">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[85dvh] flex flex-col border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-700 to-indigo-700 p-6 rounded-t-2xl sticky top-0 z-10 shadow-lg">
+            <div className="bg-linear-to-r from-blue-700 to-indigo-700 p-6 rounded-t-2xl sticky top-0 z-10 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -2543,7 +2514,7 @@ export default function TaxationPage() {
               </div>
             </div>
 
-            <div className="p-8 space-y-6">
+            <div className="p-5 sm:p-8 space-y-6 flex-1 overflow-y-auto pb-24 sm:pb-10 custom-scrollbar">
               <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6">
                 <h3 className="font-bold text-blue-900 mb-4 flex items-center gap-2">
                   <Calculator className="w-5 h-5" />
@@ -2579,13 +2550,14 @@ export default function TaxationPage() {
               </div>
 
               <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
                 <p className="text-xs text-amber-800">
                   <strong>Important:</strong> This is an estimate based on your taxable profit. The final CT600 may include adjustments for capital allowances, specialized tax reliefs (like R&D), and non-deductible expenses.
                 </p>
               </div>
 
-              <div className="flex items-center gap-4 pt-4">
+            </div>
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-5 sm:px-8 py-4 flex gap-4 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
                 <button
                   onClick={() => setShowCT600Modal(false)}
                   className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
@@ -2655,7 +2627,7 @@ export default function TaxationPage() {
                     });
                     setShowSuccessModal(true);
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                  className="flex-1 px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg"
                 >
                   <Download className="w-5 h-5" />
                   Generate & Download
@@ -2663,13 +2635,12 @@ export default function TaxationPage() {
               </div>
             </div>
           </div>
-        </div>
       )}
       {/* Edit Income Source Modal */}
       {showEditIncomeModal && editingSource && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md w-full border border-white/50">
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-5 rounded-t-2xl shadow-lg">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[70] p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
+            <div className="bg-linear-to-r from-purple-600 to-pink-600 p-5 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -2716,7 +2687,7 @@ export default function TaxationPage() {
                     setSaYearData(newYearData);
                     setShowEditIncomeModal(false);
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer shadow-lg"
+                  className="flex-1 px-6 py-3 bg-linear-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer shadow-lg"
                 >
                   Save Changes
                 </button>
@@ -2729,7 +2700,7 @@ export default function TaxationPage() {
       {showHistoryModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
           <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-2xl w-full border border-white/50">
-            <div className="bg-gradient-to-r from-indigo-700 to-purple-800 p-5 rounded-t-2xl shadow-lg">
+            <div className="bg-linear-to-r from-indigo-700 to-purple-800 p-5 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -2788,7 +2759,7 @@ export default function TaxationPage() {
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
           <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-sm w-full border border-white/50 overflow-hidden transform animate-in zoom-in-95 duration-300">
-            <div className="h-2 bg-gradient-to-r from-green-400 to-emerald-500" />
+            <div className="h-2 bg-linear-to-r from-green-400 to-emerald-500" />
             <div className="p-8 text-center">
               <div className="relative w-24 h-24 mx-auto mb-6">
                 <div className="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-25" />
@@ -2819,7 +2790,7 @@ export default function TaxationPage() {
           <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-xl w-full max-h-[85vh] overflow-hidden border border-white/50 transform animate-in zoom-in-95 duration-300 flex flex-col">
 
             {/* Header with gradient and pattern */}
-            <div className="relative bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 p-6 overflow-hidden">
+            <div className="relative bg-linear-to-br from-emerald-500 via-green-500 to-teal-600 p-6 overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute -right-10 -top-10 w-40 h-40 bg-white rounded-full"></div>
                 <div className="absolute -left-5 -bottom-5 w-24 h-24 bg-white rounded-full"></div>
@@ -2845,7 +2816,7 @@ export default function TaxationPage() {
             
             <div className="p-6 space-y-6 flex-1 overflow-y-auto">
               {/* Input Section */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl p-5 border border-gray-200/50">
+              <div className="bg-linear-to-br from-gray-50 to-gray-100/50 rounded-2xl p-5 border border-gray-200/50">
                 <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Enter Details</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2 sm:col-span-1">
@@ -2918,7 +2889,7 @@ export default function TaxationPage() {
                         <span className="text-lg font-bold text-purple-700">-£{monthlyEmployeeNI.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                       
-                      <div className="p-5 bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-between">
+                      <div className="p-5 bg-linear-to-r from-emerald-500 to-green-500 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-white/20 rounded-lg">
                             <CheckCircle className="w-5 h-5 text-white" />
@@ -2933,7 +2904,7 @@ export default function TaxationPage() {
                     </div>
 
                     {/* Employer Cost Card */}
-                    <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-4 border border-indigo-200/50">
+                    <div className="bg-linear-to-br from-indigo-50 to-blue-50 rounded-2xl p-4 border border-indigo-200/50">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-indigo-100 rounded-lg">
@@ -2969,7 +2940,7 @@ export default function TaxationPage() {
 
               {/* Info Banner */}
               <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
                   <strong>2025/26 Rates:</strong> Employee NI reduced to 8%. Employer NI increased to 15% with £9,100 threshold.
                 </p>
@@ -2980,7 +2951,7 @@ export default function TaxationPage() {
             <div className="p-4 bg-gray-50 border-t border-gray-200">
               <button
                 onClick={() => setShowPAYECalculatorModal(false)}
-                className="w-full py-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white font-bold rounded-xl hover:from-gray-900 hover:to-black hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer"
+                className="w-full py-4 bg-linear-to-r from-gray-800 to-gray-900 text-white font-bold rounded-xl hover:from-gray-900 hover:to-black hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer"
               >
                 Close Calculator
               </button>
@@ -2991,11 +2962,11 @@ export default function TaxationPage() {
 
       {/* RTI Submission Modal */}
       {showRTIModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
-                    <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-xl w-full max-h-[85vh] overflow-hidden border border-white/50 transform animate-in zoom-in-95 duration-300 flex flex-col">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center z-[60] p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-xl w-full max-h-[85dvh] overflow-hidden border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300 flex flex-col">
 
             {/* Header with HMRC-style gradient */}
-            <div className="relative bg-gradient-to-br from-teal-600 via-cyan-600 to-blue-700 p-6 overflow-hidden">
+            <div className="relative bg-linear-to-br from-teal-600 via-cyan-600 to-blue-700 p-6 overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute -right-10 -top-10 w-40 h-40 bg-white rounded-full"></div>
                 <div className="absolute -left-5 -bottom-5 w-24 h-24 bg-white rounded-full"></div>
@@ -3019,9 +2990,9 @@ export default function TaxationPage() {
               </div>
             </div>
             
-            <div className="p-6 space-y-5 flex-1 overflow-y-auto">
+            <div className="p-5 sm:p-8 space-y-5 flex-1 overflow-y-auto pb-32 sm:pb-10 custom-scrollbar">
               {/* Status Banner */}
-              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-2xl border border-cyan-200">
+              <div className="flex items-center gap-4 p-4 bg-linear-to-r from-cyan-50 to-blue-50 rounded-2xl border border-cyan-200">
                 <div className="relative">
                   <div className="absolute inset-0 bg-cyan-400 rounded-full animate-ping opacity-20"></div>
                   <div className="relative p-3 bg-cyan-100 rounded-full">
@@ -3095,7 +3066,7 @@ export default function TaxationPage() {
                 </div>
 
                 {/* Total */}
-                <div className="p-5 bg-gradient-to-r from-teal-500 to-cyan-500 flex items-center justify-between">
+                <div className="p-5 bg-linear-to-r from-teal-500 to-cyan-500 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-white/20 rounded-lg">
                       <Receipt className="w-5 h-5 text-white" />
@@ -3126,8 +3097,7 @@ export default function TaxationPage() {
               </div>
             </div>
 
-            {/* Footer Actions */}
-            <div className="p-4 bg-gray-50 border-t border-gray-200 flex gap-3">
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-5 sm:px-8 py-4 flex gap-3 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
               <button
                 onClick={() => setShowRTIModal(false)}
                 className="flex-1 py-4 bg-white border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-100 hover:border-gray-300 active:scale-[0.98] transition-all cursor-pointer"
@@ -3144,7 +3114,7 @@ export default function TaxationPage() {
                   });
                   setShowSuccessModal(true);
                 }}
-                className="flex-1 py-4 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold rounded-xl hover:from-teal-600 hover:to-cyan-600 hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 py-4 bg-linear-to-r from-teal-500 to-cyan-500 text-white font-bold rounded-xl hover:from-teal-600 hover:to-cyan-600 hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Send className="w-5 h-5" />
                 Submit to HMRC
@@ -3155,11 +3125,11 @@ export default function TaxationPage() {
       )}
       {/* VAT Return Modal */}
       {showVATReturnModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-xl w-full max-h-[85vh] overflow-hidden border border-white/50 transform animate-in zoom-in-95 duration-300 flex flex-col">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center z-[60] p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-xl w-full max-h-[85dvh] overflow-hidden border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300 flex flex-col">
 
             {/* Header with HMRC-style VAT branding */}
-            <div className="relative bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-800 p-6 overflow-hidden">
+            <div className="relative bg-linear-to-br from-purple-700 via-indigo-700 to-blue-800 p-6 overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute -right-10 -top-10 w-48 h-48 bg-white rounded-full"></div>
                 <div className="absolute -left-5 -bottom-5 w-32 h-32 bg-white rounded-full"></div>
@@ -3186,9 +3156,9 @@ export default function TaxationPage() {
               </div>
             </div>
             
-            <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-5 sm:p-8 space-y-6 flex-1 overflow-y-auto pb-32 sm:pb-10 custom-scrollbar">
               {/* Submission Information Banner */}
-              <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl border border-purple-100 shadow-sm">
+              <div className="flex items-start gap-4 p-4 bg-linear-to-r from-purple-50 to-indigo-50 rounded-2xl border border-purple-100 shadow-sm">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <Shield className="w-5 h-5 text-purple-700" />
                 </div>
@@ -3280,7 +3250,7 @@ export default function TaxationPage() {
                       <span className="text-lg font-black text-white">Net VAT Payable</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
+                      <span className="text-3xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-blue-400">
                         £{Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2)).toLocaleString('en-GB', {minimumFractionDigits: 2})}
                       </span>
                       <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Due to HMRC</p>
@@ -3290,8 +3260,8 @@ export default function TaxationPage() {
               </div>
             </div>
 
-            {/* Premium Footer Actions */}
-            <div className="p-5 bg-gray-50 border-t border-gray-200 flex gap-4">
+            {/* Premium Footer Actions — sticky for mobile accessibility */}
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-5 sm:px-8 py-4 flex gap-4 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
               <button
                 onClick={() => setShowVATReturnModal(false)}
                 className="flex-1 py-4 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-600 hover:bg-gray-100 hover:border-gray-300 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
@@ -3308,7 +3278,7 @@ export default function TaxationPage() {
                   });
                   setShowSuccessModal(true);
                 }}
-                className="flex-[1.5] py-4 bg-gradient-to-r from-purple-600 to-blue-700 text-white font-bold rounded-2xl hover:shadow-xl hover:shadow-purple-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer group"
+                className="flex-[1.5] py-4 bg-linear-to-r from-purple-600 to-blue-700 text-white font-bold rounded-2xl hover:shadow-xl hover:shadow-purple-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer group"
               >
                 <CheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 Submit to HMRC
@@ -3323,7 +3293,7 @@ export default function TaxationPage() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
           <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden border border-white/50 transform animate-in zoom-in-95 duration-300 flex flex-col">
             {/* Header */}
-            <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-700 p-6 overflow-hidden">
+            <div className="relative bg-linear-to-br from-indigo-600 via-purple-600 to-pink-700 p-6 overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute -right-10 -top-10 w-48 h-48 bg-white rounded-full"></div>
               </div>
@@ -3415,7 +3385,7 @@ export default function TaxationPage() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
           <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-xl w-full max-h-[85vh] overflow-hidden border border-white/50 transform animate-in zoom-in-95 duration-300 flex flex-col">
             {/* Header */}
-            <div className="relative bg-gradient-to-br from-orange-600 via-red-600 to-rose-700 p-6 overflow-hidden">
+            <div className="relative bg-linear-to-br from-orange-600 via-red-600 to-rose-700 p-6 overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute -right-10 -top-10 w-40 h-40 bg-white rounded-full"></div>
               </div>
@@ -3440,7 +3410,7 @@ export default function TaxationPage() {
             
             <div className="p-6 space-y-6 flex-1 overflow-y-auto">
               {/* Asset Type Selection */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 border border-gray-200 shadow-sm">
+              <div className="bg-linear-to-br from-gray-50 to-gray-100 rounded-2xl p-4 border border-gray-200 shadow-sm">
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Asset Classification</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button 
@@ -3550,7 +3520,7 @@ export default function TaxationPage() {
               })()}
 
               <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 flex gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
                 <p className="text-xs text-amber-800 leading-relaxed">
                   <strong>Important Update:</strong> Following Autumn Budget 2024, standard CGT rates are now aligned at <strong>18% and 24%</strong> for the 2025/26 tax year. BADR rate has increased to <strong>14%</strong>.
                 </p>
@@ -3560,7 +3530,7 @@ export default function TaxationPage() {
             <div className="p-4 bg-gray-50 border-t border-gray-200">
               <button
                 onClick={() => setShowCGTCalculatorModal(false)}
-                className="w-full py-4 bg-gradient-to-r from-orange-600 to-rose-600 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer"
+                className="w-full py-4 bg-linear-to-r from-orange-600 to-rose-600 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer"
               >
                 Close Calculator
               </button>
@@ -3568,51 +3538,6 @@ export default function TaxationPage() {
           </div>
         </div>
       )}
-      {/* Premium Toast Notification System */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-8 right-8 z-[110]"
-          >
-            <div className={`backdrop-blur-xl border p-5 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[320px] ${
-              toast.type === 'success' 
-                ? 'bg-emerald-500/10 border-emerald-500/50' 
-                : 'bg-rose-500/10 border-rose-500/50'
-            }`}>
-              <div className={`p-3 rounded-xl ${
-                toast.type === 'success' 
-                  ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30' 
-                  : 'bg-rose-500 shadow-lg shadow-rose-500/30'
-              }`}>
-                {toast.type === 'success' ? (
-                  <CheckCircle className="w-6 h-6 text-white" />
-                ) : (
-                  <AlertCircle className="w-6 h-6 text-white" />
-                )}
-              </div>
-              <div className="flex-1">
-                <p className={`text-sm font-bold ${
-                  toast.type === 'success' ? 'text-emerald-900' : 'text-rose-900'
-                }`}>
-                  {toast.type === 'success' ? 'Success' : 'Error'}
-                </p>
-                <p className="text-gray-600 text-xs mt-0.5 font-medium leading-relaxed">
-                  {toast.message}
-                </p>
-              </div>
-              <button 
-                onClick={() => setToast(null)}
-                className="p-2 hover:bg-black/5 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4 text-gray-400" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
  
        {/* MTD Compliance Status Modal */}
        {showComplianceModal && (
@@ -3620,7 +3545,7 @@ export default function TaxationPage() {
            <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden border border-white/50 transform animate-in zoom-in-95 duration-300 flex flex-col">
              
              {/* Header */}
-             <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-6 overflow-hidden"
+             <div className="relative bg-linear-to-br from-indigo-600 via-purple-600 to-indigo-800 p-6 overflow-hidden"
 >
                <div className="absolute inset-0 opacity-10">
                  <div className="absolute -right-10 -top-10 w-48 h-48 bg-white rounded-full"></div>
@@ -3659,7 +3584,7 @@ export default function TaxationPage() {
                  <motion.div 
                    initial={{ opacity: 0, scale: 0.95 }}
                    animate={{ opacity: 1, scale: 1 }}
-                   className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl p-8 text-white shadow-xl shadow-green-500/20 relative overflow-hidden group"
+                   className="bg-linear-to-br from-green-500 to-emerald-600 rounded-3xl p-8 text-white shadow-xl shadow-green-500/20 relative overflow-hidden group"
                  >
                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700" />
                    <div className="flex items-center gap-6 relative z-10">
@@ -3675,7 +3600,7 @@ export default function TaxationPage() {
                    </div>
                  </motion.div>
                ) : (
-                 <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-3xl p-6 border border-emerald-100 shadow-sm flex items-center justify-between">
+                 <div className="bg-linear-to-r from-emerald-50 to-green-50 rounded-3xl p-6 border border-emerald-100 shadow-sm flex items-center justify-between">
                    <div className="flex items-center gap-4">
                      <div className="p-3 bg-emerald-500 rounded-2xl shadow-lg ring-4 ring-emerald-500/20">
                        <CheckCircle className="w-6 h-6 text-white" />
@@ -3854,7 +3779,7 @@ export default function TaxationPage() {
                      doc.save('MTD_Compliance_Certificate.pdf');
                      showToast('MTD Compliance Certificate (PDF) generated and downloaded.');
                    }}
-                   className="flex-1 py-4 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-bold rounded-2xl hover:shadow-xl hover:shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
+                   className="flex-1 py-4 bg-linear-to-r from-indigo-600 to-indigo-800 text-white font-bold rounded-2xl hover:shadow-xl hover:shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
 
                  >
                    <Download className="w-5 h-5" />
@@ -3933,19 +3858,19 @@ export default function TaxationPage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 right-8 z-[100]"
+            className="fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-200 pointer-events-none w-[calc(100%-2rem)] sm:w-auto max-w-sm"
           >
-            <div className={`px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md border ${
-              toast.type === 'success' 
-                ? 'bg-green-500/90 text-white border-green-400' 
-                : 'bg-red-500/90 text-white border-red-400'
+            <div className={`px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 ${
+              toast.type === 'success'
+                ? 'bg-gray-900 text-white'
+                : 'bg-red-600 text-white'
             }`}>
               {toast.type === 'success' ? (
-                <CheckCircle className="w-6 h-6" />
+                <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
               ) : (
-                <AlertCircle className="w-6 h-6" />
+                <AlertCircle className="w-5 h-5 text-red-200 shrink-0" />
               )}
-              <span className="font-bold">{toast.message}</span>
+              <span className="text-sm font-medium">{toast.message}</span>
             </div>
           </motion.div>
         )}

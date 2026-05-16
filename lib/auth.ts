@@ -43,6 +43,11 @@ const config = {
           console.log('[AUTH]    Status:', user.status);
           console.log('[AUTH]    Has Password:', !!user.password);
 
+          if (user.status !== 'ACTIVE') {
+            console.log('[AUTH] ❌ User account is not active:', user.status);
+            return null;
+          }
+
           if (!user.password) {
             console.log('[AUTH] ❌ User has no password set');
             console.log('[AUTH] 💡 Run POST /api/admin/fix-login to set the password');

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     await prisma.session.deleteMany({
       where: { userId },
     });
-    
+
     // Also clear lastLoginAt to ensure they don't show as "recently logged in"
     // This makes the offline status immediate
     await prisma.user.update({

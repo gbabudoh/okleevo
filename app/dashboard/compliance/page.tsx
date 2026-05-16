@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { 
+import {
   Shield, Bell, AlertTriangle, CheckCircle, Clock, Calendar,
   FileText, Download, Plus, Search, Filter, Eye,
   Edit3, Trash2, X, MoreVertical, ChevronRight,
@@ -69,8 +69,8 @@ interface AuditLog {
 }
 
 const initialFrameworks: ComplianceFramework[] = [];
-
 const riskMetrics: RiskMetric[] = [];
+const auditLogs: AuditLog[] = [];
 
 const categoryConfigs = [
   { id: 'all', name: 'All Items', icon: Grid },
@@ -81,8 +81,6 @@ const categoryConfigs = [
   { id: 'operational', name: 'Operational', icon: Workflow },
   { id: 'environmental', name: 'Environmental', icon: Globe },
 ];
-
-const auditLogs: AuditLog[] = [];
 
 export default function CompliancePage() {
   const [items, setItems] = useState<ComplianceItem[]>([]);
@@ -102,8 +100,6 @@ export default function CompliancePage() {
   const [exportFormat, setExportFormat] = useState<'PDF' | 'Excel' | 'CSV'>('PDF');
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  
-  // Additional state for full activation
   const [selectedFramework, setSelectedFramework] = useState<ComplianceFramework | null>(null);
   const [newItemData, setNewItemData] = useState({
     title: '',
@@ -118,7 +114,6 @@ export default function CompliancePage() {
     audit: true,
     framework: true
   });
-
   const [editingFramework, setEditingFramework] = useState<ComplianceFramework | null>(null);
   const [showEditFrameworkModal, setShowEditFrameworkModal] = useState(false);
   const [sharingFramework, setSharingFramework] = useState<ComplianceFramework | null>(null);
@@ -127,9 +122,7 @@ export default function CompliancePage() {
   const showNotification = (message: string) => {
     setSuccessMessage(message);
     setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 4000);
+    setTimeout(() => setShowSuccess(false), 4000);
   };
 
   const categories = categoryConfigs.map(cat => ({
@@ -146,33 +139,22 @@ export default function CompliancePage() {
 
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'compliant':
-        return { color: 'green', icon: CheckCircle, label: 'Compliant', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
-      case 'pending':
-        return { color: 'blue', icon: Clock, label: 'Pending', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
-      case 'overdue':
-        return { color: 'red', icon: AlertTriangle, label: 'Overdue', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
-      case 'at-risk':
-        return { color: 'orange', icon: AlertCircle, label: 'At Risk', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' };
-      case 'not-applicable':
-        return { color: 'gray', icon: XCircle, label: 'N/A', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' };
-      default:
-        return { color: 'gray', icon: AlertCircle, label: 'Unknown', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' };
+      case 'compliant':   return { icon: CheckCircle, label: 'Compliant',  bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200',  dot: 'bg-green-500'  };
+      case 'pending':     return { icon: Clock,        label: 'Pending',    bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200',   dot: 'bg-blue-500'   };
+      case 'overdue':     return { icon: AlertTriangle, label: 'Overdue',   bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200',    dot: 'bg-red-500'    };
+      case 'at-risk':     return { icon: AlertCircle,  label: 'At Risk',   bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', dot: 'bg-orange-500' };
+      case 'not-applicable': return { icon: XCircle,   label: 'N/A',       bg: 'bg-gray-50',   text: 'text-gray-700',   border: 'border-gray-200',   dot: 'bg-gray-400'   };
+      default:            return { icon: AlertCircle,  label: 'Unknown',   bg: 'bg-gray-50',   text: 'text-gray-700',   border: 'border-gray-200',   dot: 'bg-gray-400'   };
     }
   };
 
   const getPriorityConfig = (priority: string) => {
     switch (priority) {
-      case 'critical':
-        return { color: 'red', label: 'Critical', bg: 'bg-red-100', text: 'text-red-700' };
-      case 'high':
-        return { color: 'orange', label: 'High', bg: 'bg-orange-100', text: 'text-orange-700' };
-      case 'medium':
-        return { color: 'yellow', label: 'Medium', bg: 'bg-yellow-100', text: 'text-yellow-700' };
-      case 'low':
-        return { color: 'green', label: 'Low', bg: 'bg-green-100', text: 'text-green-700' };
-      default:
-        return { color: 'gray', label: 'Unknown', bg: 'bg-gray-100', text: 'text-gray-700' };
+      case 'critical': return { label: 'Critical', bg: 'bg-red-100',    text: 'text-red-700'    };
+      case 'high':     return { label: 'High',     bg: 'bg-orange-100', text: 'text-orange-700' };
+      case 'medium':   return { label: 'Medium',   bg: 'bg-yellow-100', text: 'text-yellow-700' };
+      case 'low':      return { label: 'Low',      bg: 'bg-green-100',  text: 'text-green-700'  };
+      default:         return { label: 'Unknown',  bg: 'bg-gray-100',   text: 'text-gray-700'   };
     }
   };
 
@@ -188,301 +170,147 @@ export default function CompliancePage() {
   const totalCost = items.reduce((sum, item) => sum + (item.cost || 0), 0);
   const avgRiskLevel = items.length > 0 ? items.reduce((sum, item) => sum + (item.riskLevel || 0), 0) / items.length : 0;
 
-  // Action Handlers
-  const handleEdit = (item: ComplianceItem) => {
-    setEditingItem(item);
-    setShowEditModal(true);
-  };
-
+  const handleEdit = (item: ComplianceItem) => { setEditingItem(item); setShowEditModal(true); };
   const handleDuplicate = (item: ComplianceItem) => {
-    const newItem = {
-      ...item,
-      // eslint-disable-next-line
-      id: Math.random().toString(36).substr(2, 9),
-      title: `${item.title} (Copy)`,
-    };
+    const newItem = { ...item, id: Math.random().toString(36).substr(2, 9), title: `${item.title} (Copy)` };
     setItems([...items, newItem]);
     showNotification(`✓ Duplicated: ${item.title}`);
   };
-
   const handleExport = (item: ComplianceItem) => {
-    const exportData = {
-      ...item,
-      dueDate: item.dueDate.toISOString(),
-      completedDate: item.completedDate?.toISOString(),
-      nextReview: item.nextReview?.toISOString(),
-      lastAudit: item.lastAudit?.toISOString(),
-    };
+    const exportData = { ...item, dueDate: item.dueDate.toISOString(), completedDate: item.completedDate?.toISOString(), nextReview: item.nextReview?.toISOString(), lastAudit: item.lastAudit?.toISOString() };
     const dataStr = JSON.stringify(exportData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
-    link.href = url;
-    link.download = `${item.title.replace(/\s+/g, '_')}_compliance.json`;
-    link.click();
+    link.href = url; link.download = `${item.title.replace(/\s+/g, '_')}_compliance.json`; link.click();
     URL.revokeObjectURL(url);
     showNotification(`✓ Exported: ${item.title}`);
   };
-
-  const handleShare = (item: ComplianceItem) => {
-    setSharingItem(item);
-    setShowShareModal(true);
-  };
-
+  const handleShare = (item: ComplianceItem) => { setSharingItem(item); setShowShareModal(true); };
   const handleDelete = (item: ComplianceItem) => {
-    if (confirm(`⚠️ Are you sure you want to delete "${item.title}"?\n\nThis action cannot be undone.`)) {
+    if (confirm(`Delete "${item.title}"? This cannot be undone.`)) {
       setItems(items.filter(i => i.id !== item.id));
       showNotification(`✓ Deleted: ${item.title}`);
     }
   };
-
   const handleMarkComplete = (item: ComplianceItem) => {
-    const updatedItems = items.map(i => 
-      i.id === item.id 
-        ? { ...i, status: 'compliant' as const, completedDate: new Date() }
-        : i
-    );
-    setItems(updatedItems);
+    setItems(items.map(i => i.id === item.id ? { ...i, status: 'compliant' as const, completedDate: new Date() } : i));
     setSelectedItem(null);
-    showNotification(`\u2713 Marked as complete: ${item.title}`);
+    showNotification(`✓ Marked as complete: ${item.title}`);
   };
-
   const handleCreateItem = () => {
     if (!newItemData.title) return;
-    
     const newItem: ComplianceItem = {
       id: Math.random().toString(36).substr(2, 9),
-      title: newItemData.title,
-      description: newItemData.description,
-      category: newItemData.category,
-      priority: newItemData.priority,
-      status: 'pending',
-      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      assignedTo: newItemData.assignedTo,
-      documents: [],
-      requirements: ['Initial review required'],
-      frequency: 'annually',
-      riskLevel: 25
+      title: newItemData.title, description: newItemData.description,
+      category: newItemData.category, priority: newItemData.priority,
+      status: 'pending', dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      assignedTo: newItemData.assignedTo, documents: [], requirements: ['Initial review required'],
+      frequency: 'annually', riskLevel: 25
     };
-    
     setItems([newItem, ...items]);
     setShowAddItem(false);
-    setNewItemData({
-        title: '',
-        description: '',
-        category: 'data-privacy',
-        priority: 'medium',
-        assignedTo: 'General Team'
-    });
-    showNotification(`\u2713 Created New Item: ${newItem.title}`);
+    setNewItemData({ title: '', description: '', category: 'data-privacy', priority: 'medium', assignedTo: 'General Team' });
+    showNotification(`✓ Created: ${newItem.title}`);
   };
-
-  const handleEditFramework = (framework: ComplianceFramework) => {
-    setEditingFramework(framework);
-    setShowEditFrameworkModal(true);
-  };
-
-  const handleShareFramework = (framework: ComplianceFramework) => {
-    setSharingFramework(framework);
-    setShowShareFrameworkModal(true);
-  };
-
+  const handleEditFramework = (framework: ComplianceFramework) => { setEditingFramework(framework); setShowEditFrameworkModal(true); };
+  const handleShareFramework = (framework: ComplianceFramework) => { setSharingFramework(framework); setShowShareFrameworkModal(true); };
   const handleExportFramework = (framework: ComplianceFramework) => {
-    // Simulate export of specific framework data
     const data = JSON.stringify(framework, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${framework.name}_data.json`;
-    link.click();
-    showNotification(`\u2713 Exported framework data for ${framework.name}`);
+    const link = document.createElement('a'); link.href = url; link.download = `${framework.name}_data.json`; link.click();
+    showNotification(`✓ Exported: ${framework.name}`);
   };
-
   const handleGenerateReport = () => {
-    // Collect data based on exportFormat
     const reportData = items.map(item => ({
-      Title: item.title,
-      Status: item.status,
-      Priority: item.priority,
-      DueDate: item.dueDate.toLocaleDateString(),
-      Category: item.category,
-      Framework: item.framework || 'N/A',
-      Description: item.description
+      Title: item.title, Status: item.status, Priority: item.priority,
+      DueDate: item.dueDate.toLocaleDateString(), Category: item.category,
+      Framework: item.framework || 'N/A', Description: item.description
     }));
-
-    let content = '';
-    let mimeType = '';
-    let extension = '';
-
     if (exportFormat === 'CSV' || exportFormat === 'Excel') {
-      const headers = Object.keys(reportData[0]).join(',');
+      const headers = Object.keys(reportData[0] || {}).join(',');
       const rows = reportData.map(row => Object.values(row).map(v => `"${v}"`).join(','));
-      content = [headers, ...rows].join('\n');
-      mimeType = exportFormat === 'CSV' ? 'text/csv' : 'application/vnd.ms-excel';
-      extension = exportFormat === 'CSV' ? 'csv' : 'xls';
-
-      const blob = new Blob(['\uFEFF' + content], { type: mimeType + ';charset=utf-8;' });
+      const content = [headers, ...rows].join('\n');
+      const mimeType = exportFormat === 'CSV' ? 'text/csv' : 'application/vnd.ms-excel';
+      const extension = exportFormat === 'CSV' ? 'csv' : 'xls';
+      const blob = new Blob(['﻿' + content], { type: mimeType + ';charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;
-      link.download = `compliance_report_${new Date().toISOString().split('T')[0]}.${extension}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      link.href = url; link.download = `compliance_report_${new Date().toISOString().split('T')[0]}.${extension}`;
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } else if (exportFormat === 'PDF') {
-      // Professional PDF Generation
+    } else {
       const doc = new jsPDF();
-      
-      // Header
-      doc.setFontSize(22);
-      doc.setTextColor(30, 41, 59); // gray-900
+      doc.setFontSize(22); doc.setTextColor(30, 41, 59);
       doc.text("Compliance Center Report", 14, 22);
-      
-      doc.setFontSize(10);
-      doc.setTextColor(100, 116, 139); // gray-500
-      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+      doc.setFontSize(10); doc.setTextColor(100, 116, 139);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
       doc.text(`Total Items: ${items.length}`, 14, 35);
-      
-      doc.setDrawColor(226, 232, 240); // gray-200
-      doc.line(14, 40, 196, 40);
-      
-      // Content
+      doc.setDrawColor(226, 232, 240); doc.line(14, 40, 196, 40);
       let yOffset = 50;
       reportData.forEach((item, index) => {
-        if (yOffset > 270) {
-          doc.addPage();
-          yOffset = 20;
-        }
-        
-        doc.setFontSize(12);
-        doc.setTextColor(30, 41, 59);
-        doc.setFont("helvetica", "bold");
+        if (yOffset > 270) { doc.addPage(); yOffset = 20; }
+        doc.setFontSize(12); doc.setTextColor(30, 41, 59); doc.setFont("helvetica", "bold");
         doc.text(`${index + 1}. ${item.Title}`, 14, yOffset);
-        
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(71, 85, 105); // gray-600
+        doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
         doc.text(`Status: ${item.Status} | Priority: ${item.Priority} | Due: ${item.DueDate}`, 14, yOffset + 6);
-        doc.text(`Category: ${item.Category} | Framework: ${item.Framework}`, 14, yOffset + 11);
-        
-        const descriptionLines = doc.splitTextToSize(item.Description, 170);
-        doc.text(descriptionLines, 14, yOffset + 16);
-        
-        yOffset += 22 + (descriptionLines.length * 5);
+        const descLines = doc.splitTextToSize(item.Description, 170);
+        doc.text(descLines, 14, yOffset + 12);
+        yOffset += 18 + (descLines.length * 5);
       });
-      
       doc.save(`compliance_report_${new Date().toISOString().split('T')[0]}.pdf`);
     }
-
     setShowExportModal(false);
-    showNotification(`✓ ${exportFormat} report generated and download started!`);
+    showNotification(`✓ ${exportFormat} report generated!`);
   };
 
-  // Dropdown Menu Component
-  const DropdownMenu = ({ 
-    id, 
-    onEdit, 
-    onDelete, 
-    onDuplicate, 
-    onExport, 
-    onShare 
-  }: { 
-    id: string; 
-    onEdit?: () => void;
-    onDelete?: () => void;
-    onDuplicate?: () => void;
-    onExport?: () => void;
-    onShare?: () => void;
+  // Dropdown menu
+  const DropdownMenu = ({ id, onEdit, onDelete, onDuplicate, onExport, onShare }: {
+    id: string; onEdit?: () => void; onDelete?: () => void;
+    onDuplicate?: () => void; onExport?: () => void; onShare?: () => void;
   }) => {
     const isOpen = openDropdown === id;
-    
     return (
       <div className="relative">
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpenDropdown(isOpen ? null : id);
-          }}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer" 
-          title="More options"
-        >
-          <MoreVertical className="w-4 h-4 text-gray-600" />
+        <button onClick={(e) => { e.stopPropagation(); setOpenDropdown(isOpen ? null : id); }}
+          className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+          <MoreVertical className="w-4 h-4 text-gray-500" />
         </button>
-        
         {isOpen && (
           <>
-            <div 
-              className="fixed inset-0 z-40" 
-              onClick={() => setOpenDropdown(null)}
-            />
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-gray-200 z-50">
+            <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+            <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-1 overflow-hidden">
               {onEdit && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit();
-                    setOpenDropdown(null);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors text-left cursor-pointer"
-                >
-                  <Edit3 className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-900">Edit</span>
+                <button onClick={(e) => { e.stopPropagation(); onEdit(); setOpenDropdown(null); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 transition-colors text-left cursor-pointer">
+                  <Edit3 className="w-4 h-4 text-blue-600" /><span className="text-sm text-gray-700">Edit</span>
                 </button>
               )}
               {onDuplicate && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDuplicate();
-                    setOpenDropdown(null);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-purple-50 transition-colors text-left cursor-pointer"
-                >
-                  <ClipboardCheck className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm font-medium text-gray-900">Duplicate</span>
+                <button onClick={(e) => { e.stopPropagation(); onDuplicate(); setOpenDropdown(null); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-purple-50 transition-colors text-left cursor-pointer">
+                  <ClipboardCheck className="w-4 h-4 text-purple-600" /><span className="text-sm text-gray-700">Duplicate</span>
                 </button>
               )}
               {onShare && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onShare();
-                    setOpenDropdown(null);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors text-left cursor-pointer"
-                >
-                  <Share2 className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium text-gray-900">Share</span>
+                <button onClick={(e) => { e.stopPropagation(); onShare(); setOpenDropdown(null); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 transition-colors text-left cursor-pointer">
+                  <Share2 className="w-4 h-4 text-green-600" /><span className="text-sm text-gray-700">Share</span>
                 </button>
               )}
               {onExport && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onExport();
-                    setOpenDropdown(null);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-indigo-50 transition-colors text-left cursor-pointer"
-                >
-                  <Download className="w-4 h-4 text-indigo-600" />
-                  <span className="text-sm font-medium text-gray-900">Export</span>
+                <button onClick={(e) => { e.stopPropagation(); onExport(); setOpenDropdown(null); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-indigo-50 transition-colors text-left cursor-pointer">
+                  <Download className="w-4 h-4 text-indigo-600" /><span className="text-sm text-gray-700">Export</span>
                 </button>
               )}
               {onDelete && (
                 <>
-                  <div className="border-t border-gray-200" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete();
-                      setOpenDropdown(null);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4 text-red-600" />
-                    <span className="text-sm font-medium text-red-600">Delete</span>
+                  <div className="border-t border-gray-100 my-1" />
+                  <button onClick={(e) => { e.stopPropagation(); onDelete(); setOpenDropdown(null); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 transition-colors text-left cursor-pointer">
+                    <Trash2 className="w-4 h-4 text-red-500" /><span className="text-sm text-red-600">Delete</span>
                   </button>
                 </>
               )}
@@ -493,1754 +321,1224 @@ export default function CompliancePage() {
     );
   };
 
+  const tabs = [
+    { id: 'overview',   label: 'Overview',    icon: Activity      },
+    { id: 'items',      label: 'Items',        icon: ClipboardCheck },
+    { id: 'frameworks', label: 'Frameworks',   icon: Award         },
+    { id: 'risks',      label: 'Risks',        icon: AlertTriangle },
+    { id: 'audits',     label: 'Audits',       icon: FileText      },
+  ];
+
+  const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all";
+  const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5";
+
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 pb-24 space-y-8 font-sans text-gray-900">
-      {/* Premium Header */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-100 p-6 rounded-[2rem] shadow-sm sticky top-4 z-40 transition-all duration-300">
-         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-               <div className="relative group cursor-pointer">
-                  <div className="absolute inset-0 bg-blue-500/20 rounded-2xl blur-lg transition-all duration-300 group-hover:bg-blue-500/30"></div>
-                  <div className="relative p-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg border border-white/20 group-hover:scale-105 transition-transform duration-300 ring-4 ring-blue-50/50">
-                     <Shield className="w-8 h-8 text-white" />
-                  </div>
-               </div>
-               <div>
-                  <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                     Compliance <span className="text-gray-300 font-light">|</span> <span className="text-blue-600">Center</span>
-                  </h1>
-                  <p className="text-sm font-medium text-gray-500 mt-1 flex items-center gap-2">
-                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                     Regulatory Assurance System Active
-                  </p>
-               </div>
-            </div>
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-24 sm:pb-8">
 
-            <div className="flex items-center gap-3">
-               <button className="h-12 w-12 flex items-center justify-center bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group relative cursor-pointer">
-                  <Bell className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                  <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-               </button>
-               
-               <button 
-                  onClick={() => setShowExportModal(true)}
-                  className="h-12 px-5 flex items-center gap-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm font-bold text-sm text-gray-600 cursor-pointer"
-               >
-                  <Download className="w-4 h-4" />
-                  <span>Export Report</span>
-               </button>
-
-               <button
-                  onClick={() => setShowAddItem(true)}
-                  className="h-12 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 font-bold text-sm flex items-center gap-2 cursor-pointer"
-               >
-                  <Plus className="w-5 h-5" />
-                  <span>New Compliance Item</span>
-               </button>
+      {/* ── STICKY HEADER ── */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
+          {/* Brand */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+              <Shield className="w-5 h-5 text-white" />
             </div>
-         </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="bg-white/60 backdrop-blur-md rounded-[20px] p-2 border border-gray-100 flex items-center justify-between gap-2 overflow-x-auto shadow-sm sticky top-32 z-30">
-        <div className="flex items-center gap-2">
-          {[
-            { id: 'overview', label: 'Overview', icon: BarChart3 },
-            { id: 'items', label: 'Compliance Items', icon: ClipboardCheck },
-            { id: 'frameworks', label: 'Frameworks', icon: Award },
-            { id: 'risks', label: 'Risk Analysis', icon: AlertTriangle },
-            { id: 'audits', label: 'Audit Trail', icon: FileCheck }
-          ].map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'overview' | 'items' | 'frameworks' | 'risks' | 'audits')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 relative overflow-hidden group cursor-pointer whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'bg-gray-900 text-white shadow-lg scale-100'
-                    : 'text-gray-500 hover:bg-white hover:text-gray-900 hover:shadow-md'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-blue-400' : 'text-gray-400 group-hover:text-blue-500'} transition-colors`} />
-                <span>{tab.label}</span>
-                {activeTab === tab.id && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl"></div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Overview Tab */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Key Metrics Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Compliance Score */}
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-[2rem] p-6 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden group">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl transform translate-x-10 -translate-y-10"></div>
-               <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-8">
-                     <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/10 group-hover:scale-110 transition-transform duration-500">
-                        <Shield className="w-6 h-6 text-white" />
-                     </div>
-                     <span className="flex items-center gap-1 text-xs font-bold bg-white/20 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/10">
-                        <TrendingUp className="w-3 h-3" />
-                        +5.2%
-                     </span>
-                  </div>
-                  <div>
-                     <p className="text-sm font-medium text-blue-100 mb-1 tracking-wide">Compliance Score</p>
-                     <h3 className="text-4xl font-black text-white tracking-tight">{complianceRate}%</h3>
-                  </div>
-               </div>
-            </div>
-
-            {/* Total Frameworks */}
-            <div 
-              onClick={() => setActiveTab('frameworks')}
-              className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
-            >
-               <div className="flex items-center justify-between mb-8">
-                  <div className="p-3 bg-purple-50 rounded-2xl group-hover:bg-purple-100 transition-colors duration-300">
-                     <Award className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-purple-500 transition-colors" />
-               </div>
-               <div>
-                  <p className="text-sm font-bold text-gray-500 mb-1 tracking-wide uppercase text-[10px]">Active Frameworks</p>
-                  <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-2">{frameworksState.length}</h3>
-                  <p className="text-xs font-medium text-green-600 bg-green-50 inline-block px-2 py-1 rounded-lg">
-                     {frameworksState.filter((f: ComplianceFramework) => (f.compliant / f.requirements) === 1).length} fully compliant
-                  </p>
-               </div>
-            </div>
-
-            {/* Risk Level */}
-            <div 
-              onClick={() => setActiveTab('risks')}
-              className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
-            >
-               <div className="flex items-center justify-between mb-8">
-                  <div className="p-3 bg-red-50 rounded-2xl group-hover:bg-red-100 transition-colors duration-300">
-                     <AlertTriangle className="w-6 h-6 text-red-500" />
-                  </div>
-                  <Activity className="w-5 h-5 text-gray-300 group-hover:text-red-500 transition-colors" />
-               </div>
-               <div>
-                  <p className="text-sm font-bold text-gray-500 mb-1 tracking-wide uppercase text-[10px]">Avg Risk Level</p>
-                  <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-3">{avgRiskLevel.toFixed(0)}</h3>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                     <div
-                        className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
-                        style={{ width: `${avgRiskLevel}%` }}
-                     />
-                  </div>
-               </div>
-            </div>
-
-            {/* Compliance Cost */}
-            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer">
-               <div className="flex items-center justify-between mb-8">
-                  <div className="p-3 bg-emerald-50 rounded-2xl group-hover:bg-emerald-100 transition-colors duration-300">
-                     <DollarSign className="w-6 h-6 text-emerald-600" />
-                  </div>
-                  <TrendingUp className="w-5 h-5 text-gray-300 group-hover:text-emerald-500 transition-colors" />
-               </div>
-               <div>
-                  <p className="text-sm font-bold text-gray-500 mb-1 tracking-wide uppercase text-[10px]">Annual Cost</p>
-                  <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-2">${(totalCost / 1000).toFixed(0)}K</h3>
-                  <p className="text-xs text-gray-400 font-medium">
-                     ${(totalCost / items.length / 1000).toFixed(1)}K per item
-                  </p>
-               </div>
-            </div>
-          </div>
-
-          {/* Status Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer relative overflow-hidden">
-               <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-               <div className="flex items-center justify-between mb-4 relative z-10">
-                  <div className="p-3 bg-green-50 rounded-2xl group-hover:bg-green-100 transition-colors">
-                     <CheckCircle className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="text-right">
-                     <p className="text-4xl font-black text-gray-900 tracking-tight">{stats.compliant}</p>
-                     <p className="text-xs font-bold text-green-600 uppercase tracking-widest mt-1">Compliant</p>
-                  </div>
-               </div>
-               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                  <div
-                     className="h-full bg-green-500 rounded-full transition-all duration-500 group-hover:shadow-[0_0_10px_rgba(34,197,94,0.5)]"
-                     style={{ width: `${(stats.compliant / stats.total) * 100}%` }}
-                  />
-               </div>
-            </div>
-
-            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer relative overflow-hidden">
-               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-               <div className="flex items-center justify-between mb-4 relative z-10">
-                  <div className="p-3 bg-blue-50 rounded-2xl group-hover:bg-blue-100 transition-colors">
-                     <Clock className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="text-right">
-                     <p className="text-4xl font-black text-gray-900 tracking-tight">{stats.pending}</p>
-                     <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mt-1">Pending</p>
-                  </div>
-               </div>
-               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                  <div
-                     className="h-full bg-blue-500 rounded-full transition-all duration-500 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                     style={{ width: `${(stats.pending / stats.total) * 100}%` }}
-                  />
-               </div>
-            </div>
-
-            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer relative overflow-hidden">
-               <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-               <div className="flex items-center justify-between mb-4 relative z-10">
-                  <div className="p-3 bg-red-50 rounded-2xl group-hover:bg-red-100 transition-colors">
-                     <AlertTriangle className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div className="text-right">
-                     <p className="text-4xl font-black text-gray-900 tracking-tight">{stats.overdue}</p>
-                     <p className="text-xs font-bold text-red-600 uppercase tracking-widest mt-1">Overdue</p>
-                  </div>
-               </div>
-               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                  <div
-                     className="h-full bg-red-500 rounded-full transition-all duration-500 group-hover:shadow-[0_0_10px_rgba(239,68,68,0.5)]"
-                     style={{ width: `${(stats.overdue / stats.total) * 100}%` }}
-                  />
-               </div>
-            </div>
-
-            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer relative overflow-hidden">
-               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-               <div className="flex items-center justify-between mb-4 relative z-10">
-                  <div className="p-3 bg-orange-50 rounded-2xl group-hover:bg-orange-100 transition-colors">
-                     <AlertCircle className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <div className="text-right">
-                     <p className="text-4xl font-black text-gray-900 tracking-tight">{stats.atRisk}</p>
-                     <p className="text-xs font-bold text-orange-600 uppercase tracking-widest mt-1">At Risk</p>
-                  </div>
-               </div>
-               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                  <div
-                     className="h-full bg-orange-500 rounded-full transition-all duration-500 group-hover:shadow-[0_0_10px_rgba(249,115,22,0.5)]"
-                     style={{ width: `${(stats.atRisk / stats.total) * 100}%` }}
-                  />
-               </div>
-            </div>
-          </div>
-
-          {/* Risk Metrics */}
-          <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
-            <h3 className="font-black text-xl text-gray-900 mb-8 flex items-center gap-2">
-               <div className="p-2 bg-purple-50 rounded-xl">
-                  <Activity className="w-5 h-5 text-purple-600" />
-               </div>
-               Risk Metrics & Indicators
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {riskMetrics.map((metric) => {
-                const Icon = metric.icon;
-                const severityColors = {
-                  low: 'bg-green-50 text-green-600 border-green-100',
-                  medium: 'bg-yellow-50 text-yellow-600 border-yellow-100',
-                  high: 'bg-orange-50 text-orange-600 border-orange-100',
-                  critical: 'bg-red-50 text-red-600 border-red-100'
-                };
-                
-                return (
-                  <div key={metric.id} className="p-6 bg-white rounded-[2rem] border border-gray-100 hover:border-blue-100 hover:shadow-xl transition-all group cursor-pointer">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-2xl ${severityColors[metric.severity]} border`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg">
-                        {metric.trend === 'up' && <TrendingUp className="w-3 h-3 text-red-500" />}
-                        {metric.trend === 'down' && <TrendingUp className="w-3 h-3 text-green-500 rotate-180" />}
-                        {metric.trend === 'stable' && <Activity className="w-3 h-3 text-gray-400" />}
-                      </div>
-                    </div>
-                    <p className="text-sm font-bold text-gray-500 mb-1">{metric.name}</p>
-                    <p className="text-3xl font-black text-gray-900 mb-2">{metric.value}</p>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                     <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                        metric.severity === 'critical' ? 'bg-red-500' :
-                        metric.severity === 'high' ? 'bg-orange-500' :
-                        metric.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                     }`}></span>
-                     {metric.severity} severity
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Frameworks Overview */}
-          <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">
-                <Award className="w-6 h-6 text-indigo-600" />
-                Compliance Frameworks
-              </h3>
-              <button 
-                onClick={() => setActiveTab('frameworks')}
-                className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 cursor-pointer"
-              >
-                View All
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {frameworksState.slice(0, 4).map((framework: ComplianceFramework) => {
-                const Icon = framework.icon;
-                const percentage = (framework.compliant / framework.requirements) * 100;
-                
-                return (
-                  <div 
-                    key={framework.id} 
-                    onClick={() => setSelectedFramework(framework)} 
-                    className="group/card p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-xl transition-all cursor-pointer relative"
-                  >
-                    <div className="absolute top-4 right-4 z-10 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                      <DropdownMenu
-                        id={`overview-framework-${framework.id}`}
-                        onEdit={() => handleEditFramework(framework)}
-                        onShare={() => handleShareFramework(framework)}
-                        onExport={() => handleExportFramework(framework)}
-                      />
-                    </div>
-                    <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${framework.gradient} mb-4 shadow-lg`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="font-bold text-gray-900 mb-1 text-lg">{framework.name}</h4>
-                    <p className="text-xs text-gray-600 mb-4">{framework.description}</p>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-bold text-gray-900">{framework.compliant}/{framework.requirements}</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                          className={`h-full bg-gradient-to-r ${framework.gradient} rounded-full transition-all`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-bold text-gray-900">{percentage.toFixed(0)}% Complete</p>
-                        {percentage === 100 && (
-                          <div className="flex items-center gap-1 text-green-600">
-                            <CheckCircle className="w-4 h-4" />
-                            <span className="text-xs font-semibold">Certified</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Compliance Items Tab */}
-      {activeTab === 'items' && (
-        <div className="space-y-6">
-          {/* Search and Filters */}
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search compliance items..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm"
-              />
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <button className="px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm cursor-pointer">
-                <Filter className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-gray-700">Filters</span>
-              </button>
-              
-              <div className="flex items-center gap-1 bg-white border-2 border-gray-200 rounded-xl p-1 shadow-sm">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-blue-500 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
-                >
-                  <Grid className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-blue-500 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
-                >
-                  <List className="w-5 h-5" />
-                </button>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight truncate">
+                Compliance Hub
+              </h1>
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs text-green-600 font-medium">Operational</span>
               </div>
             </div>
           </div>
 
-          {/* Category Filter */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
-            {categories.map((category) => {
-              const Icon = category.icon;
+          {/* Actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button onClick={() => setShowExportModal(true)}
+              className="h-9 w-9 sm:w-auto sm:px-4 flex items-center justify-center sm:gap-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+              <Download className="w-4 h-4 text-gray-600" />
+              <span className="hidden sm:inline text-sm font-medium text-gray-700">Export</span>
+            </button>
+            <button onClick={() => setShowAddItem(true)}
+              className="h-9 px-4 sm:px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm flex items-center gap-2 cursor-pointer transition-colors shadow-sm active:scale-95">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">New Entry</span>
+              <span className="sm:hidden">Add</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Tab nav */}
+        <div className="px-4 sm:px-6">
+          <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide border-t border-gray-50">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const Icon = tab.icon;
               return (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium whitespace-nowrap transition-all shadow-sm cursor-pointer ${
-                    selectedCategory === category.id
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {category.name}
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                    selectedCategory === category.id ? 'bg-white bg-opacity-20' : 'bg-gray-100'
+                <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
+                    isActive ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'
                   }`}>
-                    {category.count}
-                  </span>
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
                 </button>
               );
             })}
           </div>
+        </div>
+      </div>
 
-          {/* Items Grid/List */}
-          {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               {filteredItems.map((item) => {
-                const statusConfig = getStatusConfig(item.status);
-                const priorityConfig = getPriorityConfig(item.priority);
-                const StatusIcon = statusConfig.icon;
-                const isOverdue = item.status === 'overdue' || (item.dueDate < new Date() && item.status !== 'compliant');
-                
-                return (
-                  <div
-                    key={item.id}
-                    className="group relative bg-white rounded-[2.5rem] border border-gray-100 p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
-                    onClick={() => setSelectedItem(item)}
-                  >
-                     <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      {/* ── PAGE CONTENT ── */}
+      <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
 
-                    {/* Priority Badge */}
-                    <div className={`absolute top-6 right-6 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${priorityConfig.bg} ${priorityConfig.text} shadow-sm z-10`}>
-                      {priorityConfig.label}
+        {/* ── OVERVIEW TAB ── */}
+        {activeTab === 'overview' && (
+          <div className="space-y-4 sm:space-y-6">
+
+            {/* Key metrics — 2 col mobile → 4 col desktop */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+
+              {/* Compliance Score */}
+              <div className="col-span-2 sm:col-span-1 bg-gray-900 rounded-2xl p-5 sm:p-6 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent pointer-events-none" />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
+                      <Shield className="w-5 h-5 text-blue-400" />
                     </div>
-
-                    {/* Framework Badge */}
-                    {item.framework && (
-                      <div className="absolute top-6 left-6 px-4 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm z-10 flex items-center gap-1.5">
-                        <Shield className="w-3 h-3" />
-                        {item.framework}
-                      </div>
-                    )}
-
-                    {/* Status Icon */}
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mt-10 ${statusConfig.bg} border ${statusConfig.border} group-hover:scale-110 transition-transform duration-300 shadow-lg relative z-10`}>
-                      <StatusIcon className={`w-8 h-8 ${statusConfig.text}`} />
-                    </div>
-
-                    {/* Item Info */}
-                    <div className="relative z-10">
-                       <h3 className="font-black text-xl text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 tracking-tight">
-                         {item.title}
-                       </h3>
-                       
-                       <p className="text-sm font-medium text-gray-500 mb-6 line-clamp-2 leading-relaxed">{item.description}</p>
-   
-                       {/* Risk Level */}
-                       {item.riskLevel && (
-                         <div className="mb-6 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group-hover:bg-white group-hover:border-blue-100 transition-colors">
-                           <div className="flex items-center justify-between text-xs mb-2">
-                             <span className="text-gray-500 font-bold uppercase tracking-wider">Risk Level</span>
-                             <span className="font-black text-gray-900">{item.riskLevel}%</span>
-                           </div>
-                           <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                             <div
-                               className={`h-full rounded-full transition-all duration-500 ${
-                                 item.riskLevel > 70 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' :
-                                 item.riskLevel > 50 ? 'bg-orange-500' :
-                                 item.riskLevel > 30 ? 'bg-yellow-500' : 'bg-green-500'
-                               }`}
-                               style={{ width: `${item.riskLevel}%` }}
-                             />
-                           </div>
-                         </div>
-                       )}
-   
-                       {/* Meta Grid */}
-                       <div className="grid grid-cols-2 gap-3 mb-6">
-                           <div className={`flex items-center gap-2 p-2.5 rounded-xl border transition-colors ${
-                              isOverdue ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100 group-hover:bg-white group-hover:border-gray-200'
-                           }`}>
-                              <Calendar className={`w-4 h-4 ${isOverdue ? 'text-red-600' : 'text-gray-400'}`} />
-                              <div className="flex flex-col">
-                                 <span className="text-[10px] uppercase font-bold text-gray-400 leading-none mb-0.5">Due Date</span>
-                                 <span className={`text-xs font-bold ${isOverdue ? 'text-red-700' : 'text-gray-700'}`}>
-                                    {item.dueDate.toLocaleDateString()}
-                                 </span>
-                              </div>
-                           </div>
-                           
-                           <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50 border border-gray-100 group-hover:bg-white group-hover:border-gray-200 transition-colors">
-                              <Users className="w-4 h-4 text-gray-400" />
-                              <div className="flex flex-col">
-                                 <span className="text-[10px] uppercase font-bold text-gray-400 leading-none mb-0.5">Assigned</span>
-                                 <span className="text-xs font-bold text-gray-700 truncate">{item.assignedTo}</span>
-                              </div>
-                           </div>
-                       </div>
-   
-                       {/* Footer Actions */}
-                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                             <StatusIcon className="w-3 h-3" />
-                             {statusConfig.label}
-                          </div>
-   
-                          <div onClick={(e) => e.stopPropagation()} className="opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
-                             <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow-lg p-1">
-                                <button onClick={() => handleEdit(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-blue-600 transition-colors tooltip cursor-pointer" title="Edit">
-                                   <Edit3 className="w-3.5 h-3.5" />
-                                </button>
-                                <button onClick={() => handleShare(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-green-600 transition-colors tooltip cursor-pointer" title="Share">
-                                   <Share2 className="w-3.5 h-3.5" />
-                                </button>
-                                <button onClick={() => handleDelete(item)} className="p-1.5 hover:bg-gray-50 rounded-md text-gray-500 hover:text-red-600 transition-colors tooltip cursor-pointer" title="Delete">
-                                   <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                             </div>
-                          </div>
-                       </div>
+                    <div className="flex items-center gap-1 bg-blue-500/20 px-2 py-1 rounded-lg border border-blue-400/20">
+                      <TrendingUp className="w-3 h-3 text-blue-400" />
+                      <span className="text-[10px] font-bold text-blue-400">+5.2%</span>
                     </div>
                   </div>
-                );
-              })}
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Compliance Score</p>
+                  <p className="text-4xl font-bold text-white">{complianceRate}%</p>
+                  <p className="text-xs text-blue-400/60 mt-1">Global average</p>
+                </div>
+              </div>
+
+              {/* Frameworks */}
+              <div onClick={() => setActiveTab('frameworks')}
+                className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
+                    <Award className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-300" />
+                </div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Frameworks</p>
+                <p className="text-3xl font-bold text-gray-900">{frameworksState.length}</p>
+                <p className="text-xs text-green-600 font-medium mt-1">
+                  {frameworksState.filter((f: ComplianceFramework) => (f.compliant / f.requirements) === 1).length} fully compliant
+                </p>
+              </div>
+
+              {/* Risk Level */}
+              <div onClick={() => setActiveTab('risks')}
+                className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <Activity className="w-4 h-4 text-gray-300" />
+                </div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Avg Risk</p>
+                <p className="text-3xl font-bold text-gray-900">{avgRiskLevel.toFixed(0)}</p>
+                <div className="w-full bg-gray-100 rounded-full h-1.5 mt-3 overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full" style={{ width: `${avgRiskLevel}%` }} />
+                </div>
+              </div>
+
+              {/* Annual Cost */}
+              <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <TrendingUp className="w-4 h-4 text-gray-300" />
+                </div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Annual Cost</p>
+                <p className="text-3xl font-bold text-gray-900">${(totalCost / 1000).toFixed(0)}K</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  ${items.length > 0 ? (totalCost / items.length / 1000).toFixed(1) : '0.0'}K per item
+                </p>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-               {/* List View Header */}
-               <div className="grid grid-cols-12 gap-4 px-8 py-3 bg-gray-100/50 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-widest border border-gray-200/50">
-                  <div className="col-span-4">Item Details</div>
-                  <div className="col-span-2">Priority</div>
-                  <div className="col-span-2">Risk Status</div>
-                  <div className="col-span-2">Due Date</div>
-                  <div className="col-span-1">Status</div>
-                  <div className="col-span-1 text-right">Actions</div>
-               </div>
 
-               {/* List Items */}
-               <div className="space-y-3">
-                  {filteredItems.map((item) => {
-                     const statusConfig = getStatusConfig(item.status);
-                     const priorityConfig = getPriorityConfig(item.priority);
-                     const StatusIcon = statusConfig.icon;
-                     const isOverdue = item.status === 'overdue' || (item.dueDate < new Date() && item.status !== 'compliant');
-                     
-                     return (
-                        <div 
-                           key={item.id} 
-                           onClick={() => setSelectedItem(item)}
-                           className={`group grid grid-cols-12 gap-4 items-center bg-white p-5 rounded-[1.5rem] border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-x-1 transition-all duration-300 cursor-pointer relative ${openDropdown === `list-item-${item.id}` ? 'z-50' : ''}`}
-                        >
-                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-50/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-[1.5rem]"></div>
-                           
-                           <div className="col-span-4 relative">
-                              <div className="flex items-center gap-4">
-                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${statusConfig.bg} border ${statusConfig.border} shadow-sm group-hover:scale-105 transition-transform`}>
-                                    <StatusIcon className={`w-6 h-6 ${statusConfig.text}`} />
-                                 </div>
-                                 <div>
-                                    <h4 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{item.title}</h4>
-                                    <div className="flex items-center gap-2 mt-1">
-                                       <span className="text-xs font-medium text-gray-500">{item.category}</span>
-                                       {item.framework && (
-                                          <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
-                                             {item.framework}
-                                          </span>
-                                       )}
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
+            {/* Status overview — 2 col mobile → 4 col desktop */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { label: 'Compliant', count: stats.compliant, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50', bar: 'bg-green-500' },
+                { label: 'Pending',   count: stats.pending,   icon: Clock,        color: 'text-blue-600',  bg: 'bg-blue-50',  bar: 'bg-blue-500'  },
+                { label: 'Overdue',   count: stats.overdue,   icon: AlertTriangle, color: 'text-red-600',   bg: 'bg-red-50',   bar: 'bg-red-500'   },
+                { label: 'At Risk',   count: stats.atRisk,    icon: AlertCircle,  color: 'text-orange-600',bg: 'bg-orange-50',bar: 'bg-orange-500' },
+              ].map(({ label, count, icon: Icon, color, bg, bar }) => (
+                <div key={label} className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`w-9 h-9 ${bg} rounded-xl flex items-center justify-center`}>
+                      <Icon className={`w-4 h-4 ${color}`} />
+                    </div>
+                    <p className={`text-2xl sm:text-3xl font-bold text-gray-900`}>{count}</p>
+                  </div>
+                  <p className={`text-xs font-semibold ${color}`}>{label}</p>
+                  <div className="w-full bg-gray-100 rounded-full h-1 mt-2 overflow-hidden">
+                    <div className={`h-full ${bar} rounded-full`} style={{ width: `${stats.total > 0 ? (count / stats.total) * 100 : 0}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                           <div className="col-span-2 relative">
-                              <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${priorityConfig.bg} ${priorityConfig.text} shadow-sm`}>
-                                 {priorityConfig.label}
-                              </span>
-                           </div>
-
-                           <div className="col-span-2 relative">
-                              <div className="flex flex-col gap-1.5">
-                                 <div className="flex items-center justify-between text-[10px] font-bold">
-                                    <span className="text-gray-500">Risk Level</span>
-                                    <span className={item.riskLevel && item.riskLevel > 50 ? 'text-red-600' : 'text-gray-900'}>{item.riskLevel || 0}%</span>
-                                 </div>
-                                 <div className="w-24 bg-gray-100 rounded-full h-1.5">
-                                    <div
-                                       className={`h-full rounded-full ${
-                                          (item.riskLevel || 0) > 70 ? 'bg-red-500' :
-                                          (item.riskLevel || 0) > 50 ? 'bg-orange-500' :
-                                          (item.riskLevel || 0) > 30 ? 'bg-yellow-500' : 'bg-green-500'
-                                       }`}
-                                       style={{ width: `${item.riskLevel || 0}%` }}
-                                    />
-                                 </div>
-                              </div>
-                           </div>
-
-                           <div className="col-span-2 relative">
-                              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border w-fit ${isOverdue ? 'bg-red-50 border-red-100 text-red-700' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
-                                 <Calendar className="w-3.5 h-3.5" />
-                                 <span className="text-xs font-bold">{item.dueDate.toLocaleDateString()}</span>
-                              </div>
-                           </div>
-
-                           <div className="col-span-1 relative">
-                              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                                 {statusConfig.icon === CheckCircle && <CheckCircle className="w-3 h-3" />}
-                                 {statusConfig.label}
-                              </div>
-                           </div>
-
-                           <div className="col-span-1 relative text-right">
-                              <div onClick={(e) => e.stopPropagation()} className="inline-block">
-                                 <DropdownMenu
-                                    id={`list-item-${item.id}`}
-                                    onEdit={() => handleEdit(item)}
-                                    onDuplicate={() => handleDuplicate(item)}
-                                    onExport={() => handleExport(item)}
-                                    onShare={() => handleShare(item)}
-                                    onDelete={() => handleDelete(item)}
-                                 />
-                              </div>
-                           </div>
+            {/* Risk Metrics */}
+            {riskMetrics.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-7 h-7 bg-purple-50 rounded-lg flex items-center justify-center">
+                    <Activity className="w-4 h-4 text-purple-600" />
+                  </div>
+                  Risk Metrics
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {riskMetrics.map((metric) => {
+                    const Icon = metric.icon;
+                    const sev = { low: 'text-green-600 bg-green-50', medium: 'text-yellow-600 bg-yellow-50', high: 'text-orange-600 bg-orange-50', critical: 'text-red-600 bg-red-50' }[metric.severity];
+                    return (
+                      <div key={metric.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${sev}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          {metric.trend === 'up' && <TrendingUp className="w-4 h-4 text-red-500" />}
+                          {metric.trend === 'down' && <TrendingUp className="w-4 h-4 text-green-500 rotate-180" />}
+                          {metric.trend === 'stable' && <Activity className="w-4 h-4 text-gray-400" />}
                         </div>
-                     );
+                        <p className="text-xs text-gray-500 mb-0.5">{metric.name}</p>
+                        <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
+                        <p className={`text-xs font-medium mt-1 capitalize ${sev?.split(' ')[0]}`}>{metric.severity} severity</p>
+                      </div>
+                    );
                   })}
-               </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Frameworks Tab */}
-      {activeTab === 'frameworks' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {frameworksState.map((framework: ComplianceFramework) => {
-              const Icon = framework.icon;
-              const percentage = (framework.compliant / framework.requirements) * 100;
-              const daysUntilExpiry = framework.expiryDate ? Math.ceil((framework.expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
-              
-              return (
-                <div 
-                  key={framework.id} 
-                  onClick={() => setSelectedFramework(framework)}
-                  className={`bg-white rounded-2xl border-2 border-gray-200 p-6 hover:shadow-2xl transition-all relative ${openDropdown === `framework-${framework.id}` ? 'z-50' : ''}`}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`p-4 rounded-xl bg-gradient-to-br ${framework.gradient} shadow-lg`}>
-                      <Icon className="w-8 h-8 text-white" />
-                    </div>
-                    {percentage === 100 && (
-                      <div className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-lg">
-                        <CheckCircle className="w-4 h-4" />
-                        <span className="text-xs font-bold">Certified</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <h3 className="font-bold text-xl text-gray-900 mb-1">{framework.name}</h3>
-                  <p className="text-sm text-gray-600 mb-4">{framework.description}</p>
-                  
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Category</span>
-                      <span className="font-semibold text-gray-900">{framework.category}</span>
-                    </div>
-                    
-                    {framework.certificationDate && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Certified</span>
-                        <span className="font-semibold text-gray-900">{framework.certificationDate.toLocaleDateString()}</span>
-                      </div>
-                    )}
-                    
-                    {framework.expiryDate && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Expires</span>
-                        <span className={`font-semibold ${daysUntilExpiry && daysUntilExpiry < 90 ? 'text-red-600' : 'text-gray-900'}`}>
-                          {framework.expiryDate.toLocaleDateString()}
-                          {daysUntilExpiry && daysUntilExpiry < 90 && (
-                            <span className="ml-1 text-xs">({daysUntilExpiry}d)</span>
-                          )}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Compliance Progress</span>
-                      <span className="font-bold text-gray-900">{framework.compliant}/{framework.requirements}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className={`h-full bg-gradient-to-r ${framework.gradient} rounded-full transition-all`}
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <p className="text-sm font-bold text-gray-900">{percentage.toFixed(0)}% Complete</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        setSelectedFramework(framework); 
-                      }} 
-                      className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
-                    >
-                      View Details
-                    </button>
-                    <DropdownMenu
-                      id={`framework-${framework.id}`}
-                      onEdit={() => handleEditFramework(framework)}
-                      onExport={() => handleExportFramework(framework)}
-                      onShare={() => handleShareFramework(framework)}
-                    />
-                  </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Risk Analysis Tab */}
-      {activeTab === 'risks' && (
-        <div className="space-y-6">
-          {/* Risk Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-red-500 to-rose-500 rounded-2xl p-6 text-white shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <AlertTriangle className="w-8 h-8" />
-                </div>
-                <TrendingUp className="w-6 h-6 opacity-70 rotate-180" />
               </div>
-              <p className="text-sm opacity-90 mb-1">High Risk Items</p>
-              <p className="text-5xl font-bold mb-2">{items.filter(i => (i.riskLevel || 0) > 70).length}</p>
-              <p className="text-sm opacity-80">Require immediate attention</p>
-            </div>
+            )}
 
-            <div className="bg-gradient-to-br from-orange-500 to-yellow-500 rounded-2xl p-6 text-white shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <AlertCircle className="w-8 h-8" />
+            {/* Frameworks overview */}
+            {frameworksState.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-indigo-600" /> Frameworks
+                  </h3>
+                  <button onClick={() => setActiveTab('frameworks')}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 cursor-pointer">
+                    View All <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-                <Activity className="w-6 h-6 opacity-70" />
-              </div>
-              <p className="text-sm opacity-90 mb-1">Medium Risk Items</p>
-              <p className="text-5xl font-bold mb-2">{items.filter(i => (i.riskLevel || 0) > 40 && (i.riskLevel || 0) <= 70).length}</p>
-              <p className="text-sm opacity-80">Monitor closely</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl p-6 text-white shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                  <CheckCircle className="w-8 h-8" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {frameworksState.slice(0, 4).map((framework: ComplianceFramework) => {
+                    const Icon = framework.icon;
+                    const pct = (framework.compliant / framework.requirements) * 100;
+                    return (
+                      <div key={framework.id} onClick={() => setSelectedFramework(framework)}
+                        className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all cursor-pointer group relative">
+                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenu id={`ov-fw-${framework.id}`}
+                            onEdit={() => handleEditFramework(framework)}
+                            onShare={() => handleShareFramework(framework)}
+                            onExport={() => handleExportFramework(framework)} />
+                        </div>
+                        <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${framework.gradient} mb-3 shadow-sm`}>
+                          <Icon className="w-4 h-4 text-white" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900 text-sm mb-1">{framework.name}</h4>
+                        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                          <span>Progress</span><span className="font-medium">{framework.compliant}/{framework.requirements}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                          <div className={`h-full bg-gradient-to-r ${framework.gradient} rounded-full`} style={{ width: `${pct}%` }} />
+                        </div>
+                        <p className="text-xs font-medium text-gray-700 mt-1.5">{pct.toFixed(0)}%</p>
+                      </div>
+                    );
+                  })}
                 </div>
-                <TrendingUp className="w-6 h-6 opacity-70" />
               </div>
-              <p className="text-sm opacity-90 mb-1">Low Risk Items</p>
-              <p className="text-5xl font-bold mb-2">{items.filter(i => (i.riskLevel || 0) <= 40).length}</p>
-              <p className="text-sm opacity-80">Well managed</p>
-            </div>
+            )}
           </div>
+        )}
 
-          {/* Risk Metrics Detail */}
-          <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center gap-2">
-              <Activity className="w-6 h-6 text-purple-600" />
-              Detailed Risk Analysis
-            </h3>
-            <div className="space-y-4">
-              {riskMetrics.map((metric) => {
-                const Icon = metric.icon;
-                const severityColors = {
-                  low: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200', bar: 'bg-green-500' },
-                  medium: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200', bar: 'bg-yellow-500' },
-                  high: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', bar: 'bg-orange-500' },
-                  critical: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', bar: 'bg-red-500' }
-                };
-                const colors = severityColors[metric.severity];
-                
-                return (
-                  <div key={metric.id} className={`p-5 rounded-xl border-2 ${colors.border} ${colors.bg}`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 ${colors.bar} rounded-lg`}>
-                          <Icon className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-gray-900">{metric.name}</h4>
-                          <p className="text-xs text-gray-600 capitalize">{metric.severity} severity</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="text-3xl font-bold text-gray-900">{metric.value}</p>
-                          <p className="text-xs text-gray-600">incidents</p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {metric.trend === 'up' && <TrendingUp className="w-5 h-5 text-red-500" />}
-                          {metric.trend === 'down' && <TrendingUp className="w-5 h-5 text-green-500 rotate-180" />}
-                          {metric.trend === 'stable' && <Activity className="w-5 h-5 text-gray-500" />}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-full ${colors.bar} rounded-full transition-all`}
-                        style={{ width: `${metric.value}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+        {/* ── ITEMS TAB ── */}
+        {activeTab === 'items' && (
+          <div className="space-y-4">
+            {/* Search + view toggle */}
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="text" placeholder="Search items..." value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
+              </div>
+              <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1">
+                <button onClick={() => setViewMode('grid')}
+                  className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}>
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button onClick={() => setViewMode('list')}
+                  className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}>
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Risk by Category */}
-          <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center gap-2">
-              <PieChart className="w-6 h-6 text-indigo-600" />
-              Risk Distribution by Category
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categories.filter(c => c.id !== 'all').map((category) => {
-                const Icon = category.icon;
-                const categoryItems = items.filter(i => i.category === category.id);
-                const avgRisk = categoryItems.length > 0 
-                  ? categoryItems.reduce((sum, item) => sum + (item.riskLevel || 0), 0) / categoryItems.length 
-                  : 0;
-                
-                return (
-                  <div key={category.id} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
-                        <Icon className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900">{category.name}</h4>
-                        <p className="text-xs text-gray-600">{categoryItems.length} items</p>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Avg Risk</span>
-                        <span className="font-bold text-gray-900">{avgRisk.toFixed(0)}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className={`h-full rounded-full ${
-                            avgRisk > 70 ? 'bg-red-500' :
-                            avgRisk > 50 ? 'bg-orange-500' :
-                            avgRisk > 30 ? 'bg-yellow-500' : 'bg-green-500'
-                          }`}
-                          style={{ width: `${avgRisk}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            {/* Category filter — horizontal scroll */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+              {categories.map(({ id, name, icon: Icon, count }) => (
+                <button key={id} onClick={() => setSelectedCategory(id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                    selectedCategory === id
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
+                  }`}>
+                  <Icon className="w-4 h-4" />{name}
+                  <span className={`px-1.5 py-0.5 rounded-md text-xs font-bold ${selectedCategory === id ? 'bg-white/20' : 'bg-gray-100 text-gray-500'}`}>{count}</span>
+                </button>
+              ))}
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Audit Trail Tab */}
-      {activeTab === 'audits' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center gap-2">
-              <FileCheck className="w-6 h-6 text-blue-600" />
-              Recent Audit Activities
-            </h3>
-            <div className="space-y-3">
-              {auditLogs.map((log, idx) => {
-                const typeConfig = {
-                  success: { bg: 'bg-green-50', border: 'border-green-200', icon: CheckCircle, iconColor: 'text-green-600' },
-                  error: { bg: 'bg-red-50', border: 'border-red-200', icon: AlertTriangle, iconColor: 'text-red-600' },
-                  warning: { bg: 'bg-orange-50', border: 'border-orange-200', icon: AlertCircle, iconColor: 'text-orange-600' },
-                  info: { bg: 'bg-blue-50', border: 'border-blue-200', icon: Clock, iconColor: 'text-blue-600' }
-                };
-                const config = typeConfig[log.type as keyof typeof typeConfig];
-                const Icon = config.icon;
-                
-                return (
-                  <div key={idx} className={`p-4 rounded-xl border-2 ${config.border} ${config.bg} hover:shadow-md transition-all relative ${openDropdown === `audit-${idx}` ? 'z-50' : ''}`}>
-                    <div className="flex items-center gap-4">
-                      <div className={`p-2 bg-white rounded-lg ${config.iconColor}`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-gray-900">{log.action}</span>
-                          <span className="text-gray-400">•</span>
-                          <span className="text-gray-700">{log.item}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Users className="w-4 h-4" />
-                          <span>{log.user}</span>
-                          <span className="text-gray-400">•</span>
-                          <Clock className="w-4 h-4" />
-                          <span>{log.time}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => showNotification(`Opening Audit Node: ${log.item}`)}
-                          className="p-2 hover:bg-white rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Eye className="w-5 h-5 text-blue-600" />
-                        </button>
-                        <DropdownMenu
-                          id={`audit-${idx}`}
-                          onExport={() => showNotification(`Compliance Audit Export Initiated: ${log.item}`)}
-                          onShare={() => showNotification(`Sharing Audit Evidence: ${log.item}`)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+            {/* Empty state */}
+            {filteredItems.length === 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
+                <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <ClipboardCheck className="w-7 h-7 text-gray-400" />
+                </div>
+                <p className="font-semibold text-gray-700 mb-1">No compliance items</p>
+                <p className="text-sm text-gray-400 mb-5">Create your first item to start tracking</p>
+                <button onClick={() => setShowAddItem(true)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors cursor-pointer">
+                  <Plus className="w-4 h-4" /> Add Item
+                </button>
+              </div>
+            )}
 
-          {/* Upcoming Audits */}
-          <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center gap-2">
-              <Calendar className="w-6 h-6 text-purple-600" />
-              Upcoming Audits & Reviews
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {items.filter(i => i.nextReview).slice(0, 4).map((item) => {
-                const daysUntil = item.nextReview ? Math.ceil((item.nextReview.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
-                
-                return (
-                  <div key={item.id} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-lg transition-all cursor-pointer">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="font-bold text-gray-900 mb-1">{item.title}</h4>
-                        <p className="text-xs text-gray-600">{item.framework || item.category}</p>
-                      </div>
-                      <div className={`px-2 py-1 rounded-lg text-xs font-bold ${
-                        daysUntil < 30 ? 'bg-red-100 text-red-700' :
-                        daysUntil < 60 ? 'bg-orange-100 text-orange-700' :
-                        'bg-blue-100 text-blue-700'
-                      }`}>
-                        {daysUntil}d
-                      </div>
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-gray-700">
-                        <Calendar className="w-4 h-4" />
-                        <span>{item.nextReview?.toLocaleDateString()}</span>
-                      </div>
-                      {item.auditor && (
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <Users className="w-4 h-4" />
-                          <span>{item.auditor}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Item Detail Modal - Compact & Centered */}
-      {selectedItem && (
-         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden border border-gray-100">
-               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                  <div className="flex items-center gap-4">
-                     <div className={`p-4 rounded-2xl flex items-center justify-center ${getStatusConfig(selectedItem.status).bg} border-2 ${getStatusConfig(selectedItem.status).border} shadow-lg shadow-gray-200`}>
-                        {React.createElement(getStatusConfig(selectedItem.status).icon, { 
-                           className: `w-8 h-8 ${getStatusConfig(selectedItem.status).text}` 
-                        })}
-                     </div>
-                     <div>
-                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">{selectedItem.title}</h2>
-                        <div className="flex items-center gap-2 mt-1">
-                           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{selectedItem.category}</span>
-                           <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{selectedItem.framework || 'General'}</span>
-                        </div>
-                     </div>
-                  </div>
-                  <button onClick={() => setSelectedItem(null)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
-                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                  </button>
-               </div>
-            
-               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/50">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                     <div className={`p-6 rounded-[2rem] border-2 ${getStatusConfig(selectedItem.status).bg} ${getStatusConfig(selectedItem.status).border} shadow-sm group hover:scale-[1.02] transition-transform`}>
-                        <div className="flex items-center gap-2 mb-3">
-                           {React.createElement(getStatusConfig(selectedItem.status).icon, { 
-                              className: `w-5 h-5 ${getStatusConfig(selectedItem.status).text}` 
-                           })}
-                           <span className={`text-xs font-black uppercase tracking-widest ${getStatusConfig(selectedItem.status).text}`}>Status</span>
-                        </div>
-                        <p className={`text-2xl font-black ${getStatusConfig(selectedItem.status).text}`}>
-                           {getStatusConfig(selectedItem.status).label}
-                        </p>
-                     </div>
-
-                     <div className={`p-6 rounded-[2rem] ${getPriorityConfig(selectedItem.priority).bg} shadow-sm group hover:scale-[1.02] transition-transform`}>
-                        <div className="flex items-center gap-2 mb-3">
-                           <AlertTriangle className={`w-5 h-5 ${getPriorityConfig(selectedItem.priority).text}`} />
-                           <span className={`text-xs font-black uppercase tracking-widest ${getPriorityConfig(selectedItem.priority).text}`}>Priority</span>
-                        </div>
-                        <p className={`text-2xl font-black ${getPriorityConfig(selectedItem.priority).text}`}>
-                           {getPriorityConfig(selectedItem.priority).label}
-                        </p>
-                     </div>
-
-                     {selectedItem.riskLevel && (
-                        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 shadow-sm group hover:scale-[1.02] transition-transform">
-                           <div className="flex items-center gap-2 mb-3">
-                              <Activity className="w-5 h-5 text-orange-600" />
-                              <span className="text-xs font-black uppercase tracking-widest text-orange-600">Risk Level</span>
-                           </div>
-                           <p className="text-2xl font-black text-orange-900 mb-2">{selectedItem.riskLevel}%</p>
-                           <div className="w-full bg-orange-200/50 rounded-full h-1.5 overflow-hidden">
-                              <div
-                                 className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
-                                 style={{ width: `${selectedItem.riskLevel}%` }}
-                              />
-                           </div>
-                        </div>
-                     )}
-                  </div>
-
-                  <div className="space-y-6">
-                     <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
-                        <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-                           <FileText className="w-5 h-5 text-blue-500" />
-                           Compliance Details
-                        </h3>
-                        <p className="text-gray-600 leading-relaxed font-medium">{selectedItem.description}</p>
-                        {selectedItem.impact && (
-                           <div className="mt-4 p-4 bg-red-50/50 border border-red-100 rounded-2xl flex items-start gap-3">
-                              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                              <div>
-                                 <span className="text-xs font-black text-red-600 uppercase tracking-widest block mb-1">Impact Analysis</span>
-                                 <p className="text-sm font-medium text-red-800">{selectedItem.impact}</p>
-                              </div>
-                           </div>
-                        )}
-                     </div>
-
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm h-full">
-                           <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-widest">
-                              <Calendar className="w-4 h-4 text-purple-500" /> Key Dates
-                           </h3>
-                           <div className="space-y-3">
-                              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                 <span className="text-sm text-gray-500 font-medium">Due Date</span>
-                                 <span className="text-sm font-bold text-gray-900">{selectedItem.dueDate.toLocaleDateString()}</span>
-                              </div>
-                              {selectedItem.nextReview && (
-                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                    <span className="text-sm text-gray-500 font-medium">Next Review</span>
-                                    <span className="text-sm font-bold text-gray-900">{selectedItem.nextReview.toLocaleDateString()}</span>
-                                 </div>
-                              )}
-                              {selectedItem.lastAudit && (
-                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                    <span className="text-sm text-gray-500 font-medium">Last Audit</span>
-                                    <span className="text-sm font-bold text-gray-900">{selectedItem.lastAudit.toLocaleDateString()}</span>
-                                 </div>
-                              )}
-                           </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm h-full">
-                           <h3 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-widest">
-                              <Users className="w-4 h-4 text-green-500" /> Responsibility
-                           </h3>
-                           <div className="space-y-3">
-                              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                 <span className="text-sm text-gray-500 font-medium">Assigned To</span>
-                                 <span className="text-sm font-bold text-gray-900">{selectedItem.assignedTo}</span>
-                              </div>
-                              {selectedItem.auditor && (
-                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                    <span className="text-sm text-gray-500 font-medium">Auditor</span>
-                                    <span className="text-sm font-bold text-gray-900">{selectedItem.auditor}</span>
-                                 </div>
-                              )}
-                              {selectedItem.jurisdiction && (
-                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                    <span className="text-sm text-gray-500 font-medium">Jurisdiction</span>
-                                    <span className="text-sm font-bold text-gray-900">{selectedItem.jurisdiction}</span>
-                                 </div>
-                              )}
-                           </div>
-                        </div>
-                     </div>
-
-                  </div>
-               </div>
-
-               <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
-                   <button 
-                     onClick={() => {
-                        handleMarkComplete(selectedItem);
-                        setSelectedItem(null);
-                     }}
-                     className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all active:scale-95 cursor-pointer flex items-center gap-2"
-                   >
-                     <CheckCircle className="w-4 h-4" />
-                     Mark Compliant
-                   </button>
-                   <button 
-                     onClick={() => {
-                        handleEdit(selectedItem);
-                        setSelectedItem(null);
-                     }}
-                     className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer flex items-center gap-2"
-                   >
-                     <Edit3 className="w-4 h-4" />
-                     Edit Item
-                   </button>
-               </div>
-            </div>
-         </div>
-      )}
-
-      {/* Edit Modal - Compact & Centered */}
-      {showEditModal && editingItem && (
-         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden border border-gray-100">
-               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                  <div>
-                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        <Edit3 className="w-6 h-6 text-blue-600" />
-                        Edit Compliance Item
-                     </h2>
-                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Update details for {editingItem.title}</p>
-                  </div>
-                  <button onClick={() => setShowEditModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
-                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                  </button>
-               </div>
-               
-               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/50">
-                  <div className="space-y-6">
-                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
-                        <div className="space-y-6">
-                           <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Item Title</label>
-                              <input 
-                                 type="text" 
-                                 value={editingItem.title} 
-                                 onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })} 
-                                 className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" 
-                              />
-                           </div>
-                           <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Description</label>
-                              <textarea 
-                                 value={editingItem.description} 
-                                 onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })} 
-                                 rows={3}
-                                 className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-blue-500 focus:outline-none transition-colors resize-none" 
-                              />
-                           </div>
-                           <div className="grid grid-cols-2 gap-6">
-                              <div>
-                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Category</label>
-                                 <select 
-                                    value={editingItem.category} 
-                                    onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })} 
-                                    className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none"
-                                 >
-                                    {categories.filter(c => c.id !== 'all').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                 </select>
-                              </div>
-                              <div>
-                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Status</label>
-                                 <select 
-                                    value={editingItem.status} 
-                                    onChange={(e) => setEditingItem({ ...editingItem, status: e.target.value as ComplianceItem['status'] })} 
-                                    className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none"
-                                 >
-                                    <option value="compliant">Compliant</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="overdue">Overdue</option>
-                                    <option value="at-risk">At Risk</option>
-                                    <option value="not-applicable">Not Applicable</option>
-                                 </select>
-                              </div>
-                           </div>
-                           <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Assigned To</label>
-                              <input 
-                                 type="text" 
-                                 value={editingItem.assignedTo} 
-                                 onChange={(e) => setEditingItem({ ...editingItem, assignedTo: e.target.value })} 
-                                 className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" 
-                              />
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-
-               <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
-                  <button onClick={() => setShowEditModal(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
-                  <button 
-                     onClick={() => {
-                        setItems(items.map(i => i.id === editingItem.id ? editingItem : i));
-                        setShowEditModal(false);
-                        setEditingItem(null);
-                        showNotification(`✓ Updated: ${editingItem.title}`);
-                     }} 
-                     className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
-                  >
-                     Save Changes
-                  </button>
-               </div>
-            </div>
-         </div>
-      )}
-
-      {/* Share Modal - Compact & Centered */}
-      {showShareModal && sharingItem && (
-         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl relative overflow-hidden border border-gray-100">
-               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                  <div>
-                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        <Share2 className="w-6 h-6 text-green-600" />
-                        Share Item
-                     </h2>
-                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Collaborate with team</p>
-                  </div>
-                  <button onClick={() => setShowShareModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
-                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                  </button>
-               </div>
-               
-               <div className="p-8 space-y-6">
-                  <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
-                     <p className="font-bold text-gray-900 mb-1">{sharingItem.title}</p>
-                     <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">{sharingItem.category}</p>
-                  </div>
-
-                  <div>
-                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Share with (Email)</label>
-                     <input 
-                        type="email" 
-                        placeholder="colleague@company.com" 
-                        className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-green-500 focus:outline-none transition-colors" 
-                     />
-                  </div>
-                  
-                  <div>
-                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Message</label>
-                     <textarea 
-                        placeholder="Add a message..." 
-                        rows={3}
-                        className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-green-500 focus:outline-none transition-colors resize-none" 
-                     />
-                  </div>
-
-                  <div className="space-y-3">
-                     <label className="flex items-center gap-3 cursor-pointer group">
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-green-600 rounded-lg border-2 border-gray-200 focus:ring-green-500 cursor-pointer" />
-                        <span className="text-sm font-bold text-gray-700 group-hover:text-green-700 transition-colors">Allow editing</span>
-                     </label>
-                     <label className="flex items-center gap-3 cursor-pointer group">
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-green-600 rounded-lg border-2 border-gray-200 focus:ring-green-500 cursor-pointer" />
-                        <span className="text-sm font-bold text-gray-700 group-hover:text-green-700 transition-colors">Send notification</span>
-                     </label>
-                  </div>
-
-                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                     <button 
-                        onClick={() => {
-                           setShowShareModal(false);
-                           setSharingItem(null);
-                           showNotification(`✓ Shared: ${sharingItem.title}`);
-                        }} 
-                        className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-600/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-                     >
-                        <Share2 className="w-5 h-5" />
-                        Share Now
-                     </button>
-                     <button 
-                        onClick={() => {
-                           navigator.clipboard.writeText(`${window.location.origin}/compliance/${sharingItem.id}`);
-                           showNotification('✓ Link copied!');
-                        }} 
-                        className="px-6 py-3 border-2 border-gray-100 hover:border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
-                     >
-                        <Link className="w-5 h-5" />
-                        Copy Link
-                     </button>
-                  </div>
-               </div>
-            </div>
-         </div>
-      )}
-
-      {/* Add Item Modal - Compact & Centered */}
-      {showAddItem && (
-         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden border border-gray-100">
-               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                  <div>
-                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        <Plus className="w-6 h-6 text-blue-600" />
-                        New Compliance Item
-                     </h2>
-                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Add item to regulatory tracking</p>
-                  </div>
-                  <button onClick={() => setShowAddItem(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
-                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                  </button>
-               </div>
-               
-               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/50">
-                  <div className="space-y-6">
-                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
-                        <div className="space-y-6">
-                           <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Item Title</label>
-                              <input type="text" className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors" value={newItemData.title} onChange={(e) => setNewItemData({...newItemData, title: e.target.value})} placeholder="e.g. Annual Audit" />
-                           </div>
-                           <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Description</label>
-                              <textarea rows={3} className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-medium focus:border-blue-500 focus:outline-none transition-colors resize-none" value={newItemData.description} onChange={(e) => setNewItemData({...newItemData, description: e.target.value})} placeholder="Enter details..." />
-                           </div>
-                           <div className="grid grid-cols-2 gap-6">
-                              <div>
-                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Category</label>
-                                  <select value={newItemData.category} onChange={(e) => setNewItemData({...newItemData, category: e.target.value})} className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
-                                    {categories.filter(c => c.id !== 'all').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                 </select>
-                              </div>
-                              <div>
-                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Priority</label>
-                                  <select value={newItemData.priority} onChange={(e) => setNewItemData({...newItemData, priority: e.target.value as ComplianceItem['priority']})} className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-blue-500 focus:outline-none transition-colors appearance-none">
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="critical">Critical</option>
-                                 </select>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-
-               <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
-                  <button onClick={() => setShowAddItem(false)} className="px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
-                   <button onClick={handleCreateItem} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer">
-                     Create Item
-                  </button>
-               </div>
-            </div>
-         </div>
-      )}
-      
-      {/* Export Report Modal */}
-      {showExportModal && (
-         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl relative overflow-hidden border border-gray-100">
-               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                  <div>
-                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        <Download className="w-6 h-6 text-indigo-600" />
-                        Export Report
-                     </h2>
-                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Generate compliance documentation</p>
-                  </div>
-                  <button onClick={() => setShowExportModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
-                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                  </button>
-               </div>
-               
-               <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh] custom-scrollbar bg-gray-50/30">
-                  {/* Format Selection - Card Based */}
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Report Format</label>
-                    <div className="grid grid-cols-3 gap-4">
-                      {[
-                        { id: 'PDF', icon: FileText, label: 'Standard PDF', desc: 'Secure & Ready' },
-                        { id: 'Excel', icon: FileSpreadsheet, label: 'Excel Sheet', desc: 'Data Analysis' },
-                        { id: 'CSV', icon: FileSpreadsheet, label: 'CSV Format', desc: 'System Import' }
-                      ].map((format) => (
-                        <button 
-                          key={format.id} 
-                          onClick={() => setExportFormat(format.id as 'PDF' | 'Excel' | 'CSV')}
-                          className={`group p-4 rounded-[2rem] border-2 transition-all duration-300 text-left relative overflow-hidden cursor-pointer ${
-                            exportFormat === format.id 
-                              ? 'border-indigo-600 bg-white shadow-xl shadow-indigo-500/10 scale-[1.02]' 
-                              : 'border-white bg-white/60 hover:border-gray-200 hover:bg-white'
-                          }`}
-                        >
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-110 ${
-                            exportFormat === format.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
-                          }`}>
-                            <format.icon className="w-6 h-6" />
+            {/* Grid view */}
+            {viewMode === 'grid' && filteredItems.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredItems.map((item) => {
+                  const sc = getStatusConfig(item.status);
+                  const pc = getPriorityConfig(item.priority);
+                  const StatusIcon = sc.icon;
+                  const isOverdue = item.status === 'overdue' || (item.dueDate < new Date() && item.status !== 'compliant');
+                  return (
+                    <div key={item.id} onClick={() => setSelectedItem(item)}
+                      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer overflow-hidden group">
+                      {/* Status accent */}
+                      <div className={`h-1 w-full ${sc.dot.replace('bg-', 'bg-')}`} />
+                      <div className="p-5">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${sc.bg} border ${sc.border}`}>
+                            <StatusIcon className={`w-5 h-5 ${sc.text}`} />
                           </div>
-                          <h4 className={`font-black text-sm mb-1 ${exportFormat === format.id ? 'text-gray-900' : 'text-gray-500'}`}>{format.id}</h4>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{format.desc}</p>
-                          {exportFormat === format.id && (
-                            <div className="absolute top-4 right-4 animate-in zoom-in-0 duration-300">
-                              <CheckCircle className="w-4 h-4 text-indigo-600" />
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${pc.bg} ${pc.text}`}>{pc.label}</span>
+                            <DropdownMenu id={`grid-${item.id}`}
+                              onEdit={() => handleEdit(item)} onDuplicate={() => handleDuplicate(item)}
+                              onExport={() => handleExport(item)} onShare={() => handleShare(item)}
+                              onDelete={() => handleDelete(item)} />
+                          </div>
+                        </div>
+                        <h4 className="font-semibold text-gray-900 mb-1 text-sm sm:text-base leading-tight">{item.title}</h4>
+                        <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 mb-4">{item.description}</p>
+
+                        {/* Risk bar */}
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between text-xs mb-1.5">
+                            <span className="text-gray-400 font-medium">Risk</span>
+                            <span className={`font-semibold ${(item.riskLevel || 0) > 50 ? 'text-red-600' : 'text-gray-600'}`}>{item.riskLevel || 0}%</span>
+                          </div>
+                          <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                            <div className={`h-full rounded-full ${(item.riskLevel || 0) > 70 ? 'bg-red-500' : (item.riskLevel || 0) > 40 ? 'bg-orange-400' : 'bg-blue-500'}`}
+                              style={{ width: `${item.riskLevel || 0}%` }} />
+                          </div>
+                        </div>
+
+                        {/* Meta */}
+                        <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-50">
+                          <div className={`flex items-center gap-2 p-2.5 rounded-xl ${isOverdue ? 'bg-red-50' : 'bg-gray-50'}`}>
+                            <Calendar className={`w-3.5 h-3.5 shrink-0 ${isOverdue ? 'text-red-500' : 'text-blue-500'}`} />
+                            <div className="min-w-0">
+                              <p className="text-[10px] text-gray-400">Due</p>
+                              <p className={`text-xs font-medium truncate ${isOverdue ? 'text-red-600' : 'text-gray-700'}`}>{item.dueDate.toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50">
+                            <Users className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-[10px] text-gray-400">Officer</p>
+                              <p className="text-xs font-medium text-gray-700 truncate">{item.assignedTo}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* List view — card-based, mobile-friendly */}
+            {viewMode === 'list' && filteredItems.length > 0 && (
+              <div className="space-y-2">
+                {filteredItems.map((item) => {
+                  const sc = getStatusConfig(item.status);
+                  const pc = getPriorityConfig(item.priority);
+                  const StatusIcon = sc.icon;
+                  const isOverdue = item.status === 'overdue' || (item.dueDate < new Date() && item.status !== 'compliant');
+                  return (
+                    <div key={item.id} onClick={() => setSelectedItem(item)}
+                      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group">
+                      <div className="p-4 sm:p-5 flex items-center gap-4">
+                        {/* Status icon */}
+                        <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${sc.bg} border ${sc.border}`}>
+                          <StatusIcon className={`w-5 h-5 ${sc.text}`} />
+                        </div>
+
+                        {/* Title + meta */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-gray-900 text-sm truncate">{item.title}</h4>
+                            <span className={`px-2 py-0.5 rounded-md text-xs font-semibold ${pc.bg} ${pc.text}`}>{pc.label}</span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+                            <span className="capitalize">{item.category.replace('-', ' ')}</span>
+                            <span className={`flex items-center gap-1 ${isOverdue ? 'text-red-500' : ''}`}>
+                              <Calendar className="w-3 h-3" /> {item.dueDate.toLocaleDateString()}
+                            </span>
+                            <span className="hidden sm:flex items-center gap-1">
+                              <Users className="w-3 h-3" /> {item.assignedTo}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Risk + actions */}
+                        <div className="shrink-0 flex items-center gap-2">
+                          <div className="hidden sm:flex flex-col items-end gap-1">
+                            <span className={`text-xs font-semibold ${(item.riskLevel || 0) > 50 ? 'text-red-600' : 'text-gray-600'}`}>{item.riskLevel || 0}%</span>
+                            <div className="w-16 bg-gray-100 rounded-full h-1 overflow-hidden">
+                              <div className={`h-full rounded-full ${(item.riskLevel || 0) > 70 ? 'bg-red-500' : (item.riskLevel || 0) > 40 ? 'bg-orange-400' : 'bg-blue-500'}`}
+                                style={{ width: `${item.riskLevel || 0}%` }} />
+                            </div>
+                          </div>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenu id={`list-${item.id}`}
+                              onEdit={() => handleEdit(item)} onDuplicate={() => handleDuplicate(item)}
+                              onExport={() => handleExport(item)} onShare={() => handleShare(item)}
+                              onDelete={() => handleDelete(item)} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── FRAMEWORKS TAB ── */}
+        {activeTab === 'frameworks' && (
+          <div className="space-y-4">
+            {frameworksState.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
+                <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Award className="w-7 h-7 text-purple-400" />
+                </div>
+                <p className="font-semibold text-gray-700 mb-1">No frameworks configured</p>
+                <p className="text-sm text-gray-400">Add compliance frameworks to track certifications</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {frameworksState.map((framework: ComplianceFramework) => {
+                  const Icon = framework.icon;
+                  const pct = (framework.compliant / framework.requirements) * 100;
+                  const daysUntilExpiry = framework.expiryDate ? Math.ceil((framework.expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
+                  return (
+                    <div key={framework.id} onClick={() => setSelectedFramework(framework)}
+                      className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition-all cursor-pointer relative">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`p-3 rounded-xl bg-gradient-to-br ${framework.gradient} shadow-sm`}>
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {pct === 100 && (
+                            <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                              <CheckCircle className="w-3.5 h-3.5" /> Certified
                             </div>
                           )}
-                        </button>
-                      ))}
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenu id={`fw-${framework.id}`}
+                              onEdit={() => handleEditFramework(framework)}
+                              onExport={() => handleExportFramework(framework)}
+                              onShare={() => handleShareFramework(framework)} />
+                          </div>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">{framework.name}</h3>
+                      <p className="text-xs text-gray-500 mb-4 line-clamp-2">{framework.description}</p>
+                      <div className="space-y-2 mb-4 text-sm">
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>Category</span><span className="font-medium text-gray-700">{framework.category}</span>
+                        </div>
+                        {framework.expiryDate && (
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>Expires</span>
+                            <span className={`font-medium ${daysUntilExpiry && daysUntilExpiry < 90 ? 'text-red-600' : 'text-gray-700'}`}>
+                              {framework.expiryDate.toLocaleDateString()}
+                              {daysUntilExpiry && daysUntilExpiry < 90 && <span className="ml-1">({daysUntilExpiry}d)</span>}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Progress</span>
+                          <span className="font-semibold text-gray-900">{framework.compliant}/{framework.requirements}</span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                          <div className={`h-full bg-gradient-to-r ${framework.gradient} rounded-full`} style={{ width: `${pct}%` }} />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900">{pct.toFixed(0)}%</p>
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); setSelectedFramework(framework); }}
+                        className="mt-4 w-full py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium rounded-xl hover:shadow-md transition-all cursor-pointer">
+                        View Details
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── RISKS TAB ── */}
+        {activeTab === 'risks' && (
+          <div className="space-y-4">
+            {/* Risk overview cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-red-500 to-rose-500 rounded-2xl p-5 text-white shadow-md">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 bg-white/20 rounded-xl"><AlertTriangle className="w-6 h-6" /></div>
+                  <TrendingUp className="w-5 h-5 opacity-60 rotate-180" />
+                </div>
+                <p className="text-sm opacity-90 mb-1">High Risk</p>
+                <p className="text-4xl font-bold">{items.filter(i => (i.riskLevel || 0) > 70).length}</p>
+                <p className="text-xs opacity-70 mt-1">Require immediate attention</p>
+              </div>
+              <div className="bg-gradient-to-br from-orange-500 to-yellow-500 rounded-2xl p-5 text-white shadow-md">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 bg-white/20 rounded-xl"><AlertCircle className="w-6 h-6" /></div>
+                  <Activity className="w-5 h-5 opacity-60" />
+                </div>
+                <p className="text-sm opacity-90 mb-1">Medium Risk</p>
+                <p className="text-4xl font-bold">{items.filter(i => (i.riskLevel || 0) > 40 && (i.riskLevel || 0) <= 70).length}</p>
+                <p className="text-xs opacity-70 mt-1">Monitor closely</p>
+              </div>
+              <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl p-5 text-white shadow-md">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 bg-white/20 rounded-xl"><CheckCircle className="w-6 h-6" /></div>
+                  <TrendingUp className="w-5 h-5 opacity-60" />
+                </div>
+                <p className="text-sm opacity-90 mb-1">Low Risk</p>
+                <p className="text-4xl font-bold">{items.filter(i => (i.riskLevel || 0) <= 40).length}</p>
+                <p className="text-xs opacity-70 mt-1">Well managed</p>
+              </div>
+            </div>
+
+            {/* Risk detail */}
+            {riskMetrics.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-purple-600" /> Detailed Risk Analysis
+                </h3>
+                <div className="space-y-3">
+                  {riskMetrics.map((metric) => {
+                    const Icon = metric.icon;
+                    const cols = { low: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200', bar: 'bg-green-500' }, medium: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200', bar: 'bg-yellow-500' }, high: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', bar: 'bg-orange-500' }, critical: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', bar: 'bg-red-500' } }[metric.severity];
+                    return (
+                      <div key={metric.id} className={`p-4 rounded-xl border ${cols.border} ${cols.bg}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 ${cols.bar} rounded-lg`}><Icon className="w-4 h-4 text-white" /></div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 text-sm">{metric.name}</h4>
+                              <p className={`text-xs font-medium ${cols.text} capitalize`}>{metric.severity} severity</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
+                            {metric.trend === 'up' && <TrendingUp className="w-4 h-4 text-red-500" />}
+                            {metric.trend === 'down' && <TrendingUp className="w-4 h-4 text-green-500 rotate-180" />}
+                            {metric.trend === 'stable' && <Activity className="w-4 h-4 text-gray-400" />}
+                          </div>
+                        </div>
+                        <div className="w-full bg-white/50 rounded-full h-1.5 overflow-hidden">
+                          <div className={`h-full ${cols.bar} rounded-full`} style={{ width: `${metric.value}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Risk by category */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <PieChart className="w-5 h-5 text-indigo-600" /> Risk by Category
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {categories.filter(c => c.id !== 'all').map(({ id, name, icon: Icon }) => {
+                  const catItems = items.filter(i => i.category === id);
+                  const avg = catItems.length > 0 ? catItems.reduce((sum, i) => sum + (i.riskLevel || 0), 0) / catItems.length : 0;
+                  return (
+                    <div key={id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
+                          <Icon className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 text-sm">{name}</h4>
+                          <p className="text-xs text-gray-500">{catItems.length} items</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-xs mb-1.5">
+                        <span className="text-gray-500">Avg Risk</span>
+                        <span className="font-semibold text-gray-900">{avg.toFixed(0)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                        <div className={`h-full rounded-full ${avg > 70 ? 'bg-red-500' : avg > 50 ? 'bg-orange-500' : avg > 30 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                          style={{ width: `${avg}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── AUDITS TAB ── */}
+        {activeTab === 'audits' && (
+          <div className="space-y-4">
+            {/* Recent activity */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-blue-600" /> Recent Audit Activities
+              </h3>
+              {auditLogs.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileCheck className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                  <p className="text-sm text-gray-400">No audit logs yet</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {auditLogs.map((log, idx) => {
+                    const cfg = { success: { bg: 'bg-green-50', border: 'border-green-100', icon: CheckCircle, ic: 'text-green-600' }, error: { bg: 'bg-red-50', border: 'border-red-100', icon: AlertTriangle, ic: 'text-red-600' }, warning: { bg: 'bg-orange-50', border: 'border-orange-100', icon: AlertCircle, ic: 'text-orange-600' }, info: { bg: 'bg-blue-50', border: 'border-blue-100', icon: Clock, ic: 'text-blue-600' } }[log.type];
+                    const LIcon = cfg.icon;
+                    return (
+                      <div key={idx} className={`p-4 rounded-xl border ${cfg.border} ${cfg.bg}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 bg-white rounded-lg ${cfg.ic}`}><LIcon className="w-4 h-4" /></div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                              <span className="font-semibold text-gray-900 text-sm">{log.action}</span>
+                              <span className="text-gray-400">·</span>
+                              <span className="text-sm text-gray-600 truncate">{log.item}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <span className="flex items-center gap-1"><Users className="w-3 h-3" />{log.user}</span>
+                              <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{log.time}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button onClick={() => showNotification(`Opening: ${log.item}`)}
+                              className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors cursor-pointer">
+                              <Eye className="w-4 h-4 text-blue-600" />
+                            </button>
+                            <DropdownMenu id={`audit-${idx}`}
+                              onExport={() => showNotification(`Export: ${log.item}`)}
+                              onShare={() => showNotification(`Share: ${log.item}`)} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Upcoming audits */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-purple-600" /> Upcoming Audits
+              </h3>
+              {items.filter(i => i.nextReview).length === 0 ? (
+                <div className="text-center py-8">
+                  <Calendar className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                  <p className="text-sm text-gray-400">No upcoming audits scheduled</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {items.filter(i => i.nextReview).slice(0, 4).map((item) => {
+                    const d = item.nextReview ? Math.ceil((item.nextReview.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
+                    return (
+                      <div key={item.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-sm transition-all cursor-pointer">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h4 className="font-semibold text-gray-900 text-sm">{item.title}</h4>
+                            <p className="text-xs text-gray-500">{item.framework || item.category}</p>
+                          </div>
+                          <span className={`px-2 py-1 rounded-lg text-xs font-bold ${d < 30 ? 'bg-red-100 text-red-700' : d < 60 ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>{d}d</span>
+                        </div>
+                        <div className="flex flex-wrap gap-3 text-xs text-gray-600">
+                          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{item.nextReview?.toLocaleDateString()}</span>
+                          {item.auditor && <span className="flex items-center gap-1"><Users className="w-3 h-3" />{item.auditor}</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── ITEM DETAIL MODAL ── */}
+      {selectedItem && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getStatusConfig(selectedItem.status).bg} border ${getStatusConfig(selectedItem.status).border}`}>
+                  {React.createElement(getStatusConfig(selectedItem.status).icon, { className: `w-5 h-5 ${getStatusConfig(selectedItem.status).text}` })}
+                </div>
+                <div>
+                  <h2 className="font-bold text-gray-900 text-base leading-tight">{selectedItem.title}</h2>
+                  <p className="text-xs text-gray-400 capitalize">{selectedItem.category.replace('-', ' ')} · {selectedItem.framework || 'General'}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedItem(null)} className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 bg-gray-50/50">
+              {/* Status / Priority / Risk */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className={`p-4 rounded-xl border ${getStatusConfig(selectedItem.status).bg} ${getStatusConfig(selectedItem.status).border} text-center`}>
+                  <p className={`text-xs font-semibold ${getStatusConfig(selectedItem.status).text} mb-1`}>Status</p>
+                  <p className={`font-bold text-sm ${getStatusConfig(selectedItem.status).text}`}>{getStatusConfig(selectedItem.status).label}</p>
+                </div>
+                <div className={`p-4 rounded-xl ${getPriorityConfig(selectedItem.priority).bg} text-center`}>
+                  <p className={`text-xs font-semibold ${getPriorityConfig(selectedItem.priority).text} mb-1`}>Priority</p>
+                  <p className={`font-bold text-sm ${getPriorityConfig(selectedItem.priority).text}`}>{getPriorityConfig(selectedItem.priority).label}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-orange-50 border border-orange-100 text-center">
+                  <p className="text-xs font-semibold text-orange-600 mb-1">Risk</p>
+                  <p className="font-bold text-sm text-orange-700">{selectedItem.riskLevel || 0}%</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="bg-white p-5 rounded-xl border border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-blue-500" /> Description</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{selectedItem.description}</p>
+                {selectedItem.impact && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-semibold text-red-600 mb-0.5">Impact</p>
+                      <p className="text-xs text-red-700">{selectedItem.impact}</p>
                     </div>
                   </div>
+                )}
+              </div>
 
-                  {/* Scope Selection */}
-                  <div className="bg-white/80 backdrop-blur-md p-6 rounded-[2rem] border border-white shadow-sm ring-1 ring-black/[0.03]">
-                    <div className="flex items-center gap-3 mb-4">
-                       <div className="p-2 bg-indigo-50 rounded-xl">
-                          <Activity className="w-4 h-4 text-indigo-600" />
-                       </div>
-                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Report Scope</label>
-                    </div>
-                    <select value={reportScope} onChange={(e) => setReportScope(e.target.value)} className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 text-gray-900 font-black text-sm focus:border-indigo-600 focus:bg-white focus:outline-none transition-all appearance-none cursor-pointer">
-                      <option value="all">Full Compliance Inventory (All Active Modules)</option>
-                      <option value="summary">Executive Summary (Critical KPI Data)</option>
-                      <option value="critical">Critical Vulnerability Report (High Alert Only)</option>
+              {/* Dates + Responsibility */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-white p-5 rounded-xl border border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2"><Calendar className="w-4 h-4 text-purple-500" /> Key Dates</h3>
+                  <div className="space-y-2">
+                    {[
+                      { label: 'Due Date', value: selectedItem.dueDate.toLocaleDateString() },
+                      selectedItem.nextReview && { label: 'Next Review', value: selectedItem.nextReview.toLocaleDateString() },
+                      selectedItem.lastAudit && { label: 'Last Audit', value: selectedItem.lastAudit.toLocaleDateString() },
+                    ].filter(Boolean).map((row: any) => (
+                      <div key={row.label} className="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                        <span className="text-gray-500">{row.label}</span>
+                        <span className="font-medium text-gray-900">{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white p-5 rounded-xl border border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2"><Users className="w-4 h-4 text-green-500" /> Responsibility</h3>
+                  <div className="space-y-2">
+                    {[
+                      { label: 'Assigned To', value: selectedItem.assignedTo },
+                      selectedItem.auditor && { label: 'Auditor', value: selectedItem.auditor },
+                      selectedItem.jurisdiction && { label: 'Jurisdiction', value: selectedItem.jurisdiction },
+                    ].filter(Boolean).map((row: any) => (
+                      <div key={row.label} className="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                        <span className="text-gray-500">{row.label}</span>
+                        <span className="font-medium text-gray-900">{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 sm:p-5 border-t border-gray-100 bg-white flex gap-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+              <button onClick={() => { handleMarkComplete(selectedItem); }} className="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
+                <CheckCircle className="w-4 h-4" /> Mark Compliant
+              </button>
+              <button onClick={() => { handleEdit(selectedItem); setSelectedItem(null); }} className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
+                <Edit3 className="w-4 h-4" /> Edit Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EDIT ITEM MODAL ── */}
+      {showEditModal && editingItem && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h2 className="font-bold text-gray-900 flex items-center gap-2"><Edit3 className="w-5 h-5 text-blue-600" /> Edit Item</h2>
+                <p className="text-xs text-gray-400 mt-0.5">{editingItem.title}</p>
+              </div>
+              <button onClick={() => setShowEditModal(false)} className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 bg-gray-50/50">
+              <div className="bg-white p-5 rounded-xl border border-gray-100 space-y-4">
+                <div>
+                  <label className={labelCls}>Title</label>
+                  <input type="text" value={editingItem.title} onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Description</label>
+                  <textarea rows={3} value={editingItem.description} onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })} className={`${inputCls} resize-none`} />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>Category</label>
+                    <select value={editingItem.category} onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })} className={inputCls}>
+                      {categories.filter(c => c.id !== 'all').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
-
-                  {/* Include Sections - Mini Cards */}
                   <div>
-                    <div className="flex items-center gap-3 mb-4">
-                       <div className="p-2 bg-purple-50 rounded-xl">
-                          <PieChart className="w-4 h-4 text-purple-600" />
-                       </div>
-                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Augment Sections</label>
-                    </div>
-                    <div className="grid grid-cols-1 gap-2">
-                      {[
-                        { id: 'risk', label: 'Risk Analysis Vectors', icon: AlertTriangle, color: 'text-orange-500' },
-                        { id: 'audit', label: 'Historical Audit Trail', icon: FileCheck, color: 'text-blue-500' },
-                        { id: 'framework', label: 'Framework Compliance Status', icon: Award, color: 'text-purple-500' }
-                      ].map((section) => (
-                        <label key={section.id} className="flex items-center justify-between p-4 bg-white/60 hover:bg-white border-2 border-transparent hover:border-indigo-100 rounded-2xl transition-all cursor-pointer group shadow-sm">
-                            <div className="flex items-center gap-4">
-                               <div className={`p-2 rounded-xl bg-gray-50 group-hover:bg-indigo-50 transition-colors`}>
-                                  <section.icon className={`w-4 h-4 ${section.color}`} />
-                               </div>
-                               <span className="text-sm font-black text-gray-700 group-hover:text-gray-900">{section.label}</span>
-                            </div>
-                            <div className="relative inline-flex items-center cursor-pointer">
-                               <input type="checkbox" checked={reportAugmentations[section.id as keyof typeof reportAugmentations]} onChange={(e) => setReportAugmentations({...reportAugmentations, [section.id]: e.target.checked})} className="sr-only peer" />
-                               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                            </div>
-                        </label>
-                      ))}
-                    </div>
+                    <label className={labelCls}>Status</label>
+                    <select value={editingItem.status} onChange={(e) => setEditingItem({ ...editingItem, status: e.target.value as ComplianceItem['status'] })} className={inputCls}>
+                      <option value="compliant">Compliant</option>
+                      <option value="pending">Pending</option>
+                      <option value="overdue">Overdue</option>
+                      <option value="at-risk">At Risk</option>
+                      <option value="not-applicable">Not Applicable</option>
+                    </select>
                   </div>
-
-                  <div className="flex items-center gap-3 pt-6">
-                     <button onClick={() => setShowExportModal(false)} className="flex-1 px-6 py-4 rounded-2xl text-gray-500 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-white border-2 border-transparent hover:border-gray-100">Decline</button>
-                     <button 
-                        onClick={handleGenerateReport} 
-                        className="flex-[2] px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer flex items-center justify-center gap-2 group"
-                     >
-                        <Download className="w-5 h-5 group-hover:animate-bounce" />
-                        Initiate Node Export
-                     </button>
-                  </div>
-               </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Assigned To</label>
+                  <input type="text" value={editingItem.assignedTo} onChange={(e) => setEditingItem({ ...editingItem, assignedTo: e.target.value })} className={inputCls} />
+                </div>
+              </div>
             </div>
-         </div>
-      )}
-
-      {/* Framework Detail Modal */}
-      {selectedFramework && (
-         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in zoom-in-95 duration-300">
-            <div className={`bg-white rounded-[2.5rem] w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden border border-gray-100`}>
-               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                  <div className="flex items-center gap-4">
-                     <div className={`p-4 rounded-2xl bg-gradient-to-br ${selectedFramework.gradient} shadow-lg text-white`}>
-                        {React.createElement(selectedFramework.icon, { className: "w-8 h-8" })}
-                     </div>
-                     <div>
-                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">{selectedFramework.name} Protocol</h2>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">{selectedFramework.category} Framework</p>
-                     </div>
-                  </div>
-                  <button onClick={() => setSelectedFramework(null)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
-                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                  </button>
-               </div>
-               
-               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/50">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                     <div className="p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Requirements</p>
-                        <p className="text-3xl font-black text-gray-900">{selectedFramework.requirements}</p>
-                     </div>
-                     <div className="p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Compliant Nodes</p>
-                        <p className="text-3xl font-black text-green-600">{selectedFramework.compliant}</p>
-                     </div>
-                     <div className="p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Integrity Score</p>
-                        <p className="text-3xl font-black text-blue-600">{((selectedFramework.compliant / selectedFramework.requirements) * 100).toFixed(0)}%</p>
-                     </div>
-                  </div>
-
-                  <div className="space-y-6">
-                     <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
-                        <h3 className="text-lg font-black text-gray-900 mb-4">Framework Description</h3>
-                        <p className="text-gray-600 leading-relaxed font-medium">{selectedFramework.description}. This framework governs our {selectedFramework.category.toLowerCase()} posture and ensures full regulatory alignment across all operational nodes.</p>
-                     </div>
-
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
-                           <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-widest">Certification Timeline</h3>
-                           <div className="space-y-4">
-                              <div className="flex items-center justify-between">
-                                 <span className="text-sm text-gray-500 font-medium">Issued Date</span>
-                                 <span className="text-sm font-bold text-gray-900">{selectedFramework.certificationDate?.toLocaleDateString() || 'Pending'}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                 <span className="text-sm text-gray-500 font-medium">Expiration</span>
-                                 <span className="text-sm font-bold text-red-600">{selectedFramework.expiryDate?.toLocaleDateString() || 'Non-Expiring'}</span>
-                              </div>
-                           </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
-                           <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-widest">Critical Controls</h3>
-                           <div className="flex flex-wrap gap-2">
-                              {['DLP', 'Access Control', 'TLS 1.3', 'Audit Trails', 'Encryption'].map(tag => (
-                                 <span key={tag} className="px-3 py-1 bg-gray-50 border border-gray-100 rounded-lg text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                    {tag}
-                                 </span>
-                              ))}
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-
-               <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 sticky bottom-0 z-20">
-                   <button 
-                     onClick={() => {
-                        showNotification(`\u2713 Full Framework Audit Initiated for ${selectedFramework.name}`);
-                        setSelectedFramework(null);
-                     }}
-                     className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg transition-all active:scale-95 cursor-pointer"
-                   >
-                     Trigger Detailed Audit
-                   </button>
-               </div>
+            <div className="p-4 sm:p-5 border-t border-gray-100 bg-white flex flex-col sm:flex-row gap-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+              <button onClick={() => setShowEditModal(false)} className="sm:flex-1 py-3 text-gray-500 hover:text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">Cancel</button>
+              <button onClick={() => { setItems(items.map(i => i.id === editingItem.id ? editingItem : i)); setShowEditModal(false); setEditingItem(null); showNotification(`✓ Updated: ${editingItem.title}`); }}
+                className="sm:flex-[2] py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer active:scale-95">
+                Save Changes
+              </button>
             </div>
-         </div>
-      )}
-
-      {/* Edit Framework Modal */}
-      {showEditFrameworkModal && editingFramework && (
-         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[110] p-4 animate-in zoom-in-95 duration-300">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-2xl flex flex-col shadow-2xl relative overflow-hidden border border-gray-100">
-               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                  <div>
-                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        <Edit3 className="w-6 h-6 text-purple-600" />
-                        Edit Framework
-                     </h2>
-                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Update Protocol: {editingFramework.name}</p>
-                  </div>
-                  <button onClick={() => setShowEditFrameworkModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
-                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                  </button>
-               </div>
-               
-               <div className="p-8 space-y-6">
-                  <div className="space-y-4">
-                     <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Framework Name</label>
-                        <input 
-                           type="text" 
-                           value={editingFramework.name} 
-                           onChange={(e) => setEditingFramework({...editingFramework, name: e.target.value})}
-                           className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-900 focus:border-purple-500 focus:outline-none transition-all"
-                        />
-                     </div>
-                     <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Description</label>
-                        <textarea 
-                           rows={3}
-                           value={editingFramework.description} 
-                           onChange={(e) => setEditingFramework({...editingFramework, description: e.target.value})}
-                           className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 font-medium text-gray-700 focus:border-purple-500 focus:outline-none transition-all resize-none"
-                        />
-                     </div>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Required Nodes</label>
-                           <input 
-                              type="number" 
-                              value={editingFramework.requirements} 
-                              onChange={(e) => setEditingFramework({...editingFramework, requirements: parseInt(e.target.value)})}
-                              className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-900 focus:border-purple-500 focus:outline-none transition-all"
-                           />
-                        </div>
-                        <div>
-                           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Compliant Nodes</label>
-                           <input 
-                              type="number" 
-                              value={editingFramework.compliant} 
-                              onChange={(e) => setEditingFramework({...editingFramework, compliant: parseInt(e.target.value)})}
-                              className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-900 focus:border-purple-500 focus:outline-none transition-all"
-                           />
-                        </div>
-                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 pt-6 border-t border-gray-100">
-                     <button onClick={() => setShowEditFrameworkModal(false)} className="flex-1 px-6 py-3 rounded-xl text-gray-400 hover:text-gray-900 font-bold transition-all text-sm cursor-pointer hover:bg-gray-100">Cancel</button>
-                     <button 
-                        onClick={() => {
-                           setFrameworksState(frameworksState.map((f: ComplianceFramework) => f.id === editingFramework.id ? editingFramework : f));
-                           setShowEditFrameworkModal(false);
-                           showNotification(`\u2713 Protocol Updated: ${editingFramework.name}`);
-                        }}
-                        className="flex-[2] px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-purple-600/20 transition-all active:scale-95 cursor-pointer"
-                     >
-                        Confirm Protocol Update
-                     </button>
-                  </div>
-               </div>
-            </div>
-         </div>
-      )}
-
-      {/* Share Framework Modal */}
-      {showShareFrameworkModal && sharingFramework && (
-         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl flex items-center justify-center z-[110] p-4 animate-in zoom-in-95 duration-300">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl relative overflow-hidden border border-gray-100">
-               <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                  <div>
-                     <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        <Share2 className="w-6 h-6 text-indigo-600" />
-                        Share Protocol
-                     </h2>
-                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 pl-9">Distribute: {sharingFramework.name}</p>
-                  </div>
-                  <button onClick={() => setShowShareFrameworkModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer group">
-                     <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                  </button>
-               </div>
-               
-               <div className="p-8 space-y-6">
-                  <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-center gap-4">
-                     <div className={`p-3 rounded-xl bg-gradient-to-br ${sharingFramework.gradient} text-white`}>
-                        {React.createElement(sharingFramework.icon, { className: "w-6 h-6" })}
-                     </div>
-                     <div>
-                        <p className="font-bold text-gray-900">{sharingFramework.name}</p>
-                        <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{sharingFramework.category}</p>
-                     </div>
-                  </div>
-
-                  <div>
-                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Auditor / Team Email</label>
-                     <input 
-                        type="email" 
-                        placeholder="auditor@regulator.gov" 
-                        className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-4 text-gray-900 font-bold focus:border-indigo-500 focus:outline-none transition-colors" 
-                     />
-                  </div>
-
-                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                     <button 
-                        onClick={() => {
-                           setShowShareFrameworkModal(false);
-                           showNotification(`\u2713 Shared Protocol: ${sharingFramework.name}`);
-                        }} 
-                        className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-                     >
-                        <Share2 className="w-5 h-5" />
-                        Share Now
-                     </button>
-                     <button 
-                        onClick={() => {
-                           navigator.clipboard.writeText(`${window.location.origin}/compliance/framework/${sharingFramework.id}`);
-                           showNotification('\u2713 Protocol Link copied!');
-                        }} 
-                        className="px-6 py-3 border-2 border-gray-100 hover:border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-2"
-                     >
-                        <Link className="w-5 h-5" />
-                        Copy Link
-                     </button>
-                  </div>
-               </div>
-            </div>
-         </div>
-      )}
-
-    {showSuccess && (
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-bottom-5 fade-in duration-500">
-        <div className="bg-gray-900/90 backdrop-blur-2xl border border-white/20 px-8 py-5 rounded-[2rem] shadow-2xl flex items-center gap-5 ring-4 ring-black/5">
-          <div className="relative">
-             <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full animate-pulse"></div>
-             <div className="relative w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/20">
-                <CheckCircle className="w-7 h-7 text-white" />
-             </div>
           </div>
-          <div>
-            <p className="text-white font-black text-sm tracking-tight leading-none mb-1.5 uppercase">Success Protocol Active</p>
-            <p className="text-gray-300 text-xs font-bold">{successMessage}</p>
-          </div>
-          <button 
-            onClick={() => setShowSuccess(false)}
-            className="ml-4 p-2 hover:bg-white/10 rounded-xl transition-colors group cursor-pointer"
-          >
-            <X className="w-4 h-4 text-gray-500 group-hover:text-white" />
-          </button>
         </div>
-      </div>
-    )}
+      )}
+
+      {/* ── SHARE ITEM MODAL ── */}
+      {showShareModal && sharingItem && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-2xl overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="font-bold text-gray-900 flex items-center gap-2"><Share2 className="w-5 h-5 text-green-600" /> Share Item</h2>
+              <button onClick={() => setShowShareModal(false)} className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-5 sm:p-6 space-y-4">
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                <p className="font-semibold text-gray-900 text-sm">{sharingItem.title}</p>
+                <p className="text-xs text-blue-600 font-medium mt-0.5 capitalize">{sharingItem.category.replace('-', ' ')}</p>
+              </div>
+              <div>
+                <label className={labelCls}>Share with (Email)</label>
+                <input type="email" placeholder="colleague@company.com" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Message</label>
+                <textarea rows={2} placeholder="Add a message..." className={`${inputCls} resize-none`} />
+              </div>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" defaultChecked className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500" />
+                  <span className="text-sm text-gray-700">Allow editing</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" defaultChecked className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500" />
+                  <span className="text-sm text-gray-700">Send notification</span>
+                </label>
+              </div>
+              <div className="flex gap-3 pt-2 pb-[calc(env(safe-area-inset-bottom,0px))] sm:pb-0">
+                <button onClick={() => { setShowShareModal(false); setSharingItem(null); showNotification(`✓ Shared: ${sharingItem.title}`); }}
+                  className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
+                  <Share2 className="w-4 h-4" /> Share
+                </button>
+                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/compliance/${sharingItem.id}`); showNotification('✓ Link copied!'); }}
+                  className="py-3 px-4 border border-gray-200 text-gray-600 hover:border-gray-300 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-2">
+                  <Link className="w-4 h-4" /> Copy Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD ITEM MODAL ── */}
+      {showAddItem && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h2 className="font-bold text-gray-900 flex items-center gap-2"><Plus className="w-5 h-5 text-blue-600" /> New Compliance Item</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Add to regulatory tracking</p>
+              </div>
+              <button onClick={() => setShowAddItem(false)} className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 bg-gray-50/50">
+              <div className="bg-white p-5 rounded-xl border border-gray-100 space-y-4">
+                <div>
+                  <label className={labelCls}>Title</label>
+                  <input type="text" placeholder="e.g. Annual Audit" value={newItemData.title} onChange={(e) => setNewItemData({ ...newItemData, title: e.target.value })} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Description</label>
+                  <textarea rows={3} placeholder="Enter details..." value={newItemData.description} onChange={(e) => setNewItemData({ ...newItemData, description: e.target.value })} className={`${inputCls} resize-none`} />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>Category</label>
+                    <select value={newItemData.category} onChange={(e) => setNewItemData({ ...newItemData, category: e.target.value })} className={inputCls}>
+                      {categories.filter(c => c.id !== 'all').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelCls}>Priority</label>
+                    <select value={newItemData.priority} onChange={(e) => setNewItemData({ ...newItemData, priority: e.target.value as ComplianceItem['priority'] })} className={inputCls}>
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                      <option value="critical">Critical</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Assigned To</label>
+                  <input type="text" value={newItemData.assignedTo} onChange={(e) => setNewItemData({ ...newItemData, assignedTo: e.target.value })} className={inputCls} />
+                </div>
+              </div>
+            </div>
+            <div className="p-4 sm:p-5 border-t border-gray-100 bg-white flex flex-col sm:flex-row gap-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+              <button onClick={() => setShowAddItem(false)} className="sm:flex-1 py-3 text-gray-500 hover:text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">Cancel</button>
+              <button onClick={handleCreateItem} className="sm:flex-[2] py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer active:scale-95">
+                Create Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EXPORT MODAL ── */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h2 className="font-bold text-gray-900 flex items-center gap-2"><Download className="w-5 h-5 text-indigo-600" /> Export Report</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Generate compliance documentation</p>
+              </div>
+              <button onClick={() => setShowExportModal(false)} className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
+              {/* Format */}
+              <div>
+                <label className={labelCls}>Format</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { id: 'PDF', icon: FileText, desc: 'PDF Document' },
+                    { id: 'Excel', icon: FileSpreadsheet, desc: 'Excel Sheet' },
+                    { id: 'CSV', icon: FileSpreadsheet, desc: 'CSV File' },
+                  ].map(({ id, icon: Icon, desc }) => (
+                    <button key={id} onClick={() => setExportFormat(id as 'PDF' | 'Excel' | 'CSV')}
+                      className={`p-4 rounded-xl border-2 transition-all cursor-pointer text-left ${exportFormat === id ? 'border-blue-600 bg-blue-50' : 'border-gray-100 bg-gray-50 hover:border-gray-200'}`}>
+                      <Icon className={`w-5 h-5 mb-2 ${exportFormat === id ? 'text-blue-600' : 'text-gray-400'}`} />
+                      <p className={`text-sm font-semibold ${exportFormat === id ? 'text-blue-700' : 'text-gray-700'}`}>{id}</p>
+                      <p className="text-xs text-gray-400">{desc}</p>
+                      {exportFormat === id && <CheckCircle className="w-3.5 h-3.5 text-blue-600 mt-1" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Scope */}
+              <div>
+                <label className={labelCls}>Scope</label>
+                <select value={reportScope} onChange={(e) => setReportScope(e.target.value)} className={inputCls}>
+                  <option value="all">Full Inventory</option>
+                  <option value="summary">Executive Summary</option>
+                  <option value="critical">Critical Items Only</option>
+                </select>
+              </div>
+
+              {/* Sections */}
+              <div>
+                <label className={labelCls}>Include Sections</label>
+                <div className="space-y-2">
+                  {[
+                    { id: 'risk', label: 'Risk Analysis', icon: AlertTriangle },
+                    { id: 'audit', label: 'Audit Trail', icon: FileCheck },
+                    { id: 'framework', label: 'Framework Status', icon: Award },
+                  ].map(({ id, label, icon: Icon }) => (
+                    <label key={id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-700">{label}</span>
+                      </div>
+                      <div className="relative">
+                        <input type="checkbox" checked={reportAugmentations[id as keyof typeof reportAugmentations]}
+                          onChange={(e) => setReportAugmentations({ ...reportAugmentations, [id]: e.target.checked })}
+                          className="sr-only peer" />
+                        <div className="w-10 h-5 bg-gray-200 peer-checked:bg-blue-600 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:w-4 after:h-4 after:transition-all peer-checked:after:translate-x-5" />
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="p-4 sm:p-5 border-t border-gray-100 bg-white flex gap-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+              <button onClick={() => setShowExportModal(false)} className="flex-1 py-3 text-gray-500 hover:text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">Cancel</button>
+              <button onClick={handleGenerateReport} className="flex-[2] py-3 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
+                <Download className="w-4 h-4" /> Generate Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── FRAMEWORK DETAIL MODAL ── */}
+      {selectedFramework && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="absolute inset-0" onClick={() => setSelectedFramework(null)} />
+          <div className="relative bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selectedFramework.gradient} flex items-center justify-center shadow-sm`}>
+                  {React.createElement(selectedFramework.icon, { className: "w-6 h-6 text-white" })}
+                </div>
+                <div>
+                  <h2 className="font-bold text-gray-900">{selectedFramework.name}</h2>
+                  <p className="text-xs text-gray-400 capitalize">{selectedFramework.category} framework</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedFramework(null)} className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 bg-gray-50/50">
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-white p-4 rounded-xl border border-gray-100 text-center">
+                  <p className="text-2xl font-bold text-gray-900">{selectedFramework.requirements}</p>
+                  <p className="text-xs text-gray-400 mt-1">Requirements</p>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-gray-100 text-center">
+                  <p className="text-2xl font-bold text-green-600">{selectedFramework.compliant}</p>
+                  <p className="text-xs text-gray-400 mt-1">Compliant</p>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-gray-100 text-center">
+                  <p className="text-2xl font-bold text-blue-600">{((selectedFramework.compliant / selectedFramework.requirements) * 100).toFixed(0)}%</p>
+                  <p className="text-xs text-gray-400 mt-1">Complete</p>
+                </div>
+              </div>
+
+              {/* Progress */}
+              <div className="bg-white p-5 rounded-xl border border-gray-100">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-500">Compliance Progress</span>
+                  <span className="font-semibold text-gray-900">{selectedFramework.compliant}/{selectedFramework.requirements}</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                  <div className={`h-full bg-gradient-to-r ${selectedFramework.gradient} rounded-full transition-all`}
+                    style={{ width: `${(selectedFramework.compliant / selectedFramework.requirements) * 100}%` }} />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="bg-white p-5 rounded-xl border border-gray-100">
+                <p className="text-sm text-gray-600 leading-relaxed">{selectedFramework.description}</p>
+              </div>
+
+              {/* Dates */}
+              <div className="bg-white p-5 rounded-xl border border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Certification Details</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                    <span className="text-gray-500">Certified</span>
+                    <span className="font-medium text-gray-900">{selectedFramework.certificationDate?.toLocaleDateString() || 'Pending'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                    <span className="text-gray-500">Expires</span>
+                    <span className="font-medium text-gray-900">{selectedFramework.expiryDate?.toLocaleDateString() || 'No expiry'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div className="flex flex-wrap gap-2">
+                {['DLP-ACTIVE', 'ENCRYPTION', 'AUDIT-LOGGING', 'CERTIFIED'].map(tag => (
+                  <span key={tag} className="px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-medium">{tag}</span>
+                ))}
+              </div>
+            </div>
+            <div className="p-4 sm:p-5 border-t border-gray-100 bg-white flex gap-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
+              <button onClick={() => setSelectedFramework(null)} className="flex-1 py-3 text-gray-500 hover:text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">Dismiss</button>
+              <button onClick={() => { showNotification(`✓ Audit initiated: ${selectedFramework.name}`); setSelectedFramework(null); }}
+                className="flex-[2] py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer active:scale-95">
+                Trigger Audit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EDIT FRAMEWORK MODAL ── */}
+      {showEditFrameworkModal && editingFramework && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[110] p-0 sm:p-4">
+          <div className="absolute inset-0" onClick={() => setShowEditFrameworkModal(false)} />
+          <div className="relative bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-2xl overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="font-bold text-gray-900 flex items-center gap-2"><Edit3 className="w-5 h-5 text-blue-600" /> Edit Framework</h2>
+              <button onClick={() => setShowEditFrameworkModal(false)} className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-5 sm:p-6 space-y-4">
+              <div>
+                <label className={labelCls}>Name</label>
+                <input type="text" value={editingFramework.name} onChange={(e) => setEditingFramework({ ...editingFramework, name: e.target.value })} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Description</label>
+                <textarea rows={3} value={editingFramework.description} onChange={(e) => setEditingFramework({ ...editingFramework, description: e.target.value })} className={`${inputCls} resize-none`} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Requirements</label>
+                  <input type="number" value={editingFramework.requirements} onChange={(e) => setEditingFramework({ ...editingFramework, requirements: parseInt(e.target.value) })} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Compliant</label>
+                  <input type="number" value={editingFramework.compliant} onChange={(e) => setEditingFramework({ ...editingFramework, compliant: parseInt(e.target.value) })} className={inputCls} />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2 pb-[calc(env(safe-area-inset-bottom,0px))] sm:pb-0">
+                <button onClick={() => setShowEditFrameworkModal(false)} className="flex-1 py-3 text-gray-500 hover:text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">Cancel</button>
+                <button onClick={() => { setFrameworksState(frameworksState.map((f: ComplianceFramework) => f.id === editingFramework.id ? editingFramework : f)); setShowEditFrameworkModal(false); showNotification(`✓ Updated: ${editingFramework.name}`); }}
+                  className="flex-[2] py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer active:scale-95">
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── SHARE FRAMEWORK MODAL ── */}
+      {showShareFrameworkModal && sharingFramework && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[110] p-0 sm:p-4">
+          <div className="absolute inset-0" onClick={() => setShowShareFrameworkModal(false)} />
+          <div className="relative bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-2xl overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="font-bold text-gray-900 flex items-center gap-2"><Share2 className="w-5 h-5 text-indigo-600" /> Share Framework</h2>
+              <button onClick={() => setShowShareFrameworkModal(false)} className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-5 sm:p-6 space-y-4">
+              <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${sharingFramework.gradient} flex items-center justify-center`}>
+                  {React.createElement(sharingFramework.icon, { className: "w-5 h-5 text-white" })}
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">{sharingFramework.name}</p>
+                  <p className="text-xs text-indigo-600">{sharingFramework.category} framework</p>
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>Recipient Email</label>
+                <input type="email" placeholder="auditor@regulator.gov" className={inputCls} />
+              </div>
+              <div className="flex gap-3 pb-[calc(env(safe-area-inset-bottom,0px))] sm:pb-0">
+                <button onClick={() => { setShowShareFrameworkModal(false); showNotification(`✓ Shared: ${sharingFramework.name}`); }}
+                  className="flex-[2] py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
+                  <Share2 className="w-4 h-4" /> Share
+                </button>
+                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/compliance/framework/${sharingFramework.id}`); showNotification('✓ Link copied!'); }}
+                  className="flex-1 py-3 border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-center gap-2">
+                  <Link className="w-4 h-4" /> Copy Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── SUCCESS TOAST ── */}
+      {showSuccess && (
+        <div className="fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-2rem)] sm:w-auto max-w-sm">
+          <div className="bg-gray-900 border border-white/10 px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-4">
+            <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center shrink-0">
+              <CheckCircle className="w-5 h-5 text-white" />
+            </div>
+            <p className="text-sm text-white font-medium flex-1">{successMessage}</p>
+            <button onClick={() => setShowSuccess(false)} className="w-7 h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg transition-colors cursor-pointer shrink-0">
+              <X className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -43,68 +43,48 @@ export default function AdminAccessPage() {
     setError(null);
   };
 
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleResetAdmin = async () => {
+    setIsResetting(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/fix-login', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setFormData(prev => ({ ...prev, email: data.credentials.email, password: data.credentials.password }));
+        setError(null);
+      } else {
+        setError(`Reset failed: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err: any) {
+      setError(`Reset failed: ${err.message}`);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setIsLoading(true);
     setError(null);
 
     try {
-      // First, ensure the user exists and is properly configured
-      console.log('[LOGIN] ========================================');
-      console.log('[LOGIN] Step 1: Fixing/creating super admin user...');
-      try {
-        const fixResponse = await fetch('/api/admin/fix-login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const fixData = await fixResponse.json();
-        if (fixResponse.ok) {
-          console.log('[LOGIN] ✅ User fixed/created successfully');
-          console.log('[LOGIN] User details:', {
-            email: fixData.user?.email,
-            role: fixData.user?.role,
-            status: fixData.user?.status,
-            passwordValid: fixData.user?.passwordValid,
-          });
-        } else {
-          console.error('[LOGIN] ❌ Fix login endpoint returned error:', fixData);
-          setError(`Failed to setup user: ${fixData.error || 'Unknown error'}. Please try the fix-login endpoint manually.`);
-          return;
-        }
-      } catch (fixError: any) {
-        console.error('[LOGIN] ❌ Could not call fix-login endpoint:', fixError);
-        setError(`Failed to setup user: ${fixError.message}. Please check your connection.`);
-        return;
-      }
-
-      console.log('[LOGIN] Step 2: Attempting sign in with NextAuth...');
-      console.log('[LOGIN] Email:', formData.email);
-      console.log('[LOGIN] Password length:', formData.password.length);
-
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
         redirect: false,
       });
 
-      console.log('[LOGIN] Sign in result:', result);
-
       if (result?.error) {
-        console.error('[LOGIN] ❌ Sign in error:', result.error);
-        setError(`Login failed: ${result.error}. Check server console (where npm run dev is running) for [AUTH] logs.`);
+        setError('Invalid email or password. Use the "Reset Admin" button below if this is a fresh setup.');
       } else if (result?.ok) {
-        console.log('[LOGIN] ✅ Sign in successful, redirecting...');
-        // Wait a moment for session to update with role
         await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Force a full page reload to ensure session is properly set
         window.location.href = '/admin';
       } else {
-        setError('Unexpected response from sign in. Please try again.');
+        setError('Unexpected response. Please try again.');
       }
     } catch (err: any) {
-      console.error('Login error:', err);
       setError(err.message || 'Failed to sign in. Please try again.');
     } finally {
       setIsLoading(false);
@@ -253,8 +233,21 @@ export default function AdminAccessPage() {
             </button>
           </form>
 
+          {/* Reset Admin (fresh setup recovery) */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-xs text-gray-500 text-center mb-2">First-time setup or locked out?</p>
+            <button
+              type="button"
+              onClick={handleResetAdmin}
+              disabled={isResetting}
+              className="w-full py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isResetting ? 'Resetting...' : 'Reset Admin Credentials'}
+            </button>
+          </div>
+
           {/* Footer */}
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
               Regular user?{" "}
               <Link href="/access" className="font-medium text-orange-600 hover:text-orange-500">

@@ -101,6 +101,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Save to MailboxMessage so the Sent folder is populated
+    prisma.mailboxMessage.create({
+      data: {
+        businessId,
+        messageId: result.messageId || `sent-${Date.now()}`,
+        uid: Date.now(),
+        from: user?.email || '',
+        to: Array.isArray(to) ? to.join(', ') : to,
+        subject,
+        body: (text || html).replace(/<[^>]*>/g, ''),
+        html,
+        date: new Date().toISOString(),
+        hasAttachments: attachmentMeta.length > 0,
+        attachments: attachmentMeta.length > 0 ? attachmentMeta : undefined,
+        folder: 'SENT',
+        status: 'READ',
+      },
+    }).catch((err: unknown) => console.warn('MailboxMessage SENT log failed:', err));
+
     // Notify team via Mattermost (fire-and-forget)
     notifyEmailSent({
       senderName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Unknown',

@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
-import { 
+import { useState } from 'react';
+import {
   Users, Plus, Search, Filter, Download, Upload,
   DollarSign, Award, TrendingUp, Zap, Building2,
   Grid, List, CheckCircle, XCircle, AlertCircle, Clock,
-  Mail, MessageSquare, Trash2, Eye, X,
+  MessageSquare, Trash2, X,
   Laptop, Target, Shield, Activity, FileText,
-  Database, RefreshCw
+  Database, RefreshCw, User, Briefcase,
+  MoreVertical
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
@@ -17,7 +18,6 @@ interface Employee {
   lastName: string;
   email: string;
   phone: string;
-  avatar?: string;
   position: string;
   department: string;
   employeeId: string;
@@ -29,41 +29,42 @@ interface Employee {
   address: string;
   city: string;
   country: string;
-  emergencyContact: {
-    name: string;
-    relationship: string;
-    phone: string;
-  };
+  emergencyContact: { name: string; relationship: string; phone: string };
   skills: string[];
   education: string;
   manager?: string;
-  performance: {
-    rating: number;
-    lastReview: Date;
-    goals: number;
-  };
+  performance: { rating: number; lastReview: Date; goals: number };
   benefits: string[];
   documents: string[];
   notes?: string;
 }
 
 const departmentConfigs = [
-  { id: 'all', name: 'All Departments', icon: Grid },
+  { id: 'all', name: 'All', icon: Grid },
   { id: 'engineering', name: 'Engineering', icon: Laptop },
   { id: 'design', name: 'Design', icon: Award },
   { id: 'marketing', name: 'Marketing', icon: Target },
   { id: 'sales', name: 'Sales', icon: TrendingUp },
-  { id: 'hr', name: 'Human Resources', icon: Users },
+  { id: 'hr', name: 'HR', icon: Users },
+];
+
+const AVATAR_GRADIENTS = [
+  'from-purple-500 to-pink-600',
+  'from-indigo-500 to-violet-600',
+  'from-blue-500 to-indigo-600',
+  'from-emerald-500 to-teal-600',
+  'from-amber-500 to-orange-600',
+  'from-rose-500 to-pink-600',
 ];
 
 export default function HRRecordsPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -74,10 +75,14 @@ export default function HRRecordsPage() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState({ payroll: 0, attendance: 0, benefits: 0, performance: 0 });
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [newEmpFirstName, setNewEmpFirstName] = useState('');
+  const [newEmpLastName, setNewEmpLastName] = useState('');
+  const [newEmpType, setNewEmpType] = useState<'full-time' | 'part-time' | 'contract' | 'intern'>('full-time');
 
   const departments = departmentConfigs.map(cat => ({
     ...cat,
-    count: cat.id === 'all' ? employees.length : employees.filter(e => e.department === cat.id).length
+    count: cat.id === 'all' ? employees.length : employees.filter(e => e.department === cat.id).length,
   }));
 
   const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
@@ -86,805 +91,767 @@ export default function HRRecordsPage() {
   };
 
   const filteredEmployees = employees.filter(emp => {
-    const matchesSearch = emp.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         emp.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         emp.employeeId.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDepartment = selectedDepartment === 'all' || emp.department === selectedDepartment;
-    return matchesSearch && matchesDepartment;
+    const matchesSearch =
+      emp.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.employeeId.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDept = selectedDepartment === 'all' || emp.department === selectedDepartment;
+    return matchesSearch && matchesDept;
   });
 
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'active':
-        return { color: 'green', icon: CheckCircle, label: 'Active', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
-      case 'on-leave':
-        return { color: 'orange', icon: Clock, label: 'On Leave', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' };
-      case 'inactive':
-        return { color: 'gray', icon: XCircle, label: 'Inactive', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' };
-      case 'probation':
-        return { color: 'blue', icon: AlertCircle, label: 'Probation', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
-      default:
-        return { color: 'gray', icon: AlertCircle, label: 'Unknown', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' };
+      case 'active':   return { label: 'Active',    bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' };
+      case 'on-leave': return { label: 'On Leave',  bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-500' };
+      case 'inactive': return { label: 'Inactive',  bg: 'bg-gray-50',    text: 'text-gray-600',    dot: 'bg-gray-400' };
+      case 'probation':return { label: 'Probation', bg: 'bg-blue-50',    text: 'text-blue-700',    dot: 'bg-blue-500' };
+      default:         return { label: 'Unknown',   bg: 'bg-gray-50',    text: 'text-gray-600',    dot: 'bg-gray-400' };
     }
   };
 
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter(e => e.status === 'active').length;
-  const avgSalary = employees.length > 0 ? employees.reduce((acc, e) => acc + e.salary, 0) / employees.length : 0;
-  const avgRating = employees.length > 0 ? employees.reduce((acc, e) => acc + e.performance.rating, 0) / employees.length : 0;
+  const avgSalary = employees.length > 0 ? employees.reduce((a, e) => a + e.salary, 0) / employees.length : 0;
+  const avgRating = employees.length > 0 ? employees.reduce((a, e) => a + e.performance.rating, 0) / employees.length : 0;
 
   const handleExport = () => {
-    showNotify('Exporting Personnel Data...');
-    
-    // Create CSV content
+    showNotify('Generating export…');
     const headers = ['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Position', 'Department', 'Employee ID', 'Start Date', 'Status', 'Employment Type', 'Salary', 'Location', 'Performance Rating', 'Manager'];
-    const rows = employees.map(e => [
-      e.id,
-      `"${e.firstName}"`,
-      `"${e.lastName}"`,
-      e.email,
-      e.phone,
-      `"${e.position}"`,
-      e.department,
-      e.employeeId,
-      e.hireDate.toISOString().split('T')[0],
-      e.status,
-      e.employmentType,
-      e.salary,
-      `"${e.city}, ${e.country}"`,
-      e.performance.rating,
-      `"${e.manager || ''}"`
-    ]);
-    
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
-    
-    // Create download link
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const rows = employees.map(e => [e.id, `"${e.firstName}"`, `"${e.lastName}"`, e.email, e.phone, `"${e.position}"`, e.department, e.employeeId, e.hireDate.toISOString().split('T')[0], e.status, e.employmentType, e.salary, `"${e.city}, ${e.country}"`, e.performance.rating, `"${e.manager || ''}"`]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `personnel_manifest_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `employees_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    setTimeout(() => showNotify('Personnel Data Successfully Archived'), 1000);
+    setTimeout(() => showNotify('Export downloaded'), 1000);
   };
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
+  const getInitials = (f: string, l: string) => `${f.charAt(0)}${l.charAt(0)}`.toUpperCase();
 
-  const calculateTenure = (hireDate: Date) => {
+  const calcTenure = (hireDate: Date) => {
     const years = new Date().getFullYear() - hireDate.getFullYear();
-    const months = new Date().getMonth() - hireDate.getMonth();
-    if (years === 0) return `${months} months`;
-    return `${years} year${years > 1 ? 's' : ''}`;
+    if (years === 0) return `${new Date().getMonth() - hireDate.getMonth()} mo`;
+    return `${years} yr${years > 1 ? 's' : ''}`;
   };
+
+  const resetAddForm = () => { setNewEmpFirstName(''); setNewEmpLastName(''); setNewEmpType('full-time'); };
+
+  const avatarGradient = (emp: Employee) =>
+    AVATAR_GRADIENTS[(emp.firstName.charCodeAt(0) + emp.lastName.charCodeAt(0)) % AVATAR_GRADIENTS.length];
+
+  const inputCls = "w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all";
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 overflow-hidden">
-      {/* Background Layer */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-mesh" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-500/10 rounded-full blur-[140px] animate-mesh-delayed" />
-        <div className="absolute top-[30%] right-[20%] w-[30%] h-[30%] bg-blue-500/10 rounded-full blur-[100px] animate-mesh" />
+    <div className="max-w-5xl mx-auto space-y-5 pb-24 md:pb-10">
+
+      {/* ── Hero ── */}
+      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-purple-600 via-purple-700 to-pink-700 p-6 sm:p-8 text-white shadow-xl shadow-purple-200/40">
+        <div className="absolute -top-16 -right-16 w-56 h-56 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-12 left-12 w-40 h-40 bg-pink-400/20 rounded-full blur-xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 bg-white/15 rounded-lg"><Users className="w-4 h-4 text-white" /></div>
+              <span className="text-purple-200 text-[10px] font-black uppercase tracking-widest">People & Culture</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-1">HR Records</h1>
+            <p className="text-purple-300 text-sm font-medium">Employee management & records</p>
+          </div>
+          <div className="flex flex-col gap-2.5 sm:items-end">
+            <div className="flex items-center gap-1.5 self-start sm:self-auto">
+              <button onClick={() => setShowSyncModal(true)} className="p-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all cursor-pointer" title="Sync">
+                <RefreshCw className={`w-4 h-4 text-white ${isSyncing ? 'animate-spin' : ''}`} />
+              </button>
+              <button onClick={() => showNotify('Opening import…')} className="p-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all cursor-pointer" title="Import">
+                <Upload className="w-4 h-4 text-white" />
+              </button>
+              <button onClick={handleExport} className="p-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all cursor-pointer" title="Export">
+                <Download className="w-4 h-4 text-white" />
+              </button>
+            </div>
+            <button onClick={() => setShowAddEmployee(true)} className="flex items-center justify-center gap-2 bg-white text-purple-700 font-black text-sm rounded-xl px-5 py-2.5 shadow-lg hover:bg-purple-50 active:scale-95 transition-all w-full sm:w-auto cursor-pointer">
+              <Plus className="w-4 h-4" />Add Employee
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 space-y-8 max-w-[1600px] mx-auto">
-        {/* Header / Command Center */}
-        <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 border-2 border-white shadow-2xl flex flex-col items-center text-center relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          
-          <div className="inline-flex items-center gap-3 px-4 py-2 bg-purple-50 border border-purple-100 rounded-full mb-6">
-            <Users className="w-4 h-4 text-purple-600" />
-            <span className="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em]">Human Capital Command</span>
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Staff',   value: totalEmployees,              sub: `${activeEmployees} active`, icon: Users,     color: 'text-purple-600', bg: 'bg-purple-50' },
+          { label: 'Avg Salary',    value: `£${(avgSalary/1000).toFixed(0)}K`, sub: 'per year',        icon: DollarSign, color: 'text-emerald-600',bg: 'bg-emerald-50' },
+          { label: 'Avg Rating',    value: avgRating.toFixed(1),        sub: 'performance',              icon: Award,     color: 'text-amber-600',  bg: 'bg-amber-50' },
+          { label: 'Departments',   value: departments.length - 1,      sub: 'active units',             icon: Building2, color: 'text-blue-600',   bg: 'bg-blue-50' },
+        ].map((s, i) => (
+          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+            <div className={`w-9 h-9 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
+              <s.icon className={`w-4 h-4 ${s.color}`} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider truncate">{s.label}</p>
+              <p className="text-lg font-black text-gray-900 leading-tight">{s.value}</p>
+              <p className="text-[9px] font-bold text-gray-400 truncate">{s.sub}</p>
+            </div>
           </div>
-          
-          <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tight mb-4">
-            Talent <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">Registry</span>
-          </h1>
-          <p className="text-gray-500 font-bold max-w-2xl mb-10 leading-relaxed uppercase text-[10px] tracking-[0.1em]">
-            Workforce Intelligence & Organizational Architect
-          </p>
+        ))}
+      </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <button
-              onClick={() => {
-                setShowSyncModal(true);
-              }}
-              className="px-8 py-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-purple-600 active:scale-95 transition-all duration-500 flex items-center gap-3 cursor-pointer"
-            >
-              <Activity className="w-4 h-4" />
-              Sync Protocol
+      {/* ── Search + Filter + View ── */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input type="text" placeholder="Search by name, email or ID…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all" />
+        </div>
+        <button className="flex items-center gap-1.5 px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-black text-gray-600 hover:border-purple-400 hover:text-purple-600 transition-all cursor-pointer">
+          <Filter className="w-4 h-4" /><span className="hidden sm:inline">Filter</span>
+        </button>
+        <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1 gap-0.5">
+          <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="w-4 h-4" /></button>
+          <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-400 hover:bg-gray-50'}`}><List className="w-4 h-4" /></button>
+        </div>
+      </div>
+
+      {/* ── Department Pills ── */}
+      <div className="-mx-4 sm:mx-0 flex items-center gap-2 overflow-x-auto px-4 sm:px-0 pb-1 hide-scrollbar">
+        {departments.map(dept => {
+          const Icon = dept.icon;
+          const isActive = selectedDepartment === dept.id;
+          return (
+            <button key={dept.id} onClick={() => setSelectedDepartment(dept.id)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide whitespace-nowrap shrink-0 transition-all cursor-pointer border ${isActive ? 'bg-gray-900 border-gray-900 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-400 hover:text-purple-600'}`}>
+              <Icon className="w-3.5 h-3.5 shrink-0" />
+              <span>{dept.name}</span>
+              <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>{dept.count}</span>
             </button>
-            <button
-              onClick={() => setShowAddEmployee(true)}
-              className="px-8 py-4 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-purple-600 active:scale-95 transition-all duration-500 flex items-center gap-3 cursor-pointer shadow-xl shadow-purple-500/20"
-            >
-              <Plus className="w-4 h-4" />
-              Onboard Talent
+          );
+        })}
+      </div>
+
+      {/* ── Grid View ── */}
+      {viewMode === 'grid' ? (
+        filteredEmployees.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white rounded-2xl border border-gray-100">
+            <Users className="w-10 h-10 text-gray-200" />
+            <p className="text-sm font-bold text-gray-400">No employees yet</p>
+            <button onClick={() => setShowAddEmployee(true)} className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white text-xs font-black uppercase tracking-wider rounded-xl hover:bg-purple-700 transition-all cursor-pointer">
+              <Plus className="w-3.5 h-3.5" />Add First Employee
             </button>
-            <div className="h-10 w-px bg-gray-200 mx-2 hidden md:block" />
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={handleExport}
-                className="p-4 bg-white border-2 border-gray-100 rounded-2xl hover:border-purple-500 hover:text-purple-500 active:scale-95 transition-all cursor-pointer group/btn" 
-                title="Export Data"
-              >
-                <Download className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => showNotify('Opening Import Wizard...')}
-                className="p-4 bg-white border-2 border-gray-100 rounded-2xl hover:border-purple-500 hover:text-purple-500 active:scale-95 transition-all cursor-pointer group/btn" 
-                title="Import Data"
-              >
-                <Upload className="w-5 h-5" />
-              </button>
-            </div>
           </div>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[
-            { label: 'Total Workforce', val: totalEmployees, sub: `${activeEmployees} Active Nodes`, icon: Users, color: 'purple' },
-            { label: 'Avg Compensation', val: `$${(avgSalary / 1000).toFixed(0)}K`, sub: 'Per Annum', icon: DollarSign, color: 'emerald' },
-            { label: 'Performance Index', val: avgRating.toFixed(1), sub: 'Mean Rating', icon: Award, color: 'pink' },
-            { label: 'Divisions', val: departments.length - 1, sub: 'Active Units', icon: Building2, color: 'blue' },
-          ].map((stat, idx) => (
-            <div key={idx} className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-8 border-2 border-white shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden">
-              <div className={`absolute top-0 right-0 w-24 h-24 bg-${stat.color}-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700`} />
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-4 bg-${stat.color}-500 rounded-2xl shadow-lg shadow-${stat.color}-500/20`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
-                <TrendingUp className={`w-5 h-5 text-${stat.color}-500 opacity-50`} />
-              </div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
-              <p className="text-3xl font-black text-gray-900 tracking-tight">{stat.val}</p>
-              <p className={`text-[9px] font-bold text-${stat.color}-600 mt-2 flex items-center gap-1`}>
-                <Zap className="w-3 h-3" />
-                {stat.sub}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Search and Filters Hub */}
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="flex-1 relative group">
-            <div className="absolute inset-0 bg-purple-500/5 rounded-3xl blur-xl group-focus-within:bg-purple-500/10 transition-all opacity-0 group-focus-within:opacity-100" />
-            <div className="relative flex items-center bg-white/60 backdrop-blur-xl border-2 border-white shadow-xl rounded-3xl p-2 pl-6 focus-within:border-purple-500/50 transition-all">
-              <Search className="w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Locate personnel by identity or ID..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-4 py-3 bg-transparent text-sm font-bold text-gray-900 outline-none placeholder:text-gray-400"
-              />
-              <div className="hidden md:flex items-center gap-2 pr-4">
-                <span className="px-2 py-1 bg-gray-100 text-[10px] font-black text-gray-400 rounded-lg">CMD</span>
-                <span className="px-2 py-1 bg-gray-100 text-[10px] font-black text-gray-400 rounded-lg">F</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <button className="px-8 py-5 bg-white/60 backdrop-blur-xl border-2 border-white rounded-3xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-3 cursor-pointer group">
-              <Filter className="w-5 h-5 text-gray-600 group-hover:text-purple-500 transition-colors" />
-              <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.2em] group-hover:text-purple-500">Filters</span>
-            </button>
-            
-            <div className="flex items-center gap-1 bg-white/60 backdrop-blur-xl border-2 border-white shadow-xl rounded-2xl p-1.5">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-3 rounded-xl transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
-              >
-                <Grid className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-3 rounded-xl transition-all cursor-pointer ${viewMode === 'list' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
-              >
-                <List className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Department Navigation */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-4 custom-scrollbar">
-          {departments.map((category) => {
-            const Icon = category.icon;
-            const isActive = selectedDepartment === category.id;
-            return (
-              <button
-                key={category.id}
-                onClick={() => setSelectedDepartment(category.id)}
-                className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all duration-500 whitespace-nowrap cursor-pointer border-2 ${
-                  isActive
-                    ? 'bg-gray-900 border-gray-900 text-white shadow-xl shadow-gray-900/10 scale-105'
-                    : 'bg-white/60 backdrop-blur-md border-white text-gray-500 hover:border-purple-500/30 hover:text-purple-500'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {category.name}
-                <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'
-                }`}>
-                  {category.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Content Display */}
-        {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredEmployees.map((employee, idx) => {
-              const statusConfig = getStatusConfig(employee.status);
-              const StatusIcon = statusConfig.icon;
-              const tenure = calculateTenure(employee.hireDate);
-              
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {filteredEmployees.map(emp => {
+              const gradient = avatarGradient(emp);
+              const sc = getStatusConfig(emp.status);
               return (
-                <div
-                  key={employee.id}
-                  onClick={() => setSelectedEmployee(employee)}
-                  className="group relative bg-white/60 backdrop-blur-xl rounded-[3rem] border-2 border-white p-8 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 cursor-pointer animate-in fade-in zoom-in-95 fill-mode-both"
-                  style={{ animationDelay: `${idx * 100}ms` }}
-                >
-                  {/* Status Float */}
-                  <div className={`absolute top-6 right-6 flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border} shadow-sm`}>
-                    <StatusIcon className="w-3 h-3" />
-                    {statusConfig.label}
+                <div key={emp.id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-gray-100 transition-all group">
+                  <div className="flex items-start gap-4 p-4 pb-3">
+                    <div className="relative shrink-0">
+                      <div className={`w-14 h-14 rounded-2xl bg-linear-to-br ${gradient} flex items-center justify-center text-white text-xl font-black shadow-md`}>
+                        {getInitials(emp.firstName, emp.lastName)}
+                      </div>
+                      <span className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 ${sc.dot} border-2 border-white rounded-full shadow-sm`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-1">
+                        <h3 className="text-base font-black text-gray-900 truncate leading-tight group-hover:text-purple-700 transition-colors">
+                          {emp.firstName} {emp.lastName}
+                        </h3>
+                        <div className="relative shrink-0">
+                          <button onClick={e => { e.stopPropagation(); setActiveMenu(activeMenu === emp.id ? null : emp.id); }}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg transition-all cursor-pointer">
+                            <MoreVertical className="w-4 h-4 text-gray-400" />
+                          </button>
+                          {activeMenu === emp.id && (
+                            <>
+                              <div className="fixed inset-0 z-60" onClick={() => setActiveMenu(null)} />
+                              <div className="absolute right-0 top-8 z-70 w-40 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-1">
+                                <button onClick={e => { e.stopPropagation(); setSelectedEmployee(emp); setShowDetailModal(true); setActiveMenu(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                  <FileText className="w-3.5 h-3.5 text-gray-400" />View Profile
+                                </button>
+                                <button onClick={e => { e.stopPropagation(); setSelectedEmployee(emp); setShowMessageModal(true); setActiveMenu(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                  <MessageSquare className="w-3.5 h-3.5 text-gray-400" />Message
+                                </button>
+                                <div className="my-1 border-t border-gray-100" />
+                                <button onClick={e => { e.stopPropagation(); setDeletingEmployee(emp); setShowDeleteModal(true); setActiveMenu(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 cursor-pointer">
+                                  <Trash2 className="w-3.5 h-3.5" />Remove
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide truncate mt-0.5">{emp.position}</p>
+                      <span className={`inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${sc.bg} ${sc.text}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />{sc.label}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Identity Block */}
-                  <div className="flex items-center gap-5 mb-8">
-                     <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-[1.5rem] flex items-center justify-center border-2 border-white shadow-lg text-white font-black text-xl group-hover:scale-110 transition-transform duration-500">
-                       {getInitials(employee.firstName, employee.lastName)}
-                     </div>
-                     <div>
-                        <h3 className="text-xl font-black text-gray-900 tracking-tight leading-tight group-hover:text-purple-600 transition-colors">{employee.firstName} {employee.lastName}</h3>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{employee.position}</p>
-                     </div>
-                  </div>
-
-                  {/* Performance Matrix */}
-                  <div className="mb-8 p-5 bg-gray-50/50 rounded-[2rem] border border-white/50">
-                    <div className="flex items-center justify-between mb-3 text-[9px] font-black uppercase tracking-widest">
-                      <span className="text-gray-400">Perf. Index</span>
-                      <span className="text-gray-900">{employee.performance.rating}/5.0</span>
+                  {/* Performance bar */}
+                  <div className="px-4 pb-3">
+                    <div className="flex items-center justify-between text-[9px] font-black text-gray-400 uppercase tracking-wider mb-1.5">
+                      <span>Performance</span><span className="text-gray-700">{emp.performance.rating}/5.0</span>
                     </div>
-                    <div className="w-full h-2 bg-white rounded-full overflow-hidden shadow-inner mb-2">
-                       <div 
-                         className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
-                         style={{ width: `${(employee.performance.rating / 5) * 100}%` }}
-                       />
-                    </div>
-                    <div className="flex items-center gap-2 text-[9px] font-bold text-gray-500">
-                      <Target className="w-3 h-3" />
-                      <span>{employee.performance.goals} Goals Pending</span>
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-linear-to-r from-purple-500 to-pink-500 rounded-full" style={{ width: `${(emp.performance.rating / 5) * 100}%` }} />
                     </div>
                   </div>
 
-                  {/* Operational Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-8">
-                     <div className="p-4 bg-white rounded-2xl border border-gray-50 shadow-sm group-hover:shadow-md transition-all">
-                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Tenure</p>
-                        <p className="text-sm font-black text-gray-900">{tenure}</p>
-                     </div>
-                     <div className="p-4 bg-white rounded-2xl border border-gray-50 shadow-sm group-hover:shadow-md transition-all">
-                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Department</p>
-                        <p className="text-sm font-black text-gray-900 capitalize">{employee.department}</p>
-                     </div>
+                  {/* Quick stats */}
+                  <div className="px-4 pb-3 flex items-center gap-2">
+                    {[
+                      { label: 'Tenure', value: calcTenure(emp.hireDate) },
+                      { label: 'Dept',   value: emp.department },
+                      { label: 'Type',   value: emp.employmentType.replace('-', ' ') },
+                    ].map(s => (
+                      <div key={s.label} className="flex-1 bg-gray-50 rounded-xl px-2.5 py-2">
+                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-wider">{s.label}</p>
+                        <p className="text-[10px] font-black text-gray-900 mt-0.5 truncate capitalize">{s.value}</p>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Contact Interface */}
-                  <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400">
-                      <Mail className="w-3 h-3" />
-                      {employee.email.split('@')[0]}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); showNotify('Initiating Secure Comms...'); }}
-                        className="p-3 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-500 hover:text-white transition-all cursor-pointer"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          setDeletingEmployee(employee);
-                          setShowDeleteModal(true);
-                        }}
-                        className="p-3 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all cursor-pointer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                  {/* Actions */}
+                  <div className="grid grid-cols-2 gap-2 px-4 pb-4">
+                    <button onClick={() => { setSelectedEmployee(emp); setShowDetailModal(true); }}
+                      className="flex items-center justify-center gap-1.5 py-2.5 bg-purple-50 hover:bg-purple-600 text-purple-600 hover:text-white rounded-xl transition-all active:scale-95 cursor-pointer text-[9px] font-black uppercase tracking-wide">
+                      <FileText className="w-3.5 h-3.5" />Profile
+                    </button>
+                    <button onClick={() => { setSelectedEmployee(emp); setShowMessageModal(true); }}
+                      className="flex items-center justify-center gap-1.5 py-2.5 bg-pink-50 hover:bg-pink-600 text-pink-600 hover:text-white rounded-xl transition-all active:scale-95 cursor-pointer text-[9px] font-black uppercase tracking-wide">
+                      <MessageSquare className="w-3.5 h-3.5" />Message
+                    </button>
                   </div>
                 </div>
               );
             })}
           </div>
+        )
+      ) : (
+        /* ── List View ── */
+        filteredEmployees.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white rounded-2xl border border-gray-100">
+            <Users className="w-10 h-10 text-gray-200" />
+            <p className="text-sm font-bold text-gray-400">No employees yet</p>
+            <button onClick={() => setShowAddEmployee(true)} className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white text-xs font-black uppercase tracking-wider rounded-xl hover:bg-purple-700 transition-all cursor-pointer">
+              <Plus className="w-3.5 h-3.5" />Add First Employee
+            </button>
+          </div>
         ) : (
-          <div className="bg-white/60 backdrop-blur-xl rounded-[3rem] border-2 border-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <table className="w-full">
-              <thead className="bg-gray-900">
-                <tr>
-                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Personnel</th>
-                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Role</th>
-                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Status</th>
-                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Contact</th>
-                  <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Performance</th>
-                  <th className="px-8 py-6 text-right text-[10px] font-black text-white uppercase tracking-[0.2em]">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 bg-white/40">
-                {filteredEmployees.map((employee) => (
-                  <tr key={employee.id} className="group hover:bg-purple-50/50 transition-colors cursor-pointer" onClick={() => setSelectedEmployee(employee)}>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
-                          {getInitials(employee.firstName, employee.lastName)}
-                        </div>
-                        <div>
-                          <p className="font-black text-gray-900 group-hover:text-purple-600 transition-colors leading-tight">{employee.firstName} {employee.lastName}</p>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{employee.employeeId}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <p className="text-sm font-bold text-gray-900">{employee.position}</p>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-wider">{employee.department}</p>
-                    </td>
-                    <td className="px-8 py-6">
-                       <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusConfig(employee.status).bg} ${getStatusConfig(employee.status).text} border ${getStatusConfig(employee.status).border}`}>
-                          {employee.status}
-                       </div>
-                    </td>
-                    <td className="px-8 py-6">
-                       <p className="text-sm font-bold text-gray-900">{employee.email}</p>
-                       <p className="text-[10px] text-gray-500">{employee.phone}</p>
-                    </td>
-                    <td className="px-8 py-6">
-                       <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-gray-100 h-1.5 rounded-full w-24">
-                             <div className="h-full bg-purple-500 rounded-full" style={{ width: `${(employee.performance.rating / 5) * 100}%` }} />
-                          </div>
-                          <span className="text-xs font-black text-gray-900">{employee.performance.rating}</span>
-                       </div>
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                       <div className="flex items-center justify-end gap-2">
-                          <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-purple-500 hover:text-white transition-all cursor-pointer">
-                             <Eye className="w-4 h-4" />
-                          </button>
-                          <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all cursor-pointer">
-                             <Trash2 className="w-4 h-4" />
-                          </button>
-                       </div>
-                    </td>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto hide-scrollbar">
+              <table className="w-full min-w-[700px]">
+                <thead>
+                  <tr className="bg-gray-900">
+                    {['Employee', 'Role', 'Status', 'Contact', 'Performance', 'Actions'].map((h, i) => (
+                      <th key={h} className={`px-5 py-3.5 text-[9px] font-black text-gray-400 uppercase tracking-widest ${i === 5 ? 'text-right' : 'text-left'}`}>{h}</th>
+                    ))}
                   </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {filteredEmployees.map(emp => {
+                    const gradient = avatarGradient(emp);
+                    const sc = getStatusConfig(emp.status);
+                    return (
+                      <tr key={emp.id} className="hover:bg-purple-50/30 transition-colors cursor-pointer" onClick={() => { setSelectedEmployee(emp); setShowDetailModal(true); }}>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-xl bg-linear-to-br ${gradient} flex items-center justify-center text-white text-xs font-black shrink-0`}>
+                              {getInitials(emp.firstName, emp.lastName)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-black text-gray-900 leading-tight">{emp.firstName} {emp.lastName}</p>
+                              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide mt-0.5">{emp.employeeId}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="text-sm font-bold text-gray-900">{emp.position}</p>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide capitalize">{emp.department}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider ${sc.bg} ${sc.text}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />{sc.label}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="text-xs font-bold text-gray-900">{emp.email}</p>
+                          <p className="text-[10px] text-gray-400">{emp.phone}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full w-16 overflow-hidden">
+                              <div className="h-full bg-purple-500 rounded-full" style={{ width: `${(emp.performance.rating / 5) * 100}%` }} />
+                            </div>
+                            <span className="text-xs font-black text-gray-700">{emp.performance.rating}</span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button onClick={e => { e.stopPropagation(); setSelectedEmployee(emp); setShowMessageModal(true); }}
+                              className="p-2 bg-gray-50 text-gray-400 rounded-lg hover:bg-purple-50 hover:text-purple-600 transition-all cursor-pointer">
+                              <MessageSquare className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={e => { e.stopPropagation(); setDeletingEmployee(emp); setShowDeleteModal(true); }}
+                              className="p-2 bg-gray-50 text-gray-400 rounded-lg hover:bg-red-50 hover:text-red-500 transition-all cursor-pointer">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      )}
+
+      {/* ── Employee Detail Modal ── */}
+      {showDetailModal && selectedEmployee && (
+        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowDetailModal(false)} />
+          <div className="relative w-full sm:max-w-lg bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 bg-gray-200 rounded-full" /></div>
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-2xl bg-linear-to-br ${avatarGradient(selectedEmployee)} flex items-center justify-center text-white text-lg font-black shadow-md`}>
+                  {getInitials(selectedEmployee.firstName, selectedEmployee.lastName)}
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-gray-900">{selectedEmployee.firstName} {selectedEmployee.lastName}</h2>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{selectedEmployee.position}</p>
+                </div>
+              </div>
+              <button onClick={() => setShowDetailModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-5">
+              <div className="flex items-center gap-2 flex-wrap">
+                {[
+                  { ...getStatusConfig(selectedEmployee.status), value: getStatusConfig(selectedEmployee.status).label },
+                ].map(s => (
+                  <span key="status" className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider ${s.bg} ${s.text}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />{s.label}
+                  </span>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                <span className="px-2.5 py-1 bg-gray-100 rounded-lg text-[9px] font-black uppercase tracking-wider text-gray-600 capitalize">
+                  {selectedEmployee.employmentType.replace('-', ' ')}
+                </span>
+                <span className="px-2.5 py-1 bg-purple-50 rounded-lg text-[9px] font-black uppercase tracking-wider text-purple-600 capitalize">
+                  {selectedEmployee.department}
+                </span>
+              </div>
 
-      {/* Employee Detail Modal */}
-      {selectedEmployee && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] max-w-lg w-full max-h-[85vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
-             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
-               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20 text-white font-black text-lg">
-                    {getInitials(selectedEmployee.firstName, selectedEmployee.lastName)}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-purple-50 rounded-2xl p-4">
+                  <p className="text-[9px] font-black text-purple-400 uppercase tracking-wider mb-1">Salary</p>
+                  <p className="text-xl font-black text-purple-900">£{(selectedEmployee.salary / 1000).toFixed(0)}K</p>
+                </div>
+                <div className="bg-pink-50 rounded-2xl p-4">
+                  <p className="text-[9px] font-black text-pink-400 uppercase tracking-wider mb-1">Rating</p>
+                  <p className="text-xl font-black text-pink-900">{selectedEmployee.performance.rating}/5.0</p>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between text-[9px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                  <span>Performance</span><span>{selectedEmployee.performance.goals} goals pending</span>
+                </div>
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-linear-to-r from-purple-500 to-pink-500 rounded-full" style={{ width: `${(selectedEmployee.performance.rating / 5) * 100}%` }} />
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-4 grid grid-cols-2 gap-y-4 gap-x-3">
+                {[
+                  { label: 'Email',       value: selectedEmployee.email },
+                  { label: 'Phone',       value: selectedEmployee.phone },
+                  { label: 'Employee ID', value: selectedEmployee.employeeId },
+                  { label: 'Manager',     value: selectedEmployee.manager || '—' },
+                  { label: 'Location',    value: `${selectedEmployee.city}, ${selectedEmployee.country}` },
+                  { label: 'Joined',      value: selectedEmployee.hireDate.toLocaleDateString() },
+                ].map(item => (
+                  <div key={item.label}>
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-0.5">{item.label}</p>
+                    <p className="text-xs font-bold text-gray-900 break-all">{item.value}</p>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight">{selectedEmployee.firstName} {selectedEmployee.lastName}</h2>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusConfig(selectedEmployee.status).bg} ${getStatusConfig(selectedEmployee.status).text} border ${getStatusConfig(selectedEmployee.status).border}`}>
-                        {selectedEmployee.status}
-                      </span>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-2 border-l border-gray-300">
-                        {selectedEmployee.position}
-                      </span>
-                    </div>
+                ))}
+              </div>
+
+              {selectedEmployee.skills.length > 0 && (
+                <div>
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-2">Skills</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedEmployee.skills.map(skill => (
+                      <span key={skill} className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-700">{skill}</span>
+                    ))}
                   </div>
-               </div>
-               <button
-                 onClick={() => setSelectedEmployee(null)}
-                 className="p-4 bg-gray-100/50 hover:bg-gray-200/50 rounded-2xl transition-all cursor-pointer group"
-               >
-                 <X className="w-5 h-5 text-gray-500 group-hover:rotate-90 transition-transform duration-500" />
-               </button>
-             </div>
-
-             <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-                {/* Stats Cards */}
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="p-5 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl border border-purple-100">
-                      <p className="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-1.5">Comp. Package</p>
-                      <p className="text-2xl font-black text-purple-900">${(selectedEmployee.salary / 1000).toFixed(0)}K</p>
-                   </div>
-                   <div className="p-5 bg-gradient-to-br from-pink-50 to-pink-100/50 rounded-2xl border border-pink-100">
-                      <p className="text-[10px] font-black text-pink-500 uppercase tracking-widest mb-1.5">Performance</p>
-                      <p className="text-2xl font-black text-pink-900">{selectedEmployee.performance.rating}</p>
-                   </div>
                 </div>
+              )}
+            </div>
 
-                {/* Info Grid */}
-                <div>
-                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
-                      <FileText className="w-4 h-4 text-gray-400" />
-                      Personnel Dossier
-                   </h3>
-                   <div className="bg-white/50 border-2 border-gray-100 rounded-2xl p-5 grid grid-cols-2 gap-y-4">
-                      <div>
-                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Department</p>
-                         <p className="font-bold text-gray-900 capitalize">{selectedEmployee.department}</p>
-                      </div>
-                      <div>
-                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Employment Type</p>
-                         <p className="font-bold text-gray-900 capitalize">{selectedEmployee.employmentType.replace('-', ' ')}</p>
-                      </div>
-                      <div>
-                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Email</p>
-                         <p className="font-bold text-gray-900 text-sm">{selectedEmployee.email}</p>
-                      </div>
-                      <div>
-                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Phone</p>
-                         <p className="font-bold text-gray-900">{selectedEmployee.phone}</p>
-                      </div>
-                      <div>
-                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Location</p>
-                         <p className="font-bold text-gray-900">{selectedEmployee.city}, {selectedEmployee.country}</p>
-                      </div>
-                      <div>
-                         <p className="text-[10px] font-black text-gray-400 uppercase mb-0.5">Joined</p>
-                         <p className="font-bold text-gray-900">{selectedEmployee.hireDate.toLocaleDateString()}</p>
-                      </div>
-                   </div>
-                </div>
-                
-                {/* Skills */}
-                <div>
-                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
-                      <Zap className="w-4 h-4 text-amber-500" />
-                      Competencies
-                   </h3>
-                   <div className="flex flex-wrap gap-1.5">
-                      {selectedEmployee.skills.map(skill => (
-                        <span key={skill} className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-700 shadow-sm">
-                           {skill}
-                        </span>
-                      ))}
-                   </div>
-                </div>
-             </div>
-
-             <div className="p-6 bg-white/60 border-t border-gray-100 flex items-center gap-3 sticky bottom-0">
-                <button 
-                  onClick={() => setShowMessageModal(true)}
-                  className="flex-1 px-4 py-4 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-3 cursor-pointer"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Dispatch Info
-                </button>
-                <button 
-                  onClick={() => {
-                     setDeletingEmployee(selectedEmployee);
-                     setShowDeleteModal(true);
-                  }}
-                  className="p-4 border-2 border-rose-100 text-rose-500 rounded-xl hover:bg-rose-50 transition-all cursor-pointer"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-             </div>
+            <div className="px-5 sm:px-6 py-4 border-t border-gray-100 flex items-center gap-3 shrink-0">
+              <button onClick={() => { setShowDetailModal(false); setShowMessageModal(true); }}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-purple-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-purple-700 transition-all cursor-pointer">
+                <MessageSquare className="w-4 h-4" />Message
+              </button>
+              <button onClick={() => { setDeletingEmployee(selectedEmployee); setShowDetailModal(false); setShowDeleteModal(true); }}
+                className="p-3 border border-red-200 text-red-500 rounded-xl hover:bg-red-50 transition-all cursor-pointer">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Sync Protocol Modal */}
-      {showSyncModal && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] max-w-lg w-full border-2 border-white shadow-2xl flex flex-col relative text-gray-900 overflow-hidden">
-             {/* Modal Header */}
-             <div className="p-6 border-b border-gray-100 bg-white/40 flex items-center justify-between relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-pulse" />
-                <div className="relative">
-                   <h2 className="text-xl font-black tracking-tight flex items-center gap-3">
-                      <RefreshCw className={`w-5 h-5 text-purple-600 ${isSyncing ? 'animate-spin' : ''}`} />
-                      Sync Protocol
-                   </h2>
-                   <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">HRIS Database Reconciliation</p>
-                </div>
-                {!isSyncing && (
-                  <button onClick={() => setShowSyncModal(false)} className="p-3 bg-gray-100/50 rounded-xl cursor-pointer hover:bg-gray-200 transition-all">
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-             </div>
-
-             <div className="p-6 space-y-6">
-                {/* Sync Reactor / Central Visual */}
-                <div className="flex flex-col items-center justify-center py-6 relative">
-                   <div className={`w-24 h-24 rounded-full border-4 border-purple-100 flex items-center justify-center relative ${isSyncing ? 'animate-pulse' : ''}`}>
-                      <div className={`absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent ${isSyncing ? 'animate-spin' : 'opacity-20'}`} />
-                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30">
-                         <Database className="w-6 h-6 text-white" />
-                      </div>
-                   </div>
-                   <div className="mt-4 text-center">
-                      <p className="text-[9px] font-black text-purple-500 uppercase tracking-[0.3em] mb-1">{isSyncing ? 'Synchronizing Nodes' : 'Protocol Ready'}</p>
-                      <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest opacity-60">Auth: OKLEEVO-HR-v2.4</p>
-                   </div>
-                </div>
-
-                {/* Progress Grid */}
-                <div className="space-y-4">
-                   {[
-                      { id: 'payroll', label: 'Payroll Reconciliation', icon: DollarSign, progress: syncProgress.payroll },
-                      { id: 'attendance', label: 'Attendance Manifests', icon: Clock, progress: syncProgress.attendance },
-                      { id: 'benefits', label: 'Benefit Structures', icon: Zap, progress: syncProgress.benefits },
-                      { id: 'performance', label: 'Performance Nodes', icon: Activity, progress: syncProgress.performance },
-                   ].map((module) => (
-                     <div key={module.id} className="space-y-1.5">
-                        <div className="flex items-center justify-between text-[8px] font-black pointer-events-none">
-                           <div className="flex items-center gap-2 text-gray-400">
-                              <module.icon className="w-2.5 h-2.5" />
-                              <span className="uppercase tracking-[0.15em]">{module.label}</span>
-                           </div>
-                           <span className="text-purple-600 font-black tracking-widest">{module.progress}%</span>
-                        </div>
-                        <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner">
-                           <div 
-                              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300"
-                              style={{ width: `${module.progress}%` }}
-                           />
-                        </div>
-                     </div>
-                   ))}
-                </div>
-             </div>
-
-             <div className="p-6 bg-white/60 border-t border-gray-100">
-                {!isSyncing ? (
-                   <button 
-                     onClick={() => {
-                        setIsSyncing(true);
-                        // Simulate sync process
-                        const startSync = async () => {
-                           const modules = ['payroll', 'attendance', 'benefits', 'performance'];
-                           for (const m of modules) {
-                              for (let i = 0; i <= 100; i += Math.floor(Math.random() * 15) + 5) {
-                                 const progress = Math.min(i, 100);
-                                 setSyncProgress(prev => ({ ...prev, [m]: progress }));
-                                 await new Promise(r => setTimeout(r, 150));
-                              }
-                              setSyncProgress(prev => ({ ...prev, [m]: 100 }));
-                           }
-                           setIsSyncing(false);
-                           showNotify('✓ HRIS Database Successfully Reconciled', 'success');
-                           setTimeout(() => {
-                              setShowSyncModal(false);
-                              setSyncProgress({ payroll: 0, attendance: 0, benefits: 0, performance: 0 });
-                           }, 1500);
-                        };
-                        startSync();
-                     }}
-                     className="w-full py-5 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-3 cursor-pointer"
-                   >
-                     <Zap className="w-4 h-4" />
-                     Initialize Sync Protocol
-                   </button>
-                ) : (
-                   <div className="py-5 bg-purple-50 border border-purple-100 rounded-2xl flex items-center justify-center gap-3">
-                      <RefreshCw className="w-4 h-4 text-purple-600 animate-spin" />
-                      <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest">Protocol Active...</span>
-                   </div>
-                )}
-             </div>
-          </div>
-        </div>
-      )}
-      {/* Add Employee Modal */}
+      {/* ── Add Employee Modal ── */}
       {showAddEmployee && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] max-w-2xl w-full max-h-[85vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
-             <div className="p-6 md:p-8 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
-               <h2 className="text-xl font-black tracking-tight">Onboard <span className="text-purple-600">Talent</span></h2>
-               <button onClick={() => setShowAddEmployee(false)} className="p-3 bg-gray-100/50 hover:bg-gray-200/50 rounded-xl transition-all cursor-pointer">
-                 <X className="w-5 h-5" />
-               </button>
-             </div>
-             
-             <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 custom-scrollbar">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                   <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">First Name</label>
-                      <input type="text" placeholder="John" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
-                   </div>
-                   <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Last Name</label>
-                      <input type="text" placeholder="Doe" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
-                   </div>
-                   <div className="md:col-span-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
-                      <input type="email" placeholder="john.doe@company.com" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
-                   </div>
-                   <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Department</label>
-                      <select className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold">
-                        {departmentConfigs.filter(d => d.id !== 'all').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                      </select>
-                   </div>
-                   <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Role / Title</label>
-                      <input type="text" placeholder="Software Engineer" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-purple-500 outline-none transition-all font-bold placeholder:text-gray-300" />
-                   </div>
-                </div>
+        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => { setShowAddEmployee(false); resetAddForm(); }} />
+          <div className="relative w-full sm:max-w-2xl bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 bg-gray-200 rounded-full" /></div>
 
-                <div className="bg-purple-50/50 rounded-2xl p-6 border border-purple-100">
-                   <h3 className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
-                      Administrative Details
-                   </h3>
-                   <div className="grid grid-cols-2 gap-5">
-                      <div>
-                         <label className="block text-[9px] font-black text-purple-400 uppercase mb-1.5">Start Date</label>
-                         <input type="date" className="w-full px-5 py-3.5 bg-white border-2 border-purple-100 rounded-lg focus:border-purple-500 outline-none transition-all font-bold text-gray-700" />
-                      </div>
-                      <div>
-                         <label className="block text-[9px] font-black text-purple-400 uppercase mb-1.5">Base Salary</label>
-                         <input type="number" placeholder="0.00" className="w-full px-5 py-3.5 bg-white border-2 border-purple-100 rounded-lg focus:border-purple-500 outline-none transition-all font-bold placeholder:text-purple-200" />
-                      </div>
-                   </div>
+            {/* Mobile header */}
+            <div className="flex sm:hidden items-center justify-between px-5 py-3 border-b border-gray-100 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-black text-sm shadow-md">
+                  {newEmpFirstName || newEmpLastName ? `${newEmpFirstName.charAt(0)}${newEmpLastName.charAt(0)}`.toUpperCase() : <User className="w-4 h-4" />}
                 </div>
-             </div>
+                <p className="text-sm font-black text-gray-900">
+                  {newEmpFirstName || newEmpLastName ? `${newEmpFirstName} ${newEmpLastName}`.trim() : 'New Employee'}
+                </p>
+              </div>
+              <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer">
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
 
-             <div className="p-6 md:p-8 bg-white/60 border-t border-gray-100 flex items-center gap-3">
-                <button onClick={() => setShowAddEmployee(false)} className="flex-1 px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-all cursor-pointer">
-                   Cancel
+            {/* Desktop: sidebar + form */}
+            <div className="hidden sm:flex flex-1 overflow-hidden">
+              <div className="w-64 bg-gray-950 p-6 flex flex-col gap-4 shrink-0">
+                <div>
+                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4">New Employee</p>
+                  <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-black mb-3 shadow-lg">
+                    {newEmpFirstName || newEmpLastName ? `${newEmpFirstName.charAt(0)}${newEmpLastName.charAt(0)}`.toUpperCase() : <User className="w-6 h-6" />}
+                  </div>
+                  <p className="text-white font-black text-base leading-tight">
+                    {newEmpFirstName || newEmpLastName ? `${newEmpFirstName} ${newEmpLastName}`.trim() : 'Preview'}
+                  </p>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-1 capitalize">{newEmpType.replace('-', ' ')}</p>
+                </div>
+                <div className="mt-auto space-y-2">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600"><Shield className="w-3.5 h-3.5 text-emerald-500" />Secure & Encrypted</div>
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600"><Users className="w-3.5 h-3.5 text-purple-400" />Added to your team</div>
+                </div>
+              </div>
+
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+                  <h2 className="text-base font-black text-gray-900">Add Employee</h2>
+                  <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer"><X className="w-4 h-4 text-gray-400" /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+                  {/* Personal */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 rounded-lg bg-purple-50 flex items-center justify-center"><User className="w-3.5 h-3.5 text-purple-600" /></div>
+                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Personal Info</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">First Name *</label><input type="text" value={newEmpFirstName} onChange={e => setNewEmpFirstName(e.target.value)} placeholder="Sarah" className={inputCls} /></div>
+                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Last Name *</label><input type="text" value={newEmpLastName} onChange={e => setNewEmpLastName(e.target.value)} placeholder="Johnson" className={inputCls} /></div>
+                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Email *</label><input type="email" placeholder="sarah@company.com" className={inputCls} /></div>
+                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Phone</label><input type="tel" placeholder="+44 7911 123456" className={inputCls} /></div>
+                    </div>
+                  </div>
+                  {/* Role */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center"><Briefcase className="w-3.5 h-3.5 text-blue-600" /></div>
+                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Role & Department</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <label className="block text-xs font-black text-gray-700 mb-1.5">Department *</label>
+                        <select className={inputCls}>{departmentConfigs.filter(d => d.id !== 'all').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select>
+                      </div>
+                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Job Title *</label><input type="text" placeholder="Senior Developer" className={inputCls} /></div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-gray-700 mb-1.5">Employment Type</label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {(['full-time', 'part-time', 'contract', 'intern'] as const).map(t => (
+                          <button key={t} type="button" onClick={() => setNewEmpType(t)}
+                            className={`py-2 rounded-xl text-[9px] font-black uppercase tracking-wide transition-all cursor-pointer border ${newEmpType === t ? 'bg-purple-500 border-purple-500 text-white' : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-purple-300'}`}>
+                            {t.replace('-', ' ')}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Admin */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center"><Shield className="w-3.5 h-3.5 text-emerald-600" /></div>
+                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Administrative</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Start Date *</label><input type="date" className={inputCls} /></div>
+                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Base Salary (£)</label><input type="number" placeholder="35000" className={inputCls} /></div>
+                      <div className="col-span-2"><label className="block text-xs font-black text-gray-700 mb-1.5">Reporting Manager</label><input type="text" placeholder="e.g. Jane Smith" className={inputCls} /></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
+                  <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="px-5 py-2.5 border border-gray-200 text-sm font-black text-gray-600 rounded-xl hover:bg-gray-50 transition-all cursor-pointer">Cancel</button>
+                  <button onClick={() => { showNotify('Employee added successfully'); setShowAddEmployee(false); resetAddForm(); }}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white text-sm font-black rounded-xl hover:bg-purple-700 transition-all cursor-pointer shadow-lg shadow-purple-200">
+                    <CheckCircle className="w-4 h-4" />Add Employee
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile form */}
+            <div className="flex-1 overflow-y-auto sm:hidden px-5 pt-8 pb-4 space-y-5">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-lg bg-purple-50 flex items-center justify-center"><User className="w-3.5 h-3.5 text-purple-600" /></div>
+                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Personal Info</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><label className="block text-xs font-black text-gray-700 mb-1.5">First Name *</label><input type="text" value={newEmpFirstName} onChange={e => setNewEmpFirstName(e.target.value)} placeholder="Sarah" className={inputCls} /></div>
+                    <div><label className="block text-xs font-black text-gray-700 mb-1.5">Last Name *</label><input type="text" value={newEmpLastName} onChange={e => setNewEmpLastName(e.target.value)} placeholder="Johnson" className={inputCls} /></div>
+                  </div>
+                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Email *</label><input type="email" placeholder="sarah@company.com" className={inputCls} /></div>
+                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Phone</label><input type="tel" placeholder="+44 7911 123456" className={inputCls} /></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center"><Briefcase className="w-3.5 h-3.5 text-blue-600" /></div>
+                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Role & Department</h3>
+                </div>
+                <div className="space-y-3">
+                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Department *</label><select className={inputCls}>{departmentConfigs.filter(d => d.id !== 'all').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
+                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Job Title *</label><input type="text" placeholder="Senior Developer" className={inputCls} /></div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 mb-1.5">Employment Type</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(['full-time', 'part-time', 'contract', 'intern'] as const).map(t => (
+                        <button key={t} type="button" onClick={() => setNewEmpType(t)}
+                          className={`py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wide transition-all cursor-pointer border ${newEmpType === t ? 'bg-purple-500 border-purple-500 text-white' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                          {t.replace('-', ' ')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center"><Shield className="w-3.5 h-3.5 text-emerald-600" /></div>
+                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Administrative</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><label className="block text-xs font-black text-gray-700 mb-1.5">Start Date *</label><input type="date" className={inputCls} /></div>
+                    <div><label className="block text-xs font-black text-gray-700 mb-1.5">Salary (£)</label><input type="number" placeholder="35000" className={inputCls} /></div>
+                  </div>
+                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Reporting Manager</label><input type="text" placeholder="e.g. Jane Smith" className={inputCls} /></div>
+                </div>
+              </div>
+              {/* Mobile buttons inside scroll — extended scroll space */}
+              <div className="flex items-center justify-end gap-3 pt-2 pb-32">
+                <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="px-5 py-2.5 border border-gray-200 text-sm font-black text-gray-600 rounded-xl hover:bg-gray-50 transition-all cursor-pointer">Cancel</button>
+                <button onClick={() => { showNotify('Employee added successfully'); setShowAddEmployee(false); resetAddForm(); }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white text-sm font-black rounded-xl hover:bg-purple-700 transition-all cursor-pointer shadow-lg shadow-purple-200">
+                  <CheckCircle className="w-4 h-4" />Add Employee
                 </button>
-                <button 
-                  onClick={() => {
-                     showNotify('Talent Successfully Registered');
-                     setShowAddEmployee(false);
-                  }}
-                  className="flex-[2] px-8 py-4 bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-purple-600 transition-all shadow-xl shadow-purple-500/20 cursor-pointer"
-                >
-                   Confirm Registry
-                </button>
-             </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-
-      {/* Message Modal */}
-      {showMessageModal && selectedEmployee && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4 animate-in fade-in duration-500">
-           <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] max-w-xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
-              <div className="p-8 border-b border-gray-100 bg-white/40 sticky top-0 z-10 flex items-center justify-between">
-                 <div>
-                    <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
-                       <MessageSquare className="w-6 h-6 text-purple-600" />
-                       Internal Comms
-                    </h2>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Recipient: {selectedEmployee.firstName} {selectedEmployee.lastName}</p>
-                 </div>
-                 <button onClick={() => setShowMessageModal(false)} className="p-4 bg-gray-100/50 rounded-2xl cursor-pointer">
-                   <X className="w-5 h-5" />
-                 </button>
+      {/* ── Sync Modal ── */}
+      {showSyncModal && (
+        <div className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => !isSyncing && setShowSyncModal(false)} />
+          <div className="relative w-full sm:max-w-md bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 bg-gray-200 rounded-full" /></div>
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+              <div>
+                <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                  <RefreshCw className={`w-5 h-5 text-purple-500 ${isSyncing ? 'animate-spin' : ''}`} />Sync HR Data
+                </h2>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">HRIS reconciliation</p>
               </div>
-
-              <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
-                 <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Urgency Level</label>
-                    <div className="grid grid-cols-3 gap-2">
-                       {['normal', 'high', 'critical'].map((p) => (
-                         <button
-                           key={p}
-                           onClick={() => setMessagePriority(p)}
-                           className={`py-3 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer ${
-                             messagePriority === p 
-                             ? (p === 'critical' ? 'bg-rose-500 text-white' : 'bg-purple-500 text-white')
-                             : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                           }`}
-                         >
-                           {p}
-                         </button>
-                       ))}
+              {!isSyncing && (
+                <button onClick={() => setShowSyncModal(false)} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer">
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              )}
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
+              <div className="flex flex-col items-center py-6 gap-3">
+                <div className={`w-20 h-20 rounded-full border-4 border-purple-100 flex items-center justify-center relative ${isSyncing ? 'animate-pulse' : ''}`}>
+                  <div className={`absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent ${isSyncing ? 'animate-spin' : 'opacity-20'}`} />
+                  <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Database className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                <p className="text-[10px] font-black text-purple-500 uppercase tracking-widest">{isSyncing ? 'Syncing…' : 'Ready to sync'}</p>
+              </div>
+              <div className="space-y-3">
+                {([
+                  { id: 'payroll', label: 'Payroll', icon: DollarSign, progress: syncProgress.payroll },
+                  { id: 'attendance', label: 'Attendance', icon: Clock, progress: syncProgress.attendance },
+                  { id: 'benefits', label: 'Benefits', icon: Zap, progress: syncProgress.benefits },
+                  { id: 'performance', label: 'Performance', icon: Activity, progress: syncProgress.performance },
+                ] as const).map(m => (
+                  <div key={m.id}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-wider">
+                        <m.icon className="w-3 h-3" />{m.label}
+                      </div>
+                      <span className="text-[10px] font-black text-purple-600">{m.progress}%</span>
                     </div>
-                 </div>
-
-                 <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Subject Vector</label>
-                    <input 
-                       type="text" 
-                       value={messageSubject}
-                       onChange={(e) => setMessageSubject(e.target.value)}
-                       placeholder="Enter brief subject..." 
-                       className="w-full px-6 py-4 bg-white border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-purple-500" 
-                    />
-                 </div>
-
-                 <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Message Body</label>
-                    <textarea 
-                       rows={6}
-                       value={messageBody}
-                       onChange={(e) => setMessageBody(e.target.value)}
-                       placeholder="Type your message..." 
-                       className="w-full px-6 py-4 bg-white border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-purple-500 resize-none" 
-                    />
-                 </div>
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-linear-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300" style={{ width: `${m.progress}%` }} />
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              <div className="p-8 bg-white/60 border-t border-gray-100">
-                 <button 
-                   disabled={!messageSubject || !messageBody}
-                   onClick={() => {
-                     showNotify(`Message Dispatched to ${selectedEmployee.firstName}`);
-                     setShowMessageModal(false);
-                   }}
-                   className="w-full py-5 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-purple-600 transition-all shadow-xl disabled:opacity-30 cursor-pointer"
-                 >
-                   Send Transmission
-                 </button>
-              </div>
-           </div>
+            </div>
+            <div className="px-5 sm:px-6 py-4 border-t border-gray-100 shrink-0">
+              {!isSyncing ? (
+                <button
+                  onClick={() => {
+                    setIsSyncing(true);
+                    const run = async () => {
+                      const modules = ['payroll', 'attendance', 'benefits', 'performance'];
+                      for (const m of modules) {
+                        for (let i = 0; i <= 100; i += Math.floor(Math.random() * 15) + 5) {
+                          setSyncProgress(prev => ({ ...prev, [m]: Math.min(i, 100) }));
+                          await new Promise(r => setTimeout(r, 150));
+                        }
+                        setSyncProgress(prev => ({ ...prev, [m]: 100 }));
+                      }
+                      setIsSyncing(false);
+                      showNotify('HR data synced successfully', 'success');
+                      setTimeout(() => { setShowSyncModal(false); setSyncProgress({ payroll: 0, attendance: 0, benefits: 0, performance: 0 }); }, 1500);
+                    };
+                    run();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-purple-700 transition-all cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4" />Start Sync
+                </button>
+              ) : (
+                <div className="flex items-center justify-center gap-2 py-3 bg-purple-50 rounded-xl">
+                  <RefreshCw className="w-4 h-4 text-purple-600 animate-spin" />
+                  <span className="text-[10px] font-black text-purple-600 uppercase tracking-wider">Syncing…</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* ── Message Modal ── */}
+      {showMessageModal && selectedEmployee && (
+        <div className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowMessageModal(false)} />
+          <div className="relative w-full sm:max-w-md bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 bg-gray-200 rounded-full" /></div>
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+              <div>
+                <p className="text-[10px] font-black text-purple-500 uppercase tracking-wider mb-0.5">To: {selectedEmployee.firstName} {selectedEmployee.lastName}</p>
+                <h2 className="text-lg font-black text-gray-900 flex items-center gap-2"><MessageSquare className="w-5 h-5 text-purple-500" />Send Message</h2>
+              </div>
+              <button onClick={() => setShowMessageModal(false)} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer"><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-2">Priority</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['normal', 'high', 'critical'].map(p => (
+                    <button key={p} onClick={() => setMessagePriority(p)}
+                      className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${messagePriority === p ? (p === 'critical' ? 'bg-red-500 text-white' : 'bg-purple-600 text-white') : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}>
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Subject</label>
+                <input type="text" value={messageSubject} onChange={e => setMessageSubject(e.target.value)} placeholder="Message subject…" className={inputCls} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Message</label>
+                <textarea rows={5} value={messageBody} onChange={e => setMessageBody(e.target.value)} placeholder="Write your message…"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all resize-none" />
+              </div>
+            </div>
+            <div className="px-5 sm:px-6 py-4 border-t border-gray-100 shrink-0">
+              <button disabled={!messageSubject || !messageBody}
+                onClick={() => { showNotify(`Message sent to ${selectedEmployee.firstName}`); setShowMessageModal(false); setMessageSubject(''); setMessageBody(''); }}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-purple-700 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                <MessageSquare className="w-4 h-4" />Send Message
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Modal ── */}
       {deletingEmployee && (
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setDeletingEmployee(null);
-          }}
-          onConfirm={() => {
-            setEmployees(employees.filter(e => e.id !== deletingEmployee.id));
-            showNotify('Personnel Record Terminated');
-          }}
-          title="Disconnect Node"
+          onClose={() => { setShowDeleteModal(false); setDeletingEmployee(null); }}
+          onConfirm={() => { setEmployees(employees.filter(e => e.id !== deletingEmployee.id)); setSelectedEmployee(null); showNotify('Employee removed'); }}
+          title="Remove Employee"
           itemName={`${deletingEmployee.firstName} ${deletingEmployee.lastName}`}
-          itemDetails={`${deletingEmployee.position} - ${deletingEmployee.department}`}
-          warningMessage="This action will permanently remove this employee record from the registry."
+          itemDetails={`${deletingEmployee.position} — ${deletingEmployee.department}`}
+          warningMessage="This will permanently remove this employee record."
         />
       )}
 
-      {/* Global Toast Notification */}
+      {/* ── Toast ── */}
       {notification && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-bottom-8 duration-500">
-          <div className={`px-8 py-4 rounded-[2rem] shadow-2xl backdrop-blur-2xl border-2 flex items-center gap-4 ${
-            notification.type === 'success' ? 'bg-emerald-500/90 border-emerald-400/50 text-white' :
-            notification.type === 'error' ? 'bg-rose-500/90 border-rose-400/50 text-white' :
-            'bg-gray-900/90 border-gray-700 text-white'
+        <div className="fixed bottom-24 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:w-80 z-200">
+          <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-xl border ${
+            notification.type === 'success' ? 'bg-emerald-500 border-emerald-400 text-white' :
+            notification.type === 'error'   ? 'bg-red-500 border-red-400 text-white' :
+            notification.type === 'warning' ? 'bg-amber-500 border-amber-400 text-white' :
+            'bg-gray-900 border-gray-800 text-white'
           }`}>
-            <div className={`p-2 rounded-xl bg-white/20`}>
-              {notification.type === 'success' ? <CheckCircle className="w-5 h-5" /> : 
-               notification.type === 'error' ? <XCircle className="w-5 h-5" /> : 
-               <Zap className="w-5 h-5" />}
+            <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
+              {notification.type === 'success' ? <CheckCircle className="w-4 h-4" /> :
+               notification.type === 'error'   ? <XCircle className="w-4 h-4" /> :
+               <AlertCircle className="w-4 h-4" />}
             </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em]">{notification.message}</p>
+            <p className="text-xs font-black flex-1">{notification.message}</p>
+            <button onClick={() => setNotification(null)} className="p-1 hover:bg-white/10 rounded-lg cursor-pointer"><X className="w-3.5 h-3.5" /></button>
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 }

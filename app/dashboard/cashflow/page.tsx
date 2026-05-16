@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  TrendingUp, TrendingDown, DollarSign, Calendar, Download, 
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import {
+  TrendingUp, TrendingDown, DollarSign, Calendar, Download,
   ArrowUpRight, ArrowDownRight, Plus, BarChart3, PieChart,
   Wallet, Building2, ShoppingCart, Users, Zap,
   ArrowRight, CheckCircle,
-  Activity, Target, Sparkles, X, Edit, Trash2, Tag, Loader2, LucideIcon
+  Activity, Target, Sparkles, X, Edit, Trash2, Tag, Loader2
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 interface Transaction {
@@ -51,6 +52,27 @@ interface CashflowResponse {
   };
 }
 
+const ModalHandle = () => (
+  <div className="flex justify-center pt-2 pb-0 sm:hidden shrink-0">
+    <div className="w-10 h-1 rounded-full bg-gray-300" />
+  </div>
+);
+
+const ModalFooter = ({ children }: { children: ReactNode }) => (
+  <div className="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 py-3 flex flex-row gap-2.5 pb-[calc(1.5rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+    {children}
+  </div>
+);
+
+const CancelBtn = ({ onClick, label = 'Cancel' }: { onClick: () => void; label?: string }) => (
+  <button
+    onClick={onClick}
+    className="flex-1 py-3 px-5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer"
+  >
+    {label}
+  </button>
+);
+
 export default function CashflowPage() {
   const [timeRange, setTimeRange] = useState('month');
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
@@ -58,9 +80,9 @@ export default function CashflowPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<typeof recentTransactions[0] | null>(null);
-  const [viewingTransaction, setViewingTransaction] = useState<typeof recentTransactions[0] | null>(null);
-  const [deletingTransaction, setDeletingTransaction] = useState<typeof recentTransactions[0] | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
+  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
   const [newTransaction, setNewTransaction] = useState({
     type: 'income' as 'income' | 'expense',
     description: '',
@@ -81,23 +103,24 @@ export default function CashflowPage() {
     avgMonthlyExpenses: 0
   });
 
-  const incomeBreakdown = [
-    { name: 'Operating Income', percentage: 100, color: 'bg-green-500' },
-  ];
+  const getIcon = (name: string): LucideIcon => {
+    switch (name) {
+      case 'Operations': return Building2;
+      case 'Salaries': return Users;
+      case 'Marketing': return Target;
+      default: return ShoppingCart;
+    }
+  };
 
   const fetchCashflowData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/cashflow');
       const data: CashflowResponse = await response.json();
-      
       if (data.monthlyData) setMonthlyData(data.monthlyData);
       if (data.recentTransactions) setRecentTransactions(data.recentTransactions);
       if (data.expenseCategories) {
-        setExpenseCategories(data.expenseCategories.map((c) => ({
-          ...c,
-          icon: getIcon(c.name)
-        })));
+        setExpenseCategories(data.expenseCategories.map((c) => ({ ...c, icon: getIcon(c.name) })));
       }
       if (data.summary) setSummary(data.summary);
     } catch (error) {
@@ -111,69 +134,57 @@ export default function CashflowPage() {
     fetchCashflowData();
   }, [fetchCashflowData]);
 
-  const getIcon = (name: string) => {
-    switch (name) {
-      case 'Operations': return Building2;
-      case 'Salaries': return Users;
-      case 'Marketing': return Target;
-      default: return ShoppingCart;
-    }
-  };
-
-  const maxValue = monthlyData.length > 0 ? Math.max(...monthlyData.map(d => Math.max(d.income, d.expenses))) : 1000;
+  const maxValue = monthlyData.length > 0
+    ? Math.max(...monthlyData.map(d => Math.max(d.income, d.expenses)))
+    : 1000;
   const avgMonthlyIncome = summary.avgMonthlyIncome;
   const avgMonthlyExpenses = summary.avgMonthlyExpenses;
+  const netCashflow = avgMonthlyIncome - avgMonthlyExpenses;
+  const profitMargin = avgMonthlyIncome > 0 ? (netCashflow / avgMonthlyIncome) * 100 : 0;
+
+  const resetNewTransaction = () => setNewTransaction({
+    type: 'income',
+    description: '',
+    amount: '',
+    date: new Date().toISOString().split('T')[0],
+    category: 'Sales'
+  });
 
   return (
-    <div className="relative min-h-screen pb-20 overflow-hidden">
-      {/* Dynamic Background */}
-      <div className="fixed inset-0 z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/20 blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-400/20 blur-[120px] animate-pulse delay-1000" />
-        <div className="absolute top-[20%] left-[30%] w-[60%] h-[60%] rounded-full bg-indigo-300/10 blur-[100px]" />
-      </div>
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-white pb-24 sm:pb-8">
 
-      {/* Content Container */}
-      <div className="relative z-10 space-y-8 p-8 max-w-[1600px] mx-auto">
-
-      {/* Header */}
-      <div className="bg-white/70 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/50 relative overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="text-center md:text-left">
-            <h1 className="text-5xl font-black mb-3 flex items-center justify-center md:justify-start gap-4 text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700 tracking-tight">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 shadow-lg shadow-indigo-200">
-                <Activity className="w-8 h-8 text-white" />
-              </div>
-              Cashflow Pulse
-            </h1>
-            <p className="text-gray-500 text-lg font-medium ml-1">Real-time financial health & tax proximity tracking</p>
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 bg-indigo-600 rounded-xl shrink-0">
+              <Activity className="w-5 h-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Cashflow</h1>
+              <p className="text-xs text-gray-400 hidden sm:block">Real-time financial health tracking</p>
+            </div>
           </div>
-          
-          <div className="flex flex-wrap items-center justify-center gap-4 bg-white/50 p-2 rounded-2xl border border-white/60 shadow-inner">
-            <select 
+          <div className="flex items-center gap-2 shrink-0">
+            <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="px-6 py-3 bg-white hover:bg-gray-50 rounded-xl transition-all font-bold cursor-pointer border border-gray-200 text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="hidden sm:block px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer"
             >
               <option value="week">This Week</option>
               <option value="month">This Month</option>
               <option value="quarter">This Quarter</option>
               <option value="year">This Year</option>
             </select>
-            
-            <div className="h-8 w-[1px] bg-gray-300 mx-2 hidden md:block" />
-
-            <button 
+            <button
               type="button"
               onClick={() => {
-                // Export logic remains same
                 const csvData = [
                   ['Month', 'Income', 'Expenses', 'Net Cashflow'],
                   ...monthlyData.map(d => [d.month, d.income, d.expenses, d.net])
                 ];
                 const csv = csvData.map(row => row.join(',')).join('\n');
-                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -183,216 +194,160 @@ export default function CashflowPage() {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
               }}
-              className="px-6 py-3 bg-white text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all font-bold flex items-center gap-2 cursor-pointer border border-gray-200 hover:border-indigo-200 shadow-sm"
+              className="p-2 bg-white border border-gray-200 rounded-xl text-gray-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-colors cursor-pointer"
             >
               <Download className="w-5 h-5" />
-              <span>Export</span>
             </button>
-            <button 
+            <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="px-8 py-3 bg-gray-900 hover:bg-black text-white rounded-xl shadow-lg hover:shadow-xl hover:shadow-gray-400/20 transition-all font-bold flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
             >
-              <Plus className="w-5 h-5" />
-              New Entry
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">New Entry</span>
+              <span className="sm:hidden">Add</span>
             </button>
           </div>
         </div>
+      
+      {/* Mobile Floating Action Button */}
+      <button
+        type="button"
+        onClick={() => setShowAddModal(true)}
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:bg-indigo-700"
+      >
+        <Plus className="w-8 h-8" />
+      </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { 
-            title: 'Total Income', 
-            amount: avgMonthlyIncome, 
-            trend: '+12.5%', 
-            icon: TrendingUp, 
-            color: 'green', 
-            desc: 'Monthly average',
-            gradient: 'from-emerald-400 to-green-500'
-          },
-          { 
-            title: 'Total Expenses', 
-            amount: avgMonthlyExpenses, 
-            trend: '+8.3%', 
-            icon: TrendingDown, 
-            color: 'rose', 
-            desc: 'Monthly average',
-            gradient: 'from-rose-400 to-red-500'
-          },
-          { 
-            title: 'Net Cashflow', 
-            amount: avgMonthlyIncome - avgMonthlyExpenses, 
-            trend: '+14.2%', 
-            icon: DollarSign, 
-            color: 'blue', 
-            desc: 'Monthly average',
-            gradient: 'from-blue-400 to-indigo-500'
-          },
-          { 
-            title: 'Profit Margin', 
-            amount: ((avgMonthlyIncome - avgMonthlyExpenses) / avgMonthlyIncome * 100), 
-            isPercent: true,
-            trend: 'Healthy', 
-            icon: Wallet, 
-            color: 'violet', 
-            desc: 'Above target',
-            gradient: 'from-violet-400 to-purple-500'
-          }
-        ].map((stat, i) => (
-          <div key={i} className="bg-white/60 backdrop-blur-xl rounded-2xl p-6 border border-white/50 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden">
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-bl-[100px] transition-transform group-hover:scale-110`} />
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-2xl bg-${stat.color}-50 text-${stat.color}-600 group-hover:bg-${stat.color}-100 transition-colors`}>
-                  <stat.icon className="w-6 h-6" />
+      <div className="px-4 sm:px-6 pt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Total Income', value: `£${avgMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingUp, bg: 'bg-green-100', text: 'text-green-600', trend: '+12.5%', up: true },
+            { label: 'Total Expenses', value: `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingDown, bg: 'bg-rose-100', text: 'text-rose-600', trend: '+8.3%', up: false },
+            { label: 'Net Cashflow', value: `£${netCashflow.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: DollarSign, bg: 'bg-blue-100', text: 'text-blue-600', trend: '+14.2%', up: true },
+            { label: 'Profit Margin', value: `${isNaN(profitMargin) ? '0.0' : profitMargin.toFixed(1)}%`, sub: 'Above target', icon: Wallet, bg: 'bg-violet-100', text: 'text-violet-600', trend: 'Healthy', up: true },
+          ].map(({ label, value, sub, icon: Icon, bg, text, trend, up }) => (
+            <div key={label} className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center justify-between mb-1.5.5">
+                <div className={`p-2 ${bg} rounded-xl`}>
+                  <Icon className={`w-4 h-4 ${text}`} />
                 </div>
-                <div className={`px-3 py-1 rounded-full text-xs font-bold bg-${stat.color}-100 text-${stat.color}-700 flex items-center gap-1`}>
-                  {stat.trend === 'Healthy' ? <CheckCircle className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
-                  {stat.trend}
-                </div>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${up ? 'bg-green-50 text-green-600' : 'bg-rose-50 text-rose-600'}`}>
+                  {trend}
+                </span>
               </div>
-              
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-                <h3 className="text-3xl font-black text-gray-900 tracking-tight">
-                  {stat.isPercent 
-                    ? `${isNaN(stat.amount) ? '0.0' : stat.amount.toFixed(1)}%`
-                    : `£${stat.amount.toLocaleString(undefined, {maximumFractionDigits: 0})}`
-                  }
-                </h3>
-                <p className="text-xs font-medium text-gray-400">{stat.desc}</p>
-              </div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
+              <p className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">{loading ? '—' : value}</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Main Chart Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
-              <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-                <BarChart3 className="w-5 h-5" />
-              </div>
-              Income vs Expenses
-            </h3>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-lg border border-green-200">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Income</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 rounded-lg border border-red-200">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                <span className="text-xs font-bold text-red-700 uppercase tracking-wider">Expenses</span>
-              </div>
-            </div>
-          </div>
-          <div className="relative h-80">
-            {loading ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
-                <p className="text-gray-500 font-medium italic">Analyzing your cashflow pulse...</p>
-              </div>
-            ) : monthlyData.length === 0 ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-gray-500">No transaction data available for this period.</p>
-              </div>
-            ) : (
-              <div className="absolute inset-0 flex items-end justify-around gap-2 px-4">
-                {monthlyData.map((data, i) => (
-                  <div 
-                    key={i} 
-                    className="flex-1 flex flex-col items-center gap-2 relative group"
-                    onMouseEnter={() => setHoveredBar(i)}
-                    onMouseLeave={() => setHoveredBar(null)}
-                  >
-                    {hoveredBar === i && (
-                      <div className="absolute -top-32 left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur-xl text-white text-xs rounded-2xl p-4 shadow-2xl z-20 whitespace-nowrap border border-white/20 animate-in fade-in zoom-in slide-in-from-bottom-2 duration-200">
-                        <p className="font-black mb-3 text-center text-lg border-b border-white/10 pb-2">{data.month}</p>
-                        <div className="space-y-2">
-                          <p className="text-green-400 flex items-center justify-between gap-4 text-sm font-bold">
-                            <span className="flex items-center gap-2"><ArrowUpRight className="w-4 h-4" /> Income</span>
-                            <span>£{data.income.toLocaleString()}</span>
-                          </p>
-                          <p className="text-rose-400 flex items-center justify-between gap-4 text-sm font-bold">
-                            <span className="flex items-center gap-2"><ArrowDownRight className="w-4 h-4" /> Expenses</span>
-                            <span>£{data.expenses.toLocaleString()}</span>
-                          </p>
-                          <div className="pt-2 border-t border-white/10 mt-2">
-                            <p className="text-blue-300 flex items-center justify-between gap-4 font-black">
-                              <span>Net Flow</span>
-                              <span>£{data.net.toLocaleString()}</span>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    <div className="w-full flex gap-1 items-end h-72">
-                      <div 
-                        className="flex-1 bg-gradient-to-t from-emerald-500 to-green-400 rounded-t-lg group-hover:from-emerald-400 group-hover:to-green-300 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
-                        style={{ height: `${(data.income / maxValue) * 100}%` }}
-                      ></div>
-                      <div 
-                        className="flex-1 bg-gradient-to-t from-rose-600 to-red-500 rounded-t-lg group-hover:from-rose-500 group-hover:to-red-400 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(244,63,94,0.3)] group-hover:shadow-[0_0_25px_rgba(244,63,94,0.5)]"
-                        style={{ height: `${(data.expenses / maxValue) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 group-hover:text-indigo-600 transition-colors">{data.month}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+      {/* Chart + Breakdown */}
+      <div className="px-4 sm:px-6 pt-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-        {/* Breakdown Sidebar with Tax Insight Integration */}
-        <div className="space-y-6">
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-sm">
-            <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
-              <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
-                <PieChart className="w-5 h-5" />
-              </div>
-              Breakdown
-            </h3>
-            
-            <div className="space-y-6 mb-8">
-              {incomeBreakdown.map((item, index) => (
-                <div key={index} className="group cursor-pointer">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider group-hover:text-gray-900 transition-colors">{item.name}</span>
-                    <span className="text-sm font-black text-gray-900">{item.percentage}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${item.color.replace('bg-', 'bg-gradient-to-r from-').replace('500', '400')} to-${item.color.replace('bg-', '').replace('500', '600')} rounded-full transition-all duration-1000 ease-out group-hover:scale-x-105 origin-left`} 
-                      style={{ width: `${item.percentage}%` }}
-                    ></div>
-                  </div>
+          {/* Bar Chart */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <div className="p-1.5 bg-blue-100 rounded-lg">
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
                 </div>
-              ))}
+                Income vs Expenses
+              </h3>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                  <span className="text-[11px] font-semibold text-gray-500">Income</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                  <span className="text-[11px] font-semibold text-gray-500">Expenses</span>
+                </div>
+              </div>
             </div>
+            <div className="relative h-48 sm:h-64">
+              {loading ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                  <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                  <p className="text-sm text-gray-400">Loading cashflow data...</p>
+                </div>
+              ) : monthlyData.length === 0 ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-sm text-gray-400">No data available for this period.</p>
+                </div>
+              ) : (
+                <div className="absolute inset-0 flex items-end justify-around gap-1 px-2">
+                  {monthlyData.map((data, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 flex flex-col items-center gap-1 relative group"
+                      onMouseEnter={() => setHoveredBar(i)}
+                      onMouseLeave={() => setHoveredBar(null)}
+                    >
+                      {hoveredBar === i && (
+                        <div className="absolute -top-28 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded-xl p-3 shadow-xl z-20 whitespace-nowrap">
+                          <p className="font-bold mb-1.5.5 text-center border-b border-white/10 pb-1.5">{data.month}</p>
+                          <p className="text-green-400 flex justify-between gap-3">
+                            <span>Income</span><span>£{data.income.toLocaleString()}</span>
+                          </p>
+                          <p className="text-rose-400 flex justify-between gap-3">
+                            <span>Expenses</span><span>£{data.expenses.toLocaleString()}</span>
+                          </p>
+                          <p className="text-blue-300 flex justify-between gap-3 font-bold pt-1 border-t border-white/10 mt-1">
+                            <span>Net</span><span>£{data.net.toLocaleString()}</span>
+                          </p>
+                        </div>
+                      )}
+                      <div className="w-full flex gap-0.5 items-end h-40 sm:h-56">
+                        <div
+                          className="flex-1 bg-green-500 hover:bg-green-400 rounded-t-md transition-colors cursor-pointer"
+                          style={{ height: `${(data.income / maxValue) * 100}%` }}
+                        />
+                        <div
+                          className="flex-1 bg-rose-500 hover:bg-rose-400 rounded-t-md transition-colors cursor-pointer"
+                          style={{ height: `${(data.expenses / maxValue) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-[9px] font-semibold text-gray-400 uppercase">{data.month.slice(0, 3)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
-            <div className="pt-6 border-t border-gray-200/50">
-              <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
-                <Target className="w-4 h-4 text-orange-600" />
+          {/* Breakdown Sidebar */}
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4">
+                <div className="p-1.5 bg-purple-100 rounded-lg">
+                  <PieChart className="w-4 h-4 text-purple-600" />
+                </div>
                 Top Expenses
-              </h4>
-              <div className="space-y-3">
-                {expenseCategories.map((category, index) => {
+              </h3>
+              <div className="space-y-2.5">
+                {loading ? (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+                  </div>
+                ) : expenseCategories.length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-4">No expense data available</p>
+                ) : expenseCategories.map((category, index) => {
                   const Icon = category.icon;
                   return (
-                    <div key={index} className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 border border-gray-100 rounded-xl transition-all cursor-pointer group hover:shadow-md hover:border-gray-200">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg bg-gradient-to-br ${category.color} shadow-sm`}>
-                          <Icon className="w-3.5 h-3.5 text-white" />
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-1.5 bg-indigo-100 rounded-lg">
+                          <Icon className="w-3.5 h-3.5 text-indigo-600" />
                         </div>
                         <div>
-                          <p className="text-xs font-black text-gray-900">{category.name}</p>
-                          <p className="text-[10px] text-gray-400 font-bold">{category.percentage}%</p>
+                          <p className="text-xs font-bold text-gray-900">{category.name}</p>
+                          <p className="text-[10px] text-gray-400">{category.percentage}%</p>
                         </div>
                       </div>
                       <span className="text-sm font-bold text-gray-900">£{category.amount.toLocaleString()}</span>
@@ -401,260 +356,203 @@ export default function CashflowPage() {
                 })}
               </div>
             </div>
-          </div>
-          
-          {/* New Tax Provision Insight */}
-          <div className="bg-gradient-to-br from-indigo-900 to-blue-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-bl-[100px] group-hover:scale-125 transition-transform duration-700" />
-            <div className="relative z-10">
-               <h4 className="text-sm font-bold text-indigo-200 uppercase tracking-widest mb-4 flex items-center gap-2">
-                 <Building2 className="w-4 h-4" />
-                 Tax Reserve
-               </h4>
-               <div className="space-y-4">
-                 <div className="flex justify-between items-center pb-3 border-b border-white/10">
-                   <span className="text-sm font-medium text-indigo-100">Est. Corp Tax (25%)</span>
-                   <span className="font-bold">£{((avgMonthlyIncome - avgMonthlyExpenses) * 0.25).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
-                 </div>
-                 <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-indigo-100">Est. VAT Liability</span>
-                    <span className="font-bold">£{(avgMonthlyIncome * 0.2 - avgMonthlyExpenses * 0.2).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
-                 </div>
-                 <div className="pt-2">
-                    <p className="text-[10px] text-indigo-300 italic">*Projections based on current monthly averages. Consult your accountant for exact figures.</p>
-                 </div>
-               </div>
+
+            {/* Tax Reserve */}
+            <div className="bg-indigo-600 rounded-2xl p-4 sm:p-5 text-white">
+              <h4 className="text-xs font-bold text-indigo-200 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5" />
+                Tax Reserve
+              </h4>
+              <div className="space-y-2.5">
+                <div className="flex justify-between items-center pb-2.5 border-b border-white/20">
+                  <span className="text-sm text-indigo-100">Est. Corp Tax (25%)</span>
+                  <span className="font-bold">£{(netCashflow * 0.25).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-indigo-100">Est. VAT Liability</span>
+                  <span className="font-bold">£{(avgMonthlyIncome * 0.2 - avgMonthlyExpenses * 0.2).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+                <p className="text-[10px] text-indigo-300 pt-1">*Projections based on monthly averages. Consult your accountant.</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-8 shadow-sm">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100">
-              <Activity className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-black text-gray-900 tracking-tight">Recent Activity</h3>
-              <p className="text-sm font-medium text-gray-500">Live transaction feed</p>
-            </div>
+      <div className="px-4 sm:px-6 pt-4">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <div className="p-1.5 bg-indigo-100 rounded-lg">
+                <Activity className="w-4 h-4 text-indigo-600" />
+              </div>
+              Recent Activity
+            </h3>
+            <button className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 cursor-pointer">
+              View All <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
-          <button className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:border-indigo-300 hover:text-indigo-600 hover:shadow-md transition-all font-bold flex items-center gap-2 cursor-pointer text-sm">
-            View All History
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="grid gap-3">
-          {recentTransactions.map((transaction) => (
-            <div 
-              key={transaction.id} 
-              className="bg-white/50 hover:bg-white rounded-xl p-4 transition-all duration-300 group border border-gray-100/50 hover:border-indigo-200 hover:shadow-lg flex items-center justify-between cursor-pointer"
-              onClick={() => {
-                setViewingTransaction(transaction);
-                setShowViewModal(true);
-              }}
-            >
-              <div className="flex items-center gap-5">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-105 ${
-                  transaction.type === 'income' 
-                    ? 'bg-green-50 text-green-600 border border-green-100' 
-                    : 'bg-rose-50 text-rose-600 border border-rose-100'
+          <div className="space-y-2">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+              </div>
+            ) : recentTransactions.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-8">No transactions yet</p>
+            ) : recentTransactions.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all cursor-pointer group"
+                onClick={() => { setViewingTransaction(transaction); setShowViewModal(true); }}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  transaction.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-rose-100 text-rose-600'
                 }`}>
-                  {transaction.type === 'income' ? (
-                    <ArrowDownRight className="w-6 h-6" />
-                  ) : (
-                    <ArrowUpRight className="w-6 h-6" />
-                  )}
+                  {transaction.type === 'income' ? <ArrowDownRight className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
                 </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 mb-0.5 group-hover:text-indigo-600 transition-colors">
-                    {transaction.description}
-                  </h4>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-medium text-gray-400 flex items-center gap-1">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{transaction.description}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[11px] text-gray-400 flex items-center gap-0.5">
                       <Calendar className="w-3 h-3" />
                       {new Date(transaction.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                     </span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${
-                      transaction.category === 'Sales' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                      'bg-gray-50 text-gray-600 border-gray-200'
-                    }`}>
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
                       {transaction.category}
                     </span>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <p className={`text-lg font-black ${
-                    transaction.type === 'income' ? 'text-green-600' : 'text-gray-900'
-                  }`}>
-                    {transaction.type === 'income' ? '+' : '-'}£{Math.abs(transaction.amount).toLocaleString()}
-                  </p>
-                  <p className={`text-[10px] font-bold uppercase tracking-wider ${
-                    transaction.type === 'income' ? 'text-green-500' : 'text-gray-400'
-                  }`}>
-                    {transaction.type === 'income' ? 'Received' : 'Paid'}
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingTransaction(transaction);
-                      setShowEditModal(true);
-                    }}
-                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeletingTransaction(transaction);
-                      setShowDeleteModal(true);
-                    }}
-                    className="p-2 bg-rose-50 hover:bg-rose-100 rounded-lg text-rose-600 hover:text-rose-700 transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right">
+                    <p className={`text-sm font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>
+                      {transaction.type === 'income' ? '+' : '-'}£{Math.abs(transaction.amount).toLocaleString()}
+                    </p>
+                    <p className={`text-[10px] font-semibold uppercase ${transaction.type === 'income' ? 'text-green-500' : 'text-gray-400'}`}>
+                      {transaction.type === 'income' ? 'Received' : 'Paid'}
+                    </p>
+                  </div>
+                  <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setEditingTransaction(transaction); setShowEditModal(true); }}
+                      className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeletingTransaction(transaction); setShowDeleteModal(true); }}
+                      className="p-1.5 bg-rose-50 hover:bg-rose-100 rounded-lg text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Financial Insights */}
+      <div className="px-4 sm:px-6 pt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { title: 'Cash Runway', val: loading ? '—' : (avgMonthlyExpenses > 0 ? `${Math.min(12, Math.floor(100000 / avgMonthlyExpenses))} mo` : 'N/A'), icon: Calendar, bg: 'bg-blue-100', text: 'text-blue-600', sub: 'Est. from cash reserves', trend: 'Healthy' },
+            { title: 'Savings Rate', val: loading ? '—' : (avgMonthlyIncome > 0 ? `${Math.round(((avgMonthlyIncome - avgMonthlyExpenses) / avgMonthlyIncome) * 100)}%` : '0%'), icon: Sparkles, bg: 'bg-purple-100', text: 'text-purple-600', sub: 'vs last period', trend: '+5.2%' },
+            { title: 'Burn Rate', val: loading ? '—' : `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, icon: Zap, bg: 'bg-orange-100', text: 'text-orange-600', sub: 'per month', trend: '-2.1%' }
+          ].map((item) => (
+            <div key={item.title} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+              <div className="flex items-center justify-between mb-1.5.5">
+                <div className={`p-2 ${item.bg} rounded-xl`}>
+                  <item.icon className={`w-4 h-4 ${item.text}`} />
+                </div>
+                <span className="text-xs font-semibold text-gray-500">{item.trend}</span>
+              </div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{item.title}</p>
+              <p className="text-xl font-bold text-gray-900 mt-0.5">{item.val}</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">{item.sub}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Financial Insights */}
-      {/* Financial Insights */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {[
-          { title: 'Cash Runway', val: loading ? '...' : (avgMonthlyExpenses > 0 ? `${Math.min(12, Math.floor(100000 / avgMonthlyExpenses))} mo` : 'N/A'), icon: Calendar, color: 'blue', sub: 'Est. from cash reserves', trend: 'Healthy' },
-          { title: 'Savings Rate', val: loading ? '...' : (avgMonthlyIncome > 0 ? `${Math.round(((avgMonthlyIncome - avgMonthlyExpenses) / avgMonthlyIncome) * 100)}%` : '0%'), icon: Sparkles, color: 'purple', sub: 'vs last period', trend: '+5.2%' },
-          { title: 'Burn Rate', val: loading ? '...' : `£${avgMonthlyExpenses.toLocaleString(undefined, {maximumFractionDigits: 0})}`, icon: Zap, color: 'orange', sub: 'per month', trend: '-2.1%' }
-        ].map((item, i) => (
-          <div key={i} className={`bg-gradient-to-br from-${item.color}-500 to-${item.color}-700 rounded-2xl p-1 shadow-lg`}>
-             <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-full text-white">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className={`text-${item.color}-100 text-sm font-medium mb-1`}>{item.title}</p>
-                    <p className="text-3xl font-black">{item.val}</p>
-                  </div>
-                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                    <item.icon className="w-6 h-6" />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-sm pt-2 border-t border-white/10">
-                   <div className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-lg font-bold">
-                      {item.title === 'Burn Rate' ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
-                      {item.trend}
-                   </div>
-                   <span className={`text-${item.color}-100 opacity-80`}>{item.sub}</span>
-                </div>
-             </div>
-          </div>
-        ))}
-      </div>
-
       {/* Add Transaction Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
-          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border border-white/50 relative overflow-hidden">
-            <div className="bg-gray-900 p-6 flex items-center justify-between sticky top-0 z-10">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-xl max-h-[84dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
+            <ModalHandle />
+            <div className="bg-linear-to-r from-indigo-600 to-violet-600 px-4 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
               <div className="flex items-center gap-3">
-                 <div className="p-2 bg-gray-800 rounded-lg">
-                   <Plus className="w-5 h-5 text-white" />
-                 </div>
-                 <div>
-                  <h2 className="text-xl font-black text-white">New Transaction</h2>
-                  <p className="text-xs text-gray-400">Add income or expense to cashflow</p>
-                 </div>
-              </div>
-              <button 
-                onClick={() => setShowAddModal(false)} 
-                className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/70 hover:text-white cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-            </div>
-            
-            <div className="p-8 overflow-y-auto space-y-6">
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Type</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={() => setNewTransaction({...newTransaction, type: 'income'})}
-                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 cursor-pointer ${
-                      newTransaction.type === 'income'
-                        ? 'bg-green-50 border-green-500 text-green-700 shadow-sm'
-                        : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
-                    }`}
-                  >
-                    <ArrowDownRight className="w-5 h-5" />
-                    Income
-                  </button>
-                  <button
-                    onClick={() => setNewTransaction({...newTransaction, type: 'expense'})}
-                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 cursor-pointer ${
-                      newTransaction.type === 'expense'
-                        ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
-                        : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
-                    }`}
-                  >
-                    <ArrowUpRight className="w-5 h-5" />
-                    Expense
-                  </button>
-
+                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-md border border-white/20">
+                  <Plus className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">New Transaction</h2>
+                  <p className="text-[11px] text-indigo-100 font-medium opacity-90">Add your income or expenses</p>
                 </div>
               </div>
-
+              <button onClick={() => { setShowAddModal(false); resetNewTransaction(); }} className="p-2.5 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-2 sm:py-6 space-y-2.5 sm:space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Details</label>
+                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Type</label>
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
+                  {(['income', 'expense'] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setNewTransaction({ ...newTransaction, type: t, category: t === 'income' ? 'Sales' : 'Operations' })}
+                      className={`p-2 sm:p-3 rounded-xl font-semibold text-sm border-2 flex items-center justify-center gap-2 cursor-pointer transition-colors ${
+                        newTransaction.type === t
+                          ? t === 'income' ? 'bg-green-50 border-green-500 text-green-700' : 'bg-rose-50 border-rose-500 text-rose-700'
+                          : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      {t === 'income' ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                      {t === 'income' ? 'Income' : 'Expense'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Description</label>
                 <input
                   type="text"
                   value={newTransaction.description}
-                  onChange={(e) => setNewTransaction({...newTransaction, description: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all font-semibold text-gray-900 placeholder:text-gray-400"
+                  onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
+                  className="w-full px-4 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-medium text-gray-900 placeholder:text-gray-400"
                   placeholder="Transaction description..."
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Amount (£)</label>
+                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Amount (£)</label>
                   <input
                     type="number"
                     value={newTransaction.amount}
-                    onChange={(e) => setNewTransaction({...newTransaction, amount: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all font-bold text-gray-900"
+                    onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value })}
+                    className="w-full px-4 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm font-medium text-gray-900"
                     placeholder="0.00"
                     step="0.01"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Date</label>
+                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Date</label>
                   <input
                     type="date"
                     value={newTransaction.date}
-                    onChange={(e) => setNewTransaction({...newTransaction, date: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all font-medium text-gray-900"
+                    onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
+                    className="w-full px-4 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm text-gray-900"
                   />
                 </div>
               </div>
-
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
+                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Category</label>
                 <select
                   value={newTransaction.category}
-                  onChange={(e) => setNewTransaction({...newTransaction, category: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all font-medium text-gray-900 cursor-pointer"
+                  onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })}
+                  className="w-full px-4 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-sm text-gray-900 cursor-pointer"
                 >
                   {newTransaction.type === 'income' ? (
                     <>
@@ -674,243 +572,177 @@ export default function CashflowPage() {
                   )}
                 </select>
               </div>
-
-              <div className="flex gap-4 pt-4 mt-auto">
-                <button 
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-6 py-4 border border-gray-200 rounded-xl hover:bg-gray-50 font-bold text-gray-600 cursor-pointer transition-all"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    if (newTransaction.description && newTransaction.amount) {
-                      alert('Transaction added (Simulation)');
-                      setShowAddModal(false);
-                      setNewTransaction({
-                        type: 'income',
-                        description: '',
-                        amount: '',
-                        date: new Date().toISOString().split('T')[0],
-                        category: 'Sales'
-                      });
-                    }
-                  }}
-                  disabled={!newTransaction.description || !newTransaction.amount}
-                  className="flex-1 px-6 py-4 rounded-xl text-white font-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 bg-gradient-to-r from-gray-900 to-black"
-                >
-                  Save Entry
-                </button>
-              </div>
             </div>
+            <ModalFooter>
+              <CancelBtn onClick={() => { setShowAddModal(false); resetNewTransaction(); }} />
+              <button
+                onClick={() => {
+                  if (newTransaction.description && newTransaction.amount) {
+                    alert('Transaction added (Simulation)');
+                    setShowAddModal(false);
+                    resetNewTransaction();
+                  }
+                }}
+                disabled={!newTransaction.description || !newTransaction.amount}
+                className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Save Entry
+              </button>
+            </ModalFooter>
           </div>
         </div>
       )}
 
       {/* View Transaction Modal */}
       {showViewModal && viewingTransaction && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
-          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-2xl w-full border border-white/50 relative overflow-hidden flex flex-col max-h-[85vh]">
-            <div className={`p-6 flex items-center justify-between sticky top-0 z-10 ${
-              viewingTransaction!.type === 'income'
-                ? 'bg-gradient-to-r from-emerald-600 to-green-600'
-                : 'bg-gradient-to-r from-rose-600 to-red-600'
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg max-h-[84dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
+            <ModalHandle />
+            <div className={`px-4 sm:px-6 py-4 flex items-center justify-between shrink-0 ${
+              viewingTransaction.type === 'income' ? 'bg-green-600' : 'bg-rose-600'
             }`}>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                  {viewingTransaction!.type === 'income' ? (
-                    <ArrowDownRight className="w-6 h-6 text-white" />
-                  ) : (
-                    <ArrowUpRight className="w-6 h-6 text-white" />
-                  )}
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-white/20 rounded-xl">
+                  {viewingTransaction.type === 'income'
+                    ? <ArrowDownRight className="w-5 h-5 text-white" />
+                    : <ArrowUpRight className="w-5 h-5 text-white" />}
                 </div>
-                <h2 className="text-xl font-black text-white">Transaction Details</h2>
+                <h2 className="text-base font-bold text-white">Transaction Details</h2>
               </div>
-              <button 
+              <button onClick={() => { setShowViewModal(false); setViewingTransaction(null); }} className="p-2 hover:bg-white/20 rounded-xl transition-colors cursor-pointer">
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-5 space-y-4">
+              <div className="text-center pb-4 border-b border-gray-100">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-3 ${
+                  viewingTransaction.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-700'
+                }`}>
+                  {viewingTransaction.type === 'income' ? <CheckCircle className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+                  {viewingTransaction.type === 'income' ? 'Income Received' : 'Expense Paid'}
+                </span>
+                <h3 className="text-lg font-bold text-gray-900 mb-1.5">{viewingTransaction.description}</h3>
+                <p className={`text-3xl font-bold ${viewingTransaction.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>
+                  {viewingTransaction.amount > 0 ? '+' : ''}£{Math.abs(viewingTransaction.amount).toLocaleString()}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg"><Calendar className="w-4 h-4 text-blue-600" /></div>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Date</p>
+                      <p className="text-sm font-bold text-gray-900">{new Date(viewingTransaction.date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg"><Tag className="w-4 h-4 text-purple-600" /></div>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Category</p>
+                      <p className="text-sm font-bold text-gray-900">{viewingTransaction.category}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ModalFooter>
+              <CancelBtn onClick={() => { setShowViewModal(false); setViewingTransaction(null); }} label="Close" />
+              <button
                 onClick={() => {
                   setShowViewModal(false);
+                  setEditingTransaction(viewingTransaction);
                   setViewingTransaction(null);
-                }} 
-                className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white/80 hover:text-white cursor-pointer"
+                  setShowEditModal(true);
+                }}
+                className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
-                <X className="w-5 h-5" />
+                <Edit className="w-4 h-4" /> Edit Transaction
               </button>
-
-            </div>
-            
-            <div className="p-8 space-y-8 overflow-y-auto">
-              {/* Transaction Header */}
-              <div className="text-center pb-8 border-b border-gray-100">
-                <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4 ${
-                  viewingTransaction!.type === 'income'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-rose-100 text-rose-700'
-                }`}>
-                  {viewingTransaction!.type === 'income' ? <CheckCircle className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
-                  {viewingTransaction!.type === 'income' ? 'Income Received' : 'Expense Paid'}
-                </div>
-                <h3 className="text-2xl font-black text-gray-900 mb-2">
-                  {viewingTransaction!.description}
-                </h3>
-                <div className={`text-5xl font-black tracking-tight ${
-                  viewingTransaction!.type === 'income' ? 'text-green-600' : 'text-gray-900'
-                }`}>
-                  {viewingTransaction!.amount > 0 ? '+' : ''}£{Math.abs(viewingTransaction!.amount).toLocaleString()}
-                </div>
-              </div>
-
-              {/* Transaction Details Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-blue-100/50 text-blue-600">
-                      <Calendar className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Date</p>
-                      <p className="text-lg font-bold text-gray-900">{new Date(viewingTransaction!.date).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-purple-100/50 text-purple-600">
-                      <Tag className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Category</p>
-                      <p className="text-lg font-bold text-gray-900">{viewingTransaction!.category}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-4 pt-4">
-                <button 
-                  onClick={() => {
-                    setShowViewModal(false);
-                    setViewingTransaction(null);
-                  }}
-                  className="flex-1 px-6 py-4 border border-gray-200 rounded-xl hover:bg-gray-50 font-bold text-gray-600 cursor-pointer transition-all"
-                >
-                  Close
-                </button>
-                <button 
-                  onClick={() => {
-                    setShowViewModal(false);
-                    setEditingTransaction(viewingTransaction);
-                    setViewingTransaction(null);
-                    setShowEditModal(true);
-                  }}
-                  className="flex-1 px-6 py-4 rounded-xl text-white font-bold cursor-pointer transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center gap-2"
-                >
-                  <Edit className="w-5 h-5" />
-                  Edit Transaction
-                </button>
-              </div>
-            </div>
+            </ModalFooter>
           </div>
         </div>
       )}
 
       {/* Edit Transaction Modal */}
       {showEditModal && editingTransaction && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
-          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-2xl w-full border border-white/50 relative overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 flex items-center justify-between sticky top-0 z-10">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <Edit className="w-5 h-5 text-white" />
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-xl max-h-[84dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
+            <ModalHandle />
+            <div className="px-4 sm:px-6 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-blue-100 rounded-xl"><Edit className="w-4 h-4 text-blue-600" /></div>
+                <div>
+                  <h2 className="text-base font-bold text-gray-900">Edit Transaction</h2>
+                  <p className="text-xs text-gray-400">Update transaction details</p>
                 </div>
-                <h2 className="text-xl font-black text-white">Edit Transaction</h2>
               </div>
-              <button 
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingTransaction(null);
-                }} 
-                className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white/80 hover:text-white cursor-pointer"
-              >
-                <X className="w-5 h-5" />
+              <button onClick={() => { setShowEditModal(false); setEditingTransaction(null); }} className="p-2 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer">
+                <X className="w-5 h-5 text-gray-500" />
               </button>
-
             </div>
-            
-            <div className="p-8 overflow-y-auto space-y-6">
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-2 sm:py-6 space-y-2.5 sm:space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Type</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={() => setEditingTransaction({...editingTransaction!, type: 'income'})}
-                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 cursor-pointer ${
-                      editingTransaction!.type === 'income'
-                        ? 'bg-green-50 border-green-500 text-green-700 shadow-sm'
-                        : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
-                    }`}
-                  >
-                    <ArrowDownRight className="w-5 h-5" />
-                    Income
-                  </button>
-                  <button
-                    onClick={() => setEditingTransaction({...editingTransaction!, type: 'expense'})}
-                    className={`p-4 rounded-xl font-bold transition-all border-2 flex items-center justify-center gap-2 cursor-pointer ${
-                      editingTransaction!.type === 'expense'
-                        ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
-                        : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
-                    }`}
-                  >
-                    <ArrowUpRight className="w-5 h-5" />
-                    Expense
-                  </button>
-
+                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Type</label>
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
+                  {(['income', 'expense'] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setEditingTransaction({ ...editingTransaction, type: t })}
+                      className={`p-2 sm:p-3 rounded-xl font-semibold text-sm border-2 flex items-center justify-center gap-2 cursor-pointer transition-colors ${
+                        editingTransaction.type === t
+                          ? t === 'income' ? 'bg-green-50 border-green-500 text-green-700' : 'bg-rose-50 border-rose-500 text-rose-700'
+                          : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      {t === 'income' ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                      {t === 'income' ? 'Income' : 'Expense'}
+                    </button>
+                  ))}
                 </div>
               </div>
-
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description</label>
+                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Description</label>
                 <input
                   type="text"
-                  value={editingTransaction!.description}
-                  onChange={(e) => setEditingTransaction({...editingTransaction!, description: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-semibold text-gray-900"
+                  value={editingTransaction.description}
+                  onChange={(e) => setEditingTransaction({ ...editingTransaction, description: e.target.value })}
+                  className="w-full px-4 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm font-medium text-gray-900"
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Amount (£)</label>
+                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Amount (£)</label>
                   <input
                     type="number"
-                    value={Math.abs(editingTransaction!.amount)}
+                    value={Math.abs(editingTransaction.amount)}
                     onChange={(e) => setEditingTransaction({
-                      ...editingTransaction!, 
-                      amount: editingTransaction!.type === 'income' ? Number(e.target.value) : -Number(e.target.value)
+                      ...editingTransaction,
+                      amount: editingTransaction.type === 'income' ? Number(e.target.value) : -Number(e.target.value)
                     })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-bold text-gray-900"
+                    className="w-full px-4 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm font-medium text-gray-900"
                     step="0.01"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Date</label>
+                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Date</label>
                   <input
                     type="date"
-                    value={editingTransaction!.date}
-                    onChange={(e) => setEditingTransaction({...editingTransaction!, date: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900"
+                    value={editingTransaction.date}
+                    onChange={(e) => setEditingTransaction({ ...editingTransaction, date: e.target.value })}
+                    className="w-full px-4 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm text-gray-900"
                   />
                 </div>
               </div>
-
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
+                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Category</label>
                 <select
-                  value={editingTransaction!.category}
-                  onChange={(e) => setEditingTransaction({...editingTransaction!, category: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-gray-900 cursor-pointer"
+                  value={editingTransaction.category}
+                  onChange={(e) => setEditingTransaction({ ...editingTransaction, category: e.target.value })}
+                  className="w-full px-4 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm text-gray-900 cursor-pointer"
                 >
-                  {editingTransaction!.type === 'income' ? (
+                  {editingTransaction.type === 'income' ? (
                     <>
                       <option value="Sales">Sales</option>
                       <option value="Services">Services</option>
@@ -928,29 +760,20 @@ export default function CashflowPage() {
                   )}
                 </select>
               </div>
-
-              <div className="flex gap-4 pt-4 mt-auto">
-                <button 
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditingTransaction(null);
-                  }}
-                  className="flex-1 px-6 py-4 border border-gray-200 rounded-xl hover:bg-gray-50 font-bold text-gray-600 cursor-pointer transition-all"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    alert('Transaction updated (Simulation)');
-                    setShowEditModal(false);
-                    setEditingTransaction(null);
-                  }}
-                  className="flex-1 px-6 py-4 rounded-xl text-white font-bold cursor-pointer transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 bg-gradient-to-r from-blue-600 to-indigo-600"
-                >
-                  Update
-                </button>
-              </div>
             </div>
+            <ModalFooter>
+              <CancelBtn onClick={() => { setShowEditModal(false); setEditingTransaction(null); }} />
+              <button
+                onClick={() => {
+                  alert('Transaction updated (Simulation)');
+                  setShowEditModal(false);
+                  setEditingTransaction(null);
+                }}
+                className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer"
+              >
+                Update
+              </button>
+            </ModalFooter>
           </div>
         </div>
       )}
@@ -959,22 +782,18 @@ export default function CashflowPage() {
       {deletingTransaction && (
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setDeletingTransaction(null);
-          }}
+          onClose={() => { setShowDeleteModal(false); setDeletingTransaction(null); }}
           onConfirm={() => {
             alert('✓ Transaction deleted successfully!');
             setShowDeleteModal(false);
             setDeletingTransaction(null);
           }}
           title="Delete Transaction"
-          itemName={deletingTransaction?.description || 'Transaction'}
-          itemDetails={`${deletingTransaction?.type === 'income' ? '+' : '-'}£${Math.abs(deletingTransaction?.amount || 0).toLocaleString()} - ${deletingTransaction?.date}`}
+          itemName={deletingTransaction.description || 'Transaction'}
+          itemDetails={`${deletingTransaction.type === 'income' ? '+' : '-'}£${Math.abs(deletingTransaction.amount || 0).toLocaleString()} - ${deletingTransaction.date}`}
           warningMessage="This will permanently remove this transaction from your cashflow records."
         />
       )}
     </div>
-  </div>
   );
 }

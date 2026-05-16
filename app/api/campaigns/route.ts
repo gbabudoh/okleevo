@@ -62,3 +62,26 @@ export const POST = withMultiTenancy(async (req, { user }) => {
     return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
   }
 });
+
+export const DELETE = withMultiTenancy(async (req, { dataFilter }) => {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Campaign ID is required' }, { status: 400 });
+    }
+
+    await prisma.campaign.delete({
+      where: {
+        id,
+        businessId: dataFilter.businessId,
+      },
+    });
+
+    return NextResponse.json({ message: 'Campaign deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting campaign:', error);
+    return NextResponse.json({ error: 'Failed to delete campaign' }, { status: 500 });
+  }
+});

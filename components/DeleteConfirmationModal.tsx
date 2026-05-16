@@ -68,10 +68,10 @@ export default function DeleteConfirmationModal({
           <div className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 rounded-xl p-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-                {itemName.charAt(0).toUpperCase()}
+                {itemName ? itemName.charAt(0).toUpperCase() : '?'}
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900">{itemName}</h3>
+                <h3 className="text-xl font-bold text-gray-900">{itemName || 'Unknown Item'}</h3>
                 {itemDetails && <p className="text-gray-600 text-sm mt-1">{itemDetails}</p>}
               </div>
             </div>

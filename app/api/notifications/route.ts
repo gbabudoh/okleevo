@@ -11,6 +11,7 @@ export const GET = withMultiTenancy(async (_req, { user }) => {
       where: {
         userId: user.id,
         businessId: user.businessId,
+        status: 'unread',
       },
       orderBy: {
         createdAt: 'desc',

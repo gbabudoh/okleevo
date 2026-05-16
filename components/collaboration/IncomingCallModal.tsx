@@ -93,8 +93,8 @@ export default function IncomingCallModal() {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[9999] animate-in fade-in slide-in-from-bottom-10 duration-500">
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border-4 border-indigo-600 p-6 w-80 overflow-hidden relative">
+    <div className="fixed bottom-24 left-4 right-4 md:bottom-8 md:left-auto md:right-8 z-[9999] animate-in fade-in slide-in-from-bottom-10 duration-500">
+      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border-4 border-indigo-600 p-6 w-full md:w-80 overflow-hidden relative">
         {/* Animated Background Ring */}
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-50 rounded-full opacity-50 animate-ping" />
         

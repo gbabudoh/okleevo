@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
-import { 
-  Truck, Plus, Search, Filter, Download, Star, 
-  MapPin, Globe, Building2,
-  DollarSign, Package, TrendingUp, Clock,
-  CheckCircle, XCircle, AlertCircle, Award, Activity,
+import { useState } from 'react';
+import {
+  Truck, Plus, Search, Filter, Download,
+  Star, MapPin, Globe, Building2,
+  DollarSign, ShoppingCart, Clock,
+  CheckCircle, XCircle, AlertCircle, Award,
   Trash2, MoreVertical, MessageSquare,
-  ShoppingCart, Zap, 
-  RefreshCw, Settings, Grid, List, ChevronRight, X,
-  Handshake, Factory, Box, Info, ShieldCheck
+  RefreshCw, Grid, List, X, Check,
+  Handshake, Factory, Box, Info,
+  ShieldCheck, Package, Zap, Settings
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
@@ -44,19 +44,9 @@ interface Supplier {
   };
 }
 
-interface Order {
-  id: string;
-  supplierId: string;
-  supplierName: string;
-  orderDate: Date;
-  deliveryDate: Date;
-  amount: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
-  items: number;
-}
 
 const categoryConfigs = [
-  { id: 'all', name: 'All Suppliers', icon: Grid },
+  { id: 'all', name: 'All', icon: Grid },
   { id: 'raw-materials', name: 'Raw Materials', icon: Box },
   { id: 'manufacturing', name: 'Manufacturing', icon: Factory },
   { id: 'packaging', name: 'Packaging', icon: Package },
@@ -66,8 +56,6 @@ const categoryConfigs = [
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [recentOrders] = useState<Order[]>([]);
-
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,7 +77,7 @@ export default function SuppliersPage() {
 
   const categories = categoryConfigs.map(cat => ({
     ...cat,
-    count: cat.id === 'all' ? suppliers.length : suppliers.filter(s => s.category === cat.id).length
+    count: cat.id === 'all' ? suppliers.length : suppliers.filter(s => s.category === cat.id).length,
   }));
 
   const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
@@ -98,9 +86,10 @@ export default function SuppliersPage() {
   };
 
   const filteredSuppliers = suppliers.filter(supplier => {
-    const matchesSearch = supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         supplier.contactPerson.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         supplier.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      supplier.contactPerson.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      supplier.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || supplier.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -108,15 +97,15 @@ export default function SuppliersPage() {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'active':
-        return { color: 'green', icon: CheckCircle, label: 'Active', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
+        return { icon: CheckCircle, label: 'Active', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' };
       case 'inactive':
-        return { color: 'gray', icon: XCircle, label: 'Inactive', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' };
+        return { icon: XCircle, label: 'Inactive', bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400' };
       case 'pending':
-        return { color: 'orange', icon: Clock, label: 'Pending', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' };
+        return { icon: Clock, label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' };
       case 'suspended':
-        return { color: 'red', icon: AlertCircle, label: 'Suspended', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
+        return { icon: AlertCircle, label: 'Suspended', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' };
       default:
-        return { color: 'gray', icon: AlertCircle, label: 'Unknown', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' };
+        return { icon: AlertCircle, label: 'Unknown', bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400' };
     }
   };
 
@@ -126,397 +115,275 @@ export default function SuppliersPage() {
   const avgRating = suppliers.length > 0 ? suppliers.reduce((acc, s) => acc + s.rating, 0) / suppliers.length : 0;
 
   const handleExport = () => {
-    showNotify('Generating Holistic Manifest...');
-    
-    // Create CSV content
+    showNotify('Generating export…');
     const headers = ['ID', 'Name', 'Company', 'Contact', 'Email', 'Phone', 'Address', 'City', 'Country', 'Category', 'Status', 'Rating', 'Total Orders', 'Total Spent', 'Payment Terms', 'Lead Time'];
-    const rows = suppliers.map(s => [
-      s.id,
-      `"${s.name}"`,
-      `"${s.companyName}"`,
-      `"${s.contactPerson}"`,
-      s.email,
-      s.phone,
-      `"${s.address}"`,
-      s.city,
-      s.country,
-      s.category,
-      s.status,
-      s.rating,
-      s.totalOrders,
-      s.totalSpent,
-      s.paymentTerms,
-      s.leadTime
-    ]);
-    
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
-    
-    // Create download link
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const rows = suppliers.map(s => [s.id, `"${s.name}"`, `"${s.companyName}"`, `"${s.contactPerson}"`, s.email, s.phone, `"${s.address}"`, s.city, s.country, s.category, s.status, s.rating, s.totalOrders, s.totalSpent, s.paymentTerms, s.leadTime]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `suppliers_manifest_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `suppliers_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    setTimeout(() => showNotify('Manifest Export Successfully Archived'), 1000);
+    setTimeout(() => showNotify('Export downloaded'), 1000);
   };
 
+  const AVATAR_COLORS = [
+    'from-blue-500 to-indigo-600',
+    'from-violet-500 to-purple-600',
+    'from-emerald-500 to-teal-600',
+    'from-amber-500 to-orange-600',
+    'from-rose-500 to-pink-600',
+    'from-cyan-500 to-blue-600',
+  ];
+
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 overflow-hidden">
-      {/* Background Layer */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] animate-mesh" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cyan-500/10 rounded-full blur-[140px] animate-mesh-delayed" />
-        <div className="absolute top-[30%] right-[20%] w-[30%] h-[30%] bg-indigo-500/10 rounded-full blur-[100px] animate-mesh" />
-      </div>
+    <div className="max-w-5xl mx-auto space-y-5 pb-24 md:pb-10">
 
-      <div className="relative z-10 space-y-8 max-w-[1600px] mx-auto">
-      {/* Header / Command Center */}
-      <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 border-2 border-white shadow-2xl flex flex-col items-center text-center relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        
-        <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 border border-blue-100 rounded-full mb-6">
-          <Handshake className="w-4 h-4 text-blue-600" />
-          <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Global Logistics Network</span>
-        </div>
-        
-        <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tight mb-4">
-          Supplier <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Intelligence</span>
-        </h1>
-        <p className="text-gray-500 font-bold max-w-2xl mb-10 leading-relaxed uppercase text-[10px] tracking-[0.1em]">
-          Strategic Partnership Management & B2B Inventory Orchestration
-        </p>
+      {/* ── Hero Header ── */}
+      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 via-blue-700 to-teal-700 p-6 sm:p-8 text-white shadow-xl shadow-blue-200/40">
+        <div className="absolute -top-16 -right-16 w-56 h-56 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-12 left-12 w-40 h-40 bg-teal-400/20 rounded-full blur-xl pointer-events-none" />
 
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <button 
-            onClick={() => {
-              setIsSyncing(true);
-              showNotify('Syncing with Logistics Hub...');
-              setTimeout(() => setIsSyncing(false), 2000);
-            }}
-            className="px-8 py-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-500 flex items-center gap-3 cursor-pointer"
-          >
-            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            Sync Relations
-          </button>
-          <button
-            onClick={() => setShowAddSupplier(true)}
-            className="px-8 py-4 bg-blue-500 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-500 flex items-center gap-3 cursor-pointer shadow-xl shadow-blue-500/20"
-          >
-            <Plus className="w-4 h-4" />
-            Registry New Node
-          </button>
-          <div className="h-10 w-px bg-gray-200 mx-2 hidden md:block" />
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={handleExport}
-              className="p-4 bg-white border-2 border-gray-100 rounded-2xl hover:border-blue-500 hover:text-blue-500 active:scale-95 transition-all cursor-pointer group/btn" 
-              title="Export Manifest"
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 bg-white/15 rounded-lg">
+                <Handshake className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-blue-200 text-[10px] font-black uppercase tracking-widest">Supplier Network</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-1">
+              Suppliers
+            </h1>
+            <p className="text-blue-300 text-sm font-medium">Strategic partnership management</p>
+          </div>
+
+          <div className="flex flex-col gap-2.5 sm:items-end">
+            <div className="flex items-center gap-1.5 self-start sm:self-auto">
+              <button
+                onClick={() => { setIsSyncing(true); showNotify('Syncing suppliers…'); setTimeout(() => setIsSyncing(false), 2000); }}
+                className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/20 cursor-pointer"
+                title="Sync"
+              >
+                <RefreshCw className={`w-4 h-4 text-white ${isSyncing ? 'animate-spin' : ''}`} />
+              </button>
+              <button onClick={handleExport} className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/20 cursor-pointer" title="Export">
+                <Download className="w-4 h-4 text-white" />
+              </button>
+              <button onClick={() => setShowConfigModal(true)} className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/20 cursor-pointer" title="Settings">
+                <Settings className="w-4 h-4 text-white" />
+              </button>
+            </div>
+            <button
+              onClick={() => setShowAddSupplier(true)}
+              className="flex items-center justify-center gap-2 bg-white text-blue-700 font-black text-sm rounded-xl px-5 py-2.5 shadow-lg hover:bg-blue-50 active:scale-95 transition-all w-full sm:w-auto cursor-pointer"
             >
-              <Download className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={() => setShowConfigModal(true)}
-              className="p-4 bg-white border-2 border-gray-100 rounded-2xl hover:border-blue-500 hover:text-blue-500 active:scale-95 transition-all cursor-pointer group/btn" 
-              title="Configuration"
-            >
-              <Settings className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
+              Add Supplier
             </button>
           </div>
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Network Capacity', val: totalSuppliers, sub: `${activeSuppliers} Active Nodes`, icon: Building2, color: 'blue' },
-          { label: 'Capital Outflow', val: `$${(totalSpent / 1000).toFixed(0)}K`, sub: 'Annual Manifest', icon: DollarSign, color: 'emerald' },
-          { label: 'Procurement Flow', val: suppliers.reduce((acc, s) => acc + s.totalOrders, 0), sub: 'Historical Orders', icon: ShoppingCart, color: 'indigo' },
-          { label: 'Trust Index', val: avgRating.toFixed(1), sub: 'Node Reliability', icon: Award, color: 'amber' },
-        ].map((stat, idx) => (
-          <div key={idx} className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-8 border-2 border-white shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden">
-            <div className={`absolute top-0 right-0 w-24 h-24 bg-${stat.color}-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700`} />
-            <div className="flex items-center justify-between mb-4">
-              <div className={`p-4 bg-${stat.color}-500 rounded-2xl shadow-lg shadow-${stat.color}-500/20`}>
-                <stat.icon className="w-6 h-6 text-white" />
-              </div>
-              <TrendingUp className={`w-5 h-5 text-${stat.color}-500 opacity-50`} />
+          { label: 'Suppliers', value: String(totalSuppliers), sub: `${activeSuppliers} active`, icon: Building2, iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
+          { label: 'Total Spent', value: `£${(totalSpent / 1000).toFixed(0)}K`, sub: 'All time', icon: DollarSign, iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+          { label: 'Orders', value: String(suppliers.reduce((acc, s) => acc + s.totalOrders, 0)), sub: 'Historical', icon: ShoppingCart, iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600' },
+          { label: 'Avg Rating', value: avgRating > 0 ? avgRating.toFixed(1) : '—', sub: 'Trust score', icon: Award, iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
+        ].map((stat, i) => (
+          <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+            <div className={`shrink-0 p-2.5 rounded-xl ${stat.iconBg}`}>
+              <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
             </div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-3xl font-black text-gray-900 tracking-tight">{stat.val}</p>
-            <p className={`text-[9px] font-bold text-${stat.color}-600 mt-2 flex items-center gap-1`}>
-              <Zap className="w-3 h-3" />
-              {stat.sub}
-            </p>
+            <div className="min-w-0">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">{stat.label}</p>
+              <p className="text-xl font-black text-gray-900 leading-tight">{stat.value}</p>
+              <p className="text-[10px] text-gray-400 truncate">{stat.sub}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Recent Activity / Temporal Log */}
-      <div className="bg-white/40 backdrop-blur-xl rounded-[3rem] border-2 border-white shadow-xl p-8 overflow-hidden relative group">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h3 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-              <Activity className="w-5 h-5 text-blue-500" />
-              Strategic Temporal Log
-            </h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Real-time procurement velocity</p>
-          </div>
-          <button className="px-6 py-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:bg-blue-50 rounded-full transition-all flex items-center gap-2 cursor-pointer">
-            View Holistic Manifest
-            <ChevronRight className="w-4 h-4" />
-          </button>
+      {/* ── Search + Controls ── */}
+      <div className="flex gap-2">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search by name, contact, or email…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+          />
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {recentOrders.map((order, idx) => (
-            <div key={order.id} className="relative group/card animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{ animationDelay: `${idx * 150}ms` }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent rounded-[2rem] opacity-0 group-hover/card:opacity-100 transition-opacity duration-500" />
-              <div className="relative p-6 bg-white border-2 border-gray-50 rounded-[2rem] shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Manifest #{order.id}</span>
-                  <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                    order.status === 'delivered' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                    order.status === 'shipped' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
-                    'bg-amber-50 text-amber-600 border border-amber-100'
-                  }`}>
-                    {order.status}
-                  </div>
-                </div>
-                <h4 className="font-black text-gray-900 mb-4 border-l-4 border-blue-500 pl-3 leading-tight">{order.supplierName}</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-2 bg-gray-50 rounded-xl">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Valuation</span>
-                    <span className="text-sm font-black text-gray-900">${order.amount.toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[9px] font-black text-gray-500 uppercase tracking-widest px-1">
-                    <span>ETA Alignment</span>
-                    <span className="text-gray-900">{order.deliveryDate.toLocaleDateString()}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <button className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-[11px] font-black text-gray-600 hover:bg-gray-50 transition-all cursor-pointer shrink-0">
+          <Filter className="w-4 h-4 text-gray-400" />
+          <span className="hidden sm:inline">Filter</span>
+        </button>
+        <div className="flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shrink-0">
+          {[{ id: 'grid', icon: Grid }, { id: 'list', icon: List }].map(mode => (
+            <button
+              key={mode.id}
+              onClick={() => setViewMode(mode.id as 'grid' | 'list')}
+              className={`p-2.5 transition-all cursor-pointer ${
+                viewMode === mode.id ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              <mode.icon className="w-4 h-4" />
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Search and Filters Hub */}
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="flex-1 relative group">
-          <div className="absolute inset-0 bg-blue-500/5 rounded-3xl blur-xl group-focus-within:bg-blue-500/10 transition-all opacity-0 group-focus-within:opacity-100" />
-          <div className="relative flex items-center bg-white/60 backdrop-blur-xl border-2 border-white shadow-xl rounded-3xl p-2 pl-6 focus-within:border-blue-500/50 transition-all">
-            <Search className="w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Query specialized nodes, personnel, or identifiers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-4 py-3 bg-transparent text-sm font-bold text-gray-900 outline-none placeholder:text-gray-400"
-            />
-            <div className="hidden md:flex items-center gap-2 pr-4">
-              <span className="px-2 py-1 bg-gray-100 text-[10px] font-black text-gray-400 rounded-lg">CMD</span>
-              <span className="px-2 py-1 bg-gray-100 text-[10px] font-black text-gray-400 rounded-lg">K</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button className="px-8 py-5 bg-white/60 backdrop-blur-xl border-2 border-white rounded-3xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-3 cursor-pointer group">
-            <Filter className="w-5 h-5 text-gray-600 group-hover:text-blue-500 transition-colors" />
-            <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.2em] group-hover:text-blue-500">Advanced Matrix</span>
-          </button>
-          
-          <div className="flex items-center gap-1 bg-white/60 backdrop-blur-xl border-2 border-white shadow-xl rounded-2xl p-1.5">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-3 rounded-xl transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
-            >
-              <Grid className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-3 rounded-xl transition-all cursor-pointer ${viewMode === 'list' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
-            >
-              <List className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Navigation */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-4 custom-scrollbar">
-        {categories.map((category) => {
-          const Icon = category.icon;
-          const isActive = selectedCategory === category.id;
+      {/* ── Category Pills ── */}
+      <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+        {categories.map(cat => {
+          const Icon = cat.icon;
+          const active = selectedCategory === cat.id;
           return (
             <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all duration-500 whitespace-nowrap cursor-pointer border-2 ${
-                isActive
-                  ? 'bg-gray-900 border-gray-900 text-white shadow-xl shadow-gray-900/10 scale-105'
-                  : 'bg-white/60 backdrop-blur-md border-white text-gray-500 hover:border-blue-500/30 hover:text-blue-500'
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                active
+                  ? 'bg-gray-900 text-white shadow-md'
+                  : 'bg-white border border-gray-100 text-gray-500 hover:border-gray-200 hover:text-gray-700'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              {category.name}
-              <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black ${
-                isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'
-              }`}>
-                {category.count}
+              <Icon className="w-3.5 h-3.5" />
+              {cat.name}
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                {cat.count}
               </span>
             </button>
           );
         })}
       </div>
 
-      {/* Grid View */}
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* ── Supplier Grid / List ── */}
+      {filteredSuppliers.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white rounded-2xl border border-gray-100">
+          <Building2 className="w-10 h-10 text-gray-200" />
+          <p className="text-sm font-bold text-gray-400">No suppliers yet</p>
+          <button
+            onClick={() => setShowAddSupplier(true)}
+            className="mt-1 flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-black rounded-xl hover:bg-blue-700 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Add First Supplier
+          </button>
+        </div>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filteredSuppliers.map((supplier, idx) => {
-            const statusConfig = getStatusConfig(supplier.status);
-            const StatusIcon = statusConfig.icon;
+            const sc = getStatusConfig(supplier.status);
             const avgPerf = (supplier.performance.onTimeDelivery + supplier.performance.qualityScore + supplier.performance.responseTime + supplier.performance.priceCompetitiveness) / 4;
-            
+            const gradient = AVATAR_COLORS[idx % AVATAR_COLORS.length];
             return (
               <div
                 key={supplier.id}
-                onClick={() => {
-                  setSelectedSupplier(supplier);
-                  setShowDetailModal(true);
-                }}
-                className="group relative bg-white/60 backdrop-blur-xl rounded-[3rem] border-2 border-white p-8 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 cursor-pointer animate-in fade-in zoom-in-95 fill-mode-both"
-                style={{ animationDelay: `${idx * 100}ms` }}
+                onClick={() => { setSelectedSupplier(supplier); setShowDetailModal(true); }}
+                className="bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-lg hover:shadow-gray-100 transition-all cursor-pointer group"
               >
-                {/* Status Float */}
-                <div className={`absolute top-6 right-6 flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border} shadow-sm`}>
-                  <StatusIcon className="w-3 h-3" />
-                  {statusConfig.label}
-                </div>
-
-                {/* Identity Block */}
-                <div className="flex items-center gap-5 mb-8">
-                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500/10 to-transparent rounded-[1.5rem] flex items-center justify-center border-2 border-white shadow-inner group-hover:scale-110 transition-transform duration-500">
-                     <Building2 className="w-8 h-8 text-blue-600" />
-                   </div>
-                   <div>
-                      <h3 className="text-xl font-black text-gray-900 tracking-tight leading-tight group-hover:text-blue-600 transition-colors">{supplier.name}</h3>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{supplier.category.replace('-', ' ')}</p>
-                   </div>
-                </div>
-
-                {/* Performance Radar Bar */}
-                <div className="mb-8 p-5 bg-gray-50/50 rounded-[2rem] border border-white/50">
-                  <div className="flex items-center justify-between mb-3 text-[9px] font-black uppercase tracking-widest">
-                    <span className="text-gray-400">Node Trust Matrix</span>
-                    <span className="text-gray-900">{avgPerf.toFixed(0)}%</span>
+                {/* Header */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-2xl bg-linear-to-br ${gradient} flex items-center justify-center text-white text-base font-black shadow-sm shrink-0`}>
+                      {supplier.name.charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-black text-gray-900 leading-tight truncate group-hover:text-blue-600 transition-colors">
+                        {supplier.name}
+                      </h3>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">
+                        {supplier.category.replace('-', ' ')}
+                      </p>
+                    </div>
                   </div>
-                  <div className="w-full h-2 bg-white rounded-full overflow-hidden shadow-inner">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-1000 ${
+                  <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black shrink-0 ${sc.bg} ${sc.text}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                    {sc.label}
+                  </span>
+                </div>
+
+                {/* Performance bar */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] text-gray-400 font-bold">Performance</span>
+                    <span className="text-xs font-black text-gray-900">{avgPerf.toFixed(0)}%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
                         avgPerf >= 90 ? 'bg-emerald-500' : avgPerf >= 75 ? 'bg-blue-500' : 'bg-amber-500'
                       }`}
                       style={{ width: `${avgPerf}%` }}
                     />
                   </div>
-                  <div className="grid grid-cols-4 gap-1 mt-3">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i} className={`h-1 rounded-full ${i < Math.floor(avgPerf/25) ? 'bg-blue-500/20' : 'bg-gray-100'}`} />
-                    ))}
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div className="bg-gray-50 rounded-xl p-2.5">
+                    <p className="text-[9px] font-black text-gray-400 uppercase mb-0.5">Spent</p>
+                    <p className="text-xs font-black text-gray-900">£{(supplier.totalSpent / 1000).toFixed(0)}K</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-2.5">
+                    <p className="text-[9px] font-black text-gray-400 uppercase mb-0.5">Lead Time</p>
+                    <p className="text-xs font-black text-gray-900">{supplier.leadTime}</p>
                   </div>
                 </div>
 
-                {/* Logistics Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                   <div className="p-4 bg-white rounded-2xl border border-gray-50 shadow-sm group-hover:shadow-md transition-all">
-                      <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Capital Load</p>
-                      <p className="text-lg font-black text-gray-900">${(supplier.totalSpent / 1000).toFixed(0)}K</p>
-                   </div>
-                   <div className="p-4 bg-white rounded-2xl border border-gray-50 shadow-sm group-hover:shadow-md transition-all">
-                      <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Latency</p>
-                      <p className="text-lg font-black text-gray-900">{supplier.leadTime}</p>
-                   </div>
+                {/* Rating */}
+                <div className="flex items-center gap-1 mb-3">
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <Star key={s} className={`w-3.5 h-3.5 ${s <= Math.round(supplier.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200 fill-gray-200'}`} />
+                  ))}
+                  <span className="text-[11px] font-black text-gray-500 ml-1">{supplier.rating}</span>
                 </div>
 
-                {/* Contact Interface */}
-                 <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-black text-gray-500 uppercase">
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-[9px] font-black text-gray-500 uppercase shrink-0">
                       {supplier.contactPerson.charAt(0)}
                     </div>
-                    <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                      {supplier.contactPerson}
-                    </div>
+                    <span className="text-[10px] font-bold text-gray-400 truncate">{supplier.contactPerson}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        setSelectedSupplier(supplier);
-                        setShowMessageModal(true); 
-                        showNotify(`Contacting ${supplier.name}...`); 
-                      }}
-                      className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-500 hover:text-white transition-all cursor-pointer"
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSelectedSupplier(supplier); setShowMessageModal(true); }}
+                      className="p-2 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl transition-all cursor-pointer"
                     >
-                      <MessageSquare className="w-4 h-4" />
+                      <MessageSquare className="w-3.5 h-3.5" />
                     </button>
                     <div className="relative">
-                      <button 
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          setActiveMenu(activeMenu === supplier.id ? null : supplier.id);
-                        }}
-                        className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-900 hover:text-white transition-all cursor-pointer"
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === supplier.id ? null : supplier.id); }}
+                        className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all cursor-pointer"
                       >
-                        <MoreVertical className="w-4 h-4" />
+                        <MoreVertical className="w-3.5 h-3.5 text-gray-500" />
                       </button>
                       {activeMenu === supplier.id && (
                         <>
-                          <div className="fixed inset-0 z-[60]" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
-                          <div className="absolute right-0 bottom-full mb-4 w-48 bg-white/80 backdrop-blur-2xl rounded-2xl shadow-2xl border-2 border-white py-2 z-[70] animate-in fade-in zoom-in duration-300">
+                          <div className="fixed inset-0 z-60" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
+                          <div className="absolute right-0 bottom-full mb-2 w-44 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 z-70 animate-in fade-in zoom-in duration-200">
                             {[
-                              { 
-                                label: 'Registry Order', 
-                                icon: ShoppingCart, 
-                                onClick: () => {
-                                  setSelectedSupplier(supplier);
-                                  setShowOrderModal(true);
-                                }
-                              },
-                              { 
-                                label: 'Direct Comms', 
-                                icon: MessageSquare, 
-                                onClick: () => {
-                                  setSelectedSupplier(supplier);
-                                  setShowMessageModal(true);
-                                }
-                              },
-                              { 
-                                label: 'Terminate Node', 
-                                icon: Trash2, 
-                                danger: true, 
-                                onClick: () => {
-                                  setDeletingSupplier(supplier);
-                                  setShowDeleteModal(true);
-                                }
-                              }
+                              { label: 'Place Order', icon: ShoppingCart, onClick: () => { setSelectedSupplier(supplier); setShowOrderModal(true); } },
+                              { label: 'Send Message', icon: MessageSquare, onClick: () => { setSelectedSupplier(supplier); setShowMessageModal(true); } },
+                              { label: 'Delete', icon: Trash2, danger: true, onClick: () => { setDeletingSupplier(supplier); setShowDeleteModal(true); } },
                             ].map((opt, i) => (
                               <button
                                 key={i}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  opt.onClick?.();
-                                  setActiveMenu(null);
-                                }}
-                                className={`w-full px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest hover:bg-white flex items-center gap-3 transition-colors cursor-pointer ${opt.danger ? 'text-rose-500' : 'text-gray-600'}`}
+                                onClick={(e) => { e.stopPropagation(); opt.onClick?.(); setActiveMenu(null); }}
+                                className={`w-full px-3.5 py-2.5 text-left text-[11px] font-black flex items-center gap-2.5 hover:bg-gray-50 transition-colors cursor-pointer ${opt.danger ? 'text-red-500' : 'text-gray-700'}`}
                               >
-                                <opt.icon className="w-4 h-4" />
+                                <opt.icon className="w-3.5 h-3.5" />
                                 {opt.label}
                               </button>
                             ))}
@@ -531,683 +398,685 @@ export default function SuppliersPage() {
           })}
         </div>
       ) : (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[3rem] border-2 border-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <table className="w-full">
-            <thead className="bg-gray-900">
-              <tr>
-                <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Node / Catalyst</th>
-                <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Classification</th>
-                <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Trust Score</th>
-                <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Procurement</th>
-                <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Capital Load</th>
-                <th className="px-8 py-6 text-left text-[10px] font-black text-white uppercase tracking-[0.2em]">Efficiency</th>
-                <th className="px-8 py-6 text-right text-[10px] font-black text-white uppercase tracking-[0.2em]">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 bg-white/40">
-              {filteredSuppliers.map((supplier) => {
-                const isActiveRow = activeMenu === supplier.id;
-                return (
-                  <tr 
-                    key={supplier.id} 
-                    className={`group hover:bg-blue-50/50 transition-colors cursor-pointer ${isActiveRow ? 'relative z-50 bg-blue-50/50' : ''}`} 
-                    onClick={() => {
-                      setSelectedSupplier(supplier);
-                      setShowDetailModal(true);
-                    }}
-                  >
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center border border-gray-200 group-hover:bg-white transition-colors">
-                        <Building2 className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                      </div>
-                      <div>
-                        <p className="font-black text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">{supplier.name}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{supplier.contactPerson}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-lg">
-                      {supplier.category.replace('-', ' ')}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2">
-                       <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                       <span className="font-black text-gray-900">{supplier.rating}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 font-black text-gray-900 text-sm">
-                    {supplier.totalOrders} <span className="text-[10px] text-gray-400 uppercase ml-1">Orders</span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className="font-black text-gray-900">${(supplier.totalSpent / 1000).toFixed(0)}K</span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusConfig(supplier.status).bg} ${getStatusConfig(supplier.status).text} border ${getStatusConfig(supplier.status).border}`}>
-                       {supplier.status}
-                    </div>
-                  </td>
-                   <td className="px-8 py-6 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          setSelectedSupplier(supplier);
-                          setShowMessageModal(true); 
-                        }}
-                        className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all cursor-pointer"
-                      >
-                         <MessageSquare className="w-4 h-4" />
-                      </button>
-                      <div className="relative">
-                        <button 
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setActiveMenu(activeMenu === supplier.id ? null : supplier.id);
-                          }}
-                          className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-900 hover:text-white transition-all cursor-pointer"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        {activeMenu === supplier.id && (
-                          <>
-                            <div className="fixed inset-0 z-[60]" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
-                            <div className="absolute right-full top-0 mr-2 w-48 bg-white/80 backdrop-blur-2xl rounded-2xl shadow-2xl border-2 border-white py-2 z-[70] animate-in fade-in zoom-in slide-in-from-right-2 duration-300">
-                              {[
-                                { 
-                                  label: 'Registry Order', 
-                                  icon: ShoppingCart, 
-                                  onClick: () => {
-                                    setSelectedSupplier(supplier);
-                                    setShowOrderModal(true);
-                                  }
-                                },
-                                { 
-                                  label: 'Direct Comms', 
-                                  icon: MessageSquare, 
-                                  onClick: () => {
-                                    setSelectedSupplier(supplier);
-                                    setShowMessageModal(true);
-                                  }
-                                },
-                                { 
-                                  label: 'Terminate Node', 
-                                  icon: Trash2, 
-                                  danger: true, 
-                                  onClick: () => {
-                                    setDeletingSupplier(supplier);
-                                    setShowDeleteModal(true);
-                                  }
-                                }
-                              ].map((opt, i) => (
-                                <button
-                                  key={i}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    opt.onClick?.();
-                                    setActiveMenu(null);
-                                  }}
-                                  className={`w-full px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest hover:bg-white flex items-center gap-3 transition-colors cursor-pointer ${opt.danger ? 'text-rose-500' : 'text-gray-600'}`}
-                                >
-                                  <opt.icon className="w-4 h-4" />
-                                  {opt.label}
-                                </button>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </td>
+        <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-[720px] w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/60">
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Supplier</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Category</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Rating</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Orders</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Spent</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
-              );
-            })}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filteredSuppliers.map((supplier, idx) => {
+                  const sc = getStatusConfig(supplier.status);
+                  const gradient = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+                  return (
+                    <tr
+                      key={supplier.id}
+                      onClick={() => { setSelectedSupplier(supplier); setShowDetailModal(true); }}
+                      className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-xl bg-linear-to-br ${gradient} flex items-center justify-center text-white text-sm font-black shrink-0`}>
+                            {supplier.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-gray-900">{supplier.name}</p>
+                            <p className="text-[10px] text-gray-400">{supplier.contactPerson}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] font-black uppercase tracking-wider rounded-lg">
+                          {supplier.category.replace('-', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          <span className="text-sm font-black text-gray-900">{supplier.rating}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-sm font-black text-gray-900">{supplier.totalOrders}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-sm font-black text-blue-600">£{(supplier.totalSpent / 1000).toFixed(0)}K</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black ${sc.bg} ${sc.text}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                          {sc.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedSupplier(supplier); setShowMessageModal(true); }}
+                            className="p-2 bg-gray-100 hover:bg-blue-100 rounded-xl transition-all cursor-pointer group/msg"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-gray-500 group-hover/msg:text-blue-600 transition-colors" />
+                          </button>
+                          <div className="relative">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === supplier.id ? null : supplier.id); }}
+                              className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all cursor-pointer"
+                            >
+                              <MoreVertical className="w-3.5 h-3.5 text-gray-500" />
+                            </button>
+                            {activeMenu === supplier.id && (
+                              <>
+                                <div className="fixed inset-0 z-60" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
+                                <div className="absolute right-0 bottom-full mb-2 w-44 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 z-70 animate-in fade-in zoom-in duration-200">
+                                  {[
+                                    { label: 'Place Order', icon: ShoppingCart, onClick: () => { setSelectedSupplier(supplier); setShowOrderModal(true); } },
+                                    { label: 'Send Message', icon: MessageSquare, onClick: () => { setSelectedSupplier(supplier); setShowMessageModal(true); } },
+                                    { label: 'Delete', icon: Trash2, danger: true, onClick: () => { setDeletingSupplier(supplier); setShowDeleteModal(true); } },
+                                  ].map((opt, i) => (
+                                    <button
+                                      key={i}
+                                      onClick={(e) => { e.stopPropagation(); opt.onClick?.(); setActiveMenu(null); }}
+                                      className={`w-full px-3.5 py-2.5 text-left text-[11px] font-black flex items-center gap-2.5 hover:bg-gray-50 transition-colors cursor-pointer ${opt.danger ? 'text-red-500' : 'text-gray-700'}`}
+                                    >
+                                      <opt.icon className="w-3.5 h-3.5" />
+                                      {opt.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-       {/* Supplier Detail Modal */}
+      {/* ── Supplier Detail Modal ── */}
       {showDetailModal && selectedSupplier && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] max-w-lg w-full max-h-[85vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
-            {/* Header Interface */}
-             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10 text-gray-900">
-               <div className="flex items-center gap-4 text-gray-900">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <Building2 className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-gray-900">
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight">{selectedSupplier.name}</h2>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusConfig(selectedSupplier.status).bg} ${getStatusConfig(selectedSupplier.status).text} border ${getStatusConfig(selectedSupplier.status).border}`}>
-                        {selectedSupplier.status}
+        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => { setShowDetailModal(false); setSelectedSupplier(null); }} />
+          <div className="relative w-full sm:max-w-lg bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white text-base font-black shadow-sm">
+                  {selectedSupplier.name.charAt(0)}
+                </div>
+                <div>
+                  <h2 className="text-base font-black text-gray-900 leading-tight">{selectedSupplier.name}</h2>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {(() => { const sc = getStatusConfig(selectedSupplier.status); return (
+                      <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black ${sc.bg} ${sc.text}`}>
+                        <span className={`w-1 h-1 rounded-full ${sc.dot}`} />
+                        {sc.label}
                       </span>
-                      <div className="flex items-center gap-1 ml-1.5">
-                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                        <span className="text-[10px] font-black text-gray-900">{selectedSupplier.rating}</span>
-                      </div>
+                    ); })()}
+                    <div className="flex items-center gap-0.5">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      <span className="text-[11px] font-black text-gray-600">{selectedSupplier.rating}</span>
                     </div>
                   </div>
-               </div>
-               <button
-                 onClick={() => {
-                  setShowDetailModal(false);
-                  setSelectedSupplier(null);
-                 }}
-                 className="p-3 bg-gray-100/50 hover:bg-gray-200/50 rounded-xl transition-all cursor-pointer group text-gray-900"
-               >
-                 <X className="w-5 h-5 text-gray-500 group-hover:rotate-90 transition-transform duration-500" />
-               </button>
-             </div>
-
-             <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-                {/* Visual Identity / Description */}
-                <div className="grid grid-cols-2 gap-3">
-                   <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl border border-blue-100">
-                      <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1.5">Total Managed Capital</p>
-                      <p className="text-2xl font-black text-blue-900">${(selectedSupplier.totalSpent / 1000).toFixed(0)}K</p>
-                   </div>
-                   <div className="p-5 bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-2xl border border-indigo-100">
-                      <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1.5">Historical Orders</p>
-                      <p className="text-2xl font-black text-indigo-900">{selectedSupplier.totalOrders}</p>
-                   </div>
                 </div>
+              </div>
+              <button onClick={() => { setShowDetailModal(false); setSelectedSupplier(null); }} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
 
-                {/* Performance Matrix */}
-                <div>
-                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-5 flex items-center gap-3">
-                      <Zap className="w-4 h-4 text-amber-500" />
-                      Performance Efficiency Matrix
-                   </h3>
-                   <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                      {[
-                        { label: 'On-Time delivery', val: selectedSupplier.performance.onTimeDelivery, color: 'emerald' },
-                        { label: 'Quality Assurance', val: selectedSupplier.performance.qualityScore, color: 'blue' },
-                        { label: 'response velocity', val: selectedSupplier.performance.responseTime, color: 'indigo' },
-                        { label: 'Price Index', val: selectedSupplier.performance.priceCompetitiveness, color: 'amber' },
-                      ].map((perf, idx) => (
-                        <div key={idx}>
-                           <div className="flex items-center justify-between mb-1.5">
-                             <span className="text-[10px] font-bold text-gray-500 capitalize">{perf.label}</span>
-                             <span className="text-[10px] font-black text-gray-900">{perf.val}%</span>
-                           </div>
-                           <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-                             <div className={`h-full bg-${perf.color === 'emerald' ? 'emerald-500' : perf.color === 'blue' ? 'blue-500' : perf.color === 'indigo' ? 'indigo-500' : 'amber-500'} rounded-full`} style={{ width: `${perf.val}%` }} />
-                           </div>
-                        </div>
-                      ))}
-                   </div>
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
+              {/* Capital + Orders */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="p-3.5 bg-blue-50 rounded-2xl">
+                  <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-1">Total Spent</p>
+                  <p className="text-xl font-black text-blue-900">£{(selectedSupplier.totalSpent / 1000).toFixed(0)}K</p>
                 </div>
-
-                {/* Contact Hub */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="p-5 bg-white border-2 border-gray-50 rounded-2xl shadow-sm">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Direct Personnel</p>
-                      <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-[11px] font-black text-gray-400">
-                            {selectedSupplier.contactPerson.charAt(0)}
-                         </div>
-                         <div>
-                            <p className="text-sm font-black text-gray-900">{selectedSupplier.contactPerson}</p>
-                            <p className="text-[10px] font-bold text-gray-400">{selectedSupplier.email}</p>
-                         </div>
-                      </div>
-                   </div>
-                   <div className="p-5 bg-white border-2 border-gray-200/50 rounded-2xl shadow-sm">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Node Coordinates</p>
-                      <div className="flex items-center gap-2.5">
-                        <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                        <p className="text-[10px] font-black text-gray-700">{selectedSupplier.address}, {selectedSupplier.city}</p>
-                      </div>
-                      <div className="flex items-center gap-2.5 mt-2.5">
-                        <Globe className="w-3.5 h-3.5 text-blue-500" />
-                        <p className="text-[10px] font-black text-gray-700">{selectedSupplier.website}</p>
-                      </div>
-                   </div>
+                <div className="p-3.5 bg-indigo-50 rounded-2xl">
+                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-wider mb-1">Total Orders</p>
+                  <p className="text-xl font-black text-indigo-900">{selectedSupplier.totalOrders}</p>
                 </div>
+              </div>
 
-                {/* Operations */}
-                <div className="bg-gray-900 rounded-[2rem] p-6 text-white">
-                   <div className="grid grid-cols-3 gap-4">
-                      <div className="text-center">
-                         <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Lead Latency</p>
-                         <p className="text-lg font-black">{selectedSupplier.leadTime}</p>
-                      </div>
-                      <div className="text-center border-x border-white/10">
-                         <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Pay Terms</p>
-                         <p className="text-lg font-black">{selectedSupplier.paymentTerms}</p>
-                      </div>
-                      <div className="text-center">
-                         <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Min Threshold</p>
-                         <p className="text-lg font-black">${selectedSupplier.minimumOrder.toLocaleString()}</p>
-                      </div>
-                   </div>
+              {/* Performance */}
+              <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Performance</p>
+                {[
+                  { label: 'On-Time Delivery', value: selectedSupplier.performance.onTimeDelivery, color: 'bg-emerald-500' },
+                  { label: 'Quality Score', value: selectedSupplier.performance.qualityScore, color: 'bg-blue-500' },
+                  { label: 'Response Time', value: selectedSupplier.performance.responseTime, color: 'bg-indigo-500' },
+                  { label: 'Price Index', value: selectedSupplier.performance.priceCompetitiveness, color: 'bg-amber-500' },
+                ].map((perf, i) => (
+                  <div key={i}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-bold text-gray-600">{perf.label}</span>
+                      <span className="text-[11px] font-black text-gray-900">{perf.value}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <div className={`h-full ${perf.color} rounded-full`} style={{ width: `${perf.value}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Contact */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="p-3.5 bg-white border border-gray-100 rounded-2xl">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">Contact</p>
+                  <p className="text-sm font-black text-gray-900">{selectedSupplier.contactPerson}</p>
+                  <p className="text-[11px] text-gray-500 truncate">{selectedSupplier.email}</p>
                 </div>
-             </div>
+                <div className="p-3.5 bg-white border border-gray-100 rounded-2xl">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">Location</p>
+                  <div className="flex items-start gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
+                    <p className="text-[11px] font-bold text-gray-700 leading-tight">{selectedSupplier.city}, {selectedSupplier.country}</p>
+                  </div>
+                  {selectedSupplier.website && (
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <Globe className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      <p className="text-[10px] text-gray-500 truncate">{selectedSupplier.website}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-             {/* Footer Actions */}
-             <div className="p-6 bg-white/60 border-t border-gray-100 flex items-center gap-3 sticky bottom-0">
-                <button 
-                  onClick={() => setShowMessageModal(true)}
-                  className="flex-1 px-4 py-4 bg-blue-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 cursor-pointer"
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  Initiate Comms
-                </button>
-                 <button 
-                  onClick={() => setShowOrderModal(true)}
-                  className="flex-1 px-4 py-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-3 cursor-pointer"
-                >
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                  Registry Order
-                </button>
-                <button 
-                  onClick={() => {
-                     setDeletingSupplier(selectedSupplier);
-                     setShowDeleteModal(true);
-                  }}
-                  className="p-4 border-2 border-rose-100 text-rose-500 rounded-xl hover:bg-rose-50 transition-all cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-             </div>
+              {/* Operations */}
+              <div className="bg-gray-900 rounded-2xl p-4">
+                <div className="grid grid-cols-3 gap-3 text-white text-center">
+                  <div>
+                    <p className="text-[9px] font-black text-white/40 uppercase tracking-wider mb-1">Lead Time</p>
+                    <p className="text-sm font-black">{selectedSupplier.leadTime}</p>
+                  </div>
+                  <div className="border-x border-white/10">
+                    <p className="text-[9px] font-black text-white/40 uppercase tracking-wider mb-1">Payment</p>
+                    <p className="text-sm font-black">{selectedSupplier.paymentTerms}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-white/40 uppercase tracking-wider mb-1">Min Order</p>
+                    <p className="text-sm font-black">£{selectedSupplier.minimumOrder.toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-5 sm:px-6 py-4 border-t border-gray-100 flex gap-2.5 shrink-0">
+              <button
+                onClick={() => setShowMessageModal(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Message
+              </button>
+              <button
+                onClick={() => setShowOrderModal(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-900 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-gray-800 transition-all cursor-pointer"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Order
+              </button>
+              <button
+                onClick={() => { setDeletingSupplier(selectedSupplier); setShowDeleteModal(true); }}
+                className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-all cursor-pointer border border-red-100"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Add Supplier Modal */}
+      {/* ── Add Supplier Modal ── */}
       {showAddSupplier && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] max-w-2xl w-full max-h-[85vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
-             <div className="p-6 md:p-8 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
-               <h2 className="text-xl font-black tracking-tight">Registry <span className="text-blue-600">New Node</span></h2>
-               <button onClick={() => setShowAddSupplier(false)} className="p-3 bg-gray-100/50 hover:bg-gray-200/50 rounded-xl transition-all cursor-pointer">
-                 <X className="w-5 h-5" />
-               </button>
-             </div>
-             
-             <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 custom-scrollbar">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                   <div className="md:col-span-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Enterprise Designation</label>
-                      <input type="text" placeholder="Legal Entity Name" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-gray-300" />
-                   </div>
-                   <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Classification</label>
-                      <select className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold">
-                        <option>Raw Materials</option>
-                        <option>Manufacturing</option>
-                        <option>Logistics</option>
+        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowAddSupplier(false)} />
+          <div className="relative w-full sm:max-w-2xl bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92dvh]">
+            {/* Sidebar — desktop only */}
+            <div className="hidden md:flex w-64 bg-gray-950 p-7 text-white flex-col justify-between shrink-0">
+              <div>
+                <h2 className="text-2xl font-black tracking-tight mb-3 leading-tight">Add Supplier</h2>
+                <p className="text-xs text-gray-400 leading-relaxed mb-6">Register a new supplier in your network.</p>
+                <div className="space-y-2.5">
+                  {[
+                    { icon: Building2, label: 'Company Info', sub: 'Name and category' },
+                    { icon: MessageSquare, label: 'Contact Details', sub: 'Person and email' },
+                    { icon: ShoppingCart, label: 'Terms', sub: 'Payment and lead time' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl">
+                      <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
+                        <item.icon className="w-4 h-4 text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-white">{item.label}</p>
+                        <p className="text-[10px] text-gray-500">{item.sub}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="p-3 bg-white/5 rounded-2xl">
+                <p className="text-[10px] text-gray-400 leading-relaxed">All starred fields are required.</p>
+              </div>
+            </div>
+
+            {/* Form */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+                <div>
+                  <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-0.5">New Supplier</p>
+                  <h2 className="text-lg font-black text-gray-900">Add Supplier</h2>
+                </div>
+                <button onClick={() => setShowAddSupplier(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Company Name *</label>
+                  <input type="text" placeholder="e.g. Acme Supplies Ltd" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Category</label>
+                    <select className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all">
+                      <option value="">Select</option>
+                      {categoryConfigs.filter(c => c.id !== 'all').map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Contact Person *</label>
+                    <input type="text" placeholder="Full name" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Email *</label>
+                  <input type="email" placeholder="contact@supplier.com" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Phone</label>
+                    <input type="tel" placeholder="+44 7000 000000" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Website</label>
+                    <input type="url" placeholder="https://" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                  </div>
+                </div>
+
+                <div className="p-4 bg-gray-900 rounded-2xl">
+                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <ShoppingCart className="w-3 h-3" /> Order Terms
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Payment Terms</label>
+                      <select className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-blue-500 transition-all">
+                        <option value="net30">Net 30</option>
+                        <option value="net60">Net 60</option>
+                        <option value="net90">Net 90</option>
+                        <option value="prepay">Prepayment</option>
                       </select>
-                   </div>
-                   <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Primary Contact</label>
-                      <input type="text" placeholder="Personnel Name" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-gray-300" />
-                   </div>
-                   <div className="md:col-span-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Communication Channel (Email)</label>
-                      <input type="email" placeholder="secure@entity.com" className="w-full px-6 py-3.5 bg-white/50 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all font-bold placeholder:text-gray-300" />
-                   </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Lead Time</label>
+                      <input type="text" placeholder="e.g. 7-10 days" className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-all" />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100">
-                   <h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <Factory className="w-4 h-4" />
-                      Operational Parameters
-                   </h3>
-                   <div className="grid grid-cols-2 gap-5">
-                      <div>
-                         <label className="block text-[9px] font-black text-blue-400 uppercase mb-1.5">Payment Cycle</label>
-                         <select className="w-full px-5 py-3.5 bg-white border-2 border-blue-100 rounded-lg focus:border-blue-500 outline-none transition-all font-bold">
-                            <option>Net 30</option>
-                            <option>Net 60</option>
-                         </select>
-                      </div>
-                      <div>
-                         <label className="block text-[9px] font-black text-blue-400 uppercase mb-1.5">Lead Latency</label>
-                         <input type="text" placeholder="7-10 Days" className="w-full px-5 py-3.5 bg-white border-2 border-blue-100 rounded-lg focus:border-blue-500 outline-none transition-all font-bold placeholder:text-blue-200" />
-                      </div>
-                   </div>
+                {/* Mobile-only buttons inside scroll — extended scroll space */}
+                <div className="flex items-center justify-end gap-3 pt-2 pb-32 sm:hidden">
+                  <button onClick={() => setShowAddSupplier(false)} className="px-5 py-2.5 text-[11px] font-black text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors cursor-pointer">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => { showNotify('Supplier added successfully'); setShowAddSupplier(false); }}
+                    className="px-6 py-2.5 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer active:scale-95"
+                  >
+                    Add Supplier
+                  </button>
                 </div>
-             </div>
+              </div>
 
-             <div className="p-6 md:p-8 bg-white/60 border-t border-gray-100 flex items-center gap-3 underline-offset-4">
-                <button onClick={() => setShowAddSupplier(false)} className="flex-1 px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-all cursor-pointer">
-                   Cancel Manifest
-                </button>
-                <button 
-                  onClick={() => {
-                     showNotify('Node Successfully Integrated into Registry');
-                     setShowAddSupplier(false);
-                  }}
-                  className="flex-[2] px-8 py-4 bg-blue-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/20 cursor-pointer"
-                >
-                   Registry Supplier Node
-                </button>
-             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Send Message Modal */}
-      {showMessageModal && selectedSupplier && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] max-w-xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
-             <div className="p-8 border-b border-gray-100 bg-white/40 sticky top-0 z-10 flex items-center justify-between">
-                <div>
-                   <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
-                      <MessageSquare className="w-6 h-6 text-blue-600" />
-                      Dispatch Comms
-                   </h2>
-                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Recipient: {selectedSupplier.name}</p>
-                </div>
-                <button onClick={() => setShowMessageModal(false)} className="p-4 bg-gray-100/50 rounded-2xl cursor-pointer">
-                  <X className="w-5 h-5" />
-                </button>
-             </div>
-
-             <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
-                <div>
-                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Priority Protocol</label>
-                   <div className="grid grid-cols-4 gap-2">
-                      {['low', 'normal', 'high', 'urgent'].map((p) => (
-                        <button
-                          key={p}
-                          onClick={() => setMessagePriority(p)}
-                          className={`py-3 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer ${
-                            messagePriority === p 
-                            ? (p === 'urgent' ? 'bg-rose-500 text-white' : 'bg-blue-500 text-white')
-                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      ))}
-                   </div>
-                </div>
-
-                <div>
-                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Manifest Subject</label>
-                   <input 
-                      type="text" 
-                      value={messageSubject}
-                      onChange={(e) => setMessageSubject(e.target.value)}
-                      placeholder="Define communication vector..." 
-                      className="w-full px-6 py-4 bg-white border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-blue-500" 
-                   />
-                </div>
-
-                <div>
-                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Intelligence Body</label>
-                   <textarea 
-                      rows={6}
-                      value={messageBody}
-                      onChange={(e) => setMessageBody(e.target.value)}
-                      placeholder="Transcribe manifest details..." 
-                      className="w-full px-6 py-4 bg-white border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-blue-500 resize-none" 
-                   />
-                </div>
-             </div>
-
-             <div className="p-8 bg-white/60 border-t border-gray-100">
-                <button 
-                  disabled={!messageSubject || !messageBody}
-                  onClick={() => {
-                    showNotify(`Communications Dispatched to ${selectedSupplier.name}`);
-                    setShowMessageModal(false);
-                  }}
-                  className="w-full py-5 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-blue-600 transition-all shadow-xl disabled:opacity-30 cursor-pointer"
-                >
-                  Confirm Dispatch
-                </button>
-             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Registry Order Modal */}
-      {showOrderModal && selectedSupplier && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative text-gray-900">
-             <div className="p-8 border-b border-gray-100 bg-white/40 flex items-center justify-between">
-                <div>
-                   <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
-                      <ShoppingCart className="w-6 h-6 text-blue-600" />
-                      Registry Order
-                   </h2>
-                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Provider: {selectedSupplier.name}</p>
-                </div>
-                <button onClick={() => setShowOrderModal(false)} className="p-4 bg-gray-100/50 rounded-2xl cursor-pointer">
-                  <X className="w-5 h-5" />
-                </button>
-             </div>
-
-             <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                {/* Product/Service Context */}
-                <div className="bg-blue-50/50 border border-blue-100 rounded-[2rem] p-6">
-                   <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                         <Building2 className="w-6 h-6 text-blue-500" />
-                      </div>
-                      <div>
-                         <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Classification</p>
-                         <p className="text-sm font-bold text-gray-900">{selectedSupplier.category.replace('-', ' ')}</p>
-                      </div>
-                   </div>
-                </div>
-
-                {/* Magnitude Selector */}
-                <div>
-                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Procurement Magnitude</label>
-                   <div className="grid grid-cols-2 gap-4">
-                      <input 
-                         type="number" 
-                         placeholder="Quantity / Volume" 
-                         className="px-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl font-bold outline-none focus:border-blue-500 transition-all"
-                      />
-                      <div className="px-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl font-bold text-gray-400 flex items-center justify-center text-sm">
-                         MIN: ${selectedSupplier.minimumOrder.toLocaleString()}
-                      </div>
-                   </div>
-                </div>
-
-                {/* Priority Selection */}
-                <div>
-                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Urgency Vector</label>
-                   <div className="grid grid-cols-3 gap-3">
-                      {['Standard', 'Expedited', 'Critical'].map((p) => (
-                        <button
-                          key={p}
-                          onClick={() => setMessagePriority(p.toLowerCase())}
-                          className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer border-2 ${
-                            messagePriority === p.toLowerCase()
-                            ? 'bg-gray-900 text-white border-gray-900'
-                            : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      ))}
-                   </div>
-                </div>
-
-                {/* Temporal Projection */}
-                <div className="flex items-center gap-4 text-emerald-600 bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
-                   <Clock className="w-5 h-5" />
-                   <p className="text-[10px] font-bold uppercase tracking-widest">
-                      Estimated Fulfillment Latency: <span className="font-black underline">{selectedSupplier.leadTime}</span>
-                   </p>
-                </div>
-             </div>
-
-             <div className="p-8 bg-white/60 border-t border-gray-100 flex gap-4">
-                <button 
-                  onClick={() => setShowOrderModal(false)}
-                  className="flex-1 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-all cursor-pointer"
-                >
+              {/* Desktop sticky footer */}
+              <div className="hidden sm:flex px-5 sm:px-6 py-4 border-t border-gray-100 items-center justify-end gap-3 shrink-0">
+                <button onClick={() => setShowAddSupplier(false)} className="px-5 py-2.5 text-[11px] font-black text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors cursor-pointer">
                   Cancel
                 </button>
-                <button 
-                  disabled={isOrdering}
-                  onClick={() => {
-                    setIsOrdering(true);
-                    setTimeout(() => {
-                      setIsOrdering(false);
-                      setShowOrderModal(false);
-                      showNotify(`✓ Order Node Registered: Procurement Manifest #ORD-${Math.floor(Math.random() * 10000)} Synchronized`);
-                    }, 2500);
-                  }}
-                  className="flex-[2] py-5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50"
+                <button
+                  onClick={() => { showNotify('Supplier added successfully'); setShowAddSupplier(false); }}
+                  className="px-6 py-2.5 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer active:scale-95"
                 >
-                  {isOrdering ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                  {isOrdering ? 'Registering...' : 'Registry Node Order'}
+                  Add Supplier
                 </button>
-             </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* ── Message Modal ── */}
+      {showMessageModal && selectedSupplier && (
+        <div className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowMessageModal(false)} />
+          <div className="relative w-full sm:max-w-lg bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+              <div>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-0.5">To: {selectedSupplier.name}</p>
+                <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-blue-500" />
+                  Send Message
+                </h2>
+              </div>
+              <button onClick={() => setShowMessageModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-2">Priority</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {['low', 'normal', 'high', 'urgent'].map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setMessagePriority(p)}
+                      className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        messagePriority === p
+                          ? (p === 'urgent' ? 'bg-red-500 text-white' : 'bg-blue-600 text-white')
+                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Subject</label>
+                <input
+                  type="text"
+                  value={messageSubject}
+                  onChange={(e) => setMessageSubject(e.target.value)}
+                  placeholder="Message subject…"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Message</label>
+                <textarea
+                  rows={5}
+                  value={messageBody}
+                  onChange={(e) => setMessageBody(e.target.value)}
+                  placeholder="Write your message…"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="px-5 sm:px-6 py-4 border-t border-gray-100 shrink-0">
+              <button
+                disabled={!messageSubject || !messageBody}
+                onClick={() => { showNotify(`Message sent to ${selectedSupplier.name}`); setShowMessageModal(false); setMessageSubject(''); setMessageBody(''); }}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Send Message
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Place Order Modal ── */}
+      {showOrderModal && selectedSupplier && (
+        <div className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowOrderModal(false)} />
+          <div className="relative w-full sm:max-w-lg bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+              <div>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-0.5">From: {selectedSupplier.name}</p>
+                <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-blue-500" />
+                  Place Order
+                </h2>
+              </div>
+              <button onClick={() => setShowOrderModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
+              {/* Supplier info banner */}
+              <div className="flex items-center gap-3 p-3.5 bg-blue-50 rounded-2xl">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                  <Building2 className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider">{selectedSupplier.category.replace('-', ' ')}</p>
+                  <p className="text-sm font-black text-blue-900">{selectedSupplier.name}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Quantity *</label>
+                  <input type="number" placeholder="0" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Min. Order</label>
+                  <div className="px-3.5 py-2.5 bg-gray-100 rounded-xl text-sm font-black text-gray-500">
+                    £{selectedSupplier.minimumOrder.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-2">Priority</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['Standard', 'Expedited', 'Critical'].map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setMessagePriority(p.toLowerCase())}
+                      className={`py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer border ${
+                        messagePriority === p.toLowerCase()
+                          ? 'bg-gray-900 text-white border-gray-900'
+                          : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3.5 bg-emerald-50 rounded-2xl border border-emerald-100">
+                <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+                <p className="text-[11px] font-bold text-emerald-700">
+                  Estimated delivery: <span className="font-black">{selectedSupplier.leadTime}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="px-5 sm:px-6 py-4 border-t border-gray-100 flex gap-2.5 shrink-0">
+              <button onClick={() => setShowOrderModal(false)} className="px-5 py-3 text-[11px] font-black text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors cursor-pointer">
+                Cancel
+              </button>
+              <button
+                disabled={isOrdering}
+                onClick={() => {
+                  setIsOrdering(true);
+                  setTimeout(() => {
+                    setIsOrdering(false);
+                    setShowOrderModal(false);
+                    showNotify(`Order placed with ${selectedSupplier.name}`);
+                  }, 2000);
+                }}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isOrdering ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                {isOrdering ? 'Placing…' : 'Place Order'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Config Modal ── */}
+      {showConfigModal && (
+        <div className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowConfigModal(false)} />
+          <div className="relative w-full sm:max-w-lg bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+              <div>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-0.5">Preferences</p>
+                <h2 className="text-lg font-black text-gray-900">Settings</h2>
+              </div>
+              <button onClick={() => setShowConfigModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-5">
+              {/* Auto-Sync */}
+              <div>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <RefreshCw className="w-3.5 h-3.5" /> Auto-Sync
+                </p>
+                <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+                  {[
+                    { label: 'Real-time Inventory Sync', sub: 'Update stock every 15 minutes', enabled: true },
+                    { label: 'Price Monitor', sub: 'Alert on >5% rate deviation', enabled: false },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-black text-gray-900">{item.label}</p>
+                        <p className="text-[10px] text-gray-500">{item.sub}</p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full relative cursor-pointer shrink-0 transition-colors ${item.enabled ? 'bg-blue-500' : 'bg-gray-200'}`}>
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${item.enabled ? 'right-1' : 'left-1'}`} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notifications */}
+              <div>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5" /> Notifications
+                </p>
+                <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+                  {['Shipment Delays', 'Quality Flags', 'Contract Renewals', 'New Catalogues'].map((item, i) => (
+                    <label key={i} className="flex items-center gap-3 cursor-pointer">
+                      <div className="w-5 h-5 rounded-md border-2 border-blue-400 bg-blue-50 flex items-center justify-center shrink-0">
+                        <Check className="w-3 h-3 text-blue-600" />
+                      </div>
+                      <span className="text-sm font-bold text-gray-700">{item}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* API */}
+              <div>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5" /> API Integration
+                </p>
+                <div className="bg-gray-900 rounded-2xl p-4">
+                  <p className="text-[10px] font-bold text-gray-400 mb-2">API Key</p>
+                  <div className="flex items-center gap-2 bg-gray-800 rounded-xl p-3 border border-gray-700">
+                    <code className="text-xs font-mono text-emerald-400 flex-1 truncate">sk_live_51Msz…92xS</code>
+                    <button className="p-1.5 hover:bg-gray-700 rounded-lg transition-all cursor-pointer shrink-0" title="Copy">
+                      <Download className="w-3.5 h-3.5 text-gray-400" />
+                    </button>
+                  </div>
+                  <p className="text-[9px] text-gray-500 mt-2">Admin access only.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-5 sm:px-6 py-4 border-t border-gray-100 shrink-0">
+              <button
+                onClick={() => { showNotify('Settings saved'); setShowConfigModal(false); }}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer"
+              >
+                <Check className="w-4 h-4" />
+                Save Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Modal ── */}
       {deletingSupplier && (
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setDeletingSupplier(null);
-          }}
+          onClose={() => { setShowDeleteModal(false); setDeletingSupplier(null); }}
           onConfirm={() => {
             setSuppliers(suppliers.filter(s => s.id !== deletingSupplier.id));
-            showNotify('✓ Relationship Manifest Permanently Cleared');
+            setShowDetailModal(false);
+            setSelectedSupplier(null);
+            showNotify('Supplier removed');
           }}
           title="Delete Supplier"
           itemName={deletingSupplier.name}
-          itemDetails={`${deletingSupplier.contactPerson} - ${deletingSupplier.email}`}
+          itemDetails={`${deletingSupplier.contactPerson} · ${deletingSupplier.email}`}
           warningMessage="This will permanently remove this supplier and all associated records."
         />
       )}
 
-
-      {/* Configuration Matrix Modal */}
-      {showConfigModal && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4 animate-in fade-in duration-500">
-          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-hidden border-2 border-white shadow-2xl flex flex-col relative">
-             <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/40 sticky top-0 z-10">
-               <div>
-                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">Configuration <span className="text-blue-600">Matrix</span></h2>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">System Parameters & Protocol Adjustments</p>
-               </div>
-               <button onClick={() => setShowConfigModal(false)} className="p-4 bg-gray-100/50 hover:bg-gray-200/50 rounded-2xl transition-all cursor-pointer">
-                 <X className="w-5 h-5" />
-               </button>
-             </div>
-
-             <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                {/* Auto-Sync Protocols */}
-                <div>
-                  <h3 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <RefreshCw className="w-4 h-4" />
-                    Auto-Sync Protocols
-                  </h3>
-                  <div className="bg-white/50 border-2 border-gray-100 rounded-2xl p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                       <div>
-                          <p className="font-bold text-gray-900 text-sm">Real-time Inventory Link</p>
-                          <p className="text-[10px] text-gray-500 font-medium">Synchronize stock levels every 15 minutes</p>
-                       </div>
-                       <div className="w-12 h-6 bg-blue-500 rounded-full relative cursor-pointer">
-                          <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
-                       </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                       <div>
-                          <p className="font-bold text-gray-900 text-sm">Price Index Monitor</p>
-                          <p className="text-[10px] text-gray-500 font-medium">Alert on &gt;5% deviation on contracted rates</p>
-                       </div>
-                       <div className="w-12 h-6 bg-gray-200 rounded-full relative cursor-pointer">
-                          <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
-                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Notification Vectors */}
-                <div>
-                  <h3 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Zap className="w-4 h-4" />
-                    Notification Vectors
-                  </h3>
-                  <div className="bg-white/50 border-2 border-gray-100 rounded-2xl p-6 space-y-4">
-                    {[
-                      'Inbound Shipment Delays',
-                      'Quality Assurance Flags',
-                      'Contract Renewal Alerts',
-                      'New Product Catalogues'
-                    ].map((item, idx) => (
-                      <label key={idx} className="flex items-center gap-3 cursor-pointer group">
-                        <div className="w-5 h-5 rounded-md border-2 border-gray-300 group-hover:border-blue-500 flex items-center justify-center transition-all bg-white">
-                           <CheckCircle className="w-3 h-3 text-blue-500 opacity-0 group-hover:opacity-100 transition-all" />
-                        </div>
-                        <span className="text-sm font-bold text-gray-700 group-hover:text-gray-900 transition-all">{item}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* API & Integration */}
-                <div>
-                  <h3 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    External Node Integration
-                  </h3>
-                  <div className="bg-gray-900 text-white rounded-2xl p-6">
-                     <p className="text-[10px] font-bold text-gray-400 mb-2">API Endpoint Key</p>
-                     <div className="flex items-center gap-2 bg-gray-800 rounded-xl p-3 border border-gray-700">
-                        <code className="text-xs font-mono text-emerald-400 flex-1">sk_live_51Msz...92xS</code>
-                        <button className="p-2 hover:bg-gray-700 rounded-lg transition-all" title="Copy Key">
-                           <Download className="w-4 h-4 text-gray-400" />
-                        </button>
-                     </div>
-                     <p className="text-[9px] text-gray-500 mt-3">* Access restricted to Admin protocols only.</p>
-                  </div>
-                </div>
-             </div>
-
-             <div className="p-8 bg-white/60 border-t border-gray-100">
-                <button 
-                  onClick={() => {
-                    showNotify('System Configuration Updated Successfully');
-                    setShowConfigModal(false);
-                  }}
-                  className="w-full py-5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  Save Parameters
-                </button>
-             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Global Toast Notification */}
+      {/* ── Toast ── */}
       {notification && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-bottom-8 duration-500">
-          <div className={`px-8 py-4 rounded-[2rem] shadow-2xl backdrop-blur-2xl border-2 flex items-center gap-4 ${
-            notification.type === 'success' ? 'bg-emerald-500/90 border-emerald-400/50 text-white' :
-            notification.type === 'error' ? 'bg-rose-500/90 border-rose-400/50 text-white' :
-            'bg-gray-900/90 border-gray-700 text-white'
+        <div className="fixed bottom-24 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:w-80 z-200 animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-xl border ${
+            notification.type === 'success' ? 'bg-emerald-600 border-emerald-500 text-white' :
+            notification.type === 'error' ? 'bg-red-600 border-red-500 text-white' :
+            'bg-gray-900 border-gray-700 text-white'
           }`}>
-            <div className={`p-2 rounded-xl bg-white/20`}>
-              {notification.type === 'success' ? <CheckCircle className="w-5 h-5" /> : 
-               notification.type === 'error' ? <XCircle className="w-5 h-5" /> : 
-               <Info className="w-5 h-5" />}
+            <div className="p-1.5 rounded-lg bg-white/20 shrink-0">
+              {notification.type === 'success' ? <Check className="w-4 h-4" /> :
+               notification.type === 'error' ? <XCircle className="w-4 h-4" /> :
+               <Info className="w-4 h-4" />}
             </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em]">{notification.message}</p>
+            <p className="text-sm font-black">{notification.message}</p>
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 }
