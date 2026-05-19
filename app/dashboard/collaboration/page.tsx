@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   Video, Phone, MessageSquare,
-  Loader2, ShieldCheck, UsersRound, Lock
+  Loader2, ShieldCheck, UsersRound, Lock, Send, X
 } from 'lucide-react';
 import MeetingRoom from '@/components/collaboration/MeetingRoom';
 
@@ -18,6 +19,16 @@ interface TeamMember {
   lastActivity: string;
 }
 
+interface ChatMessage {
+  id: string;
+  businessId?: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  isRead?: boolean;
+  createdAt: string;
+}
+
 const AVATAR_GRADIENTS = [
   'from-violet-500 to-indigo-600',
   'from-rose-500 to-pink-600',
@@ -29,6 +40,7 @@ const AVATAR_GRADIENTS = [
 
 export default function CollaborationHub() {
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeMeeting, setActiveMeeting] = useState<{
@@ -38,6 +50,72 @@ export default function CollaborationHub() {
     video: boolean;
     audio: boolean;
   } | null>(null);
+
+  // ── Chat State ──
+  const [activeChatMember, setActiveChatMember] = useState<TeamMember | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [newMessageContent, setNewMessageContent] = useState('');
+  const [loadingChat, setLoadingChat] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchChatMessages = async (targetId: string) => {
+    try {
+      const res = await fetch(`/api/collaboration/chat?targetUserId=${targetId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setChatMessages(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch chat messages:', err);
+    }
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  useEffect(() => {
+    if (!activeChatMember) return;
+    setLoadingChat(true);
+    fetchChatMessages(activeChatMember.userId).finally(() => setLoadingChat(false));
+
+    const interval = setInterval(() => {
+      fetchChatMessages(activeChatMember.userId);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [activeChatMember]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeChatMember || !newMessageContent.trim()) return;
+
+    const content = newMessageContent.trim();
+    setNewMessageContent('');
+
+    // Optimistic UI updates
+    const optimisticMsg = {
+      id: 'temp_' + Date.now(),
+      senderId: session?.user?.id || 'me',
+      receiverId: activeChatMember.userId,
+      content,
+      createdAt: new Date().toISOString()
+    };
+    setChatMessages(prev => [...prev, optimisticMsg]);
+
+    try {
+      const res = await fetch('/api/collaboration/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: activeChatMember.userId, content })
+      });
+      if (res.ok) {
+        fetchChatMessages(activeChatMember.userId);
+      }
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
+  };
 
   const fetchTeam = async () => {
     try {
@@ -67,6 +145,17 @@ export default function CollaborationHub() {
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const chatParam = searchParams.get('chat');
+    if (chatParam && team.length > 0) {
+      const member = team.find(t => t.userId === chatParam);
+      if (member) {
+        setActiveChatMember(member);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [searchParams, team]);
 
   const startMeeting = async (roomName: string, video = true, audio = true) => {
     try {
@@ -225,6 +314,7 @@ export default function CollaborationHub() {
                       <span className="text-[9px] font-black uppercase tracking-wide">Voice</span>
                     </button>
                     <button
+                      onClick={() => setActiveChatMember(member)}
                       className="flex flex-col items-center gap-1 py-2.5 bg-amber-50 hover:bg-amber-500 text-amber-600 hover:text-white rounded-xl transition-all active:scale-95 cursor-pointer"
                     >
                       <MessageSquare className="w-4 h-4" />
@@ -261,6 +351,112 @@ export default function CollaborationHub() {
           <p className="text-gray-500 text-xs leading-relaxed">Locked to your organisation domain and never shared externally.</p>
         </div>
       </div>
+
+      {/* ── Chat Drawer ── */}
+      {activeChatMember && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity"
+            onClick={() => setActiveChatMember(null)}
+          />
+          
+          {/* Drawer container */}
+          <div className="fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white dark:bg-slate-950 shadow-2xl border-l border-slate-100 dark:border-slate-800 z-50 flex flex-col animate-in slide-in-from-right duration-300">
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="flex items-center gap-3">
+                <div className="relative shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm">
+                    {activeChatMember.firstName.charAt(0)}{activeChatMember.lastName.charAt(0)}
+                  </div>
+                  {activeChatMember.isOnline && (
+                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white leading-tight">
+                    {activeChatMember.firstName} {activeChatMember.lastName}
+                  </h3>
+                  <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wide">
+                    {activeChatMember.isOnline ? 'Online' : 'Offline'}
+                  </span>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setActiveChatMember(null)}
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50 dark:bg-slate-900/20 custom-scrollbar">
+              {loadingChat && chatMessages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-400">
+                  <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                  <p className="text-xs font-bold uppercase tracking-widest text-[9px]">Loading chat history...</p>
+                </div>
+              ) : chatMessages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center p-6 gap-3 text-slate-400 dark:text-slate-600">
+                  <MessageSquare className="w-10 h-10 stroke-[1.5]" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No messages yet</p>
+                    <p className="text-[10px] leading-relaxed mt-0.5">Start a secure internal conversation with {activeChatMember.firstName} now!</p>
+                  </div>
+                </div>
+              ) : (
+                chatMessages.map((msg) => {
+                  const isMe = msg.senderId === session?.user?.id;
+                  return (
+                    <div 
+                      key={msg.id} 
+                      className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-200`}
+                    >
+                      <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-xs ${
+                        isMe 
+                          ? 'bg-indigo-600 text-white rounded-tr-none' 
+                          : 'bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-800 rounded-tl-none'
+                      }`}>
+                        <p className="leading-relaxed break-words">{msg.content}</p>
+                        <p className={`text-[9px] font-medium mt-1 text-right ${
+                          isMe ? 'text-indigo-200' : 'text-slate-400'
+                        }`}>
+                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={chatEndRef} />
+            </div>
+            
+            {/* Input Footer */}
+            <form 
+              onSubmit={handleSendMessage}
+              className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 flex items-center gap-2 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
+            >
+              <input 
+                type="text" 
+                value={newMessageContent}
+                onChange={(e) => setNewMessageContent(e.target.value)}
+                placeholder={`Message ${activeChatMember.firstName}...`}
+                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+              />
+              <button 
+                type="submit"
+                disabled={!newMessageContent.trim()}
+                className="p-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 dark:disabled:bg-slate-900 text-white disabled:text-slate-400 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        </>
+      )}
     </div>
   );
 }

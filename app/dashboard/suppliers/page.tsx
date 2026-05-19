@@ -9,7 +9,8 @@ import {
   Trash2, MoreVertical, MessageSquare,
   RefreshCw, Grid, List, X, Check,
   Handshake, Factory, Box, Info,
-  ShieldCheck, Package, Zap, Settings
+  ShieldCheck, Package, Zap, Settings,
+  Wrench, Monitor, TrendingUp, Users, Scale, LifeBuoy
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
@@ -52,6 +53,14 @@ const categoryConfigs = [
   { id: 'packaging', name: 'Packaging', icon: Package },
   { id: 'logistics', name: 'Logistics', icon: Truck },
   { id: 'services', name: 'Services', icon: Handshake },
+  { id: 'equipment-tooling', name: 'Equipment & Tooling', icon: Wrench },
+  { id: 'facilities-utilities', name: 'Facilities & Utilities', icon: Building2 },
+  { id: 'it-software', name: 'IT & Software', icon: Monitor },
+  { id: 'marketing-sales', name: 'Marketing & Sales', icon: TrendingUp },
+  { id: 'quality-compliance', name: 'Quality & Compliance', icon: ShieldCheck },
+  { id: 'hr-staffing', name: 'HR & Staffing', icon: Users },
+  { id: 'finance-legal', name: 'Finance & Legal', icon: Scale },
+  { id: 'aftersales-support', name: 'After-sales & Support', icon: LifeBuoy },
 ];
 
 export default function SuppliersPage() {

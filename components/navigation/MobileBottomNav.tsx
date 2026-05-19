@@ -197,7 +197,7 @@ function MobileMenuDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                     { name: 'Settings',    icon: Settings,  href: '/dashboard/settings', color: 'from-gray-500 to-slate-600' },
                     { name: 'User Guide',  icon: BookOpen,  href: '/guide',              color: 'from-indigo-500 to-blue-500' },
                     { name: 'Support',     icon: LifeBuoy,  href: '/dashboard/support',  color: 'from-sky-500 to-blue-500' },
-                    { name: 'Quick Start', icon: Rocket,    href: '#',                   color: 'from-purple-500 to-indigo-500' },
+                    { name: 'Quick Start', icon: Rocket,    href: '/dashboard/guide',    color: 'from-purple-500 to-indigo-500' },
                   ].map((item) => (
                     <ModuleTile
                       key={item.name}

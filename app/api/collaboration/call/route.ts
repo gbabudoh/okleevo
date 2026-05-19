@@ -20,8 +20,16 @@ export async function POST(req: Request) {
 
     if (!sender) return NextResponse.json({ error: 'Sender not found' }, { status: 404 });
 
+    console.log('[CALL_ROUTE] Call invite requested:', {
+      senderId: userId,
+      senderName: `${sender.firstName} ${sender.lastName}`,
+      targetUserId,
+      roomName,
+      type
+    });
+
     // Create a special CALL_INVITE notification for the target user
-    await prisma.notification.create({
+    const createdNotification = await prisma.notification.create({
       data: {
         userId: targetUserId,
         businessId: sender.businessId,
@@ -38,9 +46,11 @@ export async function POST(req: Request) {
       }
     });
 
+    console.log('[CALL_ROUTE] Notification created successfully:', createdNotification.id);
+
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('Failed to send call invite:', err);
+    console.error('[CALL_ROUTE] Failed to send call invite:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

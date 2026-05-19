@@ -12,73 +12,64 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image 
-                src="/logo.png" 
-                alt="Okleevo" 
-                width={150} 
-                height={40} 
-                className="h-10 w-auto" 
-              />
-            </Link>
-            <div className="hidden md:flex items-center gap-8">
-              <Link href="#home" className="text-gray-700 hover:text-primary-600 transition-colors">
-                Home
-              </Link>
-              <Link href="#benefits" className="text-gray-700 hover:text-primary-600 transition-colors">
-                Benefits
-              </Link>
-              <Link href="/pricing" className="text-gray-700 hover:text-primary-600 transition-colors">
-                Pricing
-              </Link>
-              <Link href="/guide" className="text-gray-700 hover:text-primary-600 transition-colors">
-                User Guide
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              {isLoggedIn ? (
-                <>
-                  <Link 
-                    href="/dashboard" 
-                    className="px-4 py-2 text-gray-700 hover:text-primary-600 transition-colors"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link 
-                    href="/dashboard" 
-                    className="px-6 py-2.5 rounded-full text-white font-medium hover:shadow-lg transition-all hover-lift"
-                    style={{ backgroundColor: '#fc6813' }}
-                  >
-                    Go to Dashboard
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link 
-                    href="/access" 
-                    className="px-4 py-2 text-gray-700 hover:text-primary-600 transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link 
-                    href="/onboarding" 
-                    className="px-6 py-2.5 rounded-full text-white font-medium hover:shadow-lg transition-all hover-lift"
-                    style={{ backgroundColor: '#fc6813' }}
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-            </div>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-12 sm:h-16">
+
+          {/* Logo */}
+          <Link href="/" className="shrink-0 flex items-center">
+            <Image
+              src="/logo.png"
+              alt="Okleevo"
+              width={100}
+              height={28}
+              className="h-6 sm:h-8 w-auto"
+              priority
+            />
+          </Link>
+
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-7 text-sm font-medium text-gray-500">
+            <Link href="#home" className="hover:text-gray-900 transition-colors">Home</Link>
+            <Link href="#benefits" className="hover:text-gray-900 transition-colors">Benefits</Link>
+            <Link href="/pricing" className="hover:text-gray-900 transition-colors">Pricing</Link>
+            <Link href="/guide" className="hover:text-gray-900 transition-colors">Guide</Link>
           </div>
+
+          {/* CTA */}
+          <div className="flex items-center gap-2 shrink-0">
+            {isLoggedIn ? (
+              <Link
+                href="/dashboard"
+                className="text-xs sm:text-sm font-semibold text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all active:scale-95"
+                style={{ backgroundColor: '#fc6813' }}
+              >
+                <span className="sm:hidden">Dashboard</span>
+                <span className="hidden sm:inline">Go to Dashboard</span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/access"
+                  className="text-xs sm:text-sm font-medium text-gray-500 hover:text-gray-900 px-2 sm:px-3 py-1.5 transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/onboarding"
+                  className="text-xs sm:text-sm font-semibold text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all active:scale-95"
+                  style={{ backgroundColor: '#fc6813' }}
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
+          </div>
+
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="pt-32 pb-20 px-6 relative overflow-hidden">
+      <section id="home" className="pt-14 sm:pt-24 pb-10 sm:pb-20 px-4 sm:px-6 relative overflow-hidden">
         <HeroAnimation />
       </section>
 

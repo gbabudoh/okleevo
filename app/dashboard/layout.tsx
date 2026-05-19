@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -14,34 +14,6 @@ import {
   LifeBuoy, Rocket, BookOpen, Bell, Cpu, UsersRound, AtSign
 } from 'lucide-react';
 
-const PAGE_TITLES: Record<string, string> = {
-  '/dashboard':                  'Home',
-  '/dashboard/invoicing':        'Invoicing',
-  '/dashboard/accounting':       'Accounting',
-  '/dashboard/taxation':         'Taxation',
-  '/dashboard/cashflow':         'Cashflow',
-  '/dashboard/expenses':         'Expenses',
-  '/dashboard/vat-tools':        'VAT Tools',
-  '/dashboard/crm':              'CRM',
-  '/dashboard/mailbox':          'Mailbox',
-  '/dashboard/forms':            'Forms',
-  '/dashboard/booking':          'Booking',
-  '/dashboard/helpdesk':         'Helpdesk',
-  '/dashboard/campaigns':        'Campaigns',
-  '/dashboard/collaboration':    'Collaboration',
-  '/dashboard/tasks':            'Tasks',
-  '/dashboard/ai-content':       'AI Content',
-  '/dashboard/ai-notes':         'AI Notes',
-  '/dashboard/kpi-dashboard':    'KPI Dashboard',
-  '/dashboard/inventory':        'Inventory',
-  '/dashboard/suppliers':        'Suppliers',
-  '/dashboard/hr-records':       'HR Records',
-  '/dashboard/e-signature':      'E-Signature',
-  '/dashboard/micro-pages':      'Micro Pages',
-  '/dashboard/compliance':       'Compliance',
-  '/dashboard/settings':         'Settings',
-  '/dashboard/support':          'Support',
-};
 import WelcomeGuideModal from '@/components/WelcomeGuideModal';
 import IncomingCallModal from '@/components/collaboration/IncomingCallModal';
 import MobileBottomNav from '@/components/navigation/MobileBottomNav';
@@ -69,6 +41,7 @@ interface NotificationItem {
   status: 'unread' | 'read';
   createdAt: string;
   link?: string;
+  metadata?: Record<string, string> | string | null;
 }
 
 export default function DashboardLayout({
@@ -84,6 +57,16 @@ export default function DashboardLayout({
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
+
+  // ── Chat Toast Notification State ──
+  interface ChatToastInfo {
+    id: string;
+    senderId: string;
+    senderName: string;
+    content: string;
+  }
+  const [activeChatToast, setActiveChatToast] = useState<ChatToastInfo | null>(null);
+  const lastSeenChatMsgIdRef = useRef<string | null>(null);
 
   // Check for new users to show welcome guide automatically
   useEffect(() => {
@@ -166,25 +149,86 @@ export default function DashboardLayout({
     return () => clearInterval(interval);
   }, [session?.user?.id, status]);
 
-  // Fetch notifications
+  // Fetch notifications (snappy 5-second polling for live call and chat detection)
   useEffect(() => {
+    let controller = new AbortController();
+
     async function fetchNotifications() {
       if (status === 'loading' || !session?.user?.id) return;
+      controller.abort();
+      controller = new AbortController();
       try {
-        const response = await fetch('/api/notifications');
+        const response = await fetch('/api/notifications', { signal: controller.signal });
         if (response.ok) {
           const data = await response.json();
+          console.log("[LAYOUT_POLL] Fetched notifications count:", data.length, data);
           setNotifications(data);
         }
       } catch (error) {
-        console.error('Error fetching notifications:', error);
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Error fetching notifications:', error);
+        }
       }
     }
 
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchNotifications, 5000); // snappy 5s poll
+    return () => {
+      clearInterval(interval);
+      controller.abort();
+    };
   }, [session, status]);
+
+  // Handle live incoming chat notifications toast
+  useEffect(() => {
+    console.log("[LAYOUT_TOAST] Total notifications count in state:", notifications.length);
+    const chatNotification = notifications.find(
+      n => n.type?.toUpperCase() === 'CHAT_MESSAGE' && n.status === 'unread'
+    );
+    console.log("[LAYOUT_TOAST] Found chatNotification:", chatNotification);
+    
+    if (chatNotification) {
+      if (lastSeenChatMsgIdRef.current !== chatNotification.id) {
+        lastSeenChatMsgIdRef.current = chatNotification.id;
+        
+        const meta = chatNotification.metadata;
+        console.log("[LAYOUT_TOAST] Raw metadata:", meta);
+        let parsedMeta: Record<string, string> | null = null;
+        if (typeof meta === 'string') {
+          try {
+            parsedMeta = JSON.parse(meta) as Record<string, string>;
+          } catch (e) {
+            console.error('Failed to parse chat metadata:', e);
+          }
+        } else if (meta && typeof meta === 'object') {
+          parsedMeta = meta;
+        }
+        
+        console.log("[LAYOUT_TOAST] Parsed metadata object:", parsedMeta);
+        
+        if (parsedMeta) {
+          setActiveChatToast({
+            id: chatNotification.id,
+            senderId: parsedMeta.senderId || '',
+            senderName: parsedMeta.senderName || 'Team Member',
+            content: parsedMeta.content || ''
+          });
+
+          // Auto-clear toast after 6 seconds
+          setTimeout(() => {
+            setActiveChatToast(current => {
+              if (current?.id === chatNotification.id) {
+                return null;
+              }
+              return current;
+            });
+          }, 6000);
+        }
+      }
+    } else {
+      setActiveChatToast(null);
+    }
+  }, [notifications]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -557,6 +601,37 @@ export default function DashboardLayout({
         businessName={userData?.business?.name || 'Business'} 
       />
       <IncomingCallModal />
+      
+      {/* ── Chat Toast Popup ── */}
+      {activeChatToast && (
+        <div 
+          onClick={async () => {
+            await markAsRead(activeChatToast.id);
+            setActiveChatToast(null);
+            router.push(`/dashboard/collaboration?chat=${activeChatToast.senderId}`);
+          }}
+          className="fixed bottom-24 right-4 left-4 sm:bottom-6 sm:left-auto sm:right-6 sm:w-80 bg-white dark:bg-slate-900 border-2 border-indigo-600 rounded-2xl shadow-2xl p-4 z-[9999] cursor-pointer animate-in fade-in slide-in-from-bottom-10 duration-300 hover:scale-[1.02] active:scale-98 transition-all"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+              {activeChatToast.senderName.split(' ').map((n: string) => n[0]).join('')}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">New Chat Message</span>
+                <span className="text-[9px] font-bold text-slate-400">Just now</span>
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-tight mt-0.5">
+                {activeChatToast.senderName}
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                {activeChatToast.content}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <MobileBottomNav />
     </div>
   );

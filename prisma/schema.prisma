@@ -1151,3 +1151,23 @@ model Notification {
   @@index([status])
   @@index([createdAt])
 }
+
+// =============================================================================
+// Chat Messages Module
+// =============================================================================
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  businessId String
+  senderId   String
+  receiverId String
+  content    String   @db.Text
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([businessId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
