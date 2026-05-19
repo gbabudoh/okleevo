@@ -69,7 +69,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="pt-14 sm:pt-24 pb-10 sm:pb-20 px-4 sm:px-6 relative overflow-hidden">
+      <section id="home" className="pt-20 sm:pt-24 pb-10 sm:pb-20 px-4 sm:px-6 relative overflow-hidden">
         <HeroAnimation />
       </section>
 
