@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 
@@ -131,7 +130,7 @@ export function PricingComparison() {
 
           <div className="pt-4 border-t border-emerald-200 flex justify-between items-end">
             <span className="text-emerald-700 font-medium">Monthly Cost</span>
-            <span className="text-3xl font-bold text-emerald-600">£19.99</span>
+            <span className="text-3xl font-bold text-emerald-600">£9.99</span>
           </div>
         </motion.div>
       </div>

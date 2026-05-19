@@ -99,7 +99,7 @@ export default function PricingPage() {
                
                <div className="flex items-center justify-center gap-1 mb-6">
                   <span className="text-4xl text-gray-400 font-light line-through decoration-red-500/50 decoration-2 mr-4">£120+</span>
-                  <span className="text-7xl font-bold text-gray-900 tracking-tighter">£19.99</span>
+                  <span className="text-7xl font-bold text-gray-900 tracking-tighter">£9.99</span>
                   <span className="text-xl text-gray-500 self-end mb-2">/mo</span>
                </div>
                

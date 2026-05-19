@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: '%s | Okleevo',
     default: 'Okleevo - 20 Business Tools, One Simple Platform',
   },
-  description: "The all-in-one platform for UK SMEs. 20 integrated modules including invoicing, CRM, AI tools, and more. Just £19.99/month.",
+  description: "The all-in-one platform for UK SMEs. 20 integrated modules including invoicing, CRM, AI tools, and more. Just £9.99/month.",
   keywords: ["SME", "UK business", "SaaS", "business tools", "invoicing", "CRM", "AI tools", "ERP", "small business software"],
   authors: [{ name: "Okleevo Team" }],
   creator: "Okleevo",

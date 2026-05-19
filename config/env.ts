@@ -36,7 +36,7 @@ export const env = {
   
   // Subscription
   SUBSCRIPTION_PRICE_ID: process.env.STRIPE_SUBSCRIPTION_PRICE_ID || '',
-  SUBSCRIPTION_PRICE_GBP: 19.99,
+  SUBSCRIPTION_PRICE_GBP: 9.99,
 } as const;
 
 // Validation

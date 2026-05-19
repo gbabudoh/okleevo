@@ -33,7 +33,7 @@ const agentData = [
 
 const featureCards = [
   { icon: CheckSquare, text: "20 Integrated Modules",           color: "text-emerald-500", bg: "bg-emerald-50" },
-  { icon: DollarSign,  text: "Just £19.99/month – No Hidden Fees", color: "text-blue-500",   bg: "bg-blue-50" },
+  { icon: DollarSign,  text: "Just £9.99/month – No Hidden Fees", color: "text-blue-500",   bg: "bg-blue-50" },
   { icon: Sparkles,    text: "AI-Powered Tools Included",       color: "text-purple-500", bg: "bg-purple-50" },
   { icon: Shield,      text: "UK-Based & GDPR Compliant",       color: "text-orange-500", bg: "bg-orange-50" },
   { icon: Users,       text: "10 seats – ideal for SMEs",       color: "text-indigo-500", bg: "bg-indigo-50" },

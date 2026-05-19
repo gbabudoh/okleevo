@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { 
   Wallet, Briefcase, TrendingUp, Cpu, 
   CheckCircle2
@@ -69,7 +68,7 @@ export function PricingFeatures() {
   return (
     <div className="mt-12 space-y-8">
       <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
-        Everything Included for £19.99
+        Everything Included for £9.99
       </h3>
 
       <div className="grid md:grid-cols-2 gap-6">
