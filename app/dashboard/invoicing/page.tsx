@@ -46,8 +46,8 @@ const STATUS_CONFIG = {
 
 const getStatus = (s: string) => STATUS_CONFIG[s as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.draft;
 
-const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all";
-const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5";
+const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all";
+const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1";
 
 const avatarGrad = (name: string) => {
   const g = ['from-blue-500 to-indigo-500','from-violet-500 to-purple-500','from-emerald-500 to-teal-500','from-orange-500 to-amber-500','from-cyan-500 to-blue-500'];
@@ -61,10 +61,10 @@ const ModalShell = ({ children, maxW = 'sm:max-w-2xl', onClose }: {
   onClose?: () => void;
 }) => (
   <div
-    className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
+    className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     onClick={(e) => { if (e.target === e.currentTarget && onClose) onClose(); }}
   >
-    <div className={`bg-white rounded-t-3xl sm:rounded-2xl w-full ${maxW} max-h-[92vh] sm:max-h-[88vh] flex flex-col shadow-2xl overflow-hidden`}>
+    <div className={`bg-white rounded-2xl w-full ${maxW} max-h-[85vh] flex flex-col shadow-2xl overflow-y-auto sm:overflow-hidden`}>
       {children}
     </div>
   </div>
@@ -77,7 +77,7 @@ const ModalHandle = () => (
 );
 
 const ModalFooter = ({ children }: { children: React.ReactNode }) => (
-  <div className="px-4 sm:px-6 py-4 border-t border-gray-100 bg-white flex flex-col-reverse sm:flex-row gap-2.5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-4 shrink-0">
+  <div className="px-4 sm:px-6 py-3 border-t border-gray-100 bg-white flex flex-row gap-2 pb-6 sm:pb-4 shrink-0">
     {children}
   </div>
 );
@@ -85,7 +85,7 @@ const ModalFooter = ({ children }: { children: React.ReactNode }) => (
 const CancelBtn = ({ onClick, label = 'Cancel' }: { onClick: () => void; label?: string }) => (
   <button
     onClick={onClick}
-    className="w-full sm:w-auto sm:flex-1 py-3 px-5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer"
+    className="flex-1 py-2 px-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer text-center whitespace-nowrap"
   >
     {label}
   </button>
@@ -709,32 +709,30 @@ export default function InvoicingPage() {
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50/40">
+          <div className="overflow-y-visible sm:overflow-y-auto sm:flex-1 p-3 pb-12 sm:p-4 space-y-3 bg-gray-50/40">
             {/* Client details */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 space-y-4">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Client Details</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
+            <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-100">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Client Details</p>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="sm:col-span-2">
                   <label className={labelCls}>Client Name *</label>
                   <input type="text" value={newInvoice.client}
                     onChange={e => setNewInvoice({ ...newInvoice, client: e.target.value })}
                     className={inputCls} placeholder="Acme Corp" />
                 </div>
-                <div>
+                <div className="sm:col-span-2">
                   <label className={labelCls}>Client Email</label>
                   <input type="email" value={newInvoice.clientEmail}
                     onChange={e => setNewInvoice({ ...newInvoice, clientEmail: e.target.value })}
                     className={inputCls} placeholder="client@example.com" />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+                <div className="col-span-2 sm:col-span-2">
                   <label className={labelCls}>Issue Date</label>
                   <input type="date" value={newInvoice.date}
                     onChange={e => setNewInvoice({ ...newInvoice, date: e.target.value })}
                     className={inputCls} />
                 </div>
-                <div>
+                <div className="col-span-2 sm:col-span-2">
                   <label className={labelCls}>Due Date</label>
                   <input type="date" value={newInvoice.dueDate}
                     onChange={e => setNewInvoice({ ...newInvoice, dueDate: e.target.value })}
@@ -744,8 +742,8 @@ export default function InvoicingPage() {
             </div>
 
             {/* Line items */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
+            <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Line Items</p>
                 <button
                   onClick={() => setNewInvoice({ ...newInvoice, items: [...newInvoice.items, { description: '', quantity: 1, rate: 0 }] })}
@@ -755,11 +753,11 @@ export default function InvoicingPage() {
                 </button>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {newInvoice.items.map((item, idx) => (
-                  <div key={idx} className="p-3 bg-gray-50 rounded-xl border border-gray-100 space-y-2.5">
+                  <div key={idx} className="p-2.5 bg-gray-50 rounded-xl border border-gray-100 space-y-2 sm:space-y-0 sm:flex sm:items-end sm:gap-3">
                     {/* Description */}
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <label className="block text-xs text-gray-400 mb-1">Description</label>
                       <input
                         type="text"
@@ -770,8 +768,8 @@ export default function InvoicingPage() {
                       />
                     </div>
                     {/* Qty / Rate / Total / Remove */}
-                    <div className="grid grid-cols-3 gap-2 items-end">
-                      <div>
+                    <div className="grid grid-cols-3 gap-2 items-end sm:flex sm:items-end sm:gap-3 sm:flex-initial">
+                      <div className="sm:w-16">
                         <label className="block text-xs text-gray-400 mb-1">Qty</label>
                         <input
                           type="number" min="1"
@@ -780,7 +778,7 @@ export default function InvoicingPage() {
                           className={inputCls}
                         />
                       </div>
-                      <div>
+                      <div className="sm:w-24">
                         <label className="block text-xs text-gray-400 mb-1">Rate (£)</label>
                         <input
                           type="number" min="0" step="0.01"
@@ -789,17 +787,17 @@ export default function InvoicingPage() {
                           className={inputCls}
                         />
                       </div>
-                      <div className="flex items-end gap-2">
+                      <div className="flex items-end gap-2 col-span-1 sm:col-auto sm:w-36">
                         <div className="flex-1">
                           <label className="block text-xs text-gray-400 mb-1">Total</label>
-                          <div className="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700">
+                          <div className="w-full bg-gray-100 border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold text-gray-700 h-[38px] flex items-center">
                             £{(item.quantity * item.rate).toFixed(2)}
                           </div>
                         </div>
                         {newInvoice.items.length > 1 && (
                           <button
                             onClick={() => setNewInvoice({ ...newInvoice, items: newInvoice.items.filter((_, i) => i !== idx) })}
-                            className="w-10 h-10 mb-0.5 flex items-center justify-center hover:bg-red-50 rounded-xl transition-colors cursor-pointer shrink-0"
+                            className="w-9 h-9 flex items-center justify-center hover:bg-red-50 rounded-xl transition-colors cursor-pointer shrink-0"
                           >
                             <Trash2 className="w-4 h-4 text-red-400" />
                           </button>
@@ -811,7 +809,7 @@ export default function InvoicingPage() {
               </div>
 
               {/* Total */}
-              <div className="mt-4 flex items-center justify-between px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl">
+              <div className="mt-3 flex items-center justify-between px-3.5 py-2 bg-blue-50 border border-blue-100 rounded-xl">
                 <span className="text-sm font-semibold text-gray-700">Invoice Total</span>
                 <span className="text-2xl font-bold text-blue-600">£{newInvoiceTotal.toFixed(2)}</span>
               </div>
@@ -823,7 +821,7 @@ export default function InvoicingPage() {
             <CancelBtn onClick={closeNewModal} />
             <button
               onClick={handleCreateInvoice}
-              className="w-full sm:flex-[2] py-3 px-5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer active:scale-95 flex items-center justify-center gap-2"
+              className="flex-[2] py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
             >
               <FileText className="w-4 h-4" /> Create Invoice
             </button>
@@ -860,7 +858,7 @@ export default function InvoicingPage() {
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50/40">
+          <div className="overflow-y-visible sm:overflow-y-auto sm:flex-1 p-4 pb-12 sm:p-6 space-y-4 bg-gray-50/40">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="bg-white p-4 rounded-xl border border-gray-100">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Bill To</p>
@@ -936,15 +934,15 @@ export default function InvoicingPage() {
             <CancelBtn onClick={() => { setShowInvoiceModal(false); setSelectedInvoice(null); }} label="Close" />
             <button
               onClick={() => downloadAsPDF(selectedInvoice)}
-              className="w-full sm:flex-1 py-3 px-4 bg-gray-800 hover:bg-gray-900 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
+              className="flex-1 py-2 px-3 bg-gray-800 hover:bg-gray-900 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
             >
-              <Download className="w-4 h-4" /> Download PDF
+              <Download className="w-4 h-4" /> <span className="hidden xs:inline">PDF</span>
             </button>
             <button
               onClick={() => { handleSendEmail(selectedInvoice); setShowInvoiceModal(false); }}
-              className="w-full sm:flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
+              className="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
             >
-              <Send className="w-4 h-4" /> Send Invoice
+              <Send className="w-4 h-4" /> <span className="hidden xs:inline">Send</span>
             </button>
           </ModalFooter>
         </ModalShell>
@@ -968,7 +966,7 @@ export default function InvoicingPage() {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50/40">
+          <div className="overflow-y-visible sm:overflow-y-auto sm:flex-1 p-4 pb-12 sm:p-6 space-y-4 bg-gray-50/40">
             {/* Invoice summary chip */}
             <div className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-xl">
               <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center shrink-0">
@@ -1009,7 +1007,7 @@ export default function InvoicingPage() {
             <CancelBtn onClick={() => { setShowEmailModal(false); setEmailInvoice(null); }} />
             <button
               onClick={sendInvoiceEmail}
-              className="w-full sm:flex-[2] py-3 px-5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+              className="flex-[2] py-2 px-4 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap"
             >
               <Send className="w-4 h-4" /> Send Invoice
             </button>

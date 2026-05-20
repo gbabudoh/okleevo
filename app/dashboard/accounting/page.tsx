@@ -280,8 +280,8 @@ const ModalShell = ({ onClose, title, icon: Icon, iconColor = "text-blue-600", c
           <Icon className={`w-5 h-5 ${iconColor}`} />
           {title}
         </h2>
-        <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
-          <X className="w-5 h-5 text-gray-400" />
+        <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer flex items-center justify-center">
+          <X className="w-5 h-5 text-gray-400 cursor-pointer" />
         </button>
       </div>
       <div className="p-5 space-y-4 pb-20 sm:pb-10">
@@ -310,83 +310,120 @@ interface EntryFormProps {
   setNewEntry: React.Dispatch<React.SetStateAction<NewEntryState>>;
   accounts: Account[];
   isBalanced: boolean;
+  onSeedAccounts?: () => void;
 }
 
 // ── Entry Form ──────────────────────────────────────────────────
-const EntryForm = ({ onSave, onCancel, saveLabel = "Save Entry", newEntry, setNewEntry, accounts, isBalanced }: EntryFormProps) => (
-  <>
-    <div className="grid grid-cols-2 gap-3">
-      <div>
-        <label className={labelCls}>Date *</label>
-        <input type="date" value={newEntry.date} onChange={(e) => setNewEntry({ ...newEntry, date: e.target.value })} className={inputCls} />
+const EntryForm = ({ onSave, onCancel, saveLabel = "Save Entry", newEntry, setNewEntry, accounts, isBalanced, onSeedAccounts }: EntryFormProps) => {
+  if (accounts.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-blue-50/70 border border-blue-100 rounded-2xl p-5 text-center space-y-4">
+          <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-1">
+            <BookOpen className="w-6 h-6 text-blue-600" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-sm font-bold text-gray-900">Setup Required: Chart of Accounts</h3>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+              To record journal entries, you need active accounts in your Chart of Accounts (Assets, Liabilities, Equity, Revenue, Expenses).
+            </p>
+          </div>
+          {onSeedAccounts && (
+            <button
+              onClick={onSeedAccounts}
+              className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
+            >
+              <Plus className="w-4 h-4 cursor-pointer" /> Setup Default Accounts
+            </button>
+          )}
+        </div>
+        <div className="pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+          <button
+            onClick={onCancel}
+            className="w-full py-2.5 border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
-      <div>
-        <label className={labelCls}>Reference</label>
-        <input type="text" value={newEntry.reference} onChange={(e) => setNewEntry({ ...newEntry, reference: e.target.value })} placeholder="e.g. JE-001" className={inputCls} />
-      </div>
-    </div>
+    );
+  }
 
-    <div>
-      <label className={labelCls}>Description *</label>
-      <textarea value={newEntry.description} onChange={(e) => setNewEntry({ ...newEntry, description: e.target.value })} placeholder="Transaction description..." rows={2} className={`${inputCls} resize-none`} />
-    </div>
-
-    {/* Debit */}
-    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-3">
-      <p className="text-xs font-bold text-emerald-800 flex items-center gap-1.5 uppercase tracking-wide">
-        <ArrowUpRight className="w-3.5 h-3.5" /> Debit Entry
-      </p>
+  return (
+    <>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={labelCls}>Account *</label>
-          <select value={newEntry.debitAccount} onChange={(e) => setNewEntry({ ...newEntry, debitAccount: e.target.value })} className={inputCls}>
-            <option value="">Select account…</option>
-            {accounts.map((a) => <option key={a.id} value={a.id}>{a.code} — {a.name}</option>)}
-          </select>
+          <label className={labelCls}>Date *</label>
+          <input type="date" value={newEntry.date} onChange={(e) => setNewEntry({ ...newEntry, date: e.target.value })} className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>Amount (£) *</label>
-          <input type="number" step="0.01" value={newEntry.debitAmount} onChange={(e) => setNewEntry({ ...newEntry, debitAmount: e.target.value })} placeholder="0.00" className={inputCls} />
+          <label className={labelCls}>Reference</label>
+          <input type="text" value={newEntry.reference} onChange={(e) => setNewEntry({ ...newEntry, reference: e.target.value })} placeholder="e.g. JE-001" className={inputCls} />
         </div>
       </div>
-    </div>
 
-    {/* Credit */}
-    <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 space-y-3">
-      <p className="text-xs font-bold text-rose-800 flex items-center gap-1.5 uppercase tracking-wide">
-        <ArrowDownRight className="w-3.5 h-3.5" /> Credit Entry
-      </p>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={labelCls}>Account *</label>
-          <select value={newEntry.creditAccount} onChange={(e) => setNewEntry({ ...newEntry, creditAccount: e.target.value })} className={inputCls}>
-            <option value="">Select account…</option>
-            {accounts.map((a) => <option key={a.id} value={a.id}>{a.code} — {a.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className={labelCls}>Amount (£) *</label>
-          <input type="number" step="0.01" value={newEntry.creditAmount} onChange={(e) => setNewEntry({ ...newEntry, creditAmount: e.target.value })} placeholder="0.00" className={inputCls} />
+      <div>
+        <label className={labelCls}>Description *</label>
+        <textarea value={newEntry.description} onChange={(e) => setNewEntry({ ...newEntry, description: e.target.value })} placeholder="Transaction description..." rows={2} className={`${inputCls} resize-none`} />
+      </div>
+
+      {/* Debit */}
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-3">
+        <p className="text-xs font-bold text-emerald-800 flex items-center gap-1.5 uppercase tracking-wide">
+          <ArrowUpRight className="w-3.5 h-3.5" /> Debit Entry
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Account *</label>
+            <select value={newEntry.debitAccount} onChange={(e) => setNewEntry({ ...newEntry, debitAccount: e.target.value })} className={`${inputCls} cursor-pointer`}>
+              <option value="" className="cursor-pointer">Select account…</option>
+              {accounts.map((a) => <option key={a.id} value={a.id} className="cursor-pointer">{a.code} — {a.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Amount (£) *</label>
+            <input type="number" step="0.01" value={newEntry.debitAmount} onChange={(e) => setNewEntry({ ...newEntry, debitAmount: e.target.value })} placeholder="0.00" className={inputCls} />
+          </div>
         </div>
       </div>
-    </div>
 
-    {newEntry.debitAmount && newEntry.creditAmount && (
-      <div className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-semibold ${isBalanced ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"}`}>
-        {isBalanced
-          ? <><CheckCircle className="w-4 h-4 shrink-0" /> Entry is balanced</>
-          : <><AlertCircle className="w-4 h-4 shrink-0" /> Difference: £{Math.abs(parseFloat(newEntry.debitAmount) - parseFloat(newEntry.creditAmount)).toFixed(2)}</>}
+      {/* Credit */}
+      <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 space-y-3">
+        <p className="text-xs font-bold text-rose-800 flex items-center gap-1.5 uppercase tracking-wide">
+          <ArrowDownRight className="w-3.5 h-3.5" /> Credit Entry
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Account *</label>
+            <select value={newEntry.creditAccount} onChange={(e) => setNewEntry({ ...newEntry, creditAccount: e.target.value })} className={`${inputCls} cursor-pointer`}>
+              <option value="" className="cursor-pointer">Select account…</option>
+              {accounts.map((a) => <option key={a.id} value={a.id} className="cursor-pointer">{a.code} — {a.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Amount (£) *</label>
+            <input type="number" step="0.01" value={newEntry.creditAmount} onChange={(e) => setNewEntry({ ...newEntry, creditAmount: e.target.value })} placeholder="0.00" className={inputCls} />
+          </div>
+        </div>
       </div>
-    )}
 
-    <div className="sticky bottom-0 -mx-5 px-5 pt-4 pb-[calc(2.25rem+env(safe-area-inset-bottom,0px))] bg-white border-t border-gray-100 flex flex-row gap-3 sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-      <button onClick={onCancel} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
-      <button onClick={onSave} className="flex-2 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
-        <Save className="w-4 h-4" /> {saveLabel}
-      </button>
-    </div>
-  </>
-);
+      {newEntry.debitAmount && newEntry.creditAmount && (
+        <div className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-semibold ${isBalanced ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"}`}>
+          {isBalanced
+            ? <><CheckCircle className="w-4 h-4 shrink-0" /> Entry is balanced</>
+            : <><AlertCircle className="w-4 h-4 shrink-0" /> Difference: £{Math.abs(parseFloat(newEntry.debitAmount) - parseFloat(newEntry.creditAmount)).toFixed(2)}</>}
+        </div>
+      )}
+
+      <div className="sticky bottom-0 -mx-5 px-5 pt-4 pb-[calc(2.25rem+env(safe-area-inset-bottom,0px))] bg-white border-t border-gray-100 flex flex-row gap-3 sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+        <button onClick={onCancel} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+        <button onClick={onSave} className="flex-2 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+          <Save className="w-4 h-4" /> {saveLabel}
+        </button>
+      </div>
+    </>
+  );
+};
 
 // ── Account Type Selector Interfaces ────────────────────────────
 interface NewAccountState {
@@ -628,19 +665,19 @@ export default function AccountingPage() {
           <div className="flex items-center gap-1.5 shrink-0">
             <button onClick={() => setShowImportModal(true)}
               className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
-              <Upload className="w-4 h-4" />
-              <span className="hidden sm:inline">Import</span>
+              <Upload className="w-4 h-4 cursor-pointer" />
+              <span className="hidden sm:inline cursor-pointer">Import</span>
             </button>
             <button onClick={() => setShowExportModal(true)}
               className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Export</span>
+              <Download className="w-4 h-4 cursor-pointer" />
+              <span className="hidden sm:inline cursor-pointer">Export</span>
             </button>
             <button onClick={() => setShowNewEntryModal(true)}
               className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">New Entry</span>
-              <span className="sm:hidden">Add</span>
+              <Plus className="w-4 h-4 cursor-pointer" />
+              <span className="hidden sm:inline cursor-pointer">New Entry</span>
+              <span className="sm:hidden cursor-pointer">Add</span>
             </button>
           </div>
         </div>
@@ -656,8 +693,8 @@ export default function AccountingPage() {
                 className={`flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
                   active ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200"
                 }`}>
-                <Icon className="w-4 h-4" />
-                {name}
+                <Icon className="w-4 h-4 cursor-pointer" />
+                <span className="cursor-pointer">{name}</span>
               </button>
             );
           })}
@@ -989,14 +1026,14 @@ export default function AccountingPage() {
       {/* New Entry */}
       {showNewEntryModal && (
         <ModalShell onClose={() => { setShowNewEntryModal(false); resetEntry(); }} title="New Journal Entry" icon={FileText}>
-          <EntryForm onSave={handleSaveEntry} onCancel={() => { setShowNewEntryModal(false); resetEntry(); }} newEntry={newEntry} setNewEntry={setNewEntry} accounts={accounts} isBalanced={isBalanced} />
+          <EntryForm onSave={handleSaveEntry} onCancel={() => { setShowNewEntryModal(false); resetEntry(); }} newEntry={newEntry} setNewEntry={setNewEntry} accounts={accounts} isBalanced={isBalanced} onSeedAccounts={handleSeedAccounts} />
         </ModalShell>
       )}
 
       {/* Edit Entry */}
       {showEditEntryModal && selectedEntry && (
         <ModalShell onClose={() => { setShowEditEntryModal(false); resetEntry(); }} title="Edit Journal Entry" icon={Edit3} iconColor="text-violet-600">
-          <EntryForm onSave={handleSaveEntry} onCancel={() => { setShowEditEntryModal(false); resetEntry(); }} saveLabel="Update Entry" newEntry={newEntry} setNewEntry={setNewEntry} accounts={accounts} isBalanced={isBalanced} />
+          <EntryForm onSave={handleSaveEntry} onCancel={() => { setShowEditEntryModal(false); resetEntry(); }} saveLabel="Update Entry" newEntry={newEntry} setNewEntry={setNewEntry} accounts={accounts} isBalanced={isBalanced} onSeedAccounts={handleSeedAccounts} />
         </ModalShell>
       )}
 

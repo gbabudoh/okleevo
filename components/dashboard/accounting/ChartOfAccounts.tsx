@@ -38,16 +38,16 @@ export const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
           {accounts.length === 0 && onSeedAccounts && (
             <button
               onClick={onSeedAccounts}
-              className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-md font-semibold text-sm"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-md font-semibold text-sm cursor-pointer"
             >
               Setup Defaults
             </button>
           )}
           <button
             onClick={onAddAccount}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md font-semibold text-sm"
+            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md font-semibold text-sm cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 cursor-pointer" />
             Add Account
           </button>
         </div>
@@ -84,9 +84,9 @@ export const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <button onClick={() => onViewAccount(account)} className="p-2 hover:bg-blue-50 rounded-lg"><Eye className="w-4 h-4 text-blue-600" /></button>
-                    <button onClick={() => onEditAccount(account)} className="p-2 hover:bg-purple-50 rounded-lg"><Edit3 className="w-4 h-4 text-purple-600" /></button>
-                    <button onClick={() => onDeleteAccount(account.id)} className="p-2 hover:bg-red-50 rounded-lg"><Trash2 className="w-4 h-4 text-red-600" /></button>
+                    <button onClick={() => onViewAccount(account)} className="p-2 hover:bg-blue-50 rounded-lg cursor-pointer"><Eye className="w-4 h-4 text-blue-600 cursor-pointer" /></button>
+                    <button onClick={() => onEditAccount(account)} className="p-2 hover:bg-purple-50 rounded-lg cursor-pointer"><Edit3 className="w-4 h-4 text-purple-600 cursor-pointer" /></button>
+                    <button onClick={() => onDeleteAccount(account.id)} className="p-2 hover:bg-red-50 rounded-lg cursor-pointer"><Trash2 className="w-4 h-4 text-red-600 cursor-pointer" /></button>
                   </div>
                 </td>
               </tr>

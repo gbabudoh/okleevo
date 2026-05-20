@@ -59,9 +59,9 @@ export const JournalEntries: React.FC<JournalEntriesProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => onViewEntry(entry)} className="p-2 hover:bg-blue-50/50 rounded-lg"><Eye className="w-5 h-5 text-blue-600" /></button>
-                <button onClick={() => onEditEntry(entry)} className="p-2 hover:bg-purple-50/50 rounded-lg"><Edit3 className="w-5 h-5 text-purple-600" /></button>
-                <button onClick={() => onDeleteEntry(entry.id)} className="p-2 hover:bg-red-50/50 rounded-lg"><Trash2 className="w-5 h-5 text-red-600" /></button>
+                <button onClick={() => onViewEntry(entry)} className="p-2 hover:bg-blue-50/50 rounded-lg cursor-pointer"><Eye className="w-5 h-5 text-blue-600 cursor-pointer" /></button>
+                <button onClick={() => onEditEntry(entry)} className="p-2 hover:bg-purple-50/50 rounded-lg cursor-pointer"><Edit3 className="w-5 h-5 text-purple-600 cursor-pointer" /></button>
+                <button onClick={() => onDeleteEntry(entry.id)} className="p-2 hover:bg-red-50/50 rounded-lg cursor-pointer"><Trash2 className="w-5 h-5 text-red-600 cursor-pointer" /></button>
               </div>
             </div>
             <div className="text-right">

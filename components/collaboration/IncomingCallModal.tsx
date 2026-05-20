@@ -39,19 +39,56 @@ export default function IncomingCallModal() {
           const notifications: CallNotification[] = await res.json();
           
           // Find unread call invites NOT from myself (Case-insensitive check)
-          const latestCall = notifications.find((n) => 
-            (n.type?.toUpperCase() === 'CALL_INVITE') && 
-            n.status === 'unread' &&
-            n.metadata?.senderId !== session?.user?.id
-          );
+          const latestCall = notifications.find((n) => {
+            const isCallInvite = n.type?.toUpperCase() === 'CALL_INVITE';
+            const isUnread = n.status === 'unread';
+            if (!isCallInvite || !isUnread) return false;
+
+            let meta = n.metadata;
+            if (typeof meta === 'string') {
+              try {
+                meta = JSON.parse(meta);
+              } catch (e) {
+                console.error("[IncomingCallModal] Failed to parse metadata string:", e);
+                return false;
+              }
+            }
+
+            if (!meta) return false;
+
+            const isFromSomeoneElse = meta.senderId !== session?.user?.id;
+            
+            console.log("[IncomingCallModal] Checked invitation:", {
+              notificationId: n.id,
+              senderId: meta.senderId,
+              currentUserId: session?.user?.id,
+              isFromSomeoneElse
+            });
+
+            return isFromSomeoneElse;
+          });
           
           if (latestCall) {
+            let meta = latestCall.metadata;
+            if (typeof meta === 'string') {
+              try {
+                meta = JSON.parse(meta);
+              } catch (e) {
+                console.error("[IncomingCallModal] Failed to parse metadata string on select:", e);
+              }
+            }
+            const parsedCall = {
+              ...latestCall,
+              metadata: meta
+            };
             // If we have a call, and it's different from the current one, show it
-            if (!callRef.current || latestCall.id !== callRef.current.id) {
-              setCall(latestCall);
+            if (!callRef.current || parsedCall.id !== callRef.current.id) {
+              console.log("[IncomingCallModal] Found new active incoming call:", parsedCall);
+              setCall(parsedCall);
             }
           } else if (callRef.current) {
             // If the call was read/dismissed elsewhere, clear it here
+            console.log("[IncomingCallModal] Clearing active call from UI");
             setCall(null);
           }
         }
