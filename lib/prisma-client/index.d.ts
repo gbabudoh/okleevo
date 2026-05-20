@@ -178,6 +178,11 @@ export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
  * 
  */
 export type ChatMessage = $Result.DefaultSelection<Prisma.$ChatMessagePayload>
+/**
+ * Model ReplyToken
+ * 
+ */
+export type ReplyToken = $Result.DefaultSelection<Prisma.$ReplyTokenPayload>
 
 /**
  * Enums
@@ -976,6 +981,16 @@ export class PrismaClient<
     * ```
     */
   get chatMessage(): Prisma.ChatMessageDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.replyToken`: Exposes CRUD operations for the **ReplyToken** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ReplyTokens
+    * const replyTokens = await prisma.replyToken.findMany()
+    * ```
+    */
+  get replyToken(): Prisma.ReplyTokenDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1449,7 +1464,8 @@ export namespace Prisma {
     AINote: 'AINote',
     MailboxMessage: 'MailboxMessage',
     Notification: 'Notification',
-    ChatMessage: 'ChatMessage'
+    ChatMessage: 'ChatMessage',
+    ReplyToken: 'ReplyToken'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1468,7 +1484,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "business" | "subscription" | "invoice" | "contact" | "note" | "expense" | "inventoryItem" | "stockMovement" | "employee" | "supplier" | "campaign" | "ticket" | "ticketComment" | "appointment" | "complianceItem" | "task" | "subTask" | "auditLog" | "workspaceVisibility" | "ledgerAccount" | "journalEntry" | "ledgerEntry" | "emailLog" | "form" | "formResponse" | "aINote" | "mailboxMessage" | "notification" | "chatMessage"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "business" | "subscription" | "invoice" | "contact" | "note" | "expense" | "inventoryItem" | "stockMovement" | "employee" | "supplier" | "campaign" | "ticket" | "ticketComment" | "appointment" | "complianceItem" | "task" | "subTask" | "auditLog" | "workspaceVisibility" | "ledgerAccount" | "journalEntry" | "ledgerEntry" | "emailLog" | "form" | "formResponse" | "aINote" | "mailboxMessage" | "notification" | "chatMessage" | "replyToken"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3914,6 +3930,80 @@ export namespace Prisma {
           }
         }
       }
+      ReplyToken: {
+        payload: Prisma.$ReplyTokenPayload<ExtArgs>
+        fields: Prisma.ReplyTokenFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReplyTokenFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReplyTokenFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload>
+          }
+          findFirst: {
+            args: Prisma.ReplyTokenFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReplyTokenFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload>
+          }
+          findMany: {
+            args: Prisma.ReplyTokenFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload>[]
+          }
+          create: {
+            args: Prisma.ReplyTokenCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload>
+          }
+          createMany: {
+            args: Prisma.ReplyTokenCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ReplyTokenCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload>[]
+          }
+          delete: {
+            args: Prisma.ReplyTokenDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload>
+          }
+          update: {
+            args: Prisma.ReplyTokenUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload>
+          }
+          deleteMany: {
+            args: Prisma.ReplyTokenDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReplyTokenUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ReplyTokenUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload>[]
+          }
+          upsert: {
+            args: Prisma.ReplyTokenUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReplyTokenPayload>
+          }
+          aggregate: {
+            args: Prisma.ReplyTokenAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReplyToken>
+          }
+          groupBy: {
+            args: Prisma.ReplyTokenGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReplyTokenGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ReplyTokenCountArgs<ExtArgs>
+            result: $Utils.Optional<ReplyTokenCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4043,6 +4133,7 @@ export namespace Prisma {
     mailboxMessage?: MailboxMessageOmit
     notification?: NotificationOmit
     chatMessage?: ChatMessageOmit
+    replyToken?: ReplyTokenOmit
   }
 
   /* Types for Logging */
@@ -4317,6 +4408,7 @@ export namespace Prisma {
     aiNotes: number
     stockMovements: number
     mailboxMessages: number
+    replyTokens: number
   }
 
   export type BusinessCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4339,6 +4431,7 @@ export namespace Prisma {
     aiNotes?: boolean | BusinessCountOutputTypeCountAiNotesArgs
     stockMovements?: boolean | BusinessCountOutputTypeCountStockMovementsArgs
     mailboxMessages?: boolean | BusinessCountOutputTypeCountMailboxMessagesArgs
+    replyTokens?: boolean | BusinessCountOutputTypeCountReplyTokensArgs
   }
 
   // Custom InputTypes
@@ -4483,6 +4576,13 @@ export namespace Prisma {
    */
   export type BusinessCountOutputTypeCountMailboxMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MailboxMessageWhereInput
+  }
+
+  /**
+   * BusinessCountOutputType without action
+   */
+  export type BusinessCountOutputTypeCountReplyTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReplyTokenWhereInput
   }
 
 
@@ -9895,6 +9995,7 @@ export namespace Prisma {
     aiNotes?: boolean | Business$aiNotesArgs<ExtArgs>
     stockMovements?: boolean | Business$stockMovementsArgs<ExtArgs>
     mailboxMessages?: boolean | Business$mailboxMessagesArgs<ExtArgs>
+    replyTokens?: boolean | Business$replyTokensArgs<ExtArgs>
     _count?: boolean | BusinessCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["business"]>
 
@@ -9971,6 +10072,7 @@ export namespace Prisma {
     aiNotes?: boolean | Business$aiNotesArgs<ExtArgs>
     stockMovements?: boolean | Business$stockMovementsArgs<ExtArgs>
     mailboxMessages?: boolean | Business$mailboxMessagesArgs<ExtArgs>
+    replyTokens?: boolean | Business$replyTokensArgs<ExtArgs>
     _count?: boolean | BusinessCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BusinessIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -9999,6 +10101,7 @@ export namespace Prisma {
       aiNotes: Prisma.$AINotePayload<ExtArgs>[]
       stockMovements: Prisma.$StockMovementPayload<ExtArgs>[]
       mailboxMessages: Prisma.$MailboxMessagePayload<ExtArgs>[]
+      replyTokens: Prisma.$ReplyTokenPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -10429,6 +10532,7 @@ export namespace Prisma {
     aiNotes<T extends Business$aiNotesArgs<ExtArgs> = {}>(args?: Subset<T, Business$aiNotesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AINotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockMovements<T extends Business$stockMovementsArgs<ExtArgs> = {}>(args?: Subset<T, Business$stockMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     mailboxMessages<T extends Business$mailboxMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Business$mailboxMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MailboxMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    replyTokens<T extends Business$replyTokensArgs<ExtArgs> = {}>(args?: Subset<T, Business$replyTokensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11332,6 +11436,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MailboxMessageScalarFieldEnum | MailboxMessageScalarFieldEnum[]
+  }
+
+  /**
+   * Business.replyTokens
+   */
+  export type Business$replyTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    where?: ReplyTokenWhereInput
+    orderBy?: ReplyTokenOrderByWithRelationInput | ReplyTokenOrderByWithRelationInput[]
+    cursor?: ReplyTokenWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReplyTokenScalarFieldEnum | ReplyTokenScalarFieldEnum[]
   }
 
   /**
@@ -44412,6 +44540,1051 @@ export namespace Prisma {
 
 
   /**
+   * Model ReplyToken
+   */
+
+  export type AggregateReplyToken = {
+    _count: ReplyTokenCountAggregateOutputType | null
+    _min: ReplyTokenMinAggregateOutputType | null
+    _max: ReplyTokenMaxAggregateOutputType | null
+  }
+
+  export type ReplyTokenMinAggregateOutputType = {
+    id: string | null
+    token: string | null
+    businessId: string | null
+    createdAt: Date | null
+  }
+
+  export type ReplyTokenMaxAggregateOutputType = {
+    id: string | null
+    token: string | null
+    businessId: string | null
+    createdAt: Date | null
+  }
+
+  export type ReplyTokenCountAggregateOutputType = {
+    id: number
+    token: number
+    businessId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ReplyTokenMinAggregateInputType = {
+    id?: true
+    token?: true
+    businessId?: true
+    createdAt?: true
+  }
+
+  export type ReplyTokenMaxAggregateInputType = {
+    id?: true
+    token?: true
+    businessId?: true
+    createdAt?: true
+  }
+
+  export type ReplyTokenCountAggregateInputType = {
+    id?: true
+    token?: true
+    businessId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ReplyTokenAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReplyToken to aggregate.
+     */
+    where?: ReplyTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReplyTokens to fetch.
+     */
+    orderBy?: ReplyTokenOrderByWithRelationInput | ReplyTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReplyTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReplyTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReplyTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ReplyTokens
+    **/
+    _count?: true | ReplyTokenCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReplyTokenMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReplyTokenMaxAggregateInputType
+  }
+
+  export type GetReplyTokenAggregateType<T extends ReplyTokenAggregateArgs> = {
+        [P in keyof T & keyof AggregateReplyToken]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReplyToken[P]>
+      : GetScalarType<T[P], AggregateReplyToken[P]>
+  }
+
+
+
+
+  export type ReplyTokenGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReplyTokenWhereInput
+    orderBy?: ReplyTokenOrderByWithAggregationInput | ReplyTokenOrderByWithAggregationInput[]
+    by: ReplyTokenScalarFieldEnum[] | ReplyTokenScalarFieldEnum
+    having?: ReplyTokenScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReplyTokenCountAggregateInputType | true
+    _min?: ReplyTokenMinAggregateInputType
+    _max?: ReplyTokenMaxAggregateInputType
+  }
+
+  export type ReplyTokenGroupByOutputType = {
+    id: string
+    token: string
+    businessId: string
+    createdAt: Date
+    _count: ReplyTokenCountAggregateOutputType | null
+    _min: ReplyTokenMinAggregateOutputType | null
+    _max: ReplyTokenMaxAggregateOutputType | null
+  }
+
+  type GetReplyTokenGroupByPayload<T extends ReplyTokenGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReplyTokenGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReplyTokenGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReplyTokenGroupByOutputType[P]>
+            : GetScalarType<T[P], ReplyTokenGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReplyTokenSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    token?: boolean
+    businessId?: boolean
+    createdAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["replyToken"]>
+
+  export type ReplyTokenSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    token?: boolean
+    businessId?: boolean
+    createdAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["replyToken"]>
+
+  export type ReplyTokenSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    token?: boolean
+    businessId?: boolean
+    createdAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["replyToken"]>
+
+  export type ReplyTokenSelectScalar = {
+    id?: boolean
+    token?: boolean
+    businessId?: boolean
+    createdAt?: boolean
+  }
+
+  export type ReplyTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "token" | "businessId" | "createdAt", ExtArgs["result"]["replyToken"]>
+  export type ReplyTokenInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }
+  export type ReplyTokenIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }
+  export type ReplyTokenIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }
+
+  export type $ReplyTokenPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ReplyToken"
+    objects: {
+      business: Prisma.$BusinessPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      token: string
+      businessId: string
+      createdAt: Date
+    }, ExtArgs["result"]["replyToken"]>
+    composites: {}
+  }
+
+  type ReplyTokenGetPayload<S extends boolean | null | undefined | ReplyTokenDefaultArgs> = $Result.GetResult<Prisma.$ReplyTokenPayload, S>
+
+  type ReplyTokenCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ReplyTokenFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ReplyTokenCountAggregateInputType | true
+    }
+
+  export interface ReplyTokenDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ReplyToken'], meta: { name: 'ReplyToken' } }
+    /**
+     * Find zero or one ReplyToken that matches the filter.
+     * @param {ReplyTokenFindUniqueArgs} args - Arguments to find a ReplyToken
+     * @example
+     * // Get one ReplyToken
+     * const replyToken = await prisma.replyToken.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReplyTokenFindUniqueArgs>(args: SelectSubset<T, ReplyTokenFindUniqueArgs<ExtArgs>>): Prisma__ReplyTokenClient<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ReplyToken that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ReplyTokenFindUniqueOrThrowArgs} args - Arguments to find a ReplyToken
+     * @example
+     * // Get one ReplyToken
+     * const replyToken = await prisma.replyToken.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReplyTokenFindUniqueOrThrowArgs>(args: SelectSubset<T, ReplyTokenFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReplyTokenClient<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ReplyToken that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReplyTokenFindFirstArgs} args - Arguments to find a ReplyToken
+     * @example
+     * // Get one ReplyToken
+     * const replyToken = await prisma.replyToken.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReplyTokenFindFirstArgs>(args?: SelectSubset<T, ReplyTokenFindFirstArgs<ExtArgs>>): Prisma__ReplyTokenClient<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ReplyToken that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReplyTokenFindFirstOrThrowArgs} args - Arguments to find a ReplyToken
+     * @example
+     * // Get one ReplyToken
+     * const replyToken = await prisma.replyToken.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReplyTokenFindFirstOrThrowArgs>(args?: SelectSubset<T, ReplyTokenFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReplyTokenClient<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ReplyTokens that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReplyTokenFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ReplyTokens
+     * const replyTokens = await prisma.replyToken.findMany()
+     * 
+     * // Get first 10 ReplyTokens
+     * const replyTokens = await prisma.replyToken.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const replyTokenWithIdOnly = await prisma.replyToken.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ReplyTokenFindManyArgs>(args?: SelectSubset<T, ReplyTokenFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ReplyToken.
+     * @param {ReplyTokenCreateArgs} args - Arguments to create a ReplyToken.
+     * @example
+     * // Create one ReplyToken
+     * const ReplyToken = await prisma.replyToken.create({
+     *   data: {
+     *     // ... data to create a ReplyToken
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReplyTokenCreateArgs>(args: SelectSubset<T, ReplyTokenCreateArgs<ExtArgs>>): Prisma__ReplyTokenClient<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ReplyTokens.
+     * @param {ReplyTokenCreateManyArgs} args - Arguments to create many ReplyTokens.
+     * @example
+     * // Create many ReplyTokens
+     * const replyToken = await prisma.replyToken.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReplyTokenCreateManyArgs>(args?: SelectSubset<T, ReplyTokenCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ReplyTokens and returns the data saved in the database.
+     * @param {ReplyTokenCreateManyAndReturnArgs} args - Arguments to create many ReplyTokens.
+     * @example
+     * // Create many ReplyTokens
+     * const replyToken = await prisma.replyToken.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ReplyTokens and only return the `id`
+     * const replyTokenWithIdOnly = await prisma.replyToken.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ReplyTokenCreateManyAndReturnArgs>(args?: SelectSubset<T, ReplyTokenCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ReplyToken.
+     * @param {ReplyTokenDeleteArgs} args - Arguments to delete one ReplyToken.
+     * @example
+     * // Delete one ReplyToken
+     * const ReplyToken = await prisma.replyToken.delete({
+     *   where: {
+     *     // ... filter to delete one ReplyToken
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReplyTokenDeleteArgs>(args: SelectSubset<T, ReplyTokenDeleteArgs<ExtArgs>>): Prisma__ReplyTokenClient<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ReplyToken.
+     * @param {ReplyTokenUpdateArgs} args - Arguments to update one ReplyToken.
+     * @example
+     * // Update one ReplyToken
+     * const replyToken = await prisma.replyToken.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReplyTokenUpdateArgs>(args: SelectSubset<T, ReplyTokenUpdateArgs<ExtArgs>>): Prisma__ReplyTokenClient<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ReplyTokens.
+     * @param {ReplyTokenDeleteManyArgs} args - Arguments to filter ReplyTokens to delete.
+     * @example
+     * // Delete a few ReplyTokens
+     * const { count } = await prisma.replyToken.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReplyTokenDeleteManyArgs>(args?: SelectSubset<T, ReplyTokenDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ReplyTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReplyTokenUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ReplyTokens
+     * const replyToken = await prisma.replyToken.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReplyTokenUpdateManyArgs>(args: SelectSubset<T, ReplyTokenUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ReplyTokens and returns the data updated in the database.
+     * @param {ReplyTokenUpdateManyAndReturnArgs} args - Arguments to update many ReplyTokens.
+     * @example
+     * // Update many ReplyTokens
+     * const replyToken = await prisma.replyToken.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ReplyTokens and only return the `id`
+     * const replyTokenWithIdOnly = await prisma.replyToken.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ReplyTokenUpdateManyAndReturnArgs>(args: SelectSubset<T, ReplyTokenUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ReplyToken.
+     * @param {ReplyTokenUpsertArgs} args - Arguments to update or create a ReplyToken.
+     * @example
+     * // Update or create a ReplyToken
+     * const replyToken = await prisma.replyToken.upsert({
+     *   create: {
+     *     // ... data to create a ReplyToken
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ReplyToken we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReplyTokenUpsertArgs>(args: SelectSubset<T, ReplyTokenUpsertArgs<ExtArgs>>): Prisma__ReplyTokenClient<$Result.GetResult<Prisma.$ReplyTokenPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ReplyTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReplyTokenCountArgs} args - Arguments to filter ReplyTokens to count.
+     * @example
+     * // Count the number of ReplyTokens
+     * const count = await prisma.replyToken.count({
+     *   where: {
+     *     // ... the filter for the ReplyTokens we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReplyTokenCountArgs>(
+      args?: Subset<T, ReplyTokenCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReplyTokenCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ReplyToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReplyTokenAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReplyTokenAggregateArgs>(args: Subset<T, ReplyTokenAggregateArgs>): Prisma.PrismaPromise<GetReplyTokenAggregateType<T>>
+
+    /**
+     * Group by ReplyToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReplyTokenGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReplyTokenGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReplyTokenGroupByArgs['orderBy'] }
+        : { orderBy?: ReplyTokenGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReplyTokenGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReplyTokenGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ReplyToken model
+   */
+  readonly fields: ReplyTokenFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ReplyToken.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReplyTokenClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    business<T extends BusinessDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusinessDefaultArgs<ExtArgs>>): Prisma__BusinessClient<$Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ReplyToken model
+   */
+  interface ReplyTokenFieldRefs {
+    readonly id: FieldRef<"ReplyToken", 'String'>
+    readonly token: FieldRef<"ReplyToken", 'String'>
+    readonly businessId: FieldRef<"ReplyToken", 'String'>
+    readonly createdAt: FieldRef<"ReplyToken", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ReplyToken findUnique
+   */
+  export type ReplyTokenFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which ReplyToken to fetch.
+     */
+    where: ReplyTokenWhereUniqueInput
+  }
+
+  /**
+   * ReplyToken findUniqueOrThrow
+   */
+  export type ReplyTokenFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which ReplyToken to fetch.
+     */
+    where: ReplyTokenWhereUniqueInput
+  }
+
+  /**
+   * ReplyToken findFirst
+   */
+  export type ReplyTokenFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which ReplyToken to fetch.
+     */
+    where?: ReplyTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReplyTokens to fetch.
+     */
+    orderBy?: ReplyTokenOrderByWithRelationInput | ReplyTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReplyTokens.
+     */
+    cursor?: ReplyTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReplyTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReplyTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReplyTokens.
+     */
+    distinct?: ReplyTokenScalarFieldEnum | ReplyTokenScalarFieldEnum[]
+  }
+
+  /**
+   * ReplyToken findFirstOrThrow
+   */
+  export type ReplyTokenFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which ReplyToken to fetch.
+     */
+    where?: ReplyTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReplyTokens to fetch.
+     */
+    orderBy?: ReplyTokenOrderByWithRelationInput | ReplyTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReplyTokens.
+     */
+    cursor?: ReplyTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReplyTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReplyTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReplyTokens.
+     */
+    distinct?: ReplyTokenScalarFieldEnum | ReplyTokenScalarFieldEnum[]
+  }
+
+  /**
+   * ReplyToken findMany
+   */
+  export type ReplyTokenFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which ReplyTokens to fetch.
+     */
+    where?: ReplyTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReplyTokens to fetch.
+     */
+    orderBy?: ReplyTokenOrderByWithRelationInput | ReplyTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ReplyTokens.
+     */
+    cursor?: ReplyTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReplyTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReplyTokens.
+     */
+    skip?: number
+    distinct?: ReplyTokenScalarFieldEnum | ReplyTokenScalarFieldEnum[]
+  }
+
+  /**
+   * ReplyToken create
+   */
+  export type ReplyTokenCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ReplyToken.
+     */
+    data: XOR<ReplyTokenCreateInput, ReplyTokenUncheckedCreateInput>
+  }
+
+  /**
+   * ReplyToken createMany
+   */
+  export type ReplyTokenCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ReplyTokens.
+     */
+    data: ReplyTokenCreateManyInput | ReplyTokenCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ReplyToken createManyAndReturn
+   */
+  export type ReplyTokenCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * The data used to create many ReplyTokens.
+     */
+    data: ReplyTokenCreateManyInput | ReplyTokenCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ReplyToken update
+   */
+  export type ReplyTokenUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ReplyToken.
+     */
+    data: XOR<ReplyTokenUpdateInput, ReplyTokenUncheckedUpdateInput>
+    /**
+     * Choose, which ReplyToken to update.
+     */
+    where: ReplyTokenWhereUniqueInput
+  }
+
+  /**
+   * ReplyToken updateMany
+   */
+  export type ReplyTokenUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ReplyTokens.
+     */
+    data: XOR<ReplyTokenUpdateManyMutationInput, ReplyTokenUncheckedUpdateManyInput>
+    /**
+     * Filter which ReplyTokens to update
+     */
+    where?: ReplyTokenWhereInput
+    /**
+     * Limit how many ReplyTokens to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ReplyToken updateManyAndReturn
+   */
+  export type ReplyTokenUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * The data used to update ReplyTokens.
+     */
+    data: XOR<ReplyTokenUpdateManyMutationInput, ReplyTokenUncheckedUpdateManyInput>
+    /**
+     * Filter which ReplyTokens to update
+     */
+    where?: ReplyTokenWhereInput
+    /**
+     * Limit how many ReplyTokens to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ReplyToken upsert
+   */
+  export type ReplyTokenUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ReplyToken to update in case it exists.
+     */
+    where: ReplyTokenWhereUniqueInput
+    /**
+     * In case the ReplyToken found by the `where` argument doesn't exist, create a new ReplyToken with this data.
+     */
+    create: XOR<ReplyTokenCreateInput, ReplyTokenUncheckedCreateInput>
+    /**
+     * In case the ReplyToken was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReplyTokenUpdateInput, ReplyTokenUncheckedUpdateInput>
+  }
+
+  /**
+   * ReplyToken delete
+   */
+  export type ReplyTokenDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+    /**
+     * Filter which ReplyToken to delete.
+     */
+    where: ReplyTokenWhereUniqueInput
+  }
+
+  /**
+   * ReplyToken deleteMany
+   */
+  export type ReplyTokenDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReplyTokens to delete
+     */
+    where?: ReplyTokenWhereInput
+    /**
+     * Limit how many ReplyTokens to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ReplyToken without action
+   */
+  export type ReplyTokenDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReplyToken
+     */
+    select?: ReplyTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReplyToken
+     */
+    omit?: ReplyTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReplyTokenInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -45022,6 +46195,16 @@ export namespace Prisma {
   };
 
   export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
+
+
+  export const ReplyTokenScalarFieldEnum: {
+    id: 'id',
+    token: 'token',
+    businessId: 'businessId',
+    createdAt: 'createdAt'
+  };
+
+  export type ReplyTokenScalarFieldEnum = (typeof ReplyTokenScalarFieldEnum)[keyof typeof ReplyTokenScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -45902,6 +47085,7 @@ export namespace Prisma {
     aiNotes?: AINoteListRelationFilter
     stockMovements?: StockMovementListRelationFilter
     mailboxMessages?: MailboxMessageListRelationFilter
+    replyTokens?: ReplyTokenListRelationFilter
   }
 
   export type BusinessOrderByWithRelationInput = {
@@ -45939,6 +47123,7 @@ export namespace Prisma {
     aiNotes?: AINoteOrderByRelationAggregateInput
     stockMovements?: StockMovementOrderByRelationAggregateInput
     mailboxMessages?: MailboxMessageOrderByRelationAggregateInput
+    replyTokens?: ReplyTokenOrderByRelationAggregateInput
   }
 
   export type BusinessWhereUniqueInput = Prisma.AtLeast<{
@@ -45979,6 +47164,7 @@ export namespace Prisma {
     aiNotes?: AINoteListRelationFilter
     stockMovements?: StockMovementListRelationFilter
     mailboxMessages?: MailboxMessageListRelationFilter
+    replyTokens?: ReplyTokenListRelationFilter
   }, "id" | "subscriptionId">
 
   export type BusinessOrderByWithAggregationInput = {
@@ -48711,6 +49897,56 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"ChatMessage"> | Date | string
   }
 
+  export type ReplyTokenWhereInput = {
+    AND?: ReplyTokenWhereInput | ReplyTokenWhereInput[]
+    OR?: ReplyTokenWhereInput[]
+    NOT?: ReplyTokenWhereInput | ReplyTokenWhereInput[]
+    id?: StringFilter<"ReplyToken"> | string
+    token?: StringFilter<"ReplyToken"> | string
+    businessId?: StringFilter<"ReplyToken"> | string
+    createdAt?: DateTimeFilter<"ReplyToken"> | Date | string
+    business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+  }
+
+  export type ReplyTokenOrderByWithRelationInput = {
+    id?: SortOrder
+    token?: SortOrder
+    businessId?: SortOrder
+    createdAt?: SortOrder
+    business?: BusinessOrderByWithRelationInput
+  }
+
+  export type ReplyTokenWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    token?: string
+    AND?: ReplyTokenWhereInput | ReplyTokenWhereInput[]
+    OR?: ReplyTokenWhereInput[]
+    NOT?: ReplyTokenWhereInput | ReplyTokenWhereInput[]
+    businessId?: StringFilter<"ReplyToken"> | string
+    createdAt?: DateTimeFilter<"ReplyToken"> | Date | string
+    business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+  }, "id" | "token">
+
+  export type ReplyTokenOrderByWithAggregationInput = {
+    id?: SortOrder
+    token?: SortOrder
+    businessId?: SortOrder
+    createdAt?: SortOrder
+    _count?: ReplyTokenCountOrderByAggregateInput
+    _max?: ReplyTokenMaxOrderByAggregateInput
+    _min?: ReplyTokenMinOrderByAggregateInput
+  }
+
+  export type ReplyTokenScalarWhereWithAggregatesInput = {
+    AND?: ReplyTokenScalarWhereWithAggregatesInput | ReplyTokenScalarWhereWithAggregatesInput[]
+    OR?: ReplyTokenScalarWhereWithAggregatesInput[]
+    NOT?: ReplyTokenScalarWhereWithAggregatesInput | ReplyTokenScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ReplyToken"> | string
+    token?: StringWithAggregatesFilter<"ReplyToken"> | string
+    businessId?: StringWithAggregatesFilter<"ReplyToken"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ReplyToken"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -49154,6 +50390,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateInput = {
@@ -49191,6 +50428,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUpdateInput = {
@@ -49228,6 +50466,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateInput = {
@@ -49265,6 +50504,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateManyInput = {
@@ -52349,6 +53589,54 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ReplyTokenCreateInput = {
+    id?: string
+    token: string
+    createdAt?: Date | string
+    business: BusinessCreateNestedOneWithoutReplyTokensInput
+  }
+
+  export type ReplyTokenUncheckedCreateInput = {
+    id?: string
+    token: string
+    businessId: string
+    createdAt?: Date | string
+  }
+
+  export type ReplyTokenUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutReplyTokensNestedInput
+  }
+
+  export type ReplyTokenUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReplyTokenCreateManyInput = {
+    id?: string
+    token: string
+    businessId: string
+    createdAt?: Date | string
+  }
+
+  export type ReplyTokenUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReplyTokenUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -52983,6 +54271,12 @@ export namespace Prisma {
     none?: LedgerAccountWhereInput
   }
 
+  export type ReplyTokenListRelationFilter = {
+    every?: ReplyTokenWhereInput
+    some?: ReplyTokenWhereInput
+    none?: ReplyTokenWhereInput
+  }
+
   export type UserOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -53004,6 +54298,10 @@ export namespace Prisma {
   }
 
   export type LedgerAccountOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ReplyTokenOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -55076,6 +56374,27 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type ReplyTokenCountOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    businessId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReplyTokenMaxOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    businessId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReplyTokenMinOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    businessId?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type BusinessCreateNestedOneWithoutUsersInput = {
     create?: XOR<BusinessCreateWithoutUsersInput, BusinessUncheckedCreateWithoutUsersInput>
     connectOrCreate?: BusinessCreateOrConnectWithoutUsersInput
@@ -56007,6 +57326,13 @@ export namespace Prisma {
     connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
   }
 
+  export type ReplyTokenCreateNestedManyWithoutBusinessInput = {
+    create?: XOR<ReplyTokenCreateWithoutBusinessInput, ReplyTokenUncheckedCreateWithoutBusinessInput> | ReplyTokenCreateWithoutBusinessInput[] | ReplyTokenUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: ReplyTokenCreateOrConnectWithoutBusinessInput | ReplyTokenCreateOrConnectWithoutBusinessInput[]
+    createMany?: ReplyTokenCreateManyBusinessInputEnvelope
+    connect?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
+  }
+
   export type SubscriptionUncheckedCreateNestedOneWithoutBusinessInput = {
     create?: XOR<SubscriptionCreateWithoutBusinessInput, SubscriptionUncheckedCreateWithoutBusinessInput>
     connectOrCreate?: SubscriptionCreateOrConnectWithoutBusinessInput
@@ -56144,6 +57470,13 @@ export namespace Prisma {
     connectOrCreate?: MailboxMessageCreateOrConnectWithoutBusinessInput | MailboxMessageCreateOrConnectWithoutBusinessInput[]
     createMany?: MailboxMessageCreateManyBusinessInputEnvelope
     connect?: MailboxMessageWhereUniqueInput | MailboxMessageWhereUniqueInput[]
+  }
+
+  export type ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput = {
+    create?: XOR<ReplyTokenCreateWithoutBusinessInput, ReplyTokenUncheckedCreateWithoutBusinessInput> | ReplyTokenCreateWithoutBusinessInput[] | ReplyTokenUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: ReplyTokenCreateOrConnectWithoutBusinessInput | ReplyTokenCreateOrConnectWithoutBusinessInput[]
+    createMany?: ReplyTokenCreateManyBusinessInputEnvelope
+    connect?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -56435,6 +57768,20 @@ export namespace Prisma {
     deleteMany?: MailboxMessageScalarWhereInput | MailboxMessageScalarWhereInput[]
   }
 
+  export type ReplyTokenUpdateManyWithoutBusinessNestedInput = {
+    create?: XOR<ReplyTokenCreateWithoutBusinessInput, ReplyTokenUncheckedCreateWithoutBusinessInput> | ReplyTokenCreateWithoutBusinessInput[] | ReplyTokenUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: ReplyTokenCreateOrConnectWithoutBusinessInput | ReplyTokenCreateOrConnectWithoutBusinessInput[]
+    upsert?: ReplyTokenUpsertWithWhereUniqueWithoutBusinessInput | ReplyTokenUpsertWithWhereUniqueWithoutBusinessInput[]
+    createMany?: ReplyTokenCreateManyBusinessInputEnvelope
+    set?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
+    disconnect?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
+    delete?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
+    connect?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
+    update?: ReplyTokenUpdateWithWhereUniqueWithoutBusinessInput | ReplyTokenUpdateWithWhereUniqueWithoutBusinessInput[]
+    updateMany?: ReplyTokenUpdateManyWithWhereWithoutBusinessInput | ReplyTokenUpdateManyWithWhereWithoutBusinessInput[]
+    deleteMany?: ReplyTokenScalarWhereInput | ReplyTokenScalarWhereInput[]
+  }
+
   export type SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput = {
     create?: XOR<SubscriptionCreateWithoutBusinessInput, SubscriptionUncheckedCreateWithoutBusinessInput>
     connectOrCreate?: SubscriptionCreateOrConnectWithoutBusinessInput
@@ -56709,6 +58056,20 @@ export namespace Prisma {
     update?: MailboxMessageUpdateWithWhereUniqueWithoutBusinessInput | MailboxMessageUpdateWithWhereUniqueWithoutBusinessInput[]
     updateMany?: MailboxMessageUpdateManyWithWhereWithoutBusinessInput | MailboxMessageUpdateManyWithWhereWithoutBusinessInput[]
     deleteMany?: MailboxMessageScalarWhereInput | MailboxMessageScalarWhereInput[]
+  }
+
+  export type ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput = {
+    create?: XOR<ReplyTokenCreateWithoutBusinessInput, ReplyTokenUncheckedCreateWithoutBusinessInput> | ReplyTokenCreateWithoutBusinessInput[] | ReplyTokenUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: ReplyTokenCreateOrConnectWithoutBusinessInput | ReplyTokenCreateOrConnectWithoutBusinessInput[]
+    upsert?: ReplyTokenUpsertWithWhereUniqueWithoutBusinessInput | ReplyTokenUpsertWithWhereUniqueWithoutBusinessInput[]
+    createMany?: ReplyTokenCreateManyBusinessInputEnvelope
+    set?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
+    disconnect?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
+    delete?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
+    connect?: ReplyTokenWhereUniqueInput | ReplyTokenWhereUniqueInput[]
+    update?: ReplyTokenUpdateWithWhereUniqueWithoutBusinessInput | ReplyTokenUpdateWithWhereUniqueWithoutBusinessInput[]
+    updateMany?: ReplyTokenUpdateManyWithWhereWithoutBusinessInput | ReplyTokenUpdateManyWithWhereWithoutBusinessInput[]
+    deleteMany?: ReplyTokenScalarWhereInput | ReplyTokenScalarWhereInput[]
   }
 
   export type BusinessCreateNestedOneWithoutSubscriptionInput = {
@@ -57871,6 +59232,20 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
   }
 
+  export type BusinessCreateNestedOneWithoutReplyTokensInput = {
+    create?: XOR<BusinessCreateWithoutReplyTokensInput, BusinessUncheckedCreateWithoutReplyTokensInput>
+    connectOrCreate?: BusinessCreateOrConnectWithoutReplyTokensInput
+    connect?: BusinessWhereUniqueInput
+  }
+
+  export type BusinessUpdateOneRequiredWithoutReplyTokensNestedInput = {
+    create?: XOR<BusinessCreateWithoutReplyTokensInput, BusinessUncheckedCreateWithoutReplyTokensInput>
+    connectOrCreate?: BusinessCreateOrConnectWithoutReplyTokensInput
+    upsert?: BusinessUpsertWithoutReplyTokensInput
+    connect?: BusinessWhereUniqueInput
+    update?: XOR<XOR<BusinessUpdateToOneWithWhereWithoutReplyTokensInput, BusinessUpdateWithoutReplyTokensInput>, BusinessUncheckedUpdateWithoutReplyTokensInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -58609,6 +59984,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutUsersInput = {
@@ -58645,6 +60021,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutUsersInput = {
@@ -59371,6 +60748,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutUsersInput = {
@@ -59407,6 +60785,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
@@ -61234,6 +62613,28 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ReplyTokenCreateWithoutBusinessInput = {
+    id?: string
+    token: string
+    createdAt?: Date | string
+  }
+
+  export type ReplyTokenUncheckedCreateWithoutBusinessInput = {
+    id?: string
+    token: string
+    createdAt?: Date | string
+  }
+
+  export type ReplyTokenCreateOrConnectWithoutBusinessInput = {
+    where: ReplyTokenWhereUniqueInput
+    create: XOR<ReplyTokenCreateWithoutBusinessInput, ReplyTokenUncheckedCreateWithoutBusinessInput>
+  }
+
+  export type ReplyTokenCreateManyBusinessInputEnvelope = {
+    data: ReplyTokenCreateManyBusinessInput | ReplyTokenCreateManyBusinessInput[]
+    skipDuplicates?: boolean
+  }
+
   export type SubscriptionUpsertWithoutBusinessInput = {
     update: XOR<SubscriptionUpdateWithoutBusinessInput, SubscriptionUncheckedUpdateWithoutBusinessInput>
     create: XOR<SubscriptionCreateWithoutBusinessInput, SubscriptionUncheckedCreateWithoutBusinessInput>
@@ -61719,6 +63120,32 @@ export namespace Prisma {
     data: XOR<MailboxMessageUpdateManyMutationInput, MailboxMessageUncheckedUpdateManyWithoutBusinessInput>
   }
 
+  export type ReplyTokenUpsertWithWhereUniqueWithoutBusinessInput = {
+    where: ReplyTokenWhereUniqueInput
+    update: XOR<ReplyTokenUpdateWithoutBusinessInput, ReplyTokenUncheckedUpdateWithoutBusinessInput>
+    create: XOR<ReplyTokenCreateWithoutBusinessInput, ReplyTokenUncheckedCreateWithoutBusinessInput>
+  }
+
+  export type ReplyTokenUpdateWithWhereUniqueWithoutBusinessInput = {
+    where: ReplyTokenWhereUniqueInput
+    data: XOR<ReplyTokenUpdateWithoutBusinessInput, ReplyTokenUncheckedUpdateWithoutBusinessInput>
+  }
+
+  export type ReplyTokenUpdateManyWithWhereWithoutBusinessInput = {
+    where: ReplyTokenScalarWhereInput
+    data: XOR<ReplyTokenUpdateManyMutationInput, ReplyTokenUncheckedUpdateManyWithoutBusinessInput>
+  }
+
+  export type ReplyTokenScalarWhereInput = {
+    AND?: ReplyTokenScalarWhereInput | ReplyTokenScalarWhereInput[]
+    OR?: ReplyTokenScalarWhereInput[]
+    NOT?: ReplyTokenScalarWhereInput | ReplyTokenScalarWhereInput[]
+    id?: StringFilter<"ReplyToken"> | string
+    token?: StringFilter<"ReplyToken"> | string
+    businessId?: StringFilter<"ReplyToken"> | string
+    createdAt?: DateTimeFilter<"ReplyToken"> | Date | string
+  }
+
   export type BusinessCreateWithoutSubscriptionInput = {
     id?: string
     name: string
@@ -61753,6 +63180,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSubscriptionInput = {
@@ -61789,6 +63217,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSubscriptionInput = {
@@ -61841,6 +63270,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSubscriptionInput = {
@@ -61877,6 +63307,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutInvoicesInput = {
@@ -61913,6 +63344,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutInvoicesInput = {
@@ -61949,6 +63381,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutInvoicesInput = {
@@ -62113,6 +63546,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutInvoicesInput = {
@@ -62149,6 +63583,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutInvoicesInput = {
@@ -62309,6 +63744,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutContactsInput = {
@@ -62345,6 +63781,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutContactsInput = {
@@ -62476,6 +63913,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutContactsInput = {
@@ -62512,6 +63950,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutContactsInput = {
@@ -62633,6 +64072,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutNotesInput = {
@@ -62669,6 +64109,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutNotesInput = {
@@ -62800,6 +64241,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutNotesInput = {
@@ -62836,6 +64278,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutNotesInput = {
@@ -62957,6 +64400,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutExpensesInput = {
@@ -62993,6 +64437,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutExpensesInput = {
@@ -63157,6 +64602,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutExpensesInput = {
@@ -63193,6 +64639,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutExpensesInput = {
@@ -63353,6 +64800,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutInventoryInput = {
@@ -63389,6 +64837,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutInventoryInput = {
@@ -63508,6 +64957,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutInventoryInput = {
@@ -63544,6 +64994,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type SupplierUpsertWithoutInventoryItemsInput = {
@@ -63637,6 +65088,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutStockMovementsInput = {
@@ -63673,6 +65125,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutStockMovementsInput = {
@@ -63863,6 +65316,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutStockMovementsInput = {
@@ -63899,6 +65353,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type InventoryItemUpsertWithoutMovementsInput = {
@@ -64085,6 +65540,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutEmployeesInput = {
@@ -64121,6 +65577,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutEmployeesInput = {
@@ -64173,6 +65630,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutEmployeesInput = {
@@ -64209,6 +65667,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutSuppliersInput = {
@@ -64245,6 +65704,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSuppliersInput = {
@@ -64281,6 +65741,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSuppliersInput = {
@@ -64397,6 +65858,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSuppliersInput = {
@@ -64433,6 +65895,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type InventoryItemUpsertWithWhereUniqueWithoutSupplierInput = {
@@ -64485,6 +65948,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutCampaignsInput = {
@@ -64521,6 +65985,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutCampaignsInput = {
@@ -64573,6 +66038,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutCampaignsInput = {
@@ -64609,6 +66075,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutTicketsInput = {
@@ -64645,6 +66112,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutTicketsInput = {
@@ -64681,6 +66149,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutTicketsInput = {
@@ -64842,6 +66311,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutTicketsInput = {
@@ -64878,6 +66348,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutTicketsInput = {
@@ -65267,6 +66738,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutAppointmentsInput = {
@@ -65303,6 +66775,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutAppointmentsInput = {
@@ -65434,6 +66907,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutAppointmentsInput = {
@@ -65470,6 +66944,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutAppointmentsInput = {
@@ -65591,6 +67066,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutTasksInput = {
@@ -65627,6 +67103,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutTasksInput = {
@@ -65784,6 +67261,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutTasksInput = {
@@ -65820,6 +67298,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutTasksInput = {
@@ -66045,6 +67524,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutLedgerAccountsInput = {
@@ -66081,6 +67561,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutLedgerAccountsInput = {
@@ -66161,6 +67642,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutLedgerAccountsInput = {
@@ -66197,6 +67679,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutAccountInput = {
@@ -66262,6 +67745,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutJournalEntriesInput = {
@@ -66298,6 +67782,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutJournalEntriesInput = {
@@ -66533,6 +68018,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutJournalEntriesInput = {
@@ -66569,6 +68055,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutJournalEntriesInput = {
@@ -66938,6 +68425,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutEmailLogsInput = {
@@ -66974,6 +68462,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutEmailLogsInput = {
@@ -67105,6 +68594,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutEmailLogsInput = {
@@ -67141,6 +68631,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutEmailLogsInput = {
@@ -67262,6 +68753,7 @@ export namespace Prisma {
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutFormsInput = {
@@ -67298,6 +68790,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutFormsInput = {
@@ -67451,6 +68944,7 @@ export namespace Prisma {
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutFormsInput = {
@@ -67487,6 +68981,7 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutFormsInput = {
@@ -67710,6 +69205,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutAiNotesInput = {
@@ -67746,6 +69242,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
     mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutAiNotesInput = {
@@ -67877,6 +69374,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutAiNotesInput = {
@@ -67913,6 +69411,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutAiNotesInput = {
@@ -68034,6 +69533,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutMailboxMessagesInput = {
@@ -68070,6 +69570,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
     aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
     stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    replyTokens?: ReplyTokenUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutMailboxMessagesInput = {
@@ -68201,6 +69702,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutMailboxMessagesInput = {
@@ -68237,6 +69739,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
     aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    replyTokens?: ReplyTokenUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutMailboxMessagesInput = {
@@ -68486,6 +69989,170 @@ export namespace Prisma {
     aiNotes?: AINoteUncheckedUpdateManyWithoutUserNestedInput
     stockMovements?: StockMovementUncheckedUpdateManyWithoutUserNestedInput
     mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type BusinessCreateWithoutReplyTokensInput = {
+    id?: string
+    name: string
+    industry: string
+    size: string
+    address?: string | null
+    city?: string | null
+    postcode?: string | null
+    country?: string
+    subscriptionId?: string | null
+    seatCount?: number
+    maxSeats?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
+    subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
+    users?: UserCreateNestedManyWithoutBusinessInput
+    invoices?: InvoiceCreateNestedManyWithoutBusinessInput
+    contacts?: ContactCreateNestedManyWithoutBusinessInput
+    tasks?: TaskCreateNestedManyWithoutBusinessInput
+    notes?: NoteCreateNestedManyWithoutBusinessInput
+    expenses?: ExpenseCreateNestedManyWithoutBusinessInput
+    inventory?: InventoryItemCreateNestedManyWithoutBusinessInput
+    employees?: EmployeeCreateNestedManyWithoutBusinessInput
+    suppliers?: SupplierCreateNestedManyWithoutBusinessInput
+    campaigns?: CampaignCreateNestedManyWithoutBusinessInput
+    tickets?: TicketCreateNestedManyWithoutBusinessInput
+    ledgerAccounts?: LedgerAccountCreateNestedManyWithoutBusinessInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutBusinessInput
+    emailLogs?: EmailLogCreateNestedManyWithoutBusinessInput
+    forms?: FormCreateNestedManyWithoutBusinessInput
+    appointments?: AppointmentCreateNestedManyWithoutBusinessInput
+    aiNotes?: AINoteCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageCreateNestedManyWithoutBusinessInput
+  }
+
+  export type BusinessUncheckedCreateWithoutReplyTokensInput = {
+    id?: string
+    name: string
+    industry: string
+    size: string
+    address?: string | null
+    city?: string | null
+    postcode?: string | null
+    country?: string
+    subscriptionId?: string | null
+    seatCount?: number
+    maxSeats?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    enabledModules?: BusinessCreateenabledModulesInput | string[]
+    subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
+    users?: UserUncheckedCreateNestedManyWithoutBusinessInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutBusinessInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutBusinessInput
+    notes?: NoteUncheckedCreateNestedManyWithoutBusinessInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutBusinessInput
+    inventory?: InventoryItemUncheckedCreateNestedManyWithoutBusinessInput
+    employees?: EmployeeUncheckedCreateNestedManyWithoutBusinessInput
+    suppliers?: SupplierUncheckedCreateNestedManyWithoutBusinessInput
+    campaigns?: CampaignUncheckedCreateNestedManyWithoutBusinessInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutBusinessInput
+    ledgerAccounts?: LedgerAccountUncheckedCreateNestedManyWithoutBusinessInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutBusinessInput
+    emailLogs?: EmailLogUncheckedCreateNestedManyWithoutBusinessInput
+    forms?: FormUncheckedCreateNestedManyWithoutBusinessInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutBusinessInput
+    aiNotes?: AINoteUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    mailboxMessages?: MailboxMessageUncheckedCreateNestedManyWithoutBusinessInput
+  }
+
+  export type BusinessCreateOrConnectWithoutReplyTokensInput = {
+    where: BusinessWhereUniqueInput
+    create: XOR<BusinessCreateWithoutReplyTokensInput, BusinessUncheckedCreateWithoutReplyTokensInput>
+  }
+
+  export type BusinessUpsertWithoutReplyTokensInput = {
+    update: XOR<BusinessUpdateWithoutReplyTokensInput, BusinessUncheckedUpdateWithoutReplyTokensInput>
+    create: XOR<BusinessCreateWithoutReplyTokensInput, BusinessUncheckedCreateWithoutReplyTokensInput>
+    where?: BusinessWhereInput
+  }
+
+  export type BusinessUpdateToOneWithWhereWithoutReplyTokensInput = {
+    where?: BusinessWhereInput
+    data: XOR<BusinessUpdateWithoutReplyTokensInput, BusinessUncheckedUpdateWithoutReplyTokensInput>
+  }
+
+  export type BusinessUpdateWithoutReplyTokensInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    industry?: StringFieldUpdateOperationsInput | string
+    size?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
+    seatCount?: IntFieldUpdateOperationsInput | number
+    maxSeats?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
+    subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
+    users?: UserUpdateManyWithoutBusinessNestedInput
+    invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
+    contacts?: ContactUpdateManyWithoutBusinessNestedInput
+    tasks?: TaskUpdateManyWithoutBusinessNestedInput
+    notes?: NoteUpdateManyWithoutBusinessNestedInput
+    expenses?: ExpenseUpdateManyWithoutBusinessNestedInput
+    inventory?: InventoryItemUpdateManyWithoutBusinessNestedInput
+    employees?: EmployeeUpdateManyWithoutBusinessNestedInput
+    suppliers?: SupplierUpdateManyWithoutBusinessNestedInput
+    campaigns?: CampaignUpdateManyWithoutBusinessNestedInput
+    tickets?: TicketUpdateManyWithoutBusinessNestedInput
+    ledgerAccounts?: LedgerAccountUpdateManyWithoutBusinessNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutBusinessNestedInput
+    emailLogs?: EmailLogUpdateManyWithoutBusinessNestedInput
+    forms?: FormUpdateManyWithoutBusinessNestedInput
+    appointments?: AppointmentUpdateManyWithoutBusinessNestedInput
+    aiNotes?: AINoteUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUpdateManyWithoutBusinessNestedInput
+  }
+
+  export type BusinessUncheckedUpdateWithoutReplyTokensInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    industry?: StringFieldUpdateOperationsInput | string
+    size?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
+    seatCount?: IntFieldUpdateOperationsInput | number
+    maxSeats?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    enabledModules?: BusinessUpdateenabledModulesInput | string[]
+    subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
+    users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutBusinessNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutBusinessNestedInput
+    notes?: NoteUncheckedUpdateManyWithoutBusinessNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutBusinessNestedInput
+    inventory?: InventoryItemUncheckedUpdateManyWithoutBusinessNestedInput
+    employees?: EmployeeUncheckedUpdateManyWithoutBusinessNestedInput
+    suppliers?: SupplierUncheckedUpdateManyWithoutBusinessNestedInput
+    campaigns?: CampaignUncheckedUpdateManyWithoutBusinessNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutBusinessNestedInput
+    ledgerAccounts?: LedgerAccountUncheckedUpdateManyWithoutBusinessNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutBusinessNestedInput
+    emailLogs?: EmailLogUncheckedUpdateManyWithoutBusinessNestedInput
+    forms?: FormUncheckedUpdateManyWithoutBusinessNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutBusinessNestedInput
+    aiNotes?: AINoteUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    mailboxMessages?: MailboxMessageUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -69799,6 +71466,12 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type ReplyTokenCreateManyBusinessInput = {
+    id?: string
+    token: string
+    createdAt?: Date | string
+  }
+
   export type UserUpdateWithoutBusinessInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -70794,6 +72467,24 @@ export namespace Prisma {
     attachments?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReplyTokenUpdateWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReplyTokenUncheckedUpdateWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReplyTokenUncheckedUpdateManyWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StockMovementCreateManyItemInput = {

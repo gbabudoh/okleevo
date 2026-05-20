@@ -4,73 +4,90 @@ import { prisma } from '@/lib/prisma';
 /**
  * Postal Inbound Webhook Receiver
  * Route: POST /api/webhooks/postal/inbound
- * 
- * This endpoint receives incoming emails from your self-hosted Postal server
- * and saves them directly into the Okleevo Mailbox database.
+ *
+ * Postal must be configured with a catch-all route for *@reply.okleevo.com
+ * pointing to this endpoint.
+ *
+ * Two routing strategies (tried in order):
+ *   1. reply+{businessId}@reply.okleevo.com — token set in the Reply-To header
+ *      when an SME sends outbound mail. External replies hit this address and
+ *      are routed directly to the correct business without a user lookup.
+ *   2. Fallback: match the To address against a user email in the User table.
  */
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
-
-    // Postal wraps data in a 'payload' object depending on the event type,
-    // but sometimes sends direct payload for HTTP routes.
     const payload = data.payload || data;
 
-    // Extract core email fields from Postal's payload
-    const to = payload.rcpt_to || payload.to || '';
-    const from = payload.mail_from || payload.from || '';
-    const subject = payload.subject || 'No Subject';
-    const messageId = payload.message_id || `postal-${Date.now()}`;
-    const plainBody = payload.plain_body || '';
-    const htmlBody = payload.html_body || '';
-    
-    // Fallback date
-    const dateStr = payload.timestamp ? new Date(payload.timestamp * 1000).toISOString() : new Date().toISOString();
+    const rawTo: string   = payload.rcpt_to   || payload.to    || '';
+    const from: string    = payload.mail_from  || payload.from  || '';
+    const subject: string = payload.subject    || 'No Subject';
+    const messageId: string = payload.message_id || `postal-${Date.now()}`;
+    const plainBody: string = payload.plain_body || '';
+    const htmlBody: string  = payload.html_body  || '';
+    const dateStr: string   = payload.timestamp
+      ? new Date(payload.timestamp * 1000).toISOString()
+      : new Date().toISOString();
 
-    // 1. Identify the SME Business based on the "To" address
-    // We look up the User table to find which business this email belongs to.
-    const user = await prisma.user.findUnique({
-      where: { email: to },
-      select: { businessId: true }
-    });
+    const attachments     = payload.attachments || [];
+    const hasAttachments  = attachments.length > 0;
 
-    if (!user || !user.businessId) {
-      console.warn(`[Postal Webhook] Incoming email to ${to} rejected: No matching user/business found.`);
-      // Return 200 so Postal doesn't keep retrying, even if we drop it.
-      return NextResponse.json({ status: 'ignored', reason: 'User not found' }, { status: 200 });
+    // ── Strategy 1: reply+{uuid}@reply.okleevo.com ────────────────────────────
+    let businessId: string | null = null;
+
+    const replyMatch = rawTo.match(/^reply\+([^@]+)@/i);
+    if (replyMatch) {
+      const candidateToken = replyMatch[1];
+      const replyToken = await prisma.replyToken.findUnique({
+        where: { token: candidateToken },
+        select: { businessId: true },
+      });
+      if (replyToken) {
+        businessId = replyToken.businessId;
+      }
     }
 
-    // 2. Parse attachments if any (Postal provides an array of attachments)
-    const attachments = payload.attachments || [];
-    const hasAttachments = attachments.length > 0;
+    // ── Strategy 2: match To address to a user's email (legacy / direct sends) ─
+    if (!businessId) {
+      const user = await prisma.user.findUnique({
+        where: { email: rawTo.toLowerCase() },
+        select: { businessId: true },
+      });
+      if (user?.businessId) {
+        businessId = user.businessId;
+      }
+    }
 
-    // 3. Save the email into the MailboxMessage table
+    if (!businessId) {
+      console.warn(`[Postal Inbound] No business matched for To: ${rawTo} — dropping.`);
+      return NextResponse.json({ status: 'ignored', reason: 'No matching business' }, { status: 200 });
+    }
+
+    // ── Save to MailboxMessage (INBOX) ─────────────────────────────────────────
     const message = await prisma.mailboxMessage.create({
       data: {
-        businessId: user.businessId,
-        messageId: messageId,
-        uid: Date.now(), // Generate a fake UID for IMAP compatibility layer
-        from: from,
-        to: to,
-        subject: subject,
+        businessId,
+        messageId,
+        uid: Date.now(),
+        from,
+        to: rawTo,
+        subject,
         body: plainBody,
         html: htmlBody,
         date: dateStr,
-        hasAttachments: hasAttachments,
-        // Store raw attachment metadata if needed
+        hasAttachments,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         attachments: attachments as any,
         folder: 'INBOX',
-        status: 'UNREAD'
-      }
+        status: 'UNREAD',
+      },
     });
 
-    console.log(`[Postal Webhook] ✅ Email received and saved for business ${user.businessId}`);
-
+    console.log(`[Postal Inbound] ✅ Saved message ${message.id} for business ${businessId}`);
     return NextResponse.json({ status: 'success', id: message.id }, { status: 200 });
+
   } catch (error) {
-    console.error('[Postal Webhook] ❌ Error processing inbound email:', error);
-    // Return 500 so Postal knows it failed and can retry if configured
+    console.error('[Postal Inbound] ❌ Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

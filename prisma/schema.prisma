@@ -172,6 +172,7 @@ model Business {
   aiNotes         AINote[]
   stockMovements  StockMovement[]
   mailboxMessages MailboxMessage[]
+  replyTokens     ReplyToken[]
   enabledModules  String[]         @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
 
   @@index([name])
@@ -1169,5 +1170,20 @@ model ChatMessage {
   @@index([senderId])
   @@index([receiverId])
   @@index([createdAt])
+}
+
+// =============================================================================
+// Email Reply Token (opaque UUID for two-way email routing)
+// =============================================================================
+
+model ReplyToken {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([token])
+  @@index([businessId])
 }
 

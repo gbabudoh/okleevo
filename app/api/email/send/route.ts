@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { sendClientEmail } from '@/lib/services/email';
@@ -63,6 +64,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Get-or-create an opaque UUID reply token for this business.
+    // Using a UUID instead of the raw businessId prevents internal ID exposure
+    // in email headers visible to recipients.
+    const replyDomain = process.env.POSTAL_REPLY_DOMAIN || 'reply.okleevo.com';
+    let replyToken = await prisma.replyToken.findFirst({ where: { businessId } });
+    if (!replyToken) {
+      replyToken = await prisma.replyToken.create({
+        data: { token: randomUUID(), businessId },
+      });
+    }
+    const routedReplyTo = replyTo || `reply+${replyToken.token}@${replyDomain}`;
+
     // Send the email
     const result = await sendClientEmail({
       to,
@@ -71,7 +84,7 @@ export async function POST(request: NextRequest) {
       text,
       cc,
       bcc,
-      replyTo: replyTo || user?.email,
+      replyTo: routedReplyTo,
       attachments,
       businessName: business?.name || 'Your Business',
       businessEmail: user?.email,
