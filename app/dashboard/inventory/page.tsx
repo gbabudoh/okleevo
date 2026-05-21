@@ -9,7 +9,8 @@ import {
   Box, Boxes, PackageX, PackagePlus, PackageMinus,
   Warehouse, Zap, Target, Activity,
   X, Check, QrCode, Scan, History, User,
-  ClipboardList, ShoppingCart, Bell, FileText, RefreshCw
+  ClipboardList, ShoppingCart, Bell, FileText, RefreshCw,
+  Heart, Home, Dumbbell, BookOpen, Wrench, Sparkles, Briefcase, HelpCircle
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
@@ -100,6 +101,17 @@ export default function InventoryPage() {
     { id: 'food', name: 'Food & Beverage', icon: Package, count: items.filter(i => i.category?.toLowerCase() === 'food').length },
     { id: 'furniture', name: 'Furniture', icon: Box, count: items.filter(i => i.category?.toLowerCase() === 'furniture').length },
     { id: 'supplies', name: 'Supplies', icon: ClipboardList, count: items.filter(i => i.category?.toLowerCase() === 'supplies').length },
+    { id: 'health-beauty', name: 'Health & Beauty', icon: Heart, count: items.filter(i => i.category?.toLowerCase() === 'health-beauty').length },
+    { id: 'home-kitchen', name: 'Home & Kitchen', icon: Home, count: items.filter(i => i.category?.toLowerCase() === 'home-kitchen').length },
+    { id: 'home-decor', name: 'Home Décor', icon: Warehouse, count: items.filter(i => i.category?.toLowerCase() === 'home-decor').length },
+    { id: 'sports-outdoors', name: 'Sports & Outdoors', icon: Dumbbell, count: items.filter(i => i.category?.toLowerCase() === 'sports-outdoors').length },
+    { id: 'toys-games', name: 'Toys & Games', icon: Boxes, count: items.filter(i => i.category?.toLowerCase() === 'toys-games').length },
+    { id: 'books-stationery', name: 'Books & Stationery', icon: BookOpen, count: items.filter(i => i.category?.toLowerCase() === 'books-stationery').length },
+    { id: 'automotive-diy', name: 'Automotive & DIY', icon: Wrench, count: items.filter(i => i.category?.toLowerCase() === 'automotive-diy').length },
+    { id: 'packaging-shipping', name: 'Packaging & Shipping Materials', icon: PackagePlus, count: items.filter(i => i.category?.toLowerCase() === 'packaging-shipping').length },
+    { id: 'cleaning-maintenance', name: 'Cleaning & Maintenance', icon: Sparkles, count: items.filter(i => i.category?.toLowerCase() === 'cleaning-maintenance').length },
+    { id: 'services', name: 'Services', icon: Briefcase, count: items.filter(i => i.category?.toLowerCase() === 'services').length },
+    { id: 'other', name: 'Other', icon: HelpCircle, count: items.filter(i => i.category?.toLowerCase() === 'other').length },
   ];
 
   const showNotify = (message: string, type: 'success' | 'info' = 'success') => {
@@ -261,28 +273,31 @@ export default function InventoryPage() {
       </div>
 
       {/* ── Category Pills ── */}
-      <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
-        {dynamicCategories.map(cat => {
-          const Icon = cat.icon;
-          const active = selectedCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                active
-                  ? 'bg-gray-900 text-white shadow-md'
-                  : 'bg-white border border-gray-100 text-gray-500 hover:border-gray-200 hover:text-gray-700'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {cat.name}
-              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                {cat.count}
-              </span>
-            </button>
-          );
-        })}
+      <div className="relative">
+        <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar-x">
+          {dynamicCategories.map(cat => {
+            const Icon = cat.icon;
+            const active = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                  active
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'bg-white border border-gray-100 text-gray-500 hover:border-gray-200 hover:text-gray-700'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {cat.name}
+                <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                  {cat.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="pointer-events-none absolute right-0 top-0 h-[calc(100%-8px)] w-16 bg-linear-to-l from-slate-50 to-transparent" />
       </div>
 
       {/* ── Items ── */}

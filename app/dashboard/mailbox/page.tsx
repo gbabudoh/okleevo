@@ -4,12 +4,18 @@ import { useState, useEffect } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize';
 import {
   Mail, Trash2, Search, RefreshCw, Star,
-  MoreVertical, Reply, Paperclip,
+  MoreVertical, Reply, Forward, Paperclip, FileText, Image as ImageIcon,
   ChevronLeft, Loader2,
   Inbox as InboxIcon, Send as SendIcon,
   Trash as TrashIcon, AlertTriangle as SpamIcon,
   X, Send as SendActionIcon, PenSquare
 } from 'lucide-react';
+
+interface Attachment {
+  filename: string;
+  contentType?: string;
+  size?: number;
+}
 
 interface EmailMessage {
   id: string;
@@ -22,6 +28,7 @@ interface EmailMessage {
   status: 'READ' | 'UNREAD' | 'FLAGGED';
   folder: 'INBOX' | 'SENT' | 'DRAFTS' | 'TRASH' | 'SPAM';
   hasAttachments: boolean;
+  attachments?: Attachment[];
 }
 
 export default function MailboxPage() {
@@ -35,6 +42,7 @@ export default function MailboxPage() {
   const [showCompose, setShowCompose] = useState(false);
   const [composeData, setComposeData] = useState({ to: '', subject: '', content: '' });
   const [sending, setSending] = useState(false);
+  const [showMessageMenu, setShowMessageMenu] = useState(false);
 
   const fetchMessages = async (forceSync = false) => {
     if (forceSync) setSyncing(true);
@@ -74,7 +82,6 @@ export default function MailboxPage() {
     e.preventDefault();
     setSending(true);
     try {
-      // Convert plain text to minimal HTML; keep plain text for fallback
       const paragraphs = composeData.content
         .split('\n')
         .map(l => l.trim() ? `<p>${l}</p>` : '<br/>')
@@ -92,6 +99,8 @@ export default function MailboxPage() {
       if (res.ok) {
         setShowCompose(false);
         setComposeData({ to: '', subject: '', content: '' });
+        // Refresh so the new message appears in Sent
+        fetchMessages(false);
       } else {
         const err = await res.json();
         console.error('Send failed:', err.error);
@@ -110,9 +119,34 @@ export default function MailboxPage() {
     setComposeData({
       to: toEmail,
       subject: selectedMessage.subject.startsWith('Re:') ? selectedMessage.subject : `Re: ${selectedMessage.subject}`,
-      content: `\n\n\n--- Original Message ---\nFrom: ${selectedMessage.from}\nDate: ${new Date(selectedMessage.date).toLocaleString()}\n\n${selectedMessage.body}`
+      content: `\n\n\n--- Original Message ---\nFrom: ${selectedMessage.from}\nDate: ${new Date(selectedMessage.date).toLocaleString()}\n\n${selectedMessage.body}`,
     });
     setShowCompose(true);
+    setShowMessageMenu(false);
+  };
+
+  const handleForward = () => {
+    if (!selectedMessage) return;
+    setComposeData({
+      to: '',
+      subject: selectedMessage.subject.startsWith('Fwd:') ? selectedMessage.subject : `Fwd: ${selectedMessage.subject}`,
+      content: `\n\n\n--- Forwarded Message ---\nFrom: ${selectedMessage.from}\nDate: ${new Date(selectedMessage.date).toLocaleString()}\nSubject: ${selectedMessage.subject}\n\n${selectedMessage.body}`,
+    });
+    setShowCompose(true);
+    setShowMessageMenu(false);
+  };
+
+  const handleMoveToSpam = () => {
+    if (!selectedMessage) return;
+    updateMessage(selectedMessage.id, { folder: 'SPAM' });
+    setSelectedMessage(null);
+    setShowMessageMenu(false);
+  };
+
+  const getAttachmentIcon = (filename: string) => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext || '')) return ImageIcon;
+    return FileText;
   };
 
   const filteredMessages = messages
@@ -129,7 +163,7 @@ export default function MailboxPage() {
     { id: 'TRASH', label: 'Trash',  icon: TrashIcon,  color: 'text-rose-500' },
   ] as const;
 
-  const unreadCount = messages.filter(m => m.status === 'UNREAD').length;
+  const unreadCount = messages.filter(m => m.folder === 'INBOX' && m.status === 'UNREAD').length;
 
   return (
     <div
@@ -310,13 +344,15 @@ export default function MailboxPage() {
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold ${
                       msg.status === 'UNREAD' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
                     }`}>
-                      {msg.from.charAt(0).toUpperCase()}
+                      {(selectedFolder === 'SENT' ? msg.to : msg.from).charAt(0).toUpperCase()}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-0.5">
                         <p className={`text-sm truncate ${msg.status === 'UNREAD' ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>
-                          {msg.from.split('<')[0].trim() || msg.from}
+                          {selectedFolder === 'SENT'
+                            ? (msg.to.split('<')[0].trim() || msg.to)
+                            : (msg.from.split('<')[0].trim() || msg.from)}
                         </p>
                         <span className="text-[10px] text-gray-400 shrink-0">
                           {new Date(msg.date).toLocaleDateString([], { month: 'short', day: 'numeric' })}
@@ -364,16 +400,48 @@ export default function MailboxPage() {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 relative">
+                {selectedFolder !== 'SENT' && (
+                  <button
+                    onClick={handleReply}
+                    className="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+                  >
+                    <Reply className="w-4 h-4" /> Reply
+                  </button>
+                )}
                 <button
-                  onClick={handleReply}
-                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+                  onClick={handleForward}
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors cursor-pointer"
                 >
-                  <Reply className="w-4 h-4" /> Reply
+                  <Forward className="w-4 h-4" /> Forward
                 </button>
-                <button className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-400 transition-colors cursor-pointer">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowMessageMenu(v => !v)}
+                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-400 transition-colors cursor-pointer"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                  {showMessageMenu && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setShowMessageMenu(false)} />
+                      <div className="absolute right-0 top-10 z-20 w-44 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden">
+                        <button
+                          onClick={handleMoveToSpam}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
+                        >
+                          <SpamIcon className="w-4 h-4" /> Mark as Spam
+                        </button>
+                        <button
+                          onClick={() => { updateMessage(selectedMessage!.id, { folder: 'TRASH' }); setSelectedMessage(null); setShowMessageMenu(false); }}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" /> Move to Trash
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -412,19 +480,36 @@ export default function MailboxPage() {
                 )}
               </div>
 
-              {selectedMessage.hasAttachments && (
+              {selectedMessage.hasAttachments && selectedMessage.attachments && selectedMessage.attachments.length > 0 && (
                 <div className="pt-4 border-t border-gray-100">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Attachments</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">
+                    Attachments ({selectedMessage.attachments.length})
+                  </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-indigo-200 hover:shadow-sm transition-all cursor-pointer">
-                      <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center shrink-0">
-                        <Paperclip className="w-4 h-4 text-indigo-600" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">proposal_node.pdf</p>
-                        <p className="text-[11px] text-gray-400">1.2 MB · PDF</p>
-                      </div>
-                    </div>
+                    {selectedMessage.attachments.map((att, i) => {
+                      const Icon = getAttachmentIcon(att.filename);
+                      const isImage = att.contentType?.startsWith('image/');
+                      const sizeLabel = att.size
+                        ? att.size > 1024 * 1024
+                          ? `${(att.size / (1024 * 1024)).toFixed(1)} MB`
+                          : `${Math.round(att.size / 1024)} KB`
+                        : null;
+                      const ext = att.filename.split('.').pop()?.toUpperCase() || 'FILE';
+                      return (
+                        <div key={i} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-indigo-200 hover:shadow-sm transition-all">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isImage ? 'bg-purple-50' : 'bg-indigo-50'}`}>
+                            <Icon className={`w-4 h-4 ${isImage ? 'text-purple-600' : 'text-indigo-600'}`} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{att.filename}</p>
+                            <p className="text-[11px] text-gray-400">
+                              {[sizeLabel, ext].filter(Boolean).join(' · ')}
+                            </p>
+                          </div>
+                          <Paperclip className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -466,7 +551,7 @@ export default function MailboxPage() {
 
       {/* Compose Modal */}
       {showCompose && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
             className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
             onClick={() => setShowCompose(false)}

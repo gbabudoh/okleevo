@@ -250,28 +250,32 @@ export default function SuppliersPage() {
       </div>
 
       {/* ── Category Pills ── */}
-      <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
-        {categories.map(cat => {
-          const Icon = cat.icon;
-          const active = selectedCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                active
-                  ? 'bg-gray-900 text-white shadow-md'
-                  : 'bg-white border border-gray-100 text-gray-500 hover:border-gray-200 hover:text-gray-700'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {cat.name}
-              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                {cat.count}
-              </span>
-            </button>
-          );
-        })}
+      <div className="relative">
+        <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar-x">
+          {categories.map(cat => {
+            const Icon = cat.icon;
+            const active = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                  active
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'bg-white border border-gray-100 text-gray-500 hover:border-gray-200 hover:text-gray-700'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {cat.name}
+                <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                  {cat.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {/* Right fade to indicate more content */}
+        <div className="pointer-events-none absolute right-0 top-0 h-[calc(100%-8px)] w-16 bg-linear-to-l from-slate-50 to-transparent" />
       </div>
 
       {/* ── Supplier Grid / List ── */}

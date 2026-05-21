@@ -40,12 +40,19 @@ interface Employee {
 }
 
 const departmentConfigs = [
-  { id: 'all', name: 'All', icon: Grid },
-  { id: 'engineering', name: 'Engineering', icon: Laptop },
-  { id: 'design', name: 'Design', icon: Award },
-  { id: 'marketing', name: 'Marketing', icon: Target },
-  { id: 'sales', name: 'Sales', icon: TrendingUp },
-  { id: 'hr', name: 'HR', icon: Users },
+  { id: 'all',                name: 'All',                              icon: Grid },
+  { id: 'engineering',        name: 'Engineering',                      icon: Laptop },
+  { id: 'design',             name: 'Design',                           icon: Award },
+  { id: 'marketing',          name: 'Marketing',                        icon: Target },
+  { id: 'sales',              name: 'Sales',                            icon: TrendingUp },
+  { id: 'hr',                 name: 'HR / People & Culture',            icon: Users },
+  { id: 'product',            name: 'Product Management',               icon: Briefcase },
+  { id: 'customer-support',   name: 'Customer Support / Success',       icon: MessageSquare },
+  { id: 'operations',         name: 'Operations',                       icon: RefreshCw },
+  { id: 'finance',            name: 'Finance & Accounting',             icon: DollarSign },
+  { id: 'it',                 name: 'IT / Infrastructure',              icon: Database },
+  { id: 'legal',              name: 'Legal & Compliance',               icon: Shield },
+  { id: 'data',               name: 'Data & Analytics',                 icon: Activity },
 ];
 
 const AVATAR_GRADIENTS = [
@@ -219,19 +226,22 @@ export default function HRRecordsPage() {
       </div>
 
       {/* ── Department Pills ── */}
-      <div className="-mx-4 sm:mx-0 flex items-center gap-2 overflow-x-auto px-4 sm:px-0 pb-1 hide-scrollbar">
-        {departments.map(dept => {
-          const Icon = dept.icon;
-          const isActive = selectedDepartment === dept.id;
-          return (
-            <button key={dept.id} onClick={() => setSelectedDepartment(dept.id)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide whitespace-nowrap shrink-0 transition-all cursor-pointer border ${isActive ? 'bg-gray-900 border-gray-900 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-400 hover:text-purple-600'}`}>
-              <Icon className="w-3.5 h-3.5 shrink-0" />
-              <span>{dept.name}</span>
-              <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>{dept.count}</span>
-            </button>
-          );
-        })}
+      <div className="relative">
+        <div className="-mx-4 sm:mx-0 flex items-center gap-2 overflow-x-auto px-4 sm:px-0 pb-2 custom-scrollbar-x">
+          {departments.map(dept => {
+            const Icon = dept.icon;
+            const isActive = selectedDepartment === dept.id;
+            return (
+              <button key={dept.id} onClick={() => setSelectedDepartment(dept.id)}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide whitespace-nowrap shrink-0 transition-all cursor-pointer border ${isActive ? 'bg-gray-900 border-gray-900 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-400 hover:text-purple-600'}`}>
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{dept.name}</span>
+                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>{dept.count}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="pointer-events-none absolute right-0 top-0 h-[calc(100%-8px)] w-16 bg-linear-to-l from-slate-50 to-transparent" />
       </div>
 
       {/* ── Grid View ── */}

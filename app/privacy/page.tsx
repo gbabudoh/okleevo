@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { Shield, Lock, Eye, FileText, Mail } from "lucide-react";
 
@@ -247,6 +248,34 @@ export default function PrivacyPage() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="py-12 px-6 bg-gray-900 text-gray-300">
+        <div className="max-w-7xl mx-auto text-center">
+          <Link href="/" className="flex items-center justify-center gap-2 mb-4">
+            <Image
+              src="/logo.png"
+              alt="Okleevo"
+              width={150}
+              height={40}
+              className="h-10 w-auto"
+            />
+          </Link>
+          <p className="text-gray-500 mb-4">Everything included. 10 User Seats Included.</p>
+          <p className="text-gray-400 mb-6">
+            The all-in-one business platform designed specifically for UK SMEs
+          </p>
+          <div className="flex justify-center gap-6 text-sm">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/guide" className="hover:text-white transition-colors">User Guide</Link>
+            <Link href="/support" className="hover:text-white transition-colors">Support</Link>
+          </div>
+          <p className="mt-6 text-sm text-gray-500">
+            © 2025 Okleevo. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

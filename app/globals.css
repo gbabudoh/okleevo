@@ -63,6 +63,25 @@
   background-color: rgba(107, 114, 128, 0.6);
 }
 
+/* Horizontal scrollbar for pill/tab rows */
+.custom-scrollbar-x::-webkit-scrollbar {
+  height: 4px;
+}
+.custom-scrollbar-x::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar-x::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 20px;
+}
+.custom-scrollbar-x::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.7);
+}
+.custom-scrollbar-x {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
 /* ── LiveKit mobile-first control buttons ── */
 .lk-mobile-btn {
   display: flex;
