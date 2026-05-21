@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save to MailboxMessage so the Sent folder is populated
-    prisma.mailboxMessage.create({
+    await prisma.mailboxMessage.create({
       data: {
         businessId,
         messageId: result.messageId || `sent-${Date.now()}`,
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
         folder: 'SENT',
         status: 'READ',
       },
-    }).catch((err: unknown) => console.warn('MailboxMessage SENT log failed:', err));
+    });
 
     // Notify team via Mattermost (fire-and-forget)
     notifyEmailSent({
