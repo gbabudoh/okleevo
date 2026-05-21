@@ -1,4 +1,4 @@
-import { Subscription } from '@prisma/client';
+import { Subscription } from '@/lib/prisma-client';
 
 /**
  * Trial period in days

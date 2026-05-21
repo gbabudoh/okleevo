@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -38,7 +40,7 @@ const AVATAR_GRADIENTS = [
   'from-fuchsia-500 to-purple-600',
 ];
 
-export default function CollaborationHub() {
+function CollaborationHubInner() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -458,5 +460,13 @@ export default function CollaborationHub() {
         </>
       )}
     </div>
+  );
+}
+
+export default function CollaborationHub() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="animate-pulse text-gray-400 text-sm font-bold uppercase tracking-widest">Loading collaboration…</div></div>}>
+      <CollaborationHubInner />
+    </Suspense>
   );
 }

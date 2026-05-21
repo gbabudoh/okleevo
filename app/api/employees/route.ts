@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { syncSubscriptionWithSeats } from '@/lib/stripe/per-seat-billing';
 import { getAuthenticatedUserId } from '@/lib/multi-tenancy';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@/lib/prisma-client';
 
 export const runtime = 'nodejs';
 
