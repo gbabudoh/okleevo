@@ -72,6 +72,96 @@ const blankBooking = () => ({
   location: '', notes: '',
 });
 
+const BookingFormFields = ({
+  data, onChange,
+}: {
+  data: ReturnType<typeof blankBooking> | Booking;
+  onChange: (patch: Partial<Booking>) => void;
+}) => (
+  <div className="space-y-2 sm:space-y-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Client Name *</label>
+        <input type="text" value={data.client} onChange={e => onChange({ client: e.target.value })}
+          className={inputCls} placeholder="e.g. John Smith" />
+      </div>
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Email *</label>
+        <input type="email" value={data.email} onChange={e => onChange({ email: e.target.value })}
+          className={inputCls} placeholder="john@email.com" />
+      </div>
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
+        <input type="tel" value={data.phone || ''} onChange={e => onChange({ phone: e.target.value })}
+          className={inputCls} placeholder="+44 20 ..." />
+      </div>
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Service *</label>
+        <input type="text" value={data.service} onChange={e => onChange({ service: e.target.value })}
+          className={inputCls} placeholder="e.g. Consultation" />
+      </div>
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Date *</label>
+        <input type="date" value={data.date} onChange={e => onChange({ date: e.target.value })}
+          className={inputCls} />
+      </div>
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Time *</label>
+        <input type="time" value={data.time} onChange={e => onChange({ time: e.target.value })}
+          className={inputCls} />
+      </div>
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Duration</label>
+        <select value={data.duration} onChange={e => onChange({ duration: parseInt(e.target.value) })}
+          className={selectCls}>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">60 min</option>
+          <option value="90">90 min</option>
+          <option value="120">2 hours</option>
+        </select>
+      </div>
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Type</label>
+        <select value={data.type} onChange={e => onChange({ type: e.target.value as 'in-person' | 'video' | 'phone' })}
+          className={selectCls}>
+          <option value="video">Video Call</option>
+          <option value="phone">Phone Call</option>
+          <option value="in-person">In-Person</option>
+        </select>
+      </div>
+    </div>
+    {'status' in data && (
+      <div>
+        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+        <select value={(data as Booking).status}
+          onChange={e => onChange({ status: e.target.value as Booking['status'] })}
+          className={selectCls}>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+    )}
+    <div>
+      <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">
+        Location {data.type !== 'in-person' && <span className="text-gray-400 font-normal">(in-person only)</span>}
+      </label>
+      <input type="text" value={data.location || ''}
+        onChange={e => onChange({ location: e.target.value })}
+        disabled={data.type !== 'in-person'}
+        className={`${inputCls} disabled:opacity-40 disabled:cursor-not-allowed`}
+        placeholder="e.g. Room 1" />
+    </div>
+    <div>
+      <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Notes</label>
+      <textarea value={data.notes || ''} onChange={e => onChange({ notes: e.target.value })}
+        className={`${inputCls} h-16 sm:h-20 resize-none`} placeholder="Additional details..." />
+    </div>
+  </div>
+);
+
 export default function BookingPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,97 +242,6 @@ export default function BookingPage() {
   const confirmedCount    = bookings.filter(b => b.status === 'confirmed').length;
   const upcomingCount     = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length;
   const completedCount    = bookings.filter(b => b.status === 'completed').length;
-
-  // Shared form fields renderer to avoid duplication
-  const BookingFormFields = ({
-    data, onChange,
-  }: {
-    data: typeof newBooking | Booking;
-    onChange: (patch: Partial<Booking>) => void;
-  }) => (
-    <div className="space-y-2 sm:space-y-4">
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
-        <div>
-          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Client Name *</label>
-          <input type="text" value={data.client} onChange={e => onChange({ client: e.target.value })}
-            className={inputCls} placeholder="e.g. John Smith" />
-        </div>
-        <div>
-          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Email *</label>
-          <input type="email" value={data.email} onChange={e => onChange({ email: e.target.value })}
-            className={inputCls} placeholder="john@email.com" />
-        </div>
-        <div>
-          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
-          <input type="tel" value={data.phone || ''} onChange={e => onChange({ phone: e.target.value })}
-            className={inputCls} placeholder="+44 20 ..." />
-        </div>
-        <div>
-          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Service *</label>
-          <input type="text" value={data.service} onChange={e => onChange({ service: e.target.value })}
-            className={inputCls} placeholder="e.g. Consultation" />
-        </div>
-        <div>
-          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Date *</label>
-          <input type="date" value={data.date} onChange={e => onChange({ date: e.target.value })}
-            className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Time *</label>
-          <input type="time" value={data.time} onChange={e => onChange({ time: e.target.value })}
-            className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Duration</label>
-          <select value={data.duration} onChange={e => onChange({ duration: parseInt(e.target.value) })}
-            className={selectCls}>
-            <option value="30">30 min</option>
-            <option value="45">45 min</option>
-            <option value="60">60 min</option>
-            <option value="90">90 min</option>
-            <option value="120">2 hours</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Type</label>
-          <select value={data.type} onChange={e => onChange({ type: e.target.value as 'in-person' | 'video' | 'phone' })}
-            className={selectCls}>
-            <option value="video">Video Call</option>
-            <option value="phone">Phone Call</option>
-            <option value="in-person">In-Person</option>
-          </select>
-        </div>
-      </div>
-      {'status' in data && (
-        <div>
-          <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
-          <select value={(data as Booking).status}
-            onChange={e => onChange({ status: e.target.value as Booking['status'] })}
-            className={selectCls}>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
-      )}
-      <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">
-          Location {data.type !== 'in-person' && <span className="text-gray-400 font-normal">(in-person only)</span>}
-        </label>
-        <input type="text" value={data.location || ''}
-          onChange={e => onChange({ location: e.target.value })}
-          disabled={data.type !== 'in-person'}
-          className={`${inputCls} disabled:opacity-40 disabled:cursor-not-allowed`}
-          placeholder="e.g. Room 1" />
-      </div>
-      <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Notes</label>
-        <textarea value={data.notes || ''} onChange={e => onChange({ notes: e.target.value })}
-          className={`${inputCls} h-16 sm:h-20 resize-none`} placeholder="Additional details..." />
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">

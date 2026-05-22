@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Truck, Plus, Search, Filter, Download,
   Star, MapPin, Globe, Building2,
@@ -83,6 +83,95 @@ export default function SuppliersPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
+  const [newSupplierName, setNewSupplierName] = useState('');
+  const [newSupplierCategory, setNewSupplierCategory] = useState('');
+  const [newSupplierContact, setNewSupplierContact] = useState('');
+  const [newSupplierEmail, setNewSupplierEmail] = useState('');
+  const [newSupplierPhone, setNewSupplierPhone] = useState('');
+
+  const fetchSuppliers = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/suppliers');
+      if (res.ok) {
+        const data = await res.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mapped = data.map((s: any): Supplier => ({
+          id: s.id,
+          name: s.name,
+          companyName: s.name,
+          contactPerson: s.contactName || '',
+          email: s.email,
+          phone: s.phone || '',
+          address: s.address || '',
+          city: '',
+          country: '',
+          category: s.category || 'services',
+          status: (s.status?.toLowerCase() || 'active') as Supplier['status'],
+          rating: s.rating || 0,
+          totalOrders: 0,
+          totalSpent: 0,
+          lastOrder: new Date(),
+          paymentTerms: 'Net 30',
+          leadTime: 'N/A',
+          minimumOrder: 0,
+          products: [],
+          performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0, priceCompetitiveness: 0 },
+        }));
+        setSuppliers(mapped);
+      }
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+    }
+  }, []);
+
+  useEffect(() => { fetchSuppliers(); }, [fetchSuppliers]);
+
+  const handleAddSupplier = async () => {
+    if (!newSupplierName || !newSupplierEmail) return;
+    try {
+      const res = await fetch('/api/suppliers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newSupplierName,
+          contactName: newSupplierContact,
+          email: newSupplierEmail,
+          phone: newSupplierPhone,
+          category: newSupplierCategory,
+        }),
+      });
+      if (res.ok) {
+        await fetchSuppliers();
+        setShowAddSupplier(false);
+        setNewSupplierName(''); setNewSupplierCategory(''); setNewSupplierContact(''); setNewSupplierEmail(''); setNewSupplierPhone('');
+        showNotify('Supplier added successfully');
+      } else {
+        const err = await res.json();
+        showNotify(err.error || 'Failed to add supplier', 'error');
+      }
+    } catch {
+      showNotify('Failed to add supplier', 'error');
+    }
+  };
+
+  const handleDeleteSupplier = async () => {
+    if (!deletingSupplier) return;
+    try {
+      const res = await fetch(`/api/suppliers/${deletingSupplier.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchSuppliers();
+        setShowDetailModal(false);
+        setSelectedSupplier(null);
+        showNotify('Supplier removed');
+      } else {
+        showNotify('Failed to remove supplier', 'error');
+      }
+    } catch {
+      showNotify('Failed to remove supplier', 'error');
+    }
+    setShowDeleteModal(false);
+    setDeletingSupplier(null);
+  };
 
   const categories = categoryConfigs.map(cat => ({
     ...cat,
@@ -703,13 +792,13 @@ export default function SuppliersPage() {
               <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Company Name *</label>
-                  <input type="text" placeholder="e.g. Acme Supplies Ltd" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                  <input type="text" value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} placeholder="e.g. Acme Supplies Ltd" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Category</label>
-                    <select className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all">
+                    <select value={newSupplierCategory} onChange={(e) => setNewSupplierCategory(e.target.value)} className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all">
                       <option value="">Select</option>
                       {categoryConfigs.filter(c => c.id !== 'all').map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -718,19 +807,19 @@ export default function SuppliersPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Contact Person *</label>
-                    <input type="text" placeholder="Full name" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                    <input type="text" value={newSupplierContact} onChange={(e) => setNewSupplierContact(e.target.value)} placeholder="Full name" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Email *</label>
-                  <input type="email" placeholder="contact@supplier.com" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                  <input type="email" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} placeholder="contact@supplier.com" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Phone</label>
-                    <input type="tel" placeholder="+44 7000 000000" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                    <input type="tel" value={newSupplierPhone} onChange={(e) => setNewSupplierPhone(e.target.value)} placeholder="+44 7000 000000" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Website</label>
@@ -765,7 +854,7 @@ export default function SuppliersPage() {
                     Cancel
                   </button>
                   <button
-                    onClick={() => { showNotify('Supplier added successfully'); setShowAddSupplier(false); }}
+                    onClick={handleAddSupplier}
                     className="px-6 py-2.5 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer active:scale-95"
                   >
                     Add Supplier
@@ -779,7 +868,7 @@ export default function SuppliersPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => { showNotify('Supplier added successfully'); setShowAddSupplier(false); }}
+                  onClick={handleAddSupplier}
                   className="px-6 py-2.5 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer active:scale-95"
                 >
                   Add Supplier
@@ -1060,12 +1149,7 @@ export default function SuppliersPage() {
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
           onClose={() => { setShowDeleteModal(false); setDeletingSupplier(null); }}
-          onConfirm={() => {
-            setSuppliers(suppliers.filter(s => s.id !== deletingSupplier.id));
-            setShowDetailModal(false);
-            setSelectedSupplier(null);
-            showNotify('Supplier removed');
-          }}
+          onConfirm={handleDeleteSupplier}
           title="Delete Supplier"
           itemName={deletingSupplier.name}
           itemDetails={`${deletingSupplier.contactPerson} · ${deletingSupplier.email}`}

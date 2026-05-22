@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Users, Plus, Search, Filter, Download, Upload,
   DollarSign, Award, TrendingUp, Zap, Building2,
@@ -85,7 +85,94 @@ export default function HRRecordsPage() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [newEmpFirstName, setNewEmpFirstName] = useState('');
   const [newEmpLastName, setNewEmpLastName] = useState('');
+  const [newEmpEmail, setNewEmpEmail] = useState('');
+  const [newEmpPhone, setNewEmpPhone] = useState('');
   const [newEmpType, setNewEmpType] = useState<'full-time' | 'part-time' | 'contract' | 'intern'>('full-time');
+
+  const fetchEmployees = useCallback(async () => {
+    try {
+      const res = await fetch('/api/employees');
+      if (res.ok) {
+        const data = await res.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mapped = (data.users || []).map((u: any): Employee => ({
+          id: u.id,
+          firstName: u.firstName || '',
+          lastName: u.lastName || '',
+          email: u.email,
+          phone: u.phone || '',
+          position: u.role || 'Member',
+          department: 'engineering',
+          employeeId: u.id.slice(0, 8).toUpperCase(),
+          dateOfBirth: new Date(),
+          hireDate: new Date(u.createdAt),
+          status: u.status === 'ACTIVE' ? 'active' : 'inactive',
+          employmentType: 'full-time',
+          salary: 0,
+          address: '',
+          city: '',
+          country: 'UK',
+          emergencyContact: { name: '', relationship: '', phone: '' },
+          skills: [],
+          education: '',
+          performance: { rating: 0, lastReview: new Date(), goals: 0 },
+          benefits: [],
+          documents: [],
+        }));
+        setEmployees(mapped);
+      }
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+    }
+  }, []);
+
+  useEffect(() => { fetchEmployees(); }, [fetchEmployees]);
+
+  const handleAddEmployee = async () => {
+    if (!newEmpFirstName || !newEmpLastName || !newEmpEmail) return;
+    try {
+      const res = await fetch('/api/employees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: newEmpFirstName,
+          lastName: newEmpLastName,
+          email: newEmpEmail,
+          phone: newEmpPhone,
+          role: 'MEMBER',
+        }),
+      });
+      if (res.ok) {
+        await fetchEmployees();
+        setShowAddEmployee(false);
+        resetAddForm();
+        showNotify('Employee added successfully');
+      } else {
+        const err = await res.json();
+        showNotify(err.error || 'Failed to add employee', 'error');
+      }
+    } catch {
+      showNotify('Failed to add employee', 'error');
+    }
+  };
+
+  const handleDeleteEmployee = async () => {
+    if (!deletingEmployee) return;
+    try {
+      const res = await fetch(`/api/employees/${deletingEmployee.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchEmployees();
+        setSelectedEmployee(null);
+        showNotify('Employee removed');
+      } else {
+        showNotify('Failed to remove employee', 'error');
+      }
+    } catch {
+      showNotify('Failed to remove employee', 'error');
+    }
+    setShowDeleteModal(false);
+    setDeletingEmployee(null);
+  };
 
   const departments = departmentConfigs.map(cat => ({
     ...cat,
@@ -146,7 +233,7 @@ export default function HRRecordsPage() {
     return `${years} yr${years > 1 ? 's' : ''}`;
   };
 
-  const resetAddForm = () => { setNewEmpFirstName(''); setNewEmpLastName(''); setNewEmpType('full-time'); };
+  const resetAddForm = () => { setNewEmpFirstName(''); setNewEmpLastName(''); setNewEmpEmail(''); setNewEmpPhone(''); setNewEmpType('full-time'); };
 
   const avatarGradient = (emp: Employee) =>
     AVATAR_GRADIENTS[(emp.firstName.charCodeAt(0) + emp.lastName.charCodeAt(0)) % AVATAR_GRADIENTS.length];
@@ -584,8 +671,8 @@ export default function HRRecordsPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <div><label className="block text-xs font-black text-gray-700 mb-1.5">First Name *</label><input type="text" value={newEmpFirstName} onChange={e => setNewEmpFirstName(e.target.value)} placeholder="Sarah" className={inputCls} /></div>
                       <div><label className="block text-xs font-black text-gray-700 mb-1.5">Last Name *</label><input type="text" value={newEmpLastName} onChange={e => setNewEmpLastName(e.target.value)} placeholder="Johnson" className={inputCls} /></div>
-                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Email *</label><input type="email" placeholder="sarah@company.com" className={inputCls} /></div>
-                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Phone</label><input type="tel" placeholder="+44 7911 123456" className={inputCls} /></div>
+                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Email *</label><input type="email" value={newEmpEmail} onChange={e => setNewEmpEmail(e.target.value)} placeholder="sarah@company.com" className={inputCls} /></div>
+                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Phone</label><input type="tel" value={newEmpPhone} onChange={e => setNewEmpPhone(e.target.value)} placeholder="+44 7911 123456" className={inputCls} /></div>
                     </div>
                   </div>
                   {/* Role */}
@@ -628,7 +715,7 @@ export default function HRRecordsPage() {
                 </div>
                 <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
                   <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="px-5 py-2.5 border border-gray-200 text-sm font-black text-gray-600 rounded-xl hover:bg-gray-50 transition-all cursor-pointer">Cancel</button>
-                  <button onClick={() => { showNotify('Employee added successfully'); setShowAddEmployee(false); resetAddForm(); }}
+                  <button onClick={handleAddEmployee}
                     className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white text-sm font-black rounded-xl hover:bg-purple-700 transition-all cursor-pointer shadow-lg shadow-purple-200">
                     <CheckCircle className="w-4 h-4" />Add Employee
                   </button>
@@ -689,7 +776,7 @@ export default function HRRecordsPage() {
               {/* Mobile buttons inside scroll — extended scroll space */}
               <div className="flex items-center justify-end gap-3 pt-2 pb-32">
                 <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="px-5 py-2.5 border border-gray-200 text-sm font-black text-gray-600 rounded-xl hover:bg-gray-50 transition-all cursor-pointer">Cancel</button>
-                <button onClick={() => { showNotify('Employee added successfully'); setShowAddEmployee(false); resetAddForm(); }}
+                <button onClick={handleAddEmployee}
                   className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white text-sm font-black rounded-xl hover:bg-purple-700 transition-all cursor-pointer shadow-lg shadow-purple-200">
                   <CheckCircle className="w-4 h-4" />Add Employee
                 </button>
@@ -835,7 +922,7 @@ export default function HRRecordsPage() {
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
           onClose={() => { setShowDeleteModal(false); setDeletingEmployee(null); }}
-          onConfirm={() => { setEmployees(employees.filter(e => e.id !== deletingEmployee.id)); setSelectedEmployee(null); showNotify('Employee removed'); }}
+          onConfirm={handleDeleteEmployee}
           title="Remove Employee"
           itemName={`${deletingEmployee.firstName} ${deletingEmployee.lastName}`}
           itemDetails={`${deletingEmployee.position} — ${deletingEmployee.department}`}

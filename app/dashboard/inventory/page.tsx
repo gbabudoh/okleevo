@@ -93,6 +93,7 @@ export default function InventoryPage() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showScanOverlay, setShowScanOverlay] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+  const [newItem, setNewItem] = useState({ name: '', sku: '', category: '', quantity: '', unit: 'pcs', unitPrice: '', location: '', minStock: '', maxStock: '' });
 
   const dynamicCategories = [
     { id: 'all', name: 'All Items', icon: Grid, count: items.length },
@@ -117,6 +118,56 @@ export default function InventoryPage() {
   const showNotify = (message: string, type: 'success' | 'info' = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleAddItem = async () => {
+    if (!newItem.name || !newItem.quantity) return;
+    try {
+      const res = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newItem.name,
+          sku: newItem.sku || undefined,
+          category: newItem.category || undefined,
+          quantity: Number(newItem.quantity),
+          unit: newItem.unit,
+          price: Number(newItem.unitPrice) || 0,
+          location: newItem.location || undefined,
+          minQuantity: Number(newItem.minStock) || 5,
+          maxQuantity: Number(newItem.maxStock) || 100,
+          reorderPoint: Number(newItem.minStock) || 5,
+        }),
+      });
+      if (res.ok) {
+        await fetchInventory();
+        setShowAddItem(false);
+        setNewItem({ name: '', sku: '', category: '', quantity: '', unit: 'pcs', unitPrice: '', location: '', minStock: '', maxStock: '' });
+        showNotify('Item added to inventory');
+      } else {
+        showNotify('Failed to add item', 'info');
+      }
+    } catch {
+      showNotify('Failed to add item', 'info');
+    }
+  };
+
+  const handleDeleteItem = async () => {
+    if (!deletingItem) return;
+    try {
+      const res = await fetch(`/api/inventory/${deletingItem.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchInventory();
+        setSelectedItem(null);
+        showNotify('Item deleted successfully');
+      } else {
+        showNotify('Failed to delete item', 'info');
+      }
+    } catch {
+      showNotify('Failed to delete item', 'info');
+    }
+    setShowDeleteModal(false);
+    setDeletingItem(null);
   };
 
   const filteredItems = items.filter(item => {
@@ -787,18 +838,18 @@ export default function InventoryPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2 sm:col-span-1 space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Item Name *</label>
-                    <input type="text" placeholder="e.g. Blue T-Shirt (Size M)" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
+                    <input type="text" value={newItem.name} onChange={(e) => setNewItem({...newItem, name: e.target.value})} placeholder="e.g. Blue T-Shirt (Size M)" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">SKU</label>
-                    <input type="text" placeholder="Auto-generated" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-mono font-bold text-indigo-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all uppercase" />
+                    <input type="text" value={newItem.sku} onChange={(e) => setNewItem({...newItem, sku: e.target.value})} placeholder="Auto-generated" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-mono font-bold text-indigo-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all uppercase" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Category</label>
-                    <select className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all">
+                    <select value={newItem.category} onChange={(e) => setNewItem({...newItem, category: e.target.value})} className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all">
                       <option value="">Select</option>
                       {dynamicCategories.filter(c => c.id !== 'all').map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -807,11 +858,11 @@ export default function InventoryPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Quantity *</label>
-                    <input type="number" placeholder="0" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
+                    <input type="number" value={newItem.quantity} onChange={(e) => setNewItem({...newItem, quantity: e.target.value})} placeholder="0" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Unit</label>
-                    <select className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all">
+                    <select value={newItem.unit} onChange={(e) => setNewItem({...newItem, unit: e.target.value})} className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all">
                       <option value="pcs">pcs</option>
                       <option value="kg">kg</option>
                       <option value="units">units</option>
@@ -825,11 +876,13 @@ export default function InventoryPage() {
                       <DollarSign className="w-3 h-3" />
                       Unit Price *
                     </p>
-                    <p className="text-lg font-black text-white">£0.00</p>
+                    <p className="text-lg font-black text-white">£{Number(newItem.unitPrice || 0).toFixed(2)}</p>
                   </div>
                   <input
                     type="number"
                     step="0.01"
+                    value={newItem.unitPrice}
+                    onChange={(e) => setNewItem({...newItem, unitPrice: e.target.value})}
                     placeholder="0.00"
                     className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white placeholder:text-gray-500 focus:outline-none focus:border-indigo-500 transition-all"
                   />
@@ -842,18 +895,18 @@ export default function InventoryPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Storage Location</label>
-                    <input type="text" placeholder="e.g. Shelf A, Row 3" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
+                    <input type="text" value={newItem.location} onChange={(e) => setNewItem({...newItem, location: e.target.value})} placeholder="e.g. Shelf A, Row 3" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Min. Stock</label>
-                    <input type="number" placeholder="5" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
+                    <input type="number" value={newItem.minStock} onChange={(e) => setNewItem({...newItem, minStock: e.target.value})} placeholder="5" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Max. Stock</label>
-                    <input type="number" placeholder="100" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
+                    <input type="number" value={newItem.maxStock} onChange={(e) => setNewItem({...newItem, maxStock: e.target.value})} placeholder="100" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
                   </div>
                 </div>
 
@@ -866,7 +919,7 @@ export default function InventoryPage() {
                     Cancel
                   </button>
                   <button
-                    onClick={() => { showNotify('Item added to inventory'); setShowAddItem(false); }}
+                    onClick={handleAddItem}
                     className="px-6 py-2.5 bg-gray-900 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-indigo-600 transition-all cursor-pointer active:scale-95"
                   >
                     Add Item
@@ -883,7 +936,7 @@ export default function InventoryPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => { showNotify('Item added to inventory'); setShowAddItem(false); }}
+                  onClick={handleAddItem}
                   className="px-6 py-2.5 bg-gray-900 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-indigo-600 transition-all cursor-pointer active:scale-95"
                 >
                   Add Item
@@ -899,11 +952,7 @@ export default function InventoryPage() {
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
           onClose={() => { setShowDeleteModal(false); setDeletingItem(null); }}
-          onConfirm={() => {
-            setItems(items.filter(item => item.id !== deletingItem.id));
-            setSelectedItem(null);
-            showNotify('Item deleted successfully');
-          }}
+          onConfirm={handleDeleteItem}
           title="Delete Inventory Item"
           itemName={deletingItem.name}
           itemDetails={`SKU: ${deletingItem.sku} - Qty: ${deletingItem.quantity} ${deletingItem.unit}`}

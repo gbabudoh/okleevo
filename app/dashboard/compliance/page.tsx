@@ -119,6 +119,36 @@ export default function CompliancePage() {
   const [sharingFramework, setSharingFramework] = useState<ComplianceFramework | null>(null);
   const [showShareFrameworkModal, setShowShareFrameworkModal] = useState(false);
 
+  const fetchCompliance = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/compliance');
+      if (res.ok) {
+        const data = await res.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mapped = data.map((item: any): ComplianceItem => ({
+          id: item.id,
+          title: item.title,
+          description: item.description || '',
+          category: item.category || 'operational',
+          priority: 'medium',
+          status: item.status as ComplianceItem['status'],
+          dueDate: new Date(item.dueDate),
+          completedDate: item.completedAt ? new Date(item.completedAt) : undefined,
+          assignedTo: 'General Team',
+          documents: [],
+          requirements: ['Initial review required'],
+          frequency: 'annually',
+          riskLevel: 25,
+        }));
+        setItems(mapped);
+      }
+    } catch (error) {
+      console.error('Error fetching compliance items:', error);
+    }
+  }, []);
+
+  React.useEffect(() => { fetchCompliance(); }, [fetchCompliance]);
+
   const showNotification = (message: string) => {
     setSuccessMessage(message);
     setShowSuccess(true);
@@ -187,31 +217,65 @@ export default function CompliancePage() {
     showNotification(`✓ Exported: ${item.title}`);
   };
   const handleShare = (item: ComplianceItem) => { setSharingItem(item); setShowShareModal(true); };
-  const handleDelete = (item: ComplianceItem) => {
+  const handleDelete = async (item: ComplianceItem) => {
     if (confirm(`Delete "${item.title}"? This cannot be undone.`)) {
-      setItems(items.filter(i => i.id !== item.id));
-      showNotification(`✓ Deleted: ${item.title}`);
+      try {
+        const res = await fetch(`/api/compliance/${item.id}`, { method: 'DELETE' });
+        if (res.ok) {
+          await fetchCompliance();
+          showNotification(`✓ Deleted: ${item.title}`);
+        } else {
+          showNotification('Failed to delete item');
+        }
+      } catch {
+        showNotification('Failed to delete item');
+      }
     }
   };
-  const handleMarkComplete = (item: ComplianceItem) => {
-    setItems(items.map(i => i.id === item.id ? { ...i, status: 'compliant' as const, completedDate: new Date() } : i));
-    setSelectedItem(null);
-    showNotification(`✓ Marked as complete: ${item.title}`);
+  const handleMarkComplete = async (item: ComplianceItem) => {
+    try {
+      const res = await fetch(`/api/compliance/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      });
+      if (res.ok) {
+        await fetchCompliance();
+        setSelectedItem(null);
+        showNotification(`✓ Marked as complete: ${item.title}`);
+      } else {
+        showNotification('Failed to update status');
+      }
+    } catch {
+      showNotification('Failed to update status');
+    }
   };
-  const handleCreateItem = () => {
+  const handleCreateItem = async () => {
     if (!newItemData.title) return;
-    const newItem: ComplianceItem = {
-      id: Math.random().toString(36).substr(2, 9),
-      title: newItemData.title, description: newItemData.description,
-      category: newItemData.category, priority: newItemData.priority,
-      status: 'pending', dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      assignedTo: newItemData.assignedTo, documents: [], requirements: ['Initial review required'],
-      frequency: 'annually', riskLevel: 25
-    };
-    setItems([newItem, ...items]);
-    setShowAddItem(false);
-    setNewItemData({ title: '', description: '', category: 'data-privacy', priority: 'medium', assignedTo: 'General Team' });
-    showNotification(`✓ Created: ${newItem.title}`);
+    try {
+      const res = await fetch('/api/compliance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newItemData.title,
+          description: newItemData.description,
+          category: newItemData.category,
+          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          priority: newItemData.priority,
+          assignedTo: newItemData.assignedTo,
+        }),
+      });
+      if (res.ok) {
+        await fetchCompliance();
+        setShowAddItem(false);
+        setNewItemData({ title: '', description: '', category: 'data-privacy', priority: 'medium', assignedTo: 'General Team' });
+        showNotification(`✓ Created: ${newItemData.title}`);
+      } else {
+        showNotification('Failed to create item');
+      }
+    } catch {
+      showNotification('Failed to create item');
+    }
   };
   const handleEditFramework = (framework: ComplianceFramework) => { setEditingFramework(framework); setShowEditFrameworkModal(true); };
   const handleShareFramework = (framework: ComplianceFramework) => { setSharingFramework(framework); setShowShareFrameworkModal(true); };
