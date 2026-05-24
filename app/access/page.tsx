@@ -53,7 +53,8 @@ function AccessContent() {
         setError('Invalid email or password');
       } else {
         // result.ok === true, or undefined in some NextAuth v5 flows — both mean success
-        window.location.href = '/dashboard';
+        const callbackUrl = searchParams.get('callbackUrl');
+        window.location.href = callbackUrl && callbackUrl.startsWith('/') ? callbackUrl : '/dashboard';
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in. Please try again.');

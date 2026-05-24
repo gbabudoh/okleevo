@@ -39,8 +39,10 @@ export async function proxy(request: NextRequest) {
     request.cookies.get('__Secure-authjs.session-token')?.value;
 
   if (!sessionToken) {
+    const callbackUrl = pathname + (request.nextUrl.search || '');
     const url = request.nextUrl.clone();
     url.pathname = '/access';
+    url.search = `?callbackUrl=${encodeURIComponent(callbackUrl)}`;
     return NextResponse.redirect(url);
   }
 
