@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -62,6 +62,7 @@ export default function OnboardingPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,13 +72,10 @@ export default function OnboardingPage() {
     try {
       const response = await fetch('/api/onboarding', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
-      // Check if response is JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
@@ -87,14 +85,18 @@ export default function OnboardingPage() {
 
       const data = await response.json();
 
+      if (response.status === 409) {
+        window.location.href = '/access?exists=true';
+        return;
+      }
+
       if (!response.ok) {
         const errorMessage = data.error || data.message || 'Registration failed';
         const errorDetails = data.details ? ` Details: ${JSON.stringify(data.details)}` : '';
         throw new Error(errorMessage + errorDetails);
       }
 
-      // Success - move to success step
-      setStep(5);
+      setShowSuccessModal(true);
     } catch (error: unknown) {
       console.error('Registration error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create account. Please try again.';
@@ -126,8 +128,7 @@ export default function OnboardingPage() {
            </Link>
         </div>
 
-        {step <= totalSteps && (
-          <div className="flex justify-end mb-12">
+        <div className="flex justify-end mb-12">
             <div className="bg-gray-100/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200/50 flex items-center gap-3">
               <span className="text-sm font-semibold text-gray-500">
                 Step {step} of {totalSteps}
@@ -142,7 +143,6 @@ export default function OnboardingPage() {
               </div>
             </div>
           </div>
-        )}
 
         {/* Content Container */}
         <div className="mt-8 md:mt-4">
@@ -226,9 +226,9 @@ export default function OnboardingPage() {
                         >
                           <option value="">Number of employees</option>
                            <option value="1-5">1 - 5 employees</option>
-                           <option value="1-10">1 - 10 employees</option>
-                           <option value="1-25">1 - 25 employees</option>
-                           <option value="1-50">1 - 50 employees</option>
+                           <option value="6-10">6 - 10 employees</option>
+                           <option value="11-25">11 - 25 employees</option>
+                           <option value="26-50">26 - 50 employees</option>
                            <option value="50+">50+ employees</option>
                         </select>
                         <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -549,54 +549,60 @@ export default function OnboardingPage() {
               </motion.div>
             )}
 
-            {/* Step 5: Success */}
-            {step === 5 && (
-              <motion.div
-                key="step5"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-center py-8"
-              >
-                <div className="w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center bg-emerald-50 border-4 border-emerald-100">
-                  <CheckCircle2 className="w-12 h-12 text-emerald-500" strokeWidth={3} />
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">
-                  Welcome to Okleevo!
-                </h2>
-                <p className="text-xl text-gray-500 mb-10 font-medium">
-                  Your account has been created successfully
-                </p>
-                <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 mb-10 inline-block w-full max-w-sm">
-                  <p className="text-gray-600 mb-2 font-medium">
-                    You can now sign in with:
-                  </p>
-                  <p className="font-bold text-gray-900 text-lg">{formData.email}</p>
-                </div>
-                <div>
-                   <Link
-                    href="/access"
-                    className="group inline-flex items-center justify-center gap-2 px-10 py-5 rounded-2xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all bg-gradient-to-r from-orange-500 to-[#ff8c42]"
-                   >
-                    Sign In to Continue
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </motion.div>
-            )}
           </AnimatePresence>
         </div>
 
         {/* Sign In Link */}
-        {step <= totalSteps && (
-          <p className="text-center mt-10 text-gray-400 text-sm font-medium">
-            Already have an account?{" "}
-            <Link href="/access" className="font-bold text-gray-900 hover:text-orange-500 transition-colors ml-1">
-              Sign In
-            </Link>
-          </p>
-        )}
+        <p className="text-center mt-10 text-gray-400 text-sm font-medium">
+          Already have an account?{" "}
+          <Link href="/access" className="font-bold text-gray-900 hover:text-orange-500 transition-colors ml-1">
+            Sign In
+          </Link>
+        </p>
       </motion.div>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-10 max-w-md w-full text-center"
+            >
+              <div className="w-20 h-20 rounded-full bg-emerald-50 border-4 border-emerald-100 flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="w-10 h-10 text-emerald-500" strokeWidth={2.5} />
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">
+                Registration Successful!
+              </h2>
+              <p className="text-gray-500 font-medium mb-1">
+                Your account has been created.
+              </p>
+              <p className="text-gray-500 font-medium mb-8">
+                Now login to access your dashboard.
+              </p>
+              <div className="bg-gray-50 rounded-2xl px-5 py-3 mb-8 text-sm text-gray-600">
+                Signed up as <span className="font-bold text-gray-900">{formData.email}</span>
+              </div>
+              <Link
+                href="/access?registered=true"
+                className="group inline-flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-white font-bold text-lg bg-gradient-to-r from-orange-500 to-[#ff8c42] shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
+              >
+                Login to Dashboard
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -82,40 +82,17 @@ export default function SettingsPage() {
   const [editingUser, setEditingUser] = useState<TeamMember | null>(null);
 
   // Billing states
-  interface BillingInfo {
+  interface SubInfo {
     status: string;
-    plan: {
-      name: string;
-      amount: number;
-      currency: string;
-      interval: string;
-    };
-    currentPeriodEnd: string;
-  }
-
-  interface PaymentMethod {
-    id: string;
-    isDefault: boolean;
-    card: {
-      brand: string;
-      last4: string;
-      expMonth: number;
-      expYear: number;
-    };
-  }
-
-  interface Invoice {
-    id: string;
-    number: string;
-    periodStart: string;
+    isActive: boolean;
+    daysLeft: number | null;
+    trialEnd: string | null;
+    currentPeriodEnd: string | null;
+    cancelAtPeriodEnd: boolean;
     amount: number;
-    status: string;
-    invoicePdf: string;
   }
 
-  const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [subInfo, setSubInfo] = useState<SubInfo | null>(null);
   const [loadingBilling, setLoadingBilling] = useState(false);
   
   // Presence tracking
@@ -209,24 +186,10 @@ export default function SettingsPage() {
   async function fetchBillingInfo() {
     setLoadingBilling(true);
     try {
-      const [subRes, pmRes, invRes] = await Promise.all([
-        fetch('/app/billing/subscription'),
-        fetch('/app/billing/payment-method'),
-        fetch('/app/billing/invoices?limit=5')
-      ]);
-
-      if (subRes.ok) setBillingInfo(await subRes.json());
-      if (pmRes.ok) {
-        const pmData = await pmRes.json();
-        setPaymentMethods(pmData.data || []);
-      }
-      if (invRes.ok) {
-        const invData = await invRes.json();
-        setInvoices(invData.data || []);
-      }
+      const res = await fetch('/api/billing/status');
+      if (res.ok) setSubInfo(await res.json());
     } catch (error) {
       console.error('Error fetching billing info:', error);
-      showToast('Failed to load billing information', 'error');
     } finally {
       setLoadingBilling(false);
     }
@@ -599,7 +562,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-gray-600">Plan</span>
-                    <span className="font-black text-indigo-600">Pro Enterprise</span>
+                    <span className="font-black text-orange-600">£9.99/mo</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-gray-600">Verified</span>
@@ -1123,142 +1086,104 @@ export default function SettingsPage() {
 
       {/* Billing Tab */}
       {activeTab === 'billing' && (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {loadingBilling ? (
-            <div className="bg-white rounded-xl p-12 text-center border-2 border-gray-100">
-               <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
-               <p className="text-gray-500 font-medium">Fetching secure billing data...</p>
+            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
+              <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-gray-500 font-medium">Loading subscription details...</p>
             </div>
           ) : (
             <>
-              {/* Current Plan */}
-              <div className="bg-linear-to-br from-indigo-500 to-purple-500 rounded-xl p-6 text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
+              {/* Plan card */}
+              <div className="bg-linear-to-br from-orange-500 to-[#ff8c42] rounded-2xl p-8 text-white shadow-lg shadow-orange-500/20">
+                <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-2xl font-bold">{billingInfo?.plan?.name || 'All-in-One Plan'}</h2>
-                    <p className="text-indigo-100">
-                      {billingInfo?.status === 'active' ? 'Billed monthly' : `Status: ${billingInfo?.status || 'Unknown'}`}
-                    </p>
+                    <p className="text-orange-100 text-xs font-bold uppercase tracking-widest mb-1">Monthly Plan</p>
+                    <h2 className="text-4xl font-black tracking-tight">£9.99</h2>
+                    <p className="text-orange-100 text-sm mt-1">per month · cancel anytime</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-4xl font-bold">
-                      £{((billingInfo?.plan?.amount || 1999) / 100).toFixed(2)}
-                    </p>
-                    <p className="text-indigo-100">per {billingInfo?.plan?.interval || 'month'}</p>
+                  <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+                    <CreditCard className="w-7 h-7 text-white" />
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <button 
+
+                {/* Status pill */}
+                <div className="mt-6">
+                  {subInfo?.status === 'TRIAL' && subInfo.isActive && (
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-xl text-sm font-bold">
+                      <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                      Free trial · {subInfo.daysLeft === 1 ? '1 day' : `${subInfo.daysLeft} days`} remaining
+                    </div>
+                  )}
+                  {subInfo?.status === 'ACTIVE' && (
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-xl text-sm font-bold">
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                      Active
+                      {subInfo.currentPeriodEnd && !subInfo.cancelAtPeriodEnd &&
+                        ` · renews ${new Date(subInfo.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                      {subInfo.cancelAtPeriodEnd && subInfo.currentPeriodEnd &&
+                        ` · cancels ${new Date(subInfo.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                    </div>
+                  )}
+                  {(!subInfo || subInfo.status === 'NONE') && (
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-xl text-sm font-bold">
+                      No active subscription
+                    </div>
+                  )}
+                  {subInfo && (subInfo.status === 'CANCELED' || subInfo.status === 'PAST_DUE') && (
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/30 rounded-xl text-sm font-bold">
+                      {subInfo.status === 'PAST_DUE' ? 'Payment failed' : 'Cancelled'}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
                     type="button"
                     onClick={handleOpenPortal}
-                    className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all cursor-pointer shadow-md"
+                    className="px-5 py-2.5 bg-white text-orange-600 font-bold rounded-xl hover:bg-orange-50 transition-all cursor-pointer text-sm shadow-md"
                   >
-                    Manage Subscription
+                    Manage via Stripe Portal
                   </button>
-                  {billingInfo?.currentPeriodEnd && (
-                    <p className="text-sm text-indigo-100 font-medium">
-                      Next renewal: {new Date(billingInfo.currentPeriodEnd).toLocaleDateString()}
-                    </p>
+                  {(!subInfo || !subInfo.isActive) && subInfo?.status !== 'ACTIVE' && (
+                    <a
+                      href="/billing"
+                      className="px-5 py-2.5 bg-white/20 text-white font-bold rounded-xl hover:bg-white/30 transition-all text-sm border border-white/30"
+                    >
+                      Subscribe · £9.99/mo
+                    </a>
                   )}
                 </div>
               </div>
 
-              {/* Payment Method */}
-              <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-indigo-500" />
-                  Payment Method
-                </h2>
-                <div className="space-y-3">
-                  {paymentMethods.length > 0 ? (
-                    paymentMethods.map((pm) => (
-                      <div key={pm.id} className={`flex items-center justify-between p-4 rounded-xl border-2 ${pm.isDefault ? 'bg-indigo-50 border-indigo-200' : 'bg-gray-50 border-gray-100'}`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${pm.isDefault ? 'bg-indigo-500' : 'bg-gray-400'}`}>
-                            <CreditCard className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <h3 className={`font-bold ${pm.isDefault ? 'text-indigo-900' : 'text-gray-900'}`}>
-                              {pm.card.brand.toUpperCase()} ending in {pm.card.last4}
-                            </h3>
-                            <p className={`text-sm ${pm.isDefault ? 'text-indigo-700' : 'text-gray-600'}`}>
-                              Expires {pm.card.expMonth}/{pm.card.expYear}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {pm.isDefault && (
-                            <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">Default</span>
-                          )}
-                          <button 
-                            type="button"
-                            onClick={handleOpenPortal}
-                            className="p-2 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Edit3 className="w-4 h-4 text-indigo-600" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-8 text-center bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                      <p className="text-gray-500 font-medium">No payment methods found</p>
+              {/* What's included */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                <h3 className="text-base font-black text-gray-900 mb-4 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-orange-500" />
+                  What's included
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    'Invoicing & Accounting', 'CRM & Customer Management',
+                    'AI Content & Notes', 'HR Records & Compliance',
+                    'Inventory & Suppliers', 'Helpdesk & Forms',
+                    'Email Campaigns', 'E-Signature & Micro Pages',
+                    'KPI Dashboard & Cashflow', '20+ integrated modules',
+                  ].map(f => (
+                    <div key={f} className="flex items-center gap-2 text-sm text-gray-700">
+                      <Check className="w-4 h-4 text-orange-500 shrink-0" />
+                      {f}
                     </div>
-                  )}
-                  <button 
-                    type="button"
-                    onClick={handleOpenPortal}
-                    className="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-700 font-medium rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Plus className="w-5 h-5" />
-                    Manage Payment Methods
-                  </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Billing History */}
-              <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-indigo-500" />
-                  Billing History
-                </h2>
-                <div className="space-y-3">
-                  {invoices.length > 0 ? (
-                    invoices.map((inv) => (
-                      <div key={inv.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-5 h-5 text-gray-600" />
-                          <div>
-                            <h3 className="font-semibold text-gray-900">{inv.number}</h3>
-                            <p className="text-sm text-gray-600">{new Date(inv.periodStart).toLocaleDateString()}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="font-bold text-gray-900">£{(inv.amount / 100).toFixed(2)}</span>
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            inv.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                          }`}>
-                            {inv.status.toUpperCase()}
-                          </span>
-                          {inv.invoicePdf && (
-                            <a 
-                              href={inv.invoicePdf}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-                            >
-                              <Download className="w-4 h-4 text-gray-600" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-8 text-center bg-gray-50 rounded-xl">
-                      <p className="text-gray-500 font-medium">No billing history available</p>
-                    </div>
-                  )}
-                </div>
+              {/* Info note */}
+              <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-2xl">
+                <AlertCircle className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-700">
+                  Payment methods, invoices, and billing history are managed securely through the <strong>Stripe Customer Portal</strong>. Click <em>Manage via Stripe Portal</em> above to update your card, download receipts, or cancel your subscription.
+                </p>
               </div>
             </>
           )}

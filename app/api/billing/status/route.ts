@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { createPortalSession } from '@/lib/stripe/billing';
+import { getSubscriptionInfo } from '@/lib/stripe/billing';
 
 export const runtime = 'nodejs';
 
-export async function POST() {
+export async function GET() {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -16,10 +16,10 @@ export async function POST() {
       return NextResponse.json({ error: 'No business found' }, { status: 400 });
     }
 
-    const url = await createPortalSession(businessId);
-    return NextResponse.json({ url });
-  } catch (error: any) {
-    console.error('[Billing] Portal error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to open billing portal' }, { status: 500 });
+    const info = await getSubscriptionInfo(businessId);
+    return NextResponse.json(info);
+  } catch (error) {
+    console.error('[Billing] Status error:', error);
+    return NextResponse.json({ error: 'Failed to fetch subscription status' }, { status: 500 });
   }
 }

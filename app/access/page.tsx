@@ -1,16 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
 import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
-export default function AccessPage() {
+function AccessContent() {
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successBanner, setSuccessBanner] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+      setSuccessBanner('Account created! Sign in below to get started.');
+    } else if (searchParams.get('exists') === 'true') {
+      setSuccessBanner('You already have an account. Sign in below.');
+    }
+  }, [searchParams]);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -40,28 +51,12 @@ export default function AccessPage() {
 
       if (result?.error) {
         setError('Invalid email or password');
-      } else if (result?.ok) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        try {
-          const profileResponse = await fetch('/api/user/profile', { credentials: 'include' });
-          if (profileResponse.ok) {
-            const profileData = await profileResponse.json();
-            if (profileData.role === 'SUPER_ADMIN') {
-              window.location.href = '/admin';
-              return;
-            }
-          }
-        } catch {
-          console.warn('Could not check user role, defaulting to dashboard');
-        }
+      } else {
+        // result.ok === true, or undefined in some NextAuth v5 flows — both mean success
         window.location.href = '/dashboard';
       }
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || 'Failed to sign in. Please try again.');
-      } else {
-        setError('Failed to sign in. Please try again.');
-      }
+      setError(err instanceof Error ? err.message : 'Failed to sign in. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +86,17 @@ export default function AccessPage() {
             <p className="text-base text-gray-500 font-medium">Sign in to manage your entire business.</p>
           </div>
         </div>
+
+        {successBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3"
+          >
+            <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+            <p className="text-sm font-medium text-emerald-700">{successBanner}</p>
+          </motion.div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
@@ -127,7 +133,7 @@ export default function AccessPage() {
                 value={formData.password}
                 onChange={handleInputChange}
                 className="w-full pl-12 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 placeholder:text-gray-400 hover:bg-white hover:border-gray-300"
-                placeholder="Password or 6-digit Code"
+                placeholder="Enter your password"
                 required
               />
               <button
@@ -201,5 +207,13 @@ export default function AccessPage() {
         </form>
       </motion.div>
     </div>
+  );
+}
+
+export default function AccessPage() {
+  return (
+    <Suspense>
+      <AccessContent />
+    </Suspense>
   );
 }

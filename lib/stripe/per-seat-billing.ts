@@ -2,9 +2,8 @@ import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { calculateTrialEndDate, TRIAL_PERIOD_DAYS } from '@/lib/utils/subscription';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
-});
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeKey ? new Stripe(stripeKey, { apiVersion: '2023-10-16' }) : null;
 
 /**
  * Stripe Per-Seat Billing Integration
@@ -31,6 +30,11 @@ export function getPriceIdForSeats(seatCount: number): string {
  * Create or update Stripe subscription with per-seat pricing
  */
 export async function syncSubscriptionWithSeats(businessId: string, seatCount: number) {
+  if (!stripe) {
+    console.warn('Stripe not configured — skipping subscription setup');
+    return;
+  }
+
   const business = await prisma.business.findUnique({
     where: { id: businessId },
     include: { 

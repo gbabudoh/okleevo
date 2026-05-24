@@ -10,7 +10,7 @@ import {
   TrendingUp, FormInput, Calendar, MessageSquare, Mail,
   CheckSquare, Sparkles, FileEdit, BarChart3, Package,
   Truck, UserCheck, PenTool, Globe, Shield, X, Inbox,
-  LogOut, Settings, Building2,
+  LogOut, Settings, Building2, CreditCard,
   LifeBuoy, Rocket, BookOpen, Bell, Cpu, UsersRound, AtSign
 } from 'lucide-react';
 
@@ -44,6 +44,15 @@ interface NotificationItem {
   metadata?: Record<string, string> | string | null;
 }
 
+type SubInfo = { status: string; isActive: boolean; daysLeft: number | null };
+
+interface ChatToastInfo {
+  id: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -57,16 +66,9 @@ export default function DashboardLayout({
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
-
-  // ── Chat Toast Notification State ──
-  interface ChatToastInfo {
-    id: string;
-    senderId: string;
-    senderName: string;
-    content: string;
-  }
   const [activeChatToast, setActiveChatToast] = useState<ChatToastInfo | null>(null);
   const lastSeenChatMsgIdRef = useRef<string | null>(null);
+  const [subInfo, setSubInfo] = useState<SubInfo | null>(null);
 
   // Check for new users to show welcome guide automatically
   useEffect(() => {
@@ -229,6 +231,17 @@ export default function DashboardLayout({
       setActiveChatToast(null);
     }
   }, [notifications]);
+
+  // Fetch subscription status after session is ready
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    const userRole = (session?.user as { role?: string })?.role;
+    if (userRole === 'SUPER_ADMIN') return;
+    fetch('/api/billing/status')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setSubInfo(data); })
+      .catch(() => {});
+  }, [status, session]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -588,6 +601,48 @@ export default function DashboardLayout({
           </div>
         </header>
         
+        {/* Trial warning banner — shown when ≤ 7 days left */}
+        {subInfo?.status === 'TRIAL' && subInfo.isActive && typeof subInfo.daysLeft === 'number' && subInfo.daysLeft <= 7 && (
+          <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 flex items-center justify-between gap-4">
+            <p className="text-sm font-semibold text-amber-800">
+              {subInfo.daysLeft === 0
+                ? 'Your free trial ends today.'
+                : `Your free trial ends in ${subInfo.daysLeft} day${subInfo.daysLeft === 1 ? '' : 's'}.`}
+            </p>
+            <Link
+              href="/billing"
+              className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-colors"
+            >
+              Subscribe · £9.99/mo
+            </Link>
+          </div>
+        )}
+
+        {/* Expired paywall — full-screen overlay */}
+        {subInfo && !subInfo.isActive && subInfo.status !== 'ACTIVE' && subInfo.status !== 'NONE' && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md">
+            <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-10 max-w-md w-full mx-4 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center mx-auto mb-6">
+                <CreditCard className="w-8 h-8 text-orange-500" />
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 mb-2">
+                {subInfo.status === 'CANCELED' ? 'Subscription Cancelled' : 'Your Free Trial Has Ended'}
+              </h2>
+              <p className="text-gray-500 mb-8 leading-relaxed">
+                Subscribe for <span className="font-bold text-gray-900">£9.99/month</span> to keep full access to all 20+ Okleevo modules. Cancel anytime.
+              </p>
+              <Link
+                href="/billing"
+                className="inline-flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-[#ff8c42] text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
+              >
+                <CreditCard className="w-5 h-5" />
+                Subscribe · £9.99/month
+              </Link>
+              <p className="text-xs text-gray-400 mt-4">Secured by Stripe · No lock-in · Cancel anytime</p>
+            </div>
+          </div>
+        )}
+
         {/* Page Content */}
         <main className="p-6 relative z-10">
           {children}

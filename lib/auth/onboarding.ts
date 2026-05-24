@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { getBusinessSizeConfig } from '@/lib/utils/business-size';
-import { syncSubscriptionWithSeats } from '@/lib/stripe/per-seat-billing';
+import { createStripeCustomer, createTrialRecord } from '@/lib/stripe/billing';
 import bcrypt from 'bcryptjs';
 
 /**
@@ -60,13 +60,16 @@ export async function createSMEOnboarding(params: {
     } as any,
   });
 
-  // Step 3: Set up subscription based on business size
-  // Note: We don't fail registration if Stripe setup fails - can be done later
+  // Step 3: Create Stripe customer and 14-day trial (non-critical — registration continues on failure)
   try {
-    await syncSubscriptionWithSeats(business.id, sizeConfig.defaultSeatCount);
+    const stripeCustomerId = await createStripeCustomer({
+      businessId: business.id,
+      email: params.email,
+      businessName: params.businessName,
+    });
+    await createTrialRecord(business.id, stripeCustomerId);
   } catch (error) {
-    console.error('Failed to set up subscription (non-critical):', error);
-    // Continue with registration even if Stripe setup fails
+    console.error('Failed to set up trial (non-critical):', error);
   }
 
   return {

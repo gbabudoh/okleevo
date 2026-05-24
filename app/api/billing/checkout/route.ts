@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { createPortalSession } from '@/lib/stripe/billing';
+import { createCheckoutSession } from '@/lib/stripe/billing';
 
 export const runtime = 'nodejs';
 
@@ -16,10 +16,10 @@ export async function POST() {
       return NextResponse.json({ error: 'No business found' }, { status: 400 });
     }
 
-    const url = await createPortalSession(businessId);
+    const url = await createCheckoutSession(businessId);
     return NextResponse.json({ url });
   } catch (error: any) {
-    console.error('[Billing] Portal error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to open billing portal' }, { status: 500 });
+    console.error('[Billing] Checkout error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to create checkout session' }, { status: 500 });
   }
 }
