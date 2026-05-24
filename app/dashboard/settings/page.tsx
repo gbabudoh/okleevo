@@ -127,8 +127,23 @@ export default function SettingsPage() {
 
   function showToast(message: string, type: 'success' | 'error' = 'success') {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 5000);
   }
+
+  // Handle Stripe return — open billing tab and show outcome toast
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const success = params.get('success');
+    const cancelled = params.get('cancelled');
+    if (tab) setActiveTab(tab);
+    if (success === 'true') showToast('Payment successful! Your subscription is now active.', 'success');
+    if (cancelled === 'true') showToast('Checkout cancelled — no charge was made.', 'error');
+    // Clean the URL without a page reload
+    if (tab || success || cancelled) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   // Fetch user data on component mount
   useEffect(() => {

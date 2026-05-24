@@ -151,8 +151,8 @@ export async function createCheckoutSession(businessId: string): Promise<string>
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [{ price: PRICE_ID, quantity: 1 }],
-    success_url: `${APP_URL}/billing?success=true`,
-    cancel_url: `${APP_URL}/billing?cancelled=true`,
+    success_url: `${APP_URL}/dashboard/settings?tab=billing&success=true`,
+    cancel_url: `${APP_URL}/dashboard/settings?tab=billing&cancelled=true`,
     metadata: { businessId },
     subscription_data: { metadata: { businessId } },
   });
@@ -173,7 +173,7 @@ export async function createPortalSession(businessId: string): Promise<string> {
 
   const session = await stripe.billingPortal.sessions.create({
     customer: sub.stripeCustomerId,
-    return_url: `${APP_URL}/billing`,
+    return_url: `${APP_URL}/dashboard/settings?tab=billing`,
   });
 
   return session.url;
