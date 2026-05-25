@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize';
 import {
   Mail, Trash2, Search, RefreshCw, Star,
@@ -8,8 +8,15 @@ import {
   ChevronLeft, Loader2,
   Inbox as InboxIcon, Send as SendIcon,
   Trash as TrashIcon, AlertTriangle as SpamIcon,
-  X, Send as SendActionIcon, PenSquare
+  X, Send as SendActionIcon, PenSquare, Upload
 } from 'lucide-react';
+
+interface ComposeAttachment {
+  objectKey: string;
+  filename: string;
+  size: number;
+  contentType: string;
+}
 
 interface Attachment {
   filename: string;
@@ -41,8 +48,37 @@ export default function MailboxPage() {
   const [showSearch, setShowSearch] = useState(false);
   const [showCompose, setShowCompose] = useState(false);
   const [composeData, setComposeData] = useState({ to: '', subject: '', content: '' });
+  const [composeAttachments, setComposeAttachments] = useState<ComposeAttachment[]>([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [sending, setSending] = useState(false);
   const [showMessageMenu, setShowMessageMenu] = useState(false);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setUploadingFile(true);
+    try {
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('folder', 'email-attachments');
+        const res = await fetch('/api/storage/upload', { method: 'POST', body: fd });
+        if (res.ok) {
+          const data = await res.json();
+          setComposeAttachments(prev => [...prev, {
+            objectKey: data.objectKey,
+            filename: data.filename,
+            size: data.size,
+            contentType: data.contentType,
+          }]);
+        }
+      }
+    } finally {
+      setUploadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const fetchMessages = async (forceSync = false) => {
     if (forceSync) setSyncing(true);
@@ -94,11 +130,13 @@ export default function MailboxPage() {
           subject: composeData.subject,
           html: paragraphs,
           text: composeData.content,
+          attachmentKeys: composeAttachments,
         }),
       });
       if (res.ok) {
         setShowCompose(false);
         setComposeData({ to: '', subject: '', content: '' });
+        setComposeAttachments([]);
         // Refresh so the new message appears in Sent
         fetchMessages(false);
       } else {
@@ -213,7 +251,7 @@ export default function MailboxPage() {
             <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
           </button>
           <button
-            onClick={() => { setComposeData({ to: '', subject: '', content: '' }); setShowCompose(true); }}
+            onClick={() => { setComposeData({ to: '', subject: '', content: '' }); setComposeAttachments([]); setShowCompose(true); }}
             className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
           >
             <PenSquare className="w-4 h-4" />
@@ -575,7 +613,7 @@ export default function MailboxPage() {
                 </div>
               </div>
               <button
-                onClick={() => setShowCompose(false)}
+                onClick={() => { setShowCompose(false); setComposeAttachments([]); }}
                 className="p-2 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -617,13 +655,63 @@ export default function MailboxPage() {
                     placeholder="Write your message..."
                   />
                 </div>
+
+                {/* Attachments */}
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingFile}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {uploadingFile
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <Paperclip className="w-4 h-4" />}
+                    {uploadingFile ? 'Uploading...' : 'Attach files'}
+                  </button>
+
+                  {composeAttachments.length > 0 && (
+                    <div className="mt-2 space-y-1.5">
+                      {composeAttachments.map((att, i) => {
+                        const sizeLabel = att.size > 1024 * 1024
+                          ? `${(att.size / (1024 * 1024)).toFixed(1)} MB`
+                          : `${Math.round(att.size / 1024)} KB`;
+                        const isImage = att.contentType.startsWith('image/');
+                        return (
+                          <div key={i} className="flex items-center gap-2 px-3 py-2 bg-indigo-50 border border-indigo-100 rounded-xl">
+                            {isImage
+                              ? <ImageIcon className="w-4 h-4 text-purple-500 shrink-0" />
+                              : <FileText className="w-4 h-4 text-indigo-500 shrink-0" />}
+                            <span className="text-xs font-semibold text-gray-800 flex-1 truncate">{att.filename}</span>
+                            <span className="text-xs text-gray-400 shrink-0">{sizeLabel}</span>
+                            <button
+                              type="button"
+                              onClick={() => setComposeAttachments(prev => prev.filter((_, j) => j !== i))}
+                              className="p-0.5 hover:bg-indigo-200 rounded-md transition-colors cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5 text-gray-500" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Footer */}
               <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-3">
                 <button
                   type="button"
-                  onClick={() => setShowCompose(false)}
+                  onClick={() => { setShowCompose(false); setComposeAttachments([]); }}
                   className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Cancel
