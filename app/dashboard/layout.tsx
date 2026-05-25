@@ -354,40 +354,40 @@ export default function DashboardLayout({
                     );
                   })()}
 
-                  {/* Okleevo Mail Engine — standalone section */}
-                  {finalModules.includes('mailbox') && (() => {
+                  {/* Okleevo Mail Engine — always visible, never gated by enabledModules */}
+                  {(() => {
                     const mailActive = pathname === '/dashboard/mailbox';
                     return (
-                    <div className="pt-4">
-                      <p className="px-4 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#fc6813' }}>
-                        Okleevo Mail Engine
-                      </p>
-                      <Link
-                        href="/dashboard/mailbox"
-                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all ${
-                          mailActive
-                            ? 'bg-orange-50 border border-orange-200 text-orange-600 shadow-sm'
-                            : 'text-orange-500 hover:bg-orange-50 hover:border hover:border-orange-100 border border-transparent'
-                        }`}
-                      >
-                        <div className="relative flex items-center justify-center w-8 h-8 rounded-xl shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
-                          <Mail className="w-4 h-4 text-white" />
+                      <div className="pt-4">
+                        <p className="px-4 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#fc6813' }}>
+                          Okleevo Mail Engine
+                        </p>
+                        <Link
+                          href="/dashboard/mailbox"
+                          className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                            mailActive
+                              ? 'bg-orange-50 border border-orange-200 text-orange-600 shadow-sm'
+                              : 'text-orange-500 hover:bg-orange-50 border border-transparent hover:border-orange-100'
+                          }`}
+                        >
+                          <div className="relative flex items-center justify-center w-8 h-8 rounded-xl shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
+                            <Mail className="w-4 h-4 text-white" />
+                            {unreadMailCount > 0 && (
+                              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                                {unreadMailCount > 99 ? '99+' : unreadMailCount}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm">Mail Engine</span>
+                          </div>
                           {unreadMailCount > 0 && (
-                            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                            <span className="px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-bold leading-none shrink-0">
                               {unreadMailCount > 99 ? '99+' : unreadMailCount}
                             </span>
                           )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm">Mail Engine</span>
-                        </div>
-                        {unreadMailCount > 0 && (
-                          <span className="px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-bold leading-none shrink-0">
-                            {unreadMailCount > 99 ? '99+' : unreadMailCount}
-                          </span>
-                        )}
-                      </Link>
-                    </div>
+                        </Link>
+                      </div>
                     );
                   })()}
 
