@@ -69,6 +69,7 @@ export default function DashboardLayout({
   const [activeChatToast, setActiveChatToast] = useState<ChatToastInfo | null>(null);
   const lastSeenChatMsgIdRef = useRef<string | null>(null);
   const [subInfo, setSubInfo] = useState<SubInfo | null>(null);
+  const [unreadMailCount, setUnreadMailCount] = useState(0);
 
   // Check for new users to show welcome guide automatically
   useEffect(() => {
@@ -243,6 +244,23 @@ export default function DashboardLayout({
       .catch(() => {});
   }, [status, session]);
 
+  // Unread mail badge — fetch on mount and poll every 60s
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    const fetchUnread = () => {
+      fetch('/api/email/inbox')
+        .then(r => r.ok ? r.json() : [])
+        .then((msgs: { folder: string; status: string }[]) => {
+          const count = msgs.filter(m => m.folder === 'INBOX' && m.status === 'UNREAD').length;
+          setUnreadMailCount(count);
+        })
+        .catch(() => {});
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 60_000);
+    return () => clearInterval(interval);
+  }, [status]);
+
   const markAsRead = async (id: string) => {
     try {
       const res = await fetch('/api/notifications', {
@@ -351,12 +369,22 @@ export default function DashboardLayout({
                           color: '#fc6813',
                         }}
                       >
-                        <div className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
+                        <div className="relative flex items-center justify-center w-7 h-7 rounded-lg shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
                           <Mail className="w-4 h-4 text-white" />
+                          {unreadMailCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                              {unreadMailCount > 99 ? '99+' : unreadMailCount}
+                            </span>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <span className="text-sm">Mail Engine</span>
                         </div>
+                        {unreadMailCount > 0 && (
+                          <span className="px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-bold leading-none shrink-0">
+                            {unreadMailCount > 99 ? '99+' : unreadMailCount}
+                          </span>
+                        )}
                       </Link>
                     </div>
                   )}
