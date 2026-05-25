@@ -355,21 +355,22 @@ export default function DashboardLayout({
                   })()}
 
                   {/* Okleevo Mail Engine — standalone section */}
-                  {finalModules.includes('mailbox') && (
+                  {finalModules.includes('mailbox') && (() => {
+                    const mailActive = pathname === '/dashboard/mailbox';
+                    return (
                     <div className="pt-4">
                       <p className="px-4 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#fc6813' }}>
                         Okleevo Mail Engine
                       </p>
                       <Link
                         href="/dashboard/mailbox"
-                        className="flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all group"
-                        style={{
-                          background: 'linear-gradient(135deg, #fc681308 0%, #ff8c4208 100%)',
-                          border: '1px solid #fc681320',
-                          color: '#fc6813',
-                        }}
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                          mailActive
+                            ? 'bg-orange-50 border border-orange-200 text-orange-600 shadow-sm'
+                            : 'text-orange-500 hover:bg-orange-50 hover:border hover:border-orange-100 border border-transparent'
+                        }`}
                       >
-                        <div className="relative flex items-center justify-center w-7 h-7 rounded-lg shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
+                        <div className="relative flex items-center justify-center w-8 h-8 rounded-xl shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
                           <Mail className="w-4 h-4 text-white" />
                           {unreadMailCount > 0 && (
                             <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
@@ -387,7 +388,8 @@ export default function DashboardLayout({
                         )}
                       </Link>
                     </div>
-                  )}
+                    );
+                  })()}
 
                   {/* Customer */}
                   {(() => {
