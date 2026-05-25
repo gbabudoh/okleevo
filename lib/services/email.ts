@@ -85,28 +85,40 @@ async function sendViaPostal(options: EmailOptions): Promise<EmailResult> {
   const fromName = process.env.POSTAL_FROM_NAME || process.env.EMAIL_FROM_NAME || 'Okleevo';
 
   // Format attachments for Postal (requires base64 data)
-  const postalAttachments = [];
+  const postalAttachments: { name: string; content_type: string; data: string }[] = [];
   if (options.attachments && options.attachments.length > 0) {
     for (const att of options.attachments) {
-      if (att.content) {
+      try {
         let base64Data = '';
-        if (Buffer.isBuffer(att.content)) {
-          base64Data = att.content.toString('base64');
-        } else if (typeof att.content === 'string') {
-          base64Data = Buffer.from(att.content).toString('base64');
+
+        if (att.content) {
+          // Already have the file content in memory
+          if (Buffer.isBuffer(att.content)) {
+            base64Data = att.content.toString('base64');
+          } else if (typeof att.content === 'string') {
+            base64Data = Buffer.from(att.content).toString('base64');
+          }
+        } else if (att.path) {
+          // Fetch from MinIO presigned URL and convert to base64
+          const fileRes = await fetch(att.path);
+          if (fileRes.ok) {
+            const arrayBuffer = await fileRes.arrayBuffer();
+            base64Data = Buffer.from(arrayBuffer).toString('base64');
+          } else {
+            console.warn(`⚠️ Could not fetch attachment from URL (${fileRes.status}): ${att.filename}`);
+          }
         }
-        
+
         if (base64Data) {
           postalAttachments.push({
             name: att.filename,
             content_type: att.contentType || 'application/octet-stream',
-            data: base64Data
+            data: base64Data,
           });
         }
+      } catch (attErr) {
+        console.warn(`⚠️ Skipping attachment "${att.filename}":`, attErr);
       }
-      // Note: If using path/URL, it needs to be fetched and converted to base64 first.
-      // We skip path-only attachments for the Postal HTTP API in this basic implementation
-      // unless we add a fetcher here, but MinIO presigned URLs are usually fetched before this step.
     }
   }
 
