@@ -97,7 +97,6 @@ export async function POST(req: NextRequest) {
       data: {
         businessId,
         messageId,
-        uid: Date.now(),
         from,
         to: rawTo,
         subject,

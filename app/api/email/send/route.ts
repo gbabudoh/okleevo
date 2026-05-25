@@ -119,7 +119,6 @@ export async function POST(request: NextRequest) {
       data: {
         businessId,
         messageId: result.messageId || `sent-${Date.now()}`,
-        uid: Date.now(),
         from: user?.email || '',
         to: Array.isArray(to) ? to.join(', ') : to,
         subject,

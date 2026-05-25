@@ -52,6 +52,8 @@ export default function MailboxPage() {
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sendToast, setSendToast] = useState(false);
   const [showMessageMenu, setShowMessageMenu] = useState(false);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,6 +119,7 @@ export default function MailboxPage() {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
+    setSendError(null);
     try {
       const paragraphs = composeData.content
         .split('\n')
@@ -137,14 +140,15 @@ export default function MailboxPage() {
         setShowCompose(false);
         setComposeData({ to: '', subject: '', content: '' });
         setComposeAttachments([]);
-        // Refresh so the new message appears in Sent
+        setSendToast(true);
+        setTimeout(() => setSendToast(false), 4000);
         fetchMessages(false);
       } else {
         const err = await res.json();
-        console.error('Send failed:', err.error);
+        setSendError(err.error || 'Failed to send. Please try again.');
       }
-    } catch (err) {
-      console.error('Failed to send:', err);
+    } catch {
+      setSendError('Network error. Please check your connection and try again.');
     } finally {
       setSending(false);
     }
@@ -587,6 +591,14 @@ export default function MailboxPage() {
         )}
       </div>
 
+      {/* Sent success toast */}
+      {sendToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 px-5 py-3.5 bg-emerald-600 text-white rounded-2xl shadow-xl text-sm font-semibold animate-in slide-in-from-bottom-4 duration-300">
+          <SendActionIcon className="w-4 h-4" />
+          Email sent successfully!
+        </div>
+      )}
+
       {/* Compose Modal */}
       {showCompose && (
         <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -708,10 +720,17 @@ export default function MailboxPage() {
               </div>
 
               {/* Footer */}
-              <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-3">
+              <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 space-y-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-3">
+                {sendError && (
+                  <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700 font-medium">
+                    <X className="w-4 h-4 shrink-0 text-red-400" />
+                    {sendError}
+                  </div>
+                )}
+                <div className="flex flex-row gap-2.5">
                 <button
                   type="button"
-                  onClick={() => { setShowCompose(false); setComposeAttachments([]); }}
+                  onClick={() => { setShowCompose(false); setComposeAttachments([]); setSendError(null); }}
                   className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Cancel
@@ -724,6 +743,7 @@ export default function MailboxPage() {
                   {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <SendActionIcon className="w-4 h-4" />}
                   {sending ? 'Sending...' : 'Send'}
                 </button>
+                </div>
               </div>
             </form>
           </div>
