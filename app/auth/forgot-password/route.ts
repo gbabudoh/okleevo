@@ -28,7 +28,12 @@ export async function POST(request: NextRequest) {
         data: { identifier: email, token, expires },
       });
 
-      await sendPasswordResetEmail(email, token);
+      const emailResult = await sendPasswordResetEmail(email, token);
+      if (!emailResult.success) {
+        console.error('[ForgotPassword] Failed to send reset email to:', email, '| Error:', emailResult.error);
+      } else {
+        console.log('[ForgotPassword] Reset email sent to:', email, '| MessageID:', emailResult.messageId);
+      }
     }
 
     // Always return success — never reveal whether an email is registered
