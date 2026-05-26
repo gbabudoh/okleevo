@@ -698,7 +698,7 @@ export default function DashboardLayout({
         )}
 
         {/* Page Content */}
-        <main className="p-6 relative z-10">
+        <main className="p-6 relative">
           {children}
         </main>
       </div>

@@ -606,7 +606,7 @@ export default function MailboxPage() {
             className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
             onClick={() => setShowCompose(false)}
           />
-          <div className="relative z-10 w-full sm:max-w-xl bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[88dvh] overflow-hidden">
+          <div className="relative z-10 w-full sm:max-w-xl bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[92dvh] sm:h-auto sm:max-h-[88dvh] overflow-hidden">
 
             {/* Handle */}
             <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
@@ -634,7 +634,7 @@ export default function MailboxPage() {
 
             {/* Form */}
             <form onSubmit={handleSend} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-              <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-4">
+              <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 pb-8 space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">To</label>
                   <input
@@ -668,7 +668,15 @@ export default function MailboxPage() {
                   />
                 </div>
 
-                {/* Attachments */}
+                {/* Send Error */}
+                {sendError && (
+                  <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700 font-medium">
+                    <X className="w-4 h-4 shrink-0 text-red-400" />
+                    {sendError}
+                  </div>
+                )}
+
+                {/* Actions: Attach files and Send */}
                 <div>
                   <input
                     ref={fileInputRef}
@@ -678,20 +686,30 @@ export default function MailboxPage() {
                     className="hidden"
                     onChange={handleFileSelect}
                   />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingFile}
-                    className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {uploadingFile
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <Paperclip className="w-4 h-4" />}
-                    {uploadingFile ? 'Uploading...' : 'Attach files'}
-                  </button>
+                  <div className="flex flex-row items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingFile}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {uploadingFile
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <Paperclip className="w-4 h-4" />}
+                      {uploadingFile ? 'Uploading...' : 'Attach files'}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={sending}
+                      className="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm"
+                    >
+                      {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <SendActionIcon className="w-4 h-4" />}
+                      {sending ? 'Sending...' : 'Send'}
+                    </button>
+                  </div>
 
                   {composeAttachments.length > 0 && (
-                    <div className="mt-2 space-y-1.5">
+                    <div className="mt-3 space-y-1.5">
                       {composeAttachments.map((att, i) => {
                         const sizeLabel = att.size > 1024 * 1024
                           ? `${(att.size / (1024 * 1024)).toFixed(1)} MB`
@@ -716,33 +734,6 @@ export default function MailboxPage() {
                       })}
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 space-y-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-3">
-                {sendError && (
-                  <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700 font-medium">
-                    <X className="w-4 h-4 shrink-0 text-red-400" />
-                    {sendError}
-                  </div>
-                )}
-                <div className="flex flex-row gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => { setShowCompose(false); setComposeAttachments([]); setSendError(null); }}
-                  className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={sending}
-                  className="flex-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <SendActionIcon className="w-4 h-4" />}
-                  {sending ? 'Sending...' : 'Send'}
-                </button>
                 </div>
               </div>
             </form>
