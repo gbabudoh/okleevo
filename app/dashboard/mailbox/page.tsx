@@ -606,7 +606,7 @@ export default function MailboxPage() {
             className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
             onClick={() => setShowCompose(false)}
           />
-          <div className="relative z-10 w-full sm:max-w-xl bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden">
+          <div className="relative z-10 w-full sm:max-w-xl bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[88dvh] overflow-hidden">
 
             {/* Handle */}
             <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
@@ -663,7 +663,7 @@ export default function MailboxPage() {
                     required
                     value={composeData.content}
                     onChange={(e) => setComposeData({ ...composeData, content: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm text-gray-700 placeholder:text-gray-400 outline-none transition-all resize-none min-h-[200px]"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm text-gray-700 placeholder:text-gray-400 outline-none transition-all resize-none min-h-[140px] sm:min-h-[200px]"
                     placeholder="Write your message..."
                   />
                 </div>
