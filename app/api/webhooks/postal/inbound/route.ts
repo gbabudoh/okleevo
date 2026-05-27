@@ -114,7 +114,13 @@ export async function POST(req: NextRequest) {
     console.log(`[Postal Inbound] ✅ Saved message ${message.id} → ${folder} for business ${businessId}`);
     return NextResponse.json({ status: 'success', id: message.id, folder }, { status: 200 });
 
-  } catch (error) {
+  } catch (error: unknown) {
+    // Idempotency: Postal redelivers on retry. If the same messageId arrives twice, treat as already-processed.
+    const code = (error as { code?: string })?.code;
+    if (code === 'P2002') {
+      console.warn('[Postal Inbound] ⚠️ Duplicate messageId received, treating as already processed');
+      return NextResponse.json({ status: 'duplicate' }, { status: 200 });
+    }
     console.error('[Postal Inbound] ❌ Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
