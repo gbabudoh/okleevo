@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, firstName, lastName, phone, role, businessId, password, status } = body;
+    const { email: rawEmail, firstName, lastName, phone, role, businessId, password, status } = body; const email = rawEmail?.toLowerCase();
 
     if (!email || !firstName || !lastName || !businessId) {
       return NextResponse.json(

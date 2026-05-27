@@ -46,7 +46,7 @@ export async function createSMEOnboarding(params: {
   // Step 2: Create user record in database
   const user = await prisma.user.create({
     data: {
-      email: params.email,
+      email: params.email.toLowerCase(),
       password: hashedPassword,
       firstName: params.firstName,
       lastName: params.lastName,
@@ -64,7 +64,7 @@ export async function createSMEOnboarding(params: {
   try {
     const stripeCustomerId = await createStripeCustomer({
       businessId: business.id,
-      email: params.email,
+      email: params.email.toLowerCase(),
       businessName: params.businessName,
     });
     await createTrialRecord(business.id, stripeCustomerId);
