@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const { email, firstName, lastName, phone, role, password } = body;
+    const { email: rawEmail, firstName, lastName, phone, role, password } = body; const email = rawEmail?.toLowerCase();
 
     // Validate required fields
     if (!email || !firstName || !lastName) {

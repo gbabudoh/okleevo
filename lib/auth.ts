@@ -18,7 +18,7 @@ const config = {
           return null;
         }
 
-        const email = credentials.email as string;
+        const email = (credentials.email as string).toLowerCase();
         const password = credentials.password as string;
         
         console.log('[AUTH] ========================================');
