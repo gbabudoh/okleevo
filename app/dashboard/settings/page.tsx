@@ -1850,12 +1850,14 @@ Confidential - For Personal Use Only
               </div>
               <div className="flex items-center gap-3 pt-4">
                 <button
+                  type="button"
                   onClick={handleAddEmployee}
                   className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
                 >
                   Add Employee
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowAddModal(false);
                     setNewEmployee({
@@ -1981,12 +1983,14 @@ Confidential - For Personal Use Only
               </div>
               <div className="flex items-center gap-3 pt-4">
                 <button
+                  type="button"
                   onClick={handleUpdateEmployee}
                   className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
                 >
                   Save Changes
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowEditModal(false);
                     setEditingUser(null);
@@ -2019,10 +2023,10 @@ Confidential - For Personal Use Only
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-100"
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className="fixed top-6 sm:top-auto sm:bottom-8 left-1/2 -translate-x-1/2 z-[300]"
           >
             <div className={`px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border flex items-center gap-3 min-w-[320px] transition-all
               ${toast.type === 'success' 
