@@ -496,7 +496,7 @@ export default function SettingsPage() {
       </div>
 
       {/* ── Tab Navigation ── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="w-full flex items-center gap-2 overflow-x-auto pb-3 touch-pan-x custom-scrollbar-x">
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1491,9 +1491,9 @@ export default function SettingsPage() {
 
       {/* Export Data Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
-            <div className="bg-linear-to-r from-orange-500 to-red-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col">
+            <div className="bg-linear-to-r from-orange-500 to-red-600 px-6 py-5 flex items-center justify-between rounded-t-2xl shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
                   <Download className="w-7 h-7 text-white" />
@@ -1512,7 +1512,7 @@ export default function SettingsPage() {
               </button>
             </div>
             
-            <div className="p-6 space-y-5">
+            <div className="p-6 pb-40 space-y-5 overflow-y-auto flex-1">
               {/* Account Info Preview */}
               <div className="bg-linear-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-xl p-5">
                 <div className="flex items-center gap-4 mb-4">
@@ -1752,9 +1752,9 @@ Confidential - For Personal Use Only
 
       {/* Add Employee Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
-            <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col">
+            <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl border border-white/10">
                   <UserPlus className="w-6 h-6 text-white" />
@@ -1781,7 +1781,7 @@ Confidential - For Personal Use Only
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 pb-40 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
                 <input
@@ -1879,9 +1879,9 @@ Confidential - For Personal Use Only
 
       {/* Edit Employee Modal */}
       {showEditModal && editingUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
-            <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col">
+            <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl border border-white/10">
                   <Edit3 className="w-6 h-6 text-white" />
@@ -1901,7 +1901,7 @@ Confidential - For Personal Use Only
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 pb-40 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                 <input
