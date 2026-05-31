@@ -244,8 +244,15 @@ export default function SettingsPage() {
         const text = await response.text();
         const data = text ? JSON.parse(text) : {};
         setTeamMembers(data.users || []);
-        // Hard-mocked for the demo as requested to show 1/10
-        setSeatInfo({ used: 1, max: 10, available: 9 });
+        if (data.seatInfo) {
+          setSeatInfo(data.seatInfo);
+        } else {
+          setSeatInfo({
+            used: data.users?.length || 1,
+            max: 10,
+            available: 10 - (data.users?.length || 1)
+          });
+        }
       } else {
         const text = await response.text();
         let errorData;
