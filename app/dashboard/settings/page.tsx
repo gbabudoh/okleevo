@@ -1499,7 +1499,7 @@ export default function SettingsPage() {
       {/* Export Data Modal */}
       {showExportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col transform -translate-y-6 sm:translate-y-0">
             <div className="bg-linear-to-r from-orange-500 to-red-600 px-6 py-5 flex items-center justify-between rounded-t-2xl shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
@@ -1760,7 +1760,7 @@ Confidential - For Personal Use Only
       {/* Add Employee Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col transform -translate-y-6 sm:translate-y-0">
             <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl border border-white/10">
@@ -1889,7 +1889,7 @@ Confidential - For Personal Use Only
       {/* Edit Employee Modal */}
       {showEditModal && editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col transform -translate-y-6 sm:translate-y-0">
             <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-5 flex items-center justify-between rounded-t-2xl shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl border border-white/10">

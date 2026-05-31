@@ -721,7 +721,7 @@ export default function CRMPage() {
       {/* Add Client Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
+          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
             <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-1.5 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
               <div className="flex items-center gap-2.5">
@@ -807,7 +807,7 @@ export default function CRMPage() {
       {/* Edit Client Modal */}
       {showEditModal && editingClient && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
+          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
             <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-1.5 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
               <div className="flex items-center gap-2.5">
@@ -893,7 +893,7 @@ export default function CRMPage() {
       {/* Email Compose Modal */}
       {showEmailModal && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
+          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-orange-500 shrink-0">
               <div className="flex items-center gap-2.5">
@@ -989,7 +989,7 @@ export default function CRMPage() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && deletingClient && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-2xl w-full sm:max-w-md shadow-2xl flex flex-col overflow-hidden">
+          <div className="bg-white rounded-2xl w-full sm:max-w-md shadow-2xl flex flex-col overflow-hidden transform -translate-y-6 sm:translate-y-0">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
             <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3 bg-rose-500 shrink-0">
               <div className="p-2 bg-white/20 rounded-xl shrink-0"><Trash2 className="w-4 h-4 text-white" /></div>
