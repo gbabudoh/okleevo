@@ -478,8 +478,8 @@ export default function CashflowPage() {
 
       {/* Add Transaction Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-xl max-h-[84dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
             <div className="bg-linear-to-r from-indigo-600 to-violet-600 px-4 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
               <div className="flex items-center gap-3">
@@ -576,6 +576,7 @@ export default function CashflowPage() {
             <ModalFooter>
               <CancelBtn onClick={() => { setShowAddModal(false); resetNewTransaction(); }} />
               <button
+                type="button"
                 onClick={() => {
                   if (newTransaction.description && newTransaction.amount) {
                     alert('Transaction added (Simulation)');
@@ -595,8 +596,8 @@ export default function CashflowPage() {
 
       {/* View Transaction Modal */}
       {showViewModal && viewingTransaction && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg max-h-[84dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-lg max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
             <div className={`px-4 sm:px-6 py-4 flex items-center justify-between shrink-0 ${
               viewingTransaction.type === 'income' ? 'bg-green-600' : 'bg-rose-600'
@@ -650,6 +651,7 @@ export default function CashflowPage() {
             <ModalFooter>
               <CancelBtn onClick={() => { setShowViewModal(false); setViewingTransaction(null); }} label="Close" />
               <button
+                type="button"
                 onClick={() => {
                   setShowViewModal(false);
                   setEditingTransaction(viewingTransaction);
@@ -667,8 +669,8 @@ export default function CashflowPage() {
 
       {/* Edit Transaction Modal */}
       {showEditModal && editingTransaction && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-xl max-h-[84dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
             <div className="px-4 sm:px-6 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
@@ -764,6 +766,7 @@ export default function CashflowPage() {
             <ModalFooter>
               <CancelBtn onClick={() => { setShowEditModal(false); setEditingTransaction(null); }} />
               <button
+                type="button"
                 onClick={() => {
                   alert('Transaction updated (Simulation)');
                   setShowEditModal(false);
