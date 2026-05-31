@@ -43,10 +43,10 @@ const ModalShell = ({ children, maxW = 'sm:max-w-lg', onClose }: {
   onClose?: () => void;
 }) => (
   <div
-    className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4"
+    className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4"
     onClick={(e) => { if (e.target === e.currentTarget && onClose) onClose(); }}
   >
-    <div className={`bg-white rounded-t-3xl sm:rounded-2xl w-full ${maxW} max-h-[75dvh] sm:max-h-[88vh] flex flex-col shadow-2xl overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300`}>
+    <div className={`bg-white rounded-2xl w-full ${maxW} max-h-[92dvh] sm:max-h-[88vh] flex flex-col shadow-2xl overflow-hidden border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300`}>
       {children}
     </div>
   </div>
@@ -66,6 +66,7 @@ const ModalFooter = ({ children }: { children: ReactNode }) => (
 
 const CancelBtn = ({ onClick, label = 'Cancel' }: { onClick: () => void; label?: string }) => (
   <button
+    type="button"
     onClick={onClick}
     className="w-full sm:w-auto sm:flex-1 py-3 px-5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer"
   >
@@ -579,6 +580,7 @@ export default function ExpensesPage() {
           <ModalFooter>
             <CancelBtn onClick={() => { setShowAddModal(false); resetNewExpense(); }} />
             <button
+              type="button"
               onClick={handleAddExpense}
               className="w-full sm:flex-[2] py-3 px-5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
@@ -656,6 +658,7 @@ export default function ExpensesPage() {
           <ModalFooter>
             <CancelBtn onClick={() => { setShowEditModal(false); setSelectedExpense(null); }} />
             <button
+              type="button"
               onClick={handleEditExpense}
               className="w-full sm:flex-[2] py-3 px-5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
