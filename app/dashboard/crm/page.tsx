@@ -720,8 +720,8 @@ export default function CRMPage() {
 
       {/* Add Client Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[70dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
             <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-1.5 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
               <div className="flex items-center gap-2.5">
@@ -791,11 +791,11 @@ export default function CRMPage() {
               </div>
             </div>
             <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
-              <button onClick={() => setShowAddModal(false)}
+              <button type="button" onClick={() => setShowAddModal(false)}
                 className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
                 Cancel
               </button>
-              <button onClick={handleAddClient}
+              <button type="button" onClick={handleAddClient}
                 className="flex-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
                 <Plus className="w-4 h-4" /> Add Client
               </button>
@@ -806,8 +806,8 @@ export default function CRMPage() {
 
       {/* Edit Client Modal */}
       {showEditModal && editingClient && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[70dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
             <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-1.5 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
               <div className="flex items-center gap-2.5">
@@ -877,11 +877,11 @@ export default function CRMPage() {
               </div>
             </div>
             <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
-              <button onClick={() => { setShowEditModal(false); setEditingClient(null); }}
+              <button type="button" onClick={() => { setShowEditModal(false); setEditingClient(null); }}
                 className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
                 Cancel
               </button>
-              <button onClick={handleEditClient}
+              <button type="button" onClick={handleEditClient}
                 className="flex-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
                 <Edit className="w-4 h-4" /> Save Changes
               </button>
@@ -892,8 +892,8 @@ export default function CRMPage() {
 
       {/* Email Compose Modal */}
       {showEmailModal && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[70dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-orange-500 shrink-0">
               <div className="flex items-center gap-2.5">
@@ -988,8 +988,8 @@ export default function CRMPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && deletingClient && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-10 sm:pb-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-md shadow-2xl flex flex-col overflow-hidden">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
             <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3 bg-rose-500 shrink-0">
               <div className="p-2 bg-white/20 rounded-xl shrink-0"><Trash2 className="w-4 h-4 text-white" /></div>

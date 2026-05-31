@@ -1519,7 +1519,7 @@ export default function SettingsPage() {
               </button>
             </div>
             
-            <div className="p-6 pb-40 space-y-5 overflow-y-auto flex-1">
+            <div className="p-6 space-y-5 overflow-y-auto flex-1">
               {/* Account Info Preview */}
               <div className="bg-linear-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-xl p-5">
                 <div className="flex items-center gap-4 mb-4">
@@ -1743,8 +1743,8 @@ Confidential - For Personal Use Only
                   <p>Your exported data contains sensitive personal information. Store it securely and do not share it with unauthorized parties.</p>
                 </div>
               </div>
-
-              {/* Cancel Button */}
+            </div>
+            <div className="shrink-0 bg-white border-t border-gray-100 p-6">
               <button 
                 type="button"
                 onClick={() => setShowExportModal(false)}
@@ -1788,7 +1788,7 @@ Confidential - For Personal Use Only
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
-            <div className="p-6 pb-40 space-y-4 overflow-y-auto flex-1">
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
                 <input
@@ -1855,32 +1855,32 @@ Confidential - For Personal Use Only
                 />
                 <p className="text-xs text-gray-500 mt-1">Create a unique 6-digit code for their first login</p>
               </div>
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={handleAddEmployee}
-                  className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
-                >
-                  Add Employee
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setNewEmployee({
-                      email: '',
-                      firstName: '',
-                      lastName: '',
-                      phone: '',
-                      role: 'MEMBER',
-                      password: '',
-                    });
-                  }}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
+            </div>
+            <div className="shrink-0 bg-white border-t border-gray-100 p-6 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleAddEmployee}
+                className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
+              >
+                Add Employee
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddModal(false);
+                  setNewEmployee({
+                    email: '',
+                    firstName: '',
+                    lastName: '',
+                    phone: '',
+                    role: 'MEMBER',
+                    password: '',
+                  });
+                }}
+                className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
@@ -1910,7 +1910,7 @@ Confidential - For Personal Use Only
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
-            <div className="p-6 pb-40 space-y-4 overflow-y-auto flex-1">
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                 <input
@@ -1988,25 +1988,25 @@ Confidential - For Personal Use Only
                   placeholder="Leave empty to keep existing"
                 />
               </div>
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={handleUpdateEmployee}
-                  className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
-                >
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditingUser(null);
-                  }}
-                  className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
+            </div>
+            <div className="shrink-0 bg-white border-t border-gray-100 p-6 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleUpdateEmployee}
+                className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all cursor-pointer"
+              >
+                Save Changes
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingUser(null);
+                }}
+                className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
