@@ -13,7 +13,8 @@ interface JournalEntry {
   entries: {
     debit: number;
     credit: number;
-    account: { name: string };
+    accountId: string;
+    account: { id: string; name: string };
   }[];
 }
 
