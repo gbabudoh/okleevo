@@ -835,10 +835,10 @@ export default function SuppliersPage() {
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Payment Terms</label>
                       <select className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-blue-500 transition-all">
-                        <option value="net30">Net 30</option>
-                        <option value="net60">Net 60</option>
-                        <option value="net90">Net 90</option>
-                        <option value="prepay">Prepayment</option>
+                        <option value="net30" className="text-gray-900 bg-white">Net 30</option>
+                        <option value="net60" className="text-gray-900 bg-white">Net 60</option>
+                        <option value="net90" className="text-gray-900 bg-white">Net 90</option>
+                        <option value="prepay" className="text-gray-900 bg-white">Prepayment</option>
                       </select>
                     </div>
                     <div className="space-y-1">

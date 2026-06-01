@@ -168,8 +168,17 @@ export default function DashboardLayout({
           setNotifications(data);
         }
       } catch (error) {
-        if (error instanceof Error && error.name !== 'AbortError') {
-          console.error('Error fetching notifications:', error);
+        if (error instanceof Error) {
+          if (error.name === 'AbortError') return;
+          const isNetworkError = 
+            error.message.includes('Failed to fetch') || 
+            error.message.includes('NetworkError') || 
+            error.message.includes('Load failed');
+          if (isNetworkError) {
+            console.warn('Network issue fetching notifications:', error.message);
+          } else {
+            console.error('Error fetching notifications:', error);
+          }
         }
       }
     }

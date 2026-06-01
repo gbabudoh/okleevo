@@ -404,11 +404,11 @@ export default function AINotesPage() {
 
       {/* ══ Create Note Modal ══════════════════════════════════════════ */}
       {showNewModal && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowNewModal(false)} />
           <div
-            className="relative z-10 w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col"
-            style={{ maxHeight: '90dvh' }}
+            className="relative z-10 w-full sm:max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col -translate-y-6 sm:translate-y-0"
+            style={{ maxHeight: '92dvh' }}
           >
             {/* Drag handle (mobile) */}
             <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
@@ -541,11 +541,11 @@ export default function AINotesPage() {
 
       {/* ══ View Note Modal ════════════════════════════════════════════ */}
       {selectedNote && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setSelectedNote(null)} />
           <div
-            className="relative z-10 w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col"
-            style={{ maxHeight: '90dvh' }}
+            className="relative z-10 w-full sm:max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col -translate-y-6 sm:translate-y-0"
+            style={{ maxHeight: '92dvh' }}
           >
             {/* Drag handle */}
             <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">

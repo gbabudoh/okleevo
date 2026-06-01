@@ -1081,8 +1081,8 @@ export default function CompliancePage() {
 
       {/* ── ITEM DETAIL MODAL ── */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-start justify-center z-[100] p-4 pt-12 pb-6 sm:items-center sm:pt-4 sm:pb-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-3xl max-h-[82dvh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
             {/* Header */}
             <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1182,8 +1182,8 @@ export default function CompliancePage() {
 
       {/* ── EDIT ITEM MODAL ── */}
       {showEditModal && editingItem && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-start justify-center z-[100] p-4 pt-12 pb-6 sm:items-center sm:pt-4 sm:pb-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-2xl max-h-[82dvh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <h2 className="font-bold text-gray-900 flex items-center gap-2"><Edit3 className="w-5 h-5 text-blue-600" /> Edit Item</h2>
@@ -1240,8 +1240,8 @@ export default function CompliancePage() {
 
       {/* ── SHARE ITEM MODAL ── */}
       {showShareModal && sharingItem && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-start justify-center z-[100] p-4 pt-12 pb-6 sm:items-center sm:pt-4 sm:pb-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-lg max-h-[82dvh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
               <h2 className="font-bold text-gray-900 flex items-center gap-2"><Share2 className="w-5 h-5 text-green-600" /> Share Item</h2>
               <button onClick={() => setShowShareModal(false)} className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
@@ -1288,8 +1288,8 @@ export default function CompliancePage() {
 
       {/* ── ADD ITEM MODAL ── */}
       {showAddItem && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-start justify-center z-[100] p-4 pt-12 pb-6 sm:items-center sm:pt-4 sm:pb-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-2xl max-h-[82dvh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <h2 className="font-bold text-gray-900 flex items-center gap-2"><Plus className="w-5 h-5 text-blue-600" /> New Compliance Item</h2>
@@ -1344,8 +1344,8 @@ export default function CompliancePage() {
 
       {/* ── EXPORT MODAL ── */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-start justify-center z-[100] p-4 pt-12 pb-6 sm:items-center sm:pt-4 sm:pb-4">
+          <div className="bg-white rounded-2xl w-full sm:max-w-lg max-h-[82dvh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <h2 className="font-bold text-gray-900 flex items-center gap-2"><Download className="w-5 h-5 text-indigo-600" /> Export Report</h2>
@@ -1423,9 +1423,9 @@ export default function CompliancePage() {
 
       {/* ── FRAMEWORK DETAIL MODAL ── */}
       {selectedFramework && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-start justify-center z-[100] p-4 pt-12 pb-6 sm:items-center sm:pt-4 sm:pb-4">
           <div className="absolute inset-0" onClick={() => setSelectedFramework(null)} />
-          <div className="relative bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+          <div className="relative bg-white rounded-2xl w-full sm:max-w-3xl max-h-[82dvh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selectedFramework.gradient} flex items-center justify-center shadow-sm`}>

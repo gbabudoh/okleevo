@@ -59,6 +59,7 @@ function CollaborationHubInner() {
   const [newMessageContent, setNewMessageContent] = useState('');
   const [loadingChat, setLoadingChat] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const fetchChatMessages = async (targetId: string) => {
     try {
@@ -356,15 +357,17 @@ function CollaborationHubInner() {
 
       {/* ── Chat Drawer ── */}
       {activeChatMember && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity"
-            onClick={() => setActiveChatMember(null)}
-          />
-          
+        <div 
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity flex items-center justify-center p-4 sm:block sm:p-0"
+          onClick={() => setActiveChatMember(null)}
+        >
           {/* Drawer container */}
-          <div className="fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white dark:bg-slate-950 shadow-2xl border-l border-slate-100 dark:border-slate-800 z-50 flex flex-col animate-in slide-in-from-right duration-300">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`relative sm:fixed sm:top-0 sm:right-0 w-full sm:w-[450px] ${
+              isInputFocused ? 'h-[58dvh] -translate-y-2' : 'h-[88dvh] -translate-y-6'
+            } sm:h-full bg-white dark:bg-slate-950 shadow-2xl border border-slate-100 dark:border-slate-800 rounded-2xl sm:rounded-none z-50 flex flex-col transform sm:translate-y-0 transition-all duration-300 ease-in-out animate-in fade-in zoom-in-95 sm:slide-in-from-right`}
+          >
             {/* Header */}
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
               <div className="flex items-center gap-3">
@@ -445,6 +448,8 @@ function CollaborationHubInner() {
                 type="text" 
                 value={newMessageContent}
                 onChange={(e) => setNewMessageContent(e.target.value)}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
                 placeholder={`Message ${activeChatMember.firstName}...`}
                 className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
               />
@@ -457,7 +462,7 @@ function CollaborationHubInner() {
               </button>
             </form>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

@@ -605,9 +605,9 @@ export default function KPIDashboardPage() {
 
       {/* ── Add KPI Modal ── */}
       {showAddKPI && (
-        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowAddKPI(false)} />
-          <div className="relative w-full sm:max-w-4xl bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92dvh] sm:max-h-[90vh]">
+          <div className="relative w-full sm:max-w-4xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92dvh] sm:max-h-[90vh] -translate-y-6 sm:translate-y-0">
             {/* Sidebar — hidden on mobile */}
             <div className="hidden md:flex w-72 bg-gray-950 p-8 text-white flex-col justify-between shrink-0">
               <div>
@@ -692,9 +692,9 @@ export default function KPIDashboardPage() {
 
       {/* ── Edit KPI Modal ── */}
       {showEditModal && editingKPI && (
-        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => { setShowEditModal(false); setEditingKPI(null); }} />
-          <div className="relative w-full sm:max-w-2xl bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden max-h-[92dvh] overflow-y-auto">
+          <div className="relative w-full sm:max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92dvh] overflow-y-auto -translate-y-6 sm:translate-y-0">
             <div className="p-5 sm:p-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -746,9 +746,9 @@ export default function KPIDashboardPage() {
 
       {/* ── Analysis Modal ── */}
       {showAnalysisModal && analysisKPI && (
-        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => { setShowAnalysisModal(false); setAnalysisKPI(null); }} />
-          <div className="relative w-full sm:max-w-2xl bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden max-h-[92dvh] overflow-y-auto">
+          <div className="relative w-full sm:max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92dvh] overflow-y-auto -translate-y-6 sm:translate-y-0">
             <div className="p-5 sm:p-7">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">

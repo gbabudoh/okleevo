@@ -341,15 +341,15 @@ export default function PlatformSupportPage() {
           CREATE TICKET MODAL
       ════════════════════════════════════════ */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-150 flex items-end sm:items-center justify-center bg-gray-900/70 backdrop-blur-sm animate-in fade-in duration-200 p-0 sm:p-4">
+        <div className="fixed inset-0 z-150 flex items-center justify-center bg-gray-900/70 backdrop-blur-sm animate-in fade-in duration-200 p-4">
           {/* backdrop close — desktop only, not on mobile so accidental swipe doesn't close */}
           <div className="absolute inset-0 hidden sm:block" onClick={() => setShowCreateModal(false)} />
 
-          {/* On mobile: full-screen. On sm+: centered card */}
-          <div className="relative z-10 flex flex-col w-full h-[100dvh] sm:h-auto sm:max-w-lg sm:max-h-[90vh] sm:rounded-3xl bg-white shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300">
+          {/* On mobile: centered card. On sm+: centered card */}
+          <div className="relative z-10 flex flex-col w-full max-h-[92dvh] sm:max-h-[90vh] sm:max-w-lg rounded-2xl sm:rounded-3xl bg-white shadow-2xl overflow-hidden transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300">
 
             {/* ── Header ── */}
-            <div className="flex items-start justify-between px-6 pt-14 pb-5 sm:pt-7 sm:pb-5">
+            <div className="flex items-start justify-between px-6 py-5 shrink-0">
               <div>
                 <h2 className="text-2xl font-black tracking-tight text-gray-900 leading-tight">
                   New Support <span className="text-orange-500">Request</span>
@@ -359,6 +359,7 @@ export default function PlatformSupportPage() {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="p-2 -mt-1 -mr-1 rounded-xl hover:bg-gray-100 transition cursor-pointer shrink-0"
               >
@@ -369,8 +370,8 @@ export default function PlatformSupportPage() {
             {/* thin divider */}
             <div className="h-px bg-gray-100 mx-6" />
 
-            {/* ── Form body + buttons (all inside scroll) ── */}
-            <div className="flex-1 overflow-y-auto px-6 pt-7 pb-40 custom-scrollbar">
+            {/* ── Form body ── */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 custom-scrollbar">
               <div className="space-y-6">
 
                 {/* Subject */}
@@ -439,24 +440,27 @@ export default function PlatformSupportPage() {
                 </div>
 
               </div>
-
-              {/* ── Action buttons — scroll into view at the bottom ── */}
-              <div className="flex items-center gap-3 pt-8 pb-[calc(1.75rem+env(safe-area-inset-bottom,0px))] sm:pb-6">
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 rounded-2xl border border-gray-200 bg-white py-4 text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-gray-50 transition cursor-pointer"
-                >
-                  CANCEL
-                </button>
-                <button
-                  onClick={handleCreateTicket}
-                  disabled={!newTicket.subject.trim() || !newTicket.description.trim()}
-                  className="flex-2 rounded-2xl bg-orange-500 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 transition active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  SUBMIT TICKET
-                </button>
-              </div>
             </div>
+
+            {/* ── Sticky Footer ── */}
+            <div className="shrink-0 bg-white border-t border-gray-100 px-6 py-4 flex flex-row gap-3">
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                className="flex-1 rounded-2xl border border-gray-200 bg-white py-4 text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-gray-50 transition cursor-pointer"
+              >
+                CANCEL
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateTicket}
+                disabled={!newTicket.subject.trim() || !newTicket.description.trim()}
+                className="flex-2 rounded-2xl bg-orange-500 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 transition active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                SUBMIT TICKET
+              </button>
+            </div>
+
           </div>
         </div>
       )}
@@ -465,11 +469,12 @@ export default function PlatformSupportPage() {
       {/* ════════════════════════════════════════
           TICKET DETAIL MODAL
       ════════════════════════════════════════ */}
+      {/* ── Ticket Detail Modal ── */}
       {showDetailModal && selectedTicket && (
-        <div className="fixed inset-0 z-150 flex items-end sm:items-center justify-center bg-gray-900/70 backdrop-blur-sm animate-in fade-in duration-200 p-0 sm:p-4">
-          <div className="absolute inset-0" onClick={() => setShowDetailModal(false)} />
+        <div className="fixed inset-0 z-150 flex items-center justify-center bg-gray-900/70 backdrop-blur-sm animate-in fade-in duration-200 p-4">
+          <div className="absolute inset-0 hidden sm:block" onClick={() => setShowDetailModal(false)} />
 
-          <div className="relative z-10 flex flex-col w-full sm:max-w-2xl max-h-[95dvh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300">
+          <div className="relative z-10 flex flex-col w-full sm:max-w-2xl max-h-[92dvh] sm:max-h-[90vh] rounded-2xl sm:rounded-3xl bg-white shadow-2xl overflow-hidden transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300">
 
             <div className="sm:hidden flex justify-center pt-3 pb-1">
               <div className="h-1 w-10 rounded-full bg-gray-200" />

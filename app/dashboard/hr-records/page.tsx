@@ -735,8 +735,8 @@ export default function HRRecordsPage() {
                     <div><label className="block text-xs font-black text-gray-700 mb-1.5">First Name *</label><input type="text" value={newEmpFirstName} onChange={e => setNewEmpFirstName(e.target.value)} placeholder="Sarah" className={inputCls} /></div>
                     <div><label className="block text-xs font-black text-gray-700 mb-1.5">Last Name *</label><input type="text" value={newEmpLastName} onChange={e => setNewEmpLastName(e.target.value)} placeholder="Johnson" className={inputCls} /></div>
                   </div>
-                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Email *</label><input type="email" placeholder="sarah@company.com" className={inputCls} /></div>
-                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Phone</label><input type="tel" placeholder="+44 7911 123456" className={inputCls} /></div>
+                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Email *</label><input type="email" value={newEmpEmail} onChange={e => setNewEmpEmail(e.target.value)} placeholder="sarah@company.com" className={inputCls} /></div>
+                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Phone</label><input type="tel" value={newEmpPhone} onChange={e => setNewEmpPhone(e.target.value)} placeholder="+44 7911 123456" className={inputCls} /></div>
                 </div>
               </div>
               <div>
