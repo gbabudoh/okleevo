@@ -1396,7 +1396,7 @@ export default function TaxationPage() {
                       doc.setDrawColor(220); doc.line(14, 64, 196, 64);
                       doc.setTextColor(0);
                       let y = 76;
-                      const row = (label, value) => { doc.setFont('helvetica', 'bold'); doc.text(label, 14, y); doc.setFont('helvetica', 'normal'); doc.text(value, 110, y); y += 9; };
+                      const row = (label: string, value: string) => { doc.setFont('helvetica', 'bold'); doc.text(label, 14, y); doc.setFont('helvetica', 'normal'); doc.text(value, 110, y); y += 9; };
                       doc.setFontSize(10);
                       if (selectedReportType === 'Self Assessment') {
                         row('Tax Year:', saTaxYear);
