@@ -537,7 +537,7 @@ export default function DashboardLayout({
       </aside>
       
       {/* Main Content */}
-      <div className={`ml-0 md:ml-64 h-screen pb-20 md:pb-0 overflow-y-auto relative ${sidebarOpen ? 'z-10' : 'z-20'}`} id="main-content">
+      <div className="ml-0 md:ml-64 h-screen pb-20 md:pb-0 overflow-y-auto relative" id="main-content">
         {/* Header */}
         <header className="sticky top-0 z-30 bg-white/60 backdrop-blur-md border-b border-white/20">
           <div className="px-6 py-3 flex items-center justify-between">

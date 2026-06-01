@@ -202,6 +202,7 @@ export default function InvoicingPage() {
   const [emailData, setEmailData] = useState({ to: '', subject: '', message: '' });
   const [downloadMenuOpen, setDownloadMenuOpen] = useState<string | null>(null);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{ top?: number; bottom?: number; right: number } | null>(null);
   const [newInvoice, setNewInvoice] = useState({
     clientType: 'business' as 'business' | 'individual',
     client: '', clientEmail: '',
@@ -549,19 +550,22 @@ export default function InvoicingPage() {
                                 <Eye className="w-4 h-4 text-gray-400 hover:text-blue-600" />
                               </button>
                               <div className="relative">
-                                <button onClick={() => setDownloadMenuOpen(downloadMenuOpen === invoice.id ? null : invoice.id)} title="Download"
+                                <button onClick={(e) => {
+                                  if (downloadMenuOpen === invoice.id) { setDownloadMenuOpen(null); setMenuPosition(null); }
+                                  else { const r = e.currentTarget.getBoundingClientRect(); const right = window.innerWidth - r.right; const pos = window.innerHeight - r.bottom > 120 ? { top: r.bottom + 4, right } : { bottom: window.innerHeight - r.top + 4, right }; setMenuPosition(pos); setDownloadMenuOpen(invoice.id); }
+                                }} title="Download"
                                   className="w-8 h-8 flex items-center justify-center hover:bg-green-50 rounded-lg transition-colors cursor-pointer">
                                   <Download className="w-4 h-4 text-gray-400 hover:text-green-600" />
                                 </button>
-                                {downloadMenuOpen === invoice.id && (
+                                {downloadMenuOpen === invoice.id && menuPosition && (
                                   <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setDownloadMenuOpen(null)} />
-                                    <div className="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
-                                      <button onClick={() => { downloadAsPDF(invoice); setDownloadMenuOpen(null); }}
+                                    <div className="fixed inset-0 z-40" onClick={() => { setDownloadMenuOpen(null); setMenuPosition(null); }} />
+                                    <div className="fixed w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50" style={{ top: menuPosition.top, bottom: menuPosition.bottom, right: menuPosition.right }}>
+                                      <button onClick={() => { downloadAsPDF(invoice); setDownloadMenuOpen(null); setMenuPosition(null); }}
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 cursor-pointer">
                                         <FileText className="w-4 h-4 text-red-500" /><span className="font-medium">PDF</span>
                                       </button>
-                                      <button onClick={() => { downloadAsExcel(invoice); setDownloadMenuOpen(null); }}
+                                      <button onClick={() => { downloadAsExcel(invoice); setDownloadMenuOpen(null); setMenuPosition(null); }}
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 flex items-center gap-2 cursor-pointer">
                                         <FileText className="w-4 h-4 text-green-600" /><span className="font-medium">CSV / Excel</span>
                                       </button>
@@ -574,28 +578,31 @@ export default function InvoicingPage() {
                                 <Send className="w-4 h-4 text-gray-400 hover:text-purple-600" />
                               </button>
                               <div className="relative">
-                                <button onClick={() => setActiveMenu(activeMenu === invoice.id ? null : invoice.id)}
+                                <button onClick={(e) => {
+                                  if (activeMenu === invoice.id) { setActiveMenu(null); setMenuPosition(null); }
+                                  else { const r = e.currentTarget.getBoundingClientRect(); const right = window.innerWidth - r.right; const pos = window.innerHeight - r.bottom > 180 ? { top: r.bottom + 4, right } : { bottom: window.innerHeight - r.top + 4, right }; setMenuPosition(pos); setActiveMenu(invoice.id); }
+                                }}
                                   className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
                                   <MoreVertical className="w-4 h-4 text-gray-400" />
                                 </button>
-                                {activeMenu === invoice.id && (
+                                {activeMenu === invoice.id && menuPosition && (
                                   <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
-                                    <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
-                                      <button onClick={() => { handleViewInvoice(invoice); setActiveMenu(null); }}
+                                    <div className="fixed inset-0 z-40" onClick={() => { setActiveMenu(null); setMenuPosition(null); }} />
+                                    <div className="fixed w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50" style={{ top: menuPosition.top, bottom: menuPosition.bottom, right: menuPosition.right }}>
+                                      <button onClick={() => { handleViewInvoice(invoice); setActiveMenu(null); setMenuPosition(null); }}
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer">
                                         <Edit className="w-4 h-4 text-blue-600" /><span className="font-medium">Edit</span>
                                       </button>
-                                      <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}`); showToast('Link copied!'); setActiveMenu(null); }}
+                                      <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}`); showToast('Link copied!'); setActiveMenu(null); setMenuPosition(null); }}
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 flex items-center gap-2 cursor-pointer">
                                         <Copy className="w-4 h-4 text-green-600" /><span className="font-medium">Copy Link</span>
                                       </button>
-                                      <button onClick={() => { handleSendEmail(invoice); setActiveMenu(null); }}
+                                      <button onClick={() => { handleSendEmail(invoice); setActiveMenu(null); setMenuPosition(null); }}
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 flex items-center gap-2 cursor-pointer">
                                         <Mail className="w-4 h-4 text-purple-600" /><span className="font-medium">Email</span>
                                       </button>
                                       <div className="border-t border-gray-100 my-1" />
-                                      <button onClick={() => { setDeletingInvoice(invoice); setShowDeleteModal(true); setActiveMenu(null); }}
+                                      <button onClick={() => { setDeletingInvoice(invoice); setShowDeleteModal(true); setActiveMenu(null); setMenuPosition(null); }}
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer">
                                         <Trash2 className="w-4 h-4" /><span className="font-medium">Delete</span>
                                       </button>

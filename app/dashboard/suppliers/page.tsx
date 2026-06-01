@@ -79,6 +79,7 @@ export default function SuppliersPage() {
   const [messageBody, setMessageBody] = useState('');
   const [messagePriority, setMessagePriority] = useState('normal');
   const [isOrdering, setIsOrdering] = useState(false);
+  const [orderQuantity, setOrderQuantity] = useState('');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
@@ -88,6 +89,10 @@ export default function SuppliersPage() {
   const [newSupplierContact, setNewSupplierContact] = useState('');
   const [newSupplierEmail, setNewSupplierEmail] = useState('');
   const [newSupplierPhone, setNewSupplierPhone] = useState('');
+  const [newSupplierLeadTime, setNewSupplierLeadTime] = useState('');
+  const [newSupplierPaymentTerms, setNewSupplierPaymentTerms] = useState('net30');
+  const [newSupplierWebsite, setNewSupplierWebsite] = useState('');
+  const [newSupplierNotes, setNewSupplierNotes] = useState('');
 
   const fetchSuppliers = React.useCallback(async () => {
     try {
@@ -108,11 +113,11 @@ export default function SuppliersPage() {
           category: s.category || 'services',
           status: (s.status?.toLowerCase() || 'active') as Supplier['status'],
           rating: s.rating || 0,
-          totalOrders: 0,
-          totalSpent: 0,
+          totalOrders: s.totalOrders || 0,
+          totalSpent: s.totalSpent || 0,
           lastOrder: new Date(),
-          paymentTerms: 'Net 30',
-          leadTime: 'N/A',
+          paymentTerms: s.paymentTerms || 'N/A',
+          leadTime: s.leadTime || 'N/A',
           minimumOrder: 0,
           products: [],
           performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0, priceCompetitiveness: 0 },
@@ -138,12 +143,18 @@ export default function SuppliersPage() {
           email: newSupplierEmail,
           phone: newSupplierPhone,
           category: newSupplierCategory,
+          leadTime: newSupplierLeadTime,
+          paymentTerms: newSupplierPaymentTerms,
+          website: newSupplierWebsite,
+          notes: newSupplierNotes,
         }),
       });
       if (res.ok) {
         await fetchSuppliers();
         setShowAddSupplier(false);
-        setNewSupplierName(''); setNewSupplierCategory(''); setNewSupplierContact(''); setNewSupplierEmail(''); setNewSupplierPhone('');
+        setNewSupplierName(''); setNewSupplierCategory(''); setNewSupplierContact('');
+        setNewSupplierEmail(''); setNewSupplierPhone(''); setNewSupplierLeadTime('');
+        setNewSupplierPaymentTerms('net30'); setNewSupplierWebsite(''); setNewSupplierNotes('');
         showNotify('Supplier added successfully');
       } else {
         const err = await res.json();
@@ -655,23 +666,41 @@ export default function SuppliersPage() {
 
               {/* Performance */}
               <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Performance</p>
-                {[
-                  { label: 'On-Time Delivery', value: selectedSupplier.performance.onTimeDelivery, color: 'bg-emerald-500' },
-                  { label: 'Quality Score', value: selectedSupplier.performance.qualityScore, color: 'bg-blue-500' },
-                  { label: 'Response Time', value: selectedSupplier.performance.responseTime, color: 'bg-indigo-500' },
-                  { label: 'Price Index', value: selectedSupplier.performance.priceCompetitiveness, color: 'bg-amber-500' },
-                ].map((perf, i) => (
-                  <div key={i}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-bold text-gray-600">{perf.label}</span>
-                      <span className="text-[11px] font-black text-gray-900">{perf.value}%</span>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Rating</p>
+                  <p className="text-[10px] text-gray-400">{selectedSupplier.totalOrders} order{selectedSupplier.totalOrders !== 1 ? 's' : ''} placed</p>
+                </div>
+                {/* Clickable star rating */}
+                <div className="flex items-center gap-1.5">
+                  {[1,2,3,4,5].map(star => (
+                    <button key={star} onClick={async () => {
+                      await fetch(`/api/suppliers/${selectedSupplier.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rating: star }),
+                      });
+                      await fetchSuppliers();
+                      showNotify('Rating updated');
+                    }} className="cursor-pointer transition-transform hover:scale-110">
+                      <Star className={`w-6 h-6 ${star <= selectedSupplier.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
+                    </button>
+                  ))}
+                  <span className="text-sm font-black text-gray-700 ml-1">{selectedSupplier.rating > 0 ? `${selectedSupplier.rating}/5` : 'Not rated'}</span>
+                </div>
+                {selectedSupplier.totalOrders === 0 ? (
+                  <p className="text-[11px] text-gray-400 italic">Performance metrics build up as you place orders with this supplier.</p>
+                ) : (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-gray-600">Orders Placed</span>
+                      <span className="text-[11px] font-black text-gray-900">{selectedSupplier.totalOrders}</span>
                     </div>
-                    <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                      <div className={`h-full ${perf.color} rounded-full`} style={{ width: `${perf.value}%` }} />
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-gray-600">Total Spent</span>
+                      <span className="text-[11px] font-black text-gray-900">£{selectedSupplier.totalSpent.toLocaleString()}</span>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
 
               {/* Contact */}
@@ -823,7 +852,7 @@ export default function SuppliersPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Website</label>
-                    <input type="url" placeholder="https://" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                    <input type="url" value={newSupplierWebsite} onChange={(e) => setNewSupplierWebsite(e.target.value)} placeholder="https://" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
                   </div>
                 </div>
 
@@ -834,7 +863,7 @@ export default function SuppliersPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Payment Terms</label>
-                      <select className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-blue-500 transition-all">
+                      <select value={newSupplierPaymentTerms} onChange={(e) => setNewSupplierPaymentTerms(e.target.value)} className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-blue-500 transition-all">
                         <option value="net30" className="text-gray-900 bg-white">Net 30</option>
                         <option value="net60" className="text-gray-900 bg-white">Net 60</option>
                         <option value="net90" className="text-gray-900 bg-white">Net 90</option>
@@ -843,7 +872,7 @@ export default function SuppliersPage() {
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Lead Time</label>
-                      <input type="text" placeholder="e.g. 7-10 days" className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-all" />
+                      <input type="text" value={newSupplierLeadTime} onChange={(e) => setNewSupplierLeadTime(e.target.value)} placeholder="e.g. 7-10 days" className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-all" />
                     </div>
                   </div>
                 </div>
@@ -945,12 +974,52 @@ export default function SuppliersPage() {
 
             <div className="px-5 sm:px-6 py-4 border-t border-gray-100 shrink-0">
               <button
-                disabled={!messageSubject || !messageBody}
-                onClick={() => { showNotify(`Message sent to ${selectedSupplier.name}`); setShowMessageModal(false); setMessageSubject(''); setMessageBody(''); }}
+                disabled={!messageSubject || !messageBody || isOrdering}
+                onClick={async () => {
+                  setIsOrdering(true);
+                  try {
+                    const priorityLabel = messagePriority.charAt(0).toUpperCase() + messagePriority.slice(1);
+                    const html = `
+                      <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+                        <div style="background:#2563eb;padding:20px 24px;border-radius:8px 8px 0 0">
+                          <h2 style="color:#fff;margin:0;font-size:18px">Message from Okleevo</h2>
+                          <p style="color:#bfdbfe;margin:4px 0 0;font-size:13px">Priority: ${priorityLabel}</p>
+                        </div>
+                        <div style="background:#f8fafc;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px">
+                          <p style="margin:0 0 16px">Dear <strong>${selectedSupplier.contactPerson || selectedSupplier.name}</strong>,</p>
+                          <div style="white-space:pre-wrap;font-size:14px;color:#1e293b;line-height:1.6">${messageBody}</div>
+                          <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0"/>
+                          <p style="margin:0;color:#94a3b8;font-size:12px">Sent via Okleevo Supplier Management</p>
+                        </div>
+                      </div>`;
+                    const res = await fetch('/api/email/send', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        to: selectedSupplier.email,
+                        subject: messageSubject,
+                        html,
+                        text: messageBody,
+                      }),
+                    });
+                    if (res.ok) {
+                      setShowMessageModal(false);
+                      setMessageSubject('');
+                      setMessageBody('');
+                      showNotify(`Message sent to ${selectedSupplier.email}`);
+                    } else {
+                      showNotify('Failed to send message', 'error');
+                    }
+                  } catch {
+                    showNotify('Failed to send message', 'error');
+                  } finally {
+                    setIsOrdering(false);
+                  }
+                }}
                 className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <MessageSquare className="w-4 h-4" />
-                Send Message
+                {isOrdering ? <RefreshCw className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+                {isOrdering ? 'Sending…' : 'Send Message'}
               </button>
             </div>
           </div>
@@ -960,7 +1029,7 @@ export default function SuppliersPage() {
       {/* ── Place Order Modal ── */}
       {showOrderModal && selectedSupplier && (
         <div className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowOrderModal(false)} />
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => { setShowOrderModal(false); setOrderQuantity(''); }} />
           <div className="relative w-full sm:max-w-lg bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
             <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
               <div className="w-10 h-1 bg-gray-200 rounded-full" />
@@ -993,7 +1062,7 @@ export default function SuppliersPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Quantity *</label>
-                  <input type="number" placeholder="0" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                  <input type="number" min="1" value={orderQuantity} onChange={e => setOrderQuantity(e.target.value)} placeholder="0" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Min. Order</label>
@@ -1035,19 +1104,74 @@ export default function SuppliersPage() {
                 Cancel
               </button>
               <button
-                disabled={isOrdering}
-                onClick={() => {
+                disabled={isOrdering || !orderQuantity || parseInt(orderQuantity) < 1}
+                onClick={async () => {
+                  if (!orderQuantity || parseInt(orderQuantity) < 1) {
+                    showNotify('Please enter a quantity', 'warning');
+                    return;
+                  }
                   setIsOrdering(true);
-                  setTimeout(() => {
+                  const poRef = `PO-${Date.now().toString(36).toUpperCase()}`;
+                  const priority = messagePriority || 'standard';
+                  const poHtml = `
+                    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+                      <div style="background:#1d4ed8;padding:24px;border-radius:8px 8px 0 0">
+                        <h1 style="color:#fff;margin:0;font-size:22px">Purchase Order</h1>
+                        <p style="color:#bfdbfe;margin:4px 0 0">Ref: ${poRef}</p>
+                      </div>
+                      <div style="background:#f8fafc;padding:24px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px">
+                        <p style="margin:0 0 16px">Dear <strong>${selectedSupplier.contactPerson || selectedSupplier.name}</strong>,</p>
+                        <p style="margin:0 0 16px">We would like to place the following order:</p>
+                        <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+                          <tr style="background:#e0f2fe">
+                            <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:#0369a1">Field</th>
+                            <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:#0369a1">Detail</th>
+                          </tr>
+                          <tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px;font-weight:600">Supplier</td><td style="padding:8px 12px">${selectedSupplier.name}</td></tr>
+                          <tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc"><td style="padding:8px 12px;font-weight:600">Quantity</td><td style="padding:8px 12px">${orderQuantity} units</td></tr>
+                          <tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px;font-weight:600">Priority</td><td style="padding:8px 12px;text-transform:capitalize">${priority}</td></tr>
+                          <tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc"><td style="padding:8px 12px;font-weight:600">Est. Delivery</td><td style="padding:8px 12px">${selectedSupplier.leadTime}</td></tr>
+                          <tr><td style="padding:8px 12px;font-weight:600">PO Reference</td><td style="padding:8px 12px;font-family:monospace">${poRef}</td></tr>
+                        </table>
+                        <p style="margin:0 0 8px">Please confirm receipt of this order and provide an expected delivery date.</p>
+                        <p style="margin:0;color:#64748b;font-size:13px">This purchase order was generated via Okleevo.</p>
+                      </div>
+                    </div>`;
+                  try {
+                    const res = await fetch('/api/email/send', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        to: selectedSupplier.email,
+                        subject: `Purchase Order ${poRef} — Qty: ${orderQuantity} units`,
+                        html: poHtml,
+                        text: `Purchase Order ${poRef}\nSupplier: ${selectedSupplier.name}\nQuantity: ${orderQuantity} units\nPriority: ${priority}\nEst. Delivery: ${selectedSupplier.leadTime}`,
+                      }),
+                    });
+                    if (res.ok) {
+                      // Increment order count in DB
+                      await fetch(`/api/suppliers/${selectedSupplier.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ incrementOrders: true, spentAmount: 0 }),
+                      });
+                      await fetchSuppliers();
+                      setShowOrderModal(false);
+                      setOrderQuantity('');
+                      showNotify(`Purchase order ${poRef} emailed to ${selectedSupplier.email}`);
+                    } else {
+                      showNotify('Failed to send order email', 'error');
+                    }
+                  } catch {
+                    showNotify('Failed to send order email', 'error');
+                  } finally {
                     setIsOrdering(false);
-                    setShowOrderModal(false);
-                    showNotify(`Order placed with ${selectedSupplier.name}`);
-                  }, 2000);
+                  }
                 }}
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50"
               >
                 {isOrdering ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                {isOrdering ? 'Placing…' : 'Place Order'}
+                {isOrdering ? 'Sending PO…' : 'Place Order'}
               </button>
             </div>
           </div>

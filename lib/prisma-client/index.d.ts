@@ -21452,6 +21452,10 @@ export namespace Prisma {
     address: string | null
     category: string | null
     rating: number | null
+    leadTime: string | null
+    paymentTerms: string | null
+    website: string | null
+    notes: string | null
     status: $Enums.SupplierStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -21467,6 +21471,10 @@ export namespace Prisma {
     address: string | null
     category: string | null
     rating: number | null
+    leadTime: string | null
+    paymentTerms: string | null
+    website: string | null
+    notes: string | null
     status: $Enums.SupplierStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -21482,6 +21490,10 @@ export namespace Prisma {
     address: number
     category: number
     rating: number
+    leadTime: number
+    paymentTerms: number
+    website: number
+    notes: number
     status: number
     createdAt: number
     updatedAt: number
@@ -21507,6 +21519,10 @@ export namespace Prisma {
     address?: true
     category?: true
     rating?: true
+    leadTime?: true
+    paymentTerms?: true
+    website?: true
+    notes?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -21522,6 +21538,10 @@ export namespace Prisma {
     address?: true
     category?: true
     rating?: true
+    leadTime?: true
+    paymentTerms?: true
+    website?: true
+    notes?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -21537,6 +21557,10 @@ export namespace Prisma {
     address?: true
     category?: true
     rating?: true
+    leadTime?: true
+    paymentTerms?: true
+    website?: true
+    notes?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -21639,6 +21663,10 @@ export namespace Prisma {
     address: string | null
     category: string | null
     rating: number | null
+    leadTime: string | null
+    paymentTerms: string | null
+    website: string | null
+    notes: string | null
     status: $Enums.SupplierStatus
     createdAt: Date
     updatedAt: Date
@@ -21673,6 +21701,10 @@ export namespace Prisma {
     address?: boolean
     category?: boolean
     rating?: boolean
+    leadTime?: boolean
+    paymentTerms?: boolean
+    website?: boolean
+    notes?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -21691,6 +21723,10 @@ export namespace Prisma {
     address?: boolean
     category?: boolean
     rating?: boolean
+    leadTime?: boolean
+    paymentTerms?: boolean
+    website?: boolean
+    notes?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -21707,6 +21743,10 @@ export namespace Prisma {
     address?: boolean
     category?: boolean
     rating?: boolean
+    leadTime?: boolean
+    paymentTerms?: boolean
+    website?: boolean
+    notes?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -21723,12 +21763,16 @@ export namespace Prisma {
     address?: boolean
     category?: boolean
     rating?: boolean
+    leadTime?: boolean
+    paymentTerms?: boolean
+    website?: boolean
+    notes?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type SupplierOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "name" | "contactName" | "email" | "phone" | "address" | "category" | "rating" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["supplier"]>
+  export type SupplierOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "name" | "contactName" | "email" | "phone" | "address" | "category" | "rating" | "leadTime" | "paymentTerms" | "website" | "notes" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["supplier"]>
   export type SupplierInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     inventoryItems?: boolean | Supplier$inventoryItemsArgs<ExtArgs>
@@ -21757,6 +21801,10 @@ export namespace Prisma {
       address: string | null
       category: string | null
       rating: number | null
+      leadTime: string | null
+      paymentTerms: string | null
+      website: string | null
+      notes: string | null
       status: $Enums.SupplierStatus
       createdAt: Date
       updatedAt: Date
@@ -22194,6 +22242,10 @@ export namespace Prisma {
     readonly address: FieldRef<"Supplier", 'String'>
     readonly category: FieldRef<"Supplier", 'String'>
     readonly rating: FieldRef<"Supplier", 'Int'>
+    readonly leadTime: FieldRef<"Supplier", 'String'>
+    readonly paymentTerms: FieldRef<"Supplier", 'String'>
+    readonly website: FieldRef<"Supplier", 'String'>
+    readonly notes: FieldRef<"Supplier", 'String'>
     readonly status: FieldRef<"Supplier", 'SupplierStatus'>
     readonly createdAt: FieldRef<"Supplier", 'DateTime'>
     readonly updatedAt: FieldRef<"Supplier", 'DateTime'>
@@ -45858,6 +45910,10 @@ export namespace Prisma {
     address: 'address',
     category: 'category',
     rating: 'rating',
+    leadTime: 'leadTime',
+    paymentTerms: 'paymentTerms',
+    website: 'website',
+    notes: 'notes',
     status: 'status',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -48111,6 +48167,10 @@ export namespace Prisma {
     address?: StringNullableFilter<"Supplier"> | string | null
     category?: StringNullableFilter<"Supplier"> | string | null
     rating?: IntNullableFilter<"Supplier"> | number | null
+    leadTime?: StringNullableFilter<"Supplier"> | string | null
+    paymentTerms?: StringNullableFilter<"Supplier"> | string | null
+    website?: StringNullableFilter<"Supplier"> | string | null
+    notes?: StringNullableFilter<"Supplier"> | string | null
     status?: EnumSupplierStatusFilter<"Supplier"> | $Enums.SupplierStatus
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeFilter<"Supplier"> | Date | string
@@ -48128,6 +48188,10 @@ export namespace Prisma {
     address?: SortOrderInput | SortOrder
     category?: SortOrderInput | SortOrder
     rating?: SortOrderInput | SortOrder
+    leadTime?: SortOrderInput | SortOrder
+    paymentTerms?: SortOrderInput | SortOrder
+    website?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -48148,6 +48212,10 @@ export namespace Prisma {
     address?: StringNullableFilter<"Supplier"> | string | null
     category?: StringNullableFilter<"Supplier"> | string | null
     rating?: IntNullableFilter<"Supplier"> | number | null
+    leadTime?: StringNullableFilter<"Supplier"> | string | null
+    paymentTerms?: StringNullableFilter<"Supplier"> | string | null
+    website?: StringNullableFilter<"Supplier"> | string | null
+    notes?: StringNullableFilter<"Supplier"> | string | null
     status?: EnumSupplierStatusFilter<"Supplier"> | $Enums.SupplierStatus
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeFilter<"Supplier"> | Date | string
@@ -48165,6 +48233,10 @@ export namespace Prisma {
     address?: SortOrderInput | SortOrder
     category?: SortOrderInput | SortOrder
     rating?: SortOrderInput | SortOrder
+    leadTime?: SortOrderInput | SortOrder
+    paymentTerms?: SortOrderInput | SortOrder
+    website?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -48188,6 +48260,10 @@ export namespace Prisma {
     address?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
     category?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
     rating?: IntNullableWithAggregatesFilter<"Supplier"> | number | null
+    leadTime?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
+    paymentTerms?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
+    website?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
+    notes?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
     status?: EnumSupplierStatusWithAggregatesFilter<"Supplier"> | $Enums.SupplierStatus
     createdAt?: DateTimeWithAggregatesFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Supplier"> | Date | string
@@ -51569,6 +51645,10 @@ export namespace Prisma {
     address?: string | null
     category?: string | null
     rating?: number | null
+    leadTime?: string | null
+    paymentTerms?: string | null
+    website?: string | null
+    notes?: string | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51586,6 +51666,10 @@ export namespace Prisma {
     address?: string | null
     category?: string | null
     rating?: number | null
+    leadTime?: string | null
+    paymentTerms?: string | null
+    website?: string | null
+    notes?: string | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51601,6 +51685,10 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    leadTime?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51618,6 +51706,10 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    leadTime?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51634,6 +51726,10 @@ export namespace Prisma {
     address?: string | null
     category?: string | null
     rating?: number | null
+    leadTime?: string | null
+    paymentTerms?: string | null
+    website?: string | null
+    notes?: string | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51648,6 +51744,10 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    leadTime?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51663,6 +51763,10 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    leadTime?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55113,6 +55217,10 @@ export namespace Prisma {
     address?: SortOrder
     category?: SortOrder
     rating?: SortOrder
+    leadTime?: SortOrder
+    paymentTerms?: SortOrder
+    website?: SortOrder
+    notes?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -55132,6 +55240,10 @@ export namespace Prisma {
     address?: SortOrder
     category?: SortOrder
     rating?: SortOrder
+    leadTime?: SortOrder
+    paymentTerms?: SortOrder
+    website?: SortOrder
+    notes?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -55147,6 +55259,10 @@ export namespace Prisma {
     address?: SortOrder
     category?: SortOrder
     rating?: SortOrder
+    leadTime?: SortOrder
+    paymentTerms?: SortOrder
+    website?: SortOrder
+    notes?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -62154,6 +62270,10 @@ export namespace Prisma {
     address?: string | null
     category?: string | null
     rating?: number | null
+    leadTime?: string | null
+    paymentTerms?: string | null
+    website?: string | null
+    notes?: string | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -62169,6 +62289,10 @@ export namespace Prisma {
     address?: string | null
     category?: string | null
     rating?: number | null
+    leadTime?: string | null
+    paymentTerms?: string | null
+    website?: string | null
+    notes?: string | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -62913,6 +63037,10 @@ export namespace Prisma {
     address?: StringNullableFilter<"Supplier"> | string | null
     category?: StringNullableFilter<"Supplier"> | string | null
     rating?: IntNullableFilter<"Supplier"> | number | null
+    leadTime?: StringNullableFilter<"Supplier"> | string | null
+    paymentTerms?: StringNullableFilter<"Supplier"> | string | null
+    website?: StringNullableFilter<"Supplier"> | string | null
+    notes?: StringNullableFilter<"Supplier"> | string | null
     status?: EnumSupplierStatusFilter<"Supplier"> | $Enums.SupplierStatus
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeFilter<"Supplier"> | Date | string
@@ -64854,6 +64982,10 @@ export namespace Prisma {
     address?: string | null
     category?: string | null
     rating?: number | null
+    leadTime?: string | null
+    paymentTerms?: string | null
+    website?: string | null
+    notes?: string | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -64870,6 +65002,10 @@ export namespace Prisma {
     address?: string | null
     category?: string | null
     rating?: number | null
+    leadTime?: string | null
+    paymentTerms?: string | null
+    website?: string | null
+    notes?: string | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -65017,6 +65153,10 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    leadTime?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65033,6 +65173,10 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    leadTime?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -71303,6 +71447,10 @@ export namespace Prisma {
     address?: string | null
     category?: string | null
     rating?: number | null
+    leadTime?: string | null
+    paymentTerms?: string | null
+    website?: string | null
+    notes?: string | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -71948,6 +72096,10 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    leadTime?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -71963,6 +72115,10 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    leadTime?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -71978,6 +72134,10 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    leadTime?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

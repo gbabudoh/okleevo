@@ -29,6 +29,32 @@ export const PUT = withMultiTenancy(async (req, { dataFilter, params }) => {
   }
 });
 
+// PATCH — increment order count + update rating
+export const PATCH = withMultiTenancy(async (req, { dataFilter, params }) => {
+  const { id } = await params;
+  try {
+    const { incrementOrders, spentAmount, rating } = await req.json();
+    if (incrementOrders) {
+      await prisma.$executeRaw`
+        UPDATE "Supplier"
+        SET "totalOrders" = COALESCE("totalOrders", 0) + 1,
+            "totalSpent"  = COALESCE("totalSpent", 0) + ${spentAmount || 0}
+        WHERE id = ${id as string} AND "businessId" = ${dataFilter.businessId}
+      `;
+    }
+    if (rating !== undefined) {
+      await prisma.$executeRaw`
+        UPDATE "Supplier" SET rating = ${rating}
+        WHERE id = ${id as string} AND "businessId" = ${dataFilter.businessId}
+      `;
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error patching supplier:', error);
+    return NextResponse.json({ error: 'Failed to update supplier' }, { status: 500 });
+  }
+});
+
 export const DELETE = withMultiTenancy(async (_req, { dataFilter, params }) => {
   const { id } = await params;
   try {

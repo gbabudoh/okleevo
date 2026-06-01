@@ -504,8 +504,14 @@ model Supplier {
   phone       String?
   address     String?
 
-  category String?
-  rating   Int?    @default(0)
+  category     String?
+  rating       Int?    @default(0)
+  leadTime     String?
+  paymentTerms String?
+  website      String?
+  notes        String?
+  totalOrders  Int?    @default(0)
+  totalSpent   Float?  @default(0)
 
   status SupplierStatus @default(ACTIVE)
 

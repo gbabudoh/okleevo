@@ -4,10 +4,15 @@ import { prisma } from '@/lib/prisma';
 
 export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
   try {
-    const suppliers = await prisma.supplier.findMany({
-      where: { businessId: dataFilter.businessId },
-      orderBy: { createdAt: 'desc' },
-    });
+    const suppliers = await prisma.$queryRaw`
+      SELECT id, "businessId", name, "contactName", email, phone, address, category,
+             rating, status, "createdAt", "updatedAt",
+             "leadTime", "paymentTerms", website, notes,
+             "totalOrders", "totalSpent"
+      FROM "Supplier"
+      WHERE "businessId" = ${dataFilter.businessId}
+      ORDER BY "createdAt" DESC
+    `;
     return NextResponse.json(suppliers);
   } catch (error) {
     console.error('Error fetching suppliers:', error);
@@ -18,7 +23,7 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
 export const POST = withMultiTenancy(async (req: NextRequest, { dataFilter }) => {
   try {
     const data = await req.json();
-    const { name, contactName, email, phone, address, category, website, notes } = data;
+    const { name, contactName, email, phone, address, category, website, notes, leadTime, paymentTerms } = data;
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
@@ -33,15 +38,23 @@ export const POST = withMultiTenancy(async (req: NextRequest, { dataFilter }) =>
         phone: phone || null,
         address: address || null,
         category: category || null,
-        // website and notes not in schema — store in address if needed
       },
     });
 
-    return NextResponse.json({
-      ...supplier,
-      website: website || null,
-      notes: notes || null,
-    }, { status: 201 });
+    // Update new fields via raw SQL (works even if Prisma client hasn't been regenerated yet)
+    if (leadTime || paymentTerms || website || notes) {
+      await prisma.$executeRaw`
+        UPDATE "Supplier"
+        SET
+          "leadTime"     = ${leadTime || null},
+          "paymentTerms" = ${paymentTerms || null},
+          "website"      = ${website || null},
+          "notes"        = ${notes || null}
+        WHERE id = ${supplier.id}
+      `;
+    }
+
+    return NextResponse.json({ ...supplier, leadTime: leadTime || null, paymentTerms: paymentTerms || null, website: website || null, notes: notes || null }, { status: 201 });
   } catch (error) {
     console.error('Error creating supplier:', error);
     return NextResponse.json({ error: 'Failed to create supplier' }, { status: 500 });

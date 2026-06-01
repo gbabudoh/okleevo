@@ -28,7 +28,7 @@ import {
   Filter,
   DollarSign,
 } from "lucide-react";
-import useSWR from "swr";
+import useSWR, { mutate as globalMutate } from "swr";
 import accounting from "accounting";
 import { AccountingSummary } from "@/components/dashboard/accounting/AccountingSummary";
 import { ChartOfAccounts } from "@/components/dashboard/accounting/ChartOfAccounts";
@@ -56,7 +56,8 @@ interface Transaction {
   entries: {
     debit: number;
     credit: number;
-    account: { name: string };
+    accountId: string;
+    account: { id: string; name: string };
   }[];
 }
 
@@ -456,7 +457,6 @@ const AccountTypeSelector = ({ newAccount, setNewAccount }: AccountTypeSelectorP
 
 export default function AccountingPage() {
   const [activeTab, setActiveTab] = useState("overview");
-  const { mutate } = useSWR("/api/accounting/accounts", fetcher);
   const [showNewEntryModal, setShowNewEntryModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -534,10 +534,12 @@ export default function AccountingPage() {
       alert("Debit and Credit amounts must be equal");
       return;
     }
-
     try {
-      const res = await fetch("/api/accounting/journal", {
-        method: "POST",
+      const isEdit = showEditEntryModal && selectedEntry;
+      const url = isEdit ? `/api/accounting/journal/${selectedEntry.id}` : "/api/accounting/journal";
+      const method = isEdit ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           date: newEntry.date,
@@ -549,14 +551,17 @@ export default function AccountingPage() {
           ]
         })
       });
-
       if (res.ok) {
         resetEntry();
         setShowNewEntryModal(false);
         setShowEditEntryModal(false);
-        mutate("/api/accounting/journal");
-        mutate("/api/accounting/accounts");
-        showToastMsg("Journal entry saved successfully");
+        setSelectedEntry(null);
+        globalMutate("/api/accounting/journal");
+        globalMutate("/api/accounting/accounts");
+        showToastMsg(isEdit ? "Journal entry updated successfully" : "Journal entry saved successfully");
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to save entry");
       }
     } catch (err) {
       console.error("Save entry error:", err);
@@ -582,23 +587,50 @@ export default function AccountingPage() {
           body: JSON.stringify(acc)
         });
       }
-      mutate("/api/accounting/accounts");
+      globalMutate("/api/accounting/accounts");
       showToastMsg("Default Chart of Accounts initialized!");
     } catch (err) {
       console.error("Seed accounts error:", err);
     }
   };
 
-  const handleSaveAccount = () => {
+  const handleSaveAccount = async () => {
     if (!newAccount.code || !newAccount.name) {
       alert("Please fill in all required fields");
       return;
     }
-    console.log("Saving account:", newAccount);
-    setNewAccount({ code: "", name: "", type: "asset", description: "", openingBalance: "" });
-    setShowAddAccountModal(false);
-    setShowEditAccountModal(false);
-    showToastMsg("Account saved successfully");
+    try {
+      const isEdit = showEditAccountModal && selectedAccount;
+      const url = isEdit ? `/api/accounting/accounts/${selectedAccount.id}` : "/api/accounting/accounts";
+      const method = isEdit ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: newAccount.code,
+          name: newAccount.name,
+          type: newAccount.type,
+          description: newAccount.description,
+          category: newAccount.type.toUpperCase(),
+          openingBalance: newAccount.openingBalance,
+        })
+      });
+      if (res.ok) {
+        setNewAccount({ code: "", name: "", type: "asset", description: "", openingBalance: "" });
+        setShowAddAccountModal(false);
+        setShowEditAccountModal(false);
+        setSelectedAccount(null);
+        globalMutate("/api/accounting/accounts");
+        globalMutate("/api/accounting/journal");
+        showToastMsg(isEdit ? "Account updated successfully" : "Account created successfully");
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to save account");
+      }
+    } catch (err) {
+      console.error("Save account error:", err);
+      alert("Failed to save account");
+    }
   };
 
   const handleViewAccount  = (a: Account) => { setSelectedAccount(a); setShowViewAccountModal(true); };
@@ -614,16 +646,32 @@ export default function AccountingPage() {
       date: new Date(e.date).toISOString().split("T")[0],
       description: e.description,
       reference: e.reference || "",
-      debitAccount: e.entries[0]?.account.name || "",
+      debitAccount: e.entries[0]?.accountId || "",
       debitAmount:  (e.entries[0]?.debit  || 0).toString(),
-      creditAccount: e.entries[1]?.account.name || "",
+      creditAccount: e.entries[1]?.accountId || "",
       creditAmount:  (e.entries[1]?.credit || 0).toString(),
     });
     setShowEditEntryModal(true);
   };
   const handleDeleteClick   = (type: "account" | "entry", id: string) => { setDeleteTarget({ type, id }); setShowDeleteModal(true); };
-  const handleConfirmDelete = () => {
-    if (deleteTarget) showToastMsg(`${deleteTarget.type === "account" ? "Account" : "Entry"} deleted`);
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      const url = deleteTarget.type === "account"
+        ? `/api/accounting/accounts/${deleteTarget.id}`
+        : `/api/accounting/journal/${deleteTarget.id}`;
+      const res = await fetch(url, { method: "DELETE" });
+      if (res.ok) {
+        showToastMsg(`${deleteTarget.type === "account" ? "Account" : "Entry"} deleted`);
+        globalMutate("/api/accounting/accounts");
+        globalMutate("/api/accounting/journal");
+      } else {
+        alert("Failed to delete");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Failed to delete");
+    }
     setShowDeleteModal(false);
     setDeleteTarget(null);
   };

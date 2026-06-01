@@ -125,10 +125,61 @@ export default function TaxationPage() {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   }
+
+  const makeQuickPDF = (title: string, rows: [string, string][], note?: string) => {
+    const doc = new jsPDF();
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 0, 210, 38, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+    doc.text('Okleevo', 14, 18);
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text('Tax Report — For Accountant Submission to HMRC', 14, 28);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text(title, 14, 52);
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, 14, 60);
+    doc.setDrawColor(220); doc.line(14, 64, 196, 64);
+    doc.setTextColor(0); doc.setFontSize(10);
+    let y = 74;
+    rows.forEach(([label, value], i) => {
+      if (i % 2 === 0) { doc.setFillColor(248, 249, 250); doc.rect(14, y - 5, 182, 9, 'F'); }
+      doc.setFont('helvetica', 'bold'); doc.text(label, 16, y);
+      doc.setFont('helvetica', 'normal'); doc.text(value, 110, y);
+      y += 10;
+    });
+    if (note) { doc.setFontSize(8); doc.setTextColor(130); doc.text(note, 14, y + 6); }
+    doc.setFontSize(8); doc.setTextColor(130);
+    doc.text('Okleevo | For accountant use only. Not an official HMRC submission.', 105, 285, { align: 'center' });
+    doc.save(`Okleevo_${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const makeQuickExcel = (title: string, rows: [string, string][]) => {
+    const esc = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
+    const csv = [
+      esc('Okleevo Tax Report'),
+      esc(title),
+      `${esc('Generated')},${esc(new Date().toLocaleDateString('en-GB'))}`,
+      '',
+      `${esc('Field')},${esc('Value')}`,
+      ...rows.map(([label, value]) => `${esc(label)},${esc(value)}`),
+      '',
+      `${esc('Note')},${esc('For accountant use only. Not an official HMRC submission.')}`,
+    ].join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Okleevo_${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const [showCalculatorModal, setShowCalculatorModal] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
-  const [selectedDownloadFormat, setSelectedDownloadFormat] = useState<'TXT' | 'CSV' | 'PDF' | 'JSON'>('PDF');
+  const [selectedDownloadFormat, setSelectedDownloadFormat] = useState<'PDF' | 'Excel'>('PDF');
   const [selectedReportType, setSelectedReportType] = useState<'Self Assessment' | 'Corporation Tax' | 'VAT' | 'PAYE'>('Self Assessment');
 
   const [calculatedTax, setCalculatedTax] = useState(0);
@@ -234,6 +285,7 @@ export default function TaxationPage() {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successContent, setSuccessContent] = useState({ title: '', message: '' });
+  const [successDownloadFns, setSuccessDownloadFns] = useState<{ pdf?: () => void; excel?: () => void } | null>(null);
   const [editingSource, setEditingSource] = useState<{ id: string, name: string, value: number } | null>(null);
   
   // Calendar state
@@ -383,7 +435,7 @@ export default function TaxationPage() {
             </div>
             <div className="min-w-0">
               <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">UK Taxation</h1>
-              <p className="text-xs text-gray-400 hidden sm:block">Complete tax management for UK businesses</p>
+              <p className="text-xs text-gray-400 hidden sm:block">Prepare &amp; download tax reports for your accountant</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -426,8 +478,16 @@ export default function TaxationPage() {
         </div>
       </div>
 
+      {/* ── HMRC Disclaimer Banner ── */}
+      <div className="mx-4 sm:mx-6 mt-3 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <p className="text-xs text-amber-800 leading-relaxed">
+          <strong>Okleevo is not directly connected to HMRC.</strong> This tool helps you calculate and prepare your tax figures. Download your reports and share them with your accountant for official submission to HMRC.
+        </p>
+      </div>
+
       {/* ── Tab Bar ──────────────────────────────────────────────────── */}
-      <div className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100 mt-4">
+      <div className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100 mt-3">
         <div className="flex overflow-x-auto scrollbar-hide px-4">
           {tabs.map(({ id, name, icon: Icon }) => {
             const active = activeTab === id;
@@ -524,47 +584,46 @@ export default function TaxationPage() {
               <p className="text-sm text-gray-600">Estimate your CT liability for the year</p>
             </button>
 
-            <button className="p-6 bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
+            <button onClick={() => setActiveTab('vat')} className="p-6 bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
               <div className="p-3 bg-green-500 rounded-lg w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <Receipt className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-1">Submit VAT Return</h3>
-              <p className="text-sm text-gray-600">File your VAT return to HMRC</p>
+              <h3 className="font-bold text-gray-900 mb-1">Prepare VAT Return</h3>
+              <p className="text-sm text-gray-600">Calculate &amp; download for your accountant</p>
             </button>
 
-            <button className="p-6 bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
+            <button onClick={() => setActiveTab('paye')} className="p-6 bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
               <div className="p-3 bg-purple-500 rounded-lg w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-1">PAYE Submission</h3>
-              <p className="text-sm text-gray-600">Submit RTI and pay PAYE/NI</p>
+              <h3 className="font-bold text-gray-900 mb-1">Prepare PAYE Report</h3>
+              <p className="text-sm text-gray-600">Calculate PAYE/NI &amp; download for accountant</p>
             </button>
           </div>
 
-          {/* MTD Compliance */}
+          {/* Accountant Handoff Banner */}
           <div className="bg-linear-to-br from-indigo-500 to-purple-500 rounded-xl p-5 sm:p-8 text-white">
             <div className="flex items-center gap-3 mb-4">
-              <Shield className="w-8 h-8" />
+              <Download className="w-8 h-8" />
               <div>
-                <h2 className="text-lg sm:text-2xl font-bold">Making Tax Digital (MTD) Compliant</h2>
-                <p className="text-indigo-100">Your system is fully compliant with HMRC MTD requirements</p>
+                <h2 className="text-lg sm:text-2xl font-bold">Download &amp; Share with Your Accountant</h2>
+                <p className="text-indigo-100">Okleevo prepares your figures — your accountant files them with HMRC</p>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-              <button 
-                onClick={() => setShowComplianceModal(true)}
+              <button
+                onClick={() => setShowDownloadModal(true)}
                 className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 hover:shadow-lg transition-all cursor-pointer"
               >
-                View Compliance Status
+                Download Tax Reports
               </button>
-              <button 
+              <button
                 onClick={() => setShowMTDLearnMoreModal(true)}
                 className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 hover:shadow-lg transition-all cursor-pointer"
               >
-                Learn More
+                About MTD Requirements
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -998,7 +1057,7 @@ export default function TaxationPage() {
                     saProgress === 100 ? 'bg-green-500 hover:bg-green-600' : 'bg-amber-500 hover:bg-amber-600'
                   }`}
                 >
-                  {saProgress === 100 ? 'Review & Submit' : 'Continue Return'}
+                  {saProgress === 100 ? 'Review & Download' : 'Continue Return'}
                 </button>
               </div>
             </div>
@@ -1021,12 +1080,12 @@ export default function TaxationPage() {
               <Download className="w-8 h-8 text-purple-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-gray-900 text-sm">Download SA100</p>
             </button>
-            <button 
-              onClick={() => setShowSubmitModal(true)}
+            <button
+              onClick={() => setShowDownloadModal(true)}
               className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all text-center cursor-pointer group"
             >
-              <Send className="w-8 h-8 text-purple-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="font-semibold text-gray-900 text-sm">Submit to HMRC</p>
+              <Download className="w-8 h-8 text-purple-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+              <p className="font-semibold text-gray-900 text-sm">Download for Accountant</p>
             </button>
           </div>
         </div>
@@ -1248,28 +1307,25 @@ export default function TaxationPage() {
 
               <div>
                 <h3 className="font-bold text-gray-900 mb-2.5 text-xs">Select Download Format:</h3>
-                <div className="grid grid-cols-4 gap-2.5">
-                  {(['TXT', 'CSV', 'PDF', 'JSON'] as const).map((format) => (
+                <div className="grid grid-cols-2 gap-3">
+                  {(['PDF', 'Excel'] as const).map((format) => (
                     <button
                       key={format}
                       onClick={() => setSelectedDownloadFormat(format)}
-                      className={`p-3 border-2 rounded-xl transition-all text-center cursor-pointer flex flex-col items-center gap-1.5 ${
+                      className={`p-4 border-2 rounded-xl transition-all cursor-pointer flex items-center gap-3 ${
                         selectedDownloadFormat === format
                           ? 'border-blue-500 bg-blue-50 shadow-lg'
-                          : 'border-gray-100 hover:border-blue-300 hover:bg-blue-50'
+                          : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                       }`}
                     >
-                      <div className={`p-2 rounded-lg w-fit mx-auto transition-colors ${
-                        selectedDownloadFormat === format ? 'bg-blue-200' : 'bg-blue-100'
-                      }`}>
-                        <FileText className={`w-6 h-6 ${
-                          format === 'TXT' ? 'text-blue-600' :
-                          format === 'CSV' ? 'text-green-600' :
-                          format === 'PDF' ? 'text-red-600' :
-                          'text-purple-600'
-                        }`} />
+                      <div className={`p-2 rounded-lg shrink-0 ${format === 'PDF' ? 'bg-red-100' : 'bg-green-100'}`}>
+                        <FileText className={`w-5 h-5 ${format === 'PDF' ? 'text-red-600' : 'text-green-600'}`} />
                       </div>
-                      <span className={`text-[10px] font-bold ${selectedDownloadFormat === format ? 'text-blue-900' : 'text-gray-900'}`}>{format}</span>
+                      <div className="text-left">
+                        <p className="font-bold text-sm text-gray-900">{format}</p>
+                        <p className="text-xs text-gray-400">{format === 'PDF' ? 'Formatted report' : 'Opens in Excel (.csv)'}</p>
+                      </div>
+                      {selectedDownloadFormat === format && <CheckCircle className="w-4 h-4 text-blue-600 ml-auto shrink-0" />}
                     </button>
                   ))}
                 </div>
@@ -1324,98 +1380,134 @@ export default function TaxationPage() {
 
                 <button
                   onClick={() => {
-                    let content = '';
                     const reportName = selectedReportType.split(' ').join('_');
                     const date = new Date().toISOString().split('T')[0];
-                    const filename = `Report_${reportName}_${date}`;
-
-                    if (selectedReportType === 'Self Assessment') {
-                      if (selectedDownloadFormat === 'TXT') {
-                        content = `SELF ASSESSMENT TAX RETURN (SA100)\nTax Year: ${saTaxYear}\n\nINCOME SUMMARY\nSelf-Employment: £${saSelfEmployment.toLocaleString()}\nEmployment: £${saEmployment.toLocaleString()}\nProperty: £${saProperty.toLocaleString()}\nDividends: £${saDividends.toLocaleString()}\nTotal Income: £${totalIncome.toLocaleString()}\n\nTAX CALCULATION\nPersonal Allowance: £${personalAllowance.toLocaleString()}\nExpenses: £${saExpenses.toLocaleString()}\nTaxable Income: £${taxableIncomeValue.toLocaleString()}\nTotal Tax & NI Due: £${totalTaxDueValue.toLocaleString()}`;
-                      } else if (selectedDownloadFormat === 'CSV') {
-                        content = `Field,Value\nTax Year,${saTaxYear}\nSelf-Employment Income,£${saSelfEmployment}\nEmployment Income,£${saEmployment}\nProperty Income,£${saProperty}\nDividends & Interest,£${saDividends}\nTotal Income,£${totalIncome}\nPersonal Allowance,£${personalAllowance}\nAllowable Expenses,£${saExpenses}\nTaxable Income,£${taxableIncomeValue}\nTotal Tax Due,£${totalTaxDueValue}`;
-                      } else if (selectedDownloadFormat === 'JSON') {
-                        content = JSON.stringify({ taxYear: saTaxYear, income: { selfEmployment: saSelfEmployment, employment: saEmployment, property: saProperty, dividends: saDividends, total: totalIncome }, taxation: { taxableIncome: taxableIncomeValue, totalDue: totalTaxDueValue } }, null, 2);
-                      }
-                    } else if (selectedReportType === 'Corporation Tax') {
-                      const estimatedTax = Number(ctProfit) * 0.19;
-                      if (selectedDownloadFormat === 'TXT') {
-                        content = `CORPORATION TAX REPORT\nPeriod: ${ctPeriod}\n\nPROFIT SUMMARY\nTaxable Profit: £${Number(ctProfit).toLocaleString()}\nEstimated Tax (19%): £${estimatedTax.toLocaleString()}`;
-                      } else if (selectedDownloadFormat === 'CSV') {
-                        content = `Field,Value\nPeriod,${ctPeriod}\nTaxable Profit,${ctProfit}\nEstimated Tax Rate,19%\nEstimated Tax,${estimatedTax}`;
-                      } else if (selectedDownloadFormat === 'JSON') {
-                        content = JSON.stringify({ period: ctPeriod, profit: ctProfit, taxRate: '19%', estimatedTax }, null, 2);
-                      }
-                    } else if (selectedReportType === 'VAT') {
-                      const netPayable = Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2));
-                      if (selectedDownloadFormat === 'TXT') {
-                        content = `VAT RETURN SUMMARY\nPeriod: Q3 2025/26\n\nBREAKDOWN\nOutput Sales (excl VAT): £${parseFloat(vatOutputSales).toLocaleString()}\nInput Purchases (excl VAT): £${parseFloat(vatInputPurchases).toLocaleString()}\nNet VAT Payable: £${netPayable.toLocaleString()}`;
-                      } else if (selectedDownloadFormat === 'CSV') {
-                        content = `Field,Value\nPeriod,Q3 2025/26\nOutput Sales,${vatOutputSales}\nInput Purchases,${vatInputPurchases}\nNet VAT Payable,${netPayable}`;
-                      } else if (selectedDownloadFormat === 'JSON') {
-                        content = JSON.stringify({ period: 'Q3 2025/26', outputSales: vatOutputSales, inputPurchases: vatInputPurchases, netVATPayable: netPayable }, null, 2);
-                      }
-                    } else if (selectedReportType === 'PAYE') {
-                      if (selectedDownloadFormat === 'TXT') {
-                        content = `PAYE & NI REPORT\nMonth: January 2026\n\nSUBMISSION SUMMARY\nEmployees: 12\nPAYE Income Tax: £2,450.00\nEmployee NI: £850.00\nEmployer NI: £1,000.00\nTotal to HMRC: £4,300.00`;
-                      } else if (selectedDownloadFormat === 'CSV') {
-                        content = `Field,Value\nMonth,January 2026\nEmployees,12\nPAYE Tax,2450\nEmployee NI,850\nEmployer NI,1000\nTotal to HMRC,4300`;
-                      } else if (selectedDownloadFormat === 'JSON') {
-                        content = JSON.stringify({ month: 'January 2026', employees: 12, payeTax: 2450, employeeNI: 850, employerNI: 1000, totalToHMRC: 4300 }, null, 2);
-                      }
-                    }
+                    const filename = `Okleevo_${reportName}_${date}`;
 
                     if (selectedDownloadFormat === 'PDF') {
                       const doc = new jsPDF();
-                      doc.setFontSize(18);
-                      doc.text(`${selectedReportType.toUpperCase()} REPORT`, 105, 20, { align: 'center' });
-                      doc.setFontSize(12);
-                      doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, 105, 30, { align: 'center' });
-                      
-                      let y = 50;
+                      doc.setFillColor(37, 99, 235);
+                      doc.rect(0, 0, 210, 38, 'F');
+                      doc.setTextColor(255, 255, 255);
+                      doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+                      doc.text('Okleevo', 14, 18);
+                      doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+                      doc.text('Tax Report — For Accountant Submission to HMRC', 14, 28);
+                      doc.setTextColor(0, 0, 0);
+                      doc.setFontSize(15); doc.setFont('helvetica', 'bold');
+                      doc.text(`${selectedReportType.toUpperCase()} REPORT`, 14, 52);
+                      doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
+                      doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}  |  Prepared for accountant review and HMRC filing.`, 14, 60);
+                      doc.setDrawColor(220); doc.line(14, 64, 196, 64);
+                      doc.setTextColor(0);
+                      let y = 76;
+                      const row = (label, value) => { doc.setFont('helvetica', 'bold'); doc.text(label, 14, y); doc.setFont('helvetica', 'normal'); doc.text(value, 110, y); y += 9; };
+                      doc.setFontSize(10);
                       if (selectedReportType === 'Self Assessment') {
-                        doc.text(`Tax Year: ${saTaxYear}`, 20, y); y+=10;
-                        doc.text(`Total Income: £${totalIncome.toLocaleString()}`, 20, y); y+=10;
-                        doc.text(`Taxable Income: £${taxableIncomeValue.toLocaleString()}`, 20, y); y+=10;
-                        doc.text(`Total Tax Due: £${totalTaxDueValue.toLocaleString()}`, 20, y);
+                        row('Tax Year:', saTaxYear);
+                        row('Self-Employment Income:', `GBP ${saSelfEmployment.toLocaleString()}`);
+                        row('Employment Income:', `GBP ${saEmployment.toLocaleString()}`);
+                        row('Property Income:', `GBP ${saProperty.toLocaleString()}`);
+                        row('Dividends & Interest:', `GBP ${saDividends.toLocaleString()}`);
+                        row('Total Income:', `GBP ${totalIncome.toLocaleString()}`);
+                        row('Personal Allowance:', `GBP ${personalAllowance.toLocaleString()}`);
+                        row('Allowable Expenses:', `GBP ${saExpenses.toLocaleString()}`);
+                        row('Taxable Income:', `GBP ${taxableIncomeValue.toLocaleString()}`);
+                        doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+                        doc.text(`Total Tax & NI Due: GBP ${totalTaxDueValue.toLocaleString()}`, 14, y + 4);
                       } else if (selectedReportType === 'Corporation Tax') {
-                        doc.text(`Period: ${ctPeriod}`, 20, y); y+=10;
-                        doc.text(`Taxable Profit: £${Number(ctProfit).toLocaleString()}`, 20, y); y+=10;
-                        doc.text(`Estimated Tax (19%): £${(Number(ctProfit) * 0.19).toLocaleString()}`, 20, y);
+                        const tax = Number(ctProfit) * 0.19;
+                        row('Accounting Period:', ctPeriod);
+                        row('Taxable Profit:', `GBP ${Number(ctProfit).toLocaleString()}`);
+                        row('CT Rate:', '19%');
+                        doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+                        doc.text(`Corporation Tax Due: GBP ${tax.toLocaleString()}`, 14, y + 4);
                       } else if (selectedReportType === 'VAT') {
-                        doc.text(`Period: Q3 2025/26`, 20, y); y+=10;
-                        doc.text(`Output Sales: £${parseFloat(vatOutputSales).toLocaleString()}`, 20, y); y+=10;
-                        doc.text(`Input Purchases: £${parseFloat(vatInputPurchases).toLocaleString()}`, 20, y); y+=10;
-                        doc.text(`Net VAT Payable: £${Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2)).toLocaleString()}`, 20, y);
-                      } else if (selectedReportType === 'PAYE') {
-                        doc.text(`Month: January 2026`, 20, y); y+=10;
-                        doc.text(`Employees: 12`, 20, y); y+=10;
-                        doc.text(`PAYE Tax: £2,450.00`, 20, y); y+=10;
-                        doc.text(`Total to HMRC: £4,300.00`, 20, y);
+                        const outVAT = parseFloat(vatOutputSales || '0') * 0.2;
+                        const inVAT = parseFloat(vatInputPurchases || '0') * 0.2;
+                        const net = Math.max(0, outVAT - inVAT);
+                        row('VAT Period:', 'Q3 2025/26');
+                        row('Output Sales (ex. VAT):', `GBP ${parseFloat(vatOutputSales || '0').toLocaleString()}`);
+                        row('Input Purchases (ex. VAT):', `GBP ${parseFloat(vatInputPurchases || '0').toLocaleString()}`);
+                        row('Output VAT (20%):', `GBP ${outVAT.toLocaleString()}`);
+                        row('Input VAT (20%):', `GBP ${inVAT.toLocaleString()}`);
+                        doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+                        doc.text(`Net VAT Payable: GBP ${net.toLocaleString()}`, 14, y + 4);
+                      } else {
+                        row('Pay Period:', 'January 2026');
+                        row('Employees:', '12');
+                        row('PAYE Income Tax:', 'GBP 2,450.00');
+                        row('Employee NI:', 'GBP 850.00');
+                        row('Employer NI:', 'GBP 1,000.00');
+                        doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+                        doc.text('Total Due to HMRC: GBP 4,300.00', 14, y + 4);
                       }
-                      
+                      doc.setFontSize(8); doc.setTextColor(130);
+                      doc.text('Okleevo | For accountant use only. Not an official HMRC submission.', 105, 285, { align: 'center' });
                       doc.save(`${filename}.pdf`);
                     } else {
-                      const mime = selectedDownloadFormat === 'JSON' ? 'application/json' : selectedDownloadFormat === 'CSV' ? 'text/csv' : 'text/plain';
-                      const ext = selectedDownloadFormat.toLowerCase();
-                      const blob = new Blob(['\uFEFF' + content], { type: `${mime};charset=utf-8;` });
+                      // CSV — opens in Excel without format warnings
+                      const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+                      let csvRows: string[] = [`${esc('Field')},${esc('Value')}`];
+                      if (selectedReportType === 'Self Assessment') {
+                        csvRows = csvRows.concat([
+                          `${esc('Tax Year')},${esc(saTaxYear)}`,
+                          `${esc('Self-Employment Income')},${esc(saSelfEmployment)}`,
+                          `${esc('Employment Income')},${esc(saEmployment)}`,
+                          `${esc('Property Income')},${esc(saProperty)}`,
+                          `${esc('Dividends & Interest')},${esc(saDividends)}`,
+                          `${esc('Total Income')},${esc(totalIncome)}`,
+                          `${esc('Personal Allowance')},${esc(personalAllowance)}`,
+                          `${esc('Allowable Expenses')},${esc(saExpenses)}`,
+                          `${esc('Taxable Income')},${esc(taxableIncomeValue)}`,
+                          `${esc('Total Tax & NI Due')},${esc(totalTaxDueValue)}`,
+                        ]);
+                      } else if (selectedReportType === 'Corporation Tax') {
+                        const tax = (Number(ctProfit) * 0.19).toFixed(2);
+                        csvRows = csvRows.concat([
+                          `${esc('Accounting Period')},${esc(ctPeriod)}`,
+                          `${esc('Taxable Profit')},${esc(ctProfit)}`,
+                          `${esc('CT Rate')},${esc('19%')}`,
+                          `${esc('Corporation Tax Due')},${esc(tax)}`,
+                        ]);
+                      } else if (selectedReportType === 'VAT') {
+                        const outVAT = (parseFloat(vatOutputSales || '0') * 0.2).toFixed(2);
+                        const inVAT = (parseFloat(vatInputPurchases || '0') * 0.2).toFixed(2);
+                        const net = Math.max(0, parseFloat(outVAT) - parseFloat(inVAT)).toFixed(2);
+                        csvRows = csvRows.concat([
+                          `${esc('VAT Period')},${esc('Q3 2025/26')}`,
+                          `${esc('Output Sales (ex. VAT)')},${esc(vatOutputSales)}`,
+                          `${esc('Input Purchases (ex. VAT)')},${esc(vatInputPurchases)}`,
+                          `${esc('Output VAT (20%)')},${esc(outVAT)}`,
+                          `${esc('Input VAT (20%)')},${esc(inVAT)}`,
+                          `${esc('Net VAT Payable')},${esc(net)}`,
+                        ]);
+                      } else {
+                        csvRows = csvRows.concat([
+                          `${esc('Month')},${esc('January 2026')}`,
+                          `${esc('Employees')},${esc('12')}`,
+                          `${esc('PAYE Income Tax')},${esc('2450')}`,
+                          `${esc('Employee NI')},${esc('850')}`,
+                          `${esc('Employer NI')},${esc('1000')}`,
+                          `${esc('Total Due to HMRC')},${esc('4300')}`,
+                        ]);
+                      }
+                      csvRows.push('', `${esc('Note')},${esc('For accountant use only. Not an official HMRC submission.')}`);
+                      const blob = new Blob(['﻿' + csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
                       const link = document.createElement('a');
                       link.href = URL.createObjectURL(blob);
-                      link.download = `${filename}.${ext}`;
+                      link.download = `${filename}.csv`;
+                      document.body.appendChild(link);
                       link.click();
+                      document.body.removeChild(link);
                     }
-
                     setShowDownloadModal(false);
-                    setSuccessContent({
-                      title: 'Download Successful',
-                      message: `${selectedReportType} Report (${selectedDownloadFormat}) has been downloaded.`
-                    });
-                    setShowSuccessModal(true);
+                    showToast(`${selectedReportType} ${selectedDownloadFormat} downloaded`);
                   }}
                   className="flex-[1.5] px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold text-base rounded-2xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 cursor-pointer"
                 >
                   <Download className="w-5 h-5" />
-                  Download
+                  Download {selectedDownloadFormat}
                 </button>
 
 
@@ -1428,82 +1520,71 @@ export default function TaxationPage() {
         </div>
       )}
 
-      {/* Submit to HMRC Modal */}
+      {/* Download for Accountant Modal (replaces Submit to HMRC) */}
       {showSubmitModal && (
         <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
           <div className="bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full flex flex-col border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
-            <div className="bg-linear-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl shadow-lg">
+            <div className="bg-linear-to-r from-blue-600 to-indigo-600 p-6 rounded-t-2xl shadow-lg">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <Send className="w-6 h-6" />
+                    <Download className="w-6 h-6" />
                   </div>
-                  Submit to HMRC
+                  Download for Accountant
                 </h2>
-                <button 
-                  onClick={() => setShowSubmitModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
+                <button onClick={() => setShowSubmitModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer">
                   <X className="w-5 h-5 text-white" />
                 </button>
               </div>
             </div>
 
             <div className="p-6">
-              <div className="text-center mb-6">
-                <div className="p-4 bg-green-100 rounded-full w-fit mx-auto mb-4">
-                  <Shield className="w-12 h-12 text-green-600" />
+              <div className="text-center mb-5">
+                <div className="p-4 bg-blue-100 rounded-full w-fit mx-auto mb-3">
+                  <Download className="w-10 h-10 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Ready to Submit?</h3>
-                <p className="text-gray-600">Your Self Assessment return will be submitted to HMRC</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">Ready to Download</h3>
+                <p className="text-gray-500 text-sm">Your tax summary is ready to share with your accountant for HMRC filing.</p>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                <h4 className="font-semibold text-blue-900 mb-2">Submission Details:</h4>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                <h4 className="font-semibold text-blue-900 mb-2 text-sm">Return Details:</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Tax Year: {saTaxYear}</li>
                   <li>• Total Tax Due: £{totalTaxDueValue.toLocaleString()}</li>
-                  <li>• Deadline: 31 January 2025</li>
-                  <li>• Status: Ready for submission</li>
+                  <li>• HMRC Deadline: 31 January 2025</li>
                 </ul>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5">
                 <div className="flex gap-2">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-yellow-900 mb-1">Before Submitting:</p>
-                    <ul className="text-xs text-yellow-800 space-y-1">
-                      <li>✓ Check all income sources are included</li>
-                      <li>✓ Verify all expenses are claimed</li>
-                      <li>✓ Ensure bank details are correct</li>
-                      <li>✓ Review tax calculation</li>
+                    <p className="text-sm font-semibold text-amber-900 mb-1">Next Steps:</p>
+                    <ul className="text-xs text-amber-800 space-y-1">
+                      <li>1. Download this report</li>
+                      <li>2. Send it to your accountant</li>
+                      <li>3. Your accountant submits to HMRC on your behalf</li>
+                      <li>4. Or log in to HMRC Online Services to file yourself</li>
                     </ul>
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowSubmitModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
+                <button onClick={() => setShowSubmitModal(false)} className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
                   Cancel
                 </button>
                 <button
                   onClick={() => {
                     setShowSubmitModal(false);
-                    const ref = 'SA-2024-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-                    setSuccessContent({
-                      title: 'Submission Successful',
-                      message: `Self Assessment submitted successfully to HMRC.\n\nReference: ${ref}\n\nYou will receive a confirmation email shortly.`
-                    });
-                    setShowSuccessModal(true);
+                    setSelectedReportType('Self Assessment');
+                    setShowDownloadModal(true);
                   }}
-                  className="flex-1 px-6 py-3 bg-linear-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Send className="w-5 h-5" />
-                  Submit Now
+                  <Download className="w-5 h-5" />
+                  Download Report
                 </button>
               </div>
             </div>
@@ -1519,15 +1600,15 @@ export default function TaxationPage() {
               <Users className="w-8 h-8" />
               <div>
                 <h2 className="text-2xl font-bold">PAYE & National Insurance</h2>
-                <p className="text-green-100">Manage employee payroll taxes and RTI submissions (2025/26 Rates)</p>
+                <p className="text-green-100">Calculate payroll taxes &amp; download reports for your accountant (2025/26 Rates)</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={() => setShowRTIModal(true)}
                 className="px-6 py-3 bg-white text-green-600 font-bold rounded-xl hover:bg-green-50 hover:shadow-lg transition-all cursor-pointer"
               >
-                Submit RTI Return
+                Download RTI Report
               </button>
               <button 
                 onClick={() => setShowPAYECalculatorModal(true)}
@@ -1632,17 +1713,17 @@ export default function TaxationPage() {
             </div>
           </div>
 
-          {/* RTI Submissions */}
+          {/* RTI Reports */}
           <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Send className="w-5 h-5 text-green-600" />
-              Recent RTI Submissions
+              <Download className="w-5 h-5 text-green-600" />
+              Recent RTI Reports
             </h3>
             <div className="space-y-3">
               {[
-                { month: 'December 2025', submitted: '19 Dec 2025', amount: 4300, status: 'submitted' },
-                { month: 'November 2025', submitted: '19 Nov 2025', amount: 4250, status: 'submitted' },
-                { month: 'October 2025', submitted: '19 Oct 2025', amount: 4200, status: 'submitted' },
+                { month: 'December 2025', submitted: '19 Dec 2025', amount: 4300, status: 'downloaded' },
+                { month: 'November 2025', submitted: '19 Nov 2025', amount: 4250, status: 'downloaded' },
+                { month: 'October 2025', submitted: '19 Oct 2025', amount: 4200, status: 'downloaded' },
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between p-4 bg-white/40 border border-white/30 rounded-xl hover:bg-white/60 transition-all cursor-pointer hover:shadow-md">
                   <div className="flex items-center gap-4">
@@ -1651,7 +1732,7 @@ export default function TaxationPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">{item.month}</p>
-                      <p className="text-sm text-gray-600">Submitted: {item.submitted}</p>
+                      <p className="text-sm text-gray-600">Prepared: {item.submitted}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -1720,8 +1801,8 @@ export default function TaxationPage() {
               onClick={() => setShowRTIModal(true)}
               className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-center cursor-pointer group"
             >
-              <Send className="w-8 h-8 text-green-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="font-semibold text-gray-900 text-sm">Submit FPS</p>
+              <Download className="w-8 h-8 text-green-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+              <p className="font-semibold text-gray-900 text-sm">Download FPS Report</p>
             </button>
             <button 
               onClick={() => setShowPAYECalculatorModal(true)}
@@ -1755,15 +1836,15 @@ export default function TaxationPage() {
               <Receipt className="w-8 h-8" />
               <div>
                 <h2 className="text-2xl font-bold">VAT Management</h2>
-                <p className="text-purple-100">Making Tax Digital compliant VAT returns</p>
+                <p className="text-purple-100">Calculate VAT &amp; download for your accountant to file</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={() => setShowVATReturnModal(true)}
                 className="px-6 py-3 bg-white text-purple-600 font-bold rounded-xl hover:bg-purple-50 hover:shadow-lg transition-all cursor-pointer"
               >
-                Submit VAT Return
+                Prepare VAT Return
               </button>
               <button 
                 onClick={() => setShowVATHistoryModal(true)}
@@ -1830,7 +1911,7 @@ export default function TaxationPage() {
               <div className="flex items-center justify-between p-4 bg-purple-50/50 backdrop-blur-sm rounded-lg border border-purple-200/50">
                 <div>
                   <p className="font-semibold text-purple-900">Net VAT Due to HMRC</p>
-                  <p className="text-xs text-purple-700">Due: 7 February 2026 (MTD)</p>
+                  <p className="text-xs text-purple-700">Due: 7 February 2026 — share with accountant</p>
                 </div>
                 <span className="font-bold text-purple-900 text-3xl">£{(parseFloat(vatOutputSales) * vatRate - parseFloat(vatInputPurchases) * vatRate / 2).toLocaleString('en-GB', {minimumFractionDigits: 0})}*</span>
               </div>
@@ -2407,7 +2488,7 @@ export default function TaxationPage() {
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
                   <div className="bg-white/40 border border-white/50 rounded-2xl overflow-hidden backdrop-blur-sm shadow-sm">
                     <div className="bg-gray-50 border-b border-gray-100 px-5 sm:px-6 py-4">
-                      <h3 className="font-bold text-gray-900">Submission Summary</h3>
+                      <h3 className="font-bold text-gray-900">Report Summary</h3>
                     </div>
                     <div className="p-5 sm:p-6 space-y-4">
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -2441,7 +2522,7 @@ export default function TaxationPage() {
                   <div className="flex gap-2 p-4 bg-blue-50 border border-blue-100 rounded-xl">
                     <Shield className="w-5 h-5 text-blue-600 shrink-0" />
                     <p className="text-xs text-blue-800">
-                      By submitting this return, you confirm that all figures provided are accurate to the best of your knowledge and comply with HMRC guidelines.
+                      By downloading this report, you confirm that all figures provided are accurate to the best of your knowledge. Share this with your accountant for HMRC submission.
                     </p>
                   </div>
                 </div>
@@ -2470,9 +2551,23 @@ export default function TaxationPage() {
                     } else {
                       setShowNewReturnModal(false);
                       setNewReturnStep(1);
+                      const newReturnRows: [string, string][] = [
+                        ['Return Type', newReturnData.type || '—'],
+                        ['Period', newReturnData.period || '—'],
+                        ['Reference', newReturnData.reference || '—'],
+                        ['Turnover', newReturnData.turnover ? `£${newReturnData.turnover}` : '—'],
+                        ['Expenses', newReturnData.expenses ? `£${newReturnData.expenses}` : '—'],
+                        ['Net Profit', newReturnData.turnover && newReturnData.expenses ? `£${(parseFloat(newReturnData.turnover) - parseFloat(newReturnData.expenses)).toFixed(2)}` : '—'],
+                        ['Notes', newReturnData.notes || '—'],
+                      ];
+                      const retTitle = `${newReturnData.type || 'Tax Return'} — ${newReturnData.period}`;
+                      setSuccessDownloadFns({
+                        pdf: () => makeQuickPDF(retTitle, newReturnRows, 'Share with your accountant for HMRC submission.'),
+                        excel: () => makeQuickExcel(retTitle, newReturnRows),
+                      });
                       setSuccessContent({
-                        title: 'Return Submitted',
-                        message: `Tax Return Submitted Successfully!\n\nYour return for ${newReturnData.period} has been recorded and scheduled for HMRC filing.`
+                        title: 'Report Ready',
+                        message: `Your ${newReturnData.type || 'tax'} report for ${newReturnData.period} is ready.\n\nDownload as PDF or Excel and share with your accountant for HMRC filing.`,
                       });
                       setShowSuccessModal(true);
                     }
@@ -2481,7 +2576,7 @@ export default function TaxationPage() {
                     newReturnStep === 1 && !newReturnData.type ? 'opacity-50 pointer-events-none' : ''
                   }`}
                 >
-                  {newReturnStep === 4 ? 'Confirm & Submit' : 'Continue'}
+                  {newReturnStep === 4 ? 'Confirm & Download' : 'Continue'}
                   <TrendingUp className="w-4 h-4" />
                 </button>
             </div>
@@ -2720,9 +2815,9 @@ export default function TaxationPage() {
             <div className="p-6">
               <div className="space-y-4">
                 {[
-                  { year: '2022/23', submitted: '24 Jan 2024', status: 'Submitted', amount: 16420, ref: 'SA-2324-XJ92' },
-                  { year: '2021/22', submitted: '15 Jan 2023', status: 'Submitted', amount: 14850, ref: 'SA-2223-BK45' },
-                  { year: '2020/21', submitted: '31 Jan 2022', status: 'Submitted', amount: 12300, ref: 'SA-2122-PL11' },
+                  { year: '2022/23', submitted: '24 Jan 2024', status: 'Downloaded', amount: 16420, ref: 'SA-2324-XJ92' },
+                  { year: '2021/22', submitted: '15 Jan 2023', status: 'Downloaded', amount: 14850, ref: 'SA-2223-BK45' },
+                  { year: '2020/21', submitted: '31 Jan 2022', status: 'Downloaded', amount: 12300, ref: 'SA-2122-PL11' },
                 ].map((ret, idx) => (
                   <div key={idx} className="p-4 bg-white/50 border border-gray-100 rounded-xl hover:bg-purple-50 transition-colors flex items-center justify-between group">
                     <div className="flex items-center gap-3">
@@ -2731,7 +2826,7 @@ export default function TaxationPage() {
                       </div>
                       <div>
                         <p className="font-bold text-gray-900">Tax Year {ret.year}</p>
-                        <p className="text-xs text-gray-500">Ref: {ret.ref} • Submitted {ret.submitted}</p>
+                        <p className="text-xs text-gray-500">Ref: {ret.ref} • Downloaded {ret.submitted}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -2769,15 +2864,38 @@ export default function TaxationPage() {
               </div>
               
               <h2 className="text-2xl font-black text-gray-900 mb-2">{successContent.title}</h2>
-              <div className="text-gray-600 mb-8 whitespace-pre-wrap leading-relaxed">
+              <div className="text-gray-600 mb-6 whitespace-pre-wrap leading-relaxed text-sm">
                 {successContent.message}
               </div>
 
+              {successDownloadFns && (
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  {successDownloadFns.pdf && (
+                    <button
+                      onClick={() => { successDownloadFns.pdf!(); setShowSuccessModal(false); setSuccessDownloadFns(null); }}
+                      className="py-3 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg"
+                    >
+                      <Download className="w-4 h-4" />
+                      PDF
+                    </button>
+                  )}
+                  {successDownloadFns.excel && (
+                    <button
+                      onClick={() => { successDownloadFns.excel!(); setShowSuccessModal(false); setSuccessDownloadFns(null); }}
+                      className="py-3 bg-green-600 text-white font-bold rounded-2xl hover:bg-green-700 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg"
+                    >
+                      <Download className="w-4 h-4" />
+                      Excel
+                    </button>
+                  )}
+                </div>
+              )}
+
               <button
-                onClick={() => setShowSuccessModal(false)}
+                onClick={() => { setShowSuccessModal(false); setSuccessDownloadFns(null); }}
                 className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-black hover:shadow-xl active:scale-95 transition-all cursor-pointer shadow-lg"
               >
-                Great, thanks!
+                {successDownloadFns ? 'Skip Download' : 'Great, thanks!'}
               </button>
             </div>
           </div>
@@ -2960,7 +3078,7 @@ export default function TaxationPage() {
         </div>
       )}
 
-      {/* RTI Submission Modal */}
+      {/* RTI Report Download Modal */}
       {showRTIModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center z-[60] p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
           <div className="bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-xl w-full max-h-[85dvh] overflow-hidden border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300 flex flex-col">
@@ -2977,8 +3095,8 @@ export default function TaxationPage() {
                     <Send className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight">RTI Submission</h2>
-                    <p className="text-cyan-100 text-sm font-medium">Full Payment Submission (FPS)</p>
+                    <h2 className="text-2xl font-black text-white tracking-tight">RTI Report</h2>
+                    <p className="text-cyan-100 text-sm font-medium">Full Payment Submission — for your accountant</p>
                   </div>
                 </div>
                 <button 
@@ -3000,15 +3118,15 @@ export default function TaxationPage() {
                   </div>
                 </div>
                 <div>
-                  <p className="font-bold text-cyan-900">Ready for HMRC Submission</p>
-                  <p className="text-sm text-cyan-700">Review details below before submitting</p>
+                  <p className="font-bold text-cyan-900">Report Ready to Download</p>
+                  <p className="text-sm text-cyan-700">Review details, then share with your accountant</p>
                 </div>
               </div>
 
               {/* Submission Details Card */}
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
                 <div className="p-4 bg-gray-50 border-b border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Submission Details</h3>
+                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Report Details</h3>
                 </div>
                 
                 <div className="divide-y divide-gray-100">
@@ -3107,17 +3225,29 @@ export default function TaxationPage() {
               <button
                 onClick={() => {
                   setShowRTIModal(false);
-                  const ref = 'RTI-2026-X8D2F1';
+                  const rtiRows: [string, string][] = [
+                    ['Pay Period', 'January 2026 (Month 10)'],
+                    ['Employees', '12'],
+                    ['PAYE Income Tax', '£2,450.00'],
+                    ['Employee NI', '£850.00'],
+                    ['Employer NI', '£1,000.00'],
+                    ['Total Due to HMRC', '£4,300.00'],
+                    ['HMRC Deadline', '22 February 2026'],
+                  ];
+                  setSuccessDownloadFns({
+                    pdf: () => makeQuickPDF('RTI Full Payment Submission — January 2026', rtiRows, 'Share with your accountant for RTI submission to HMRC.'),
+                    excel: () => makeQuickExcel('RTI Full Payment Submission — January 2026', rtiRows),
+                  });
                   setSuccessContent({
-                    title: 'RTI Submitted Successfully',
-                    message: `Full Payment Submission sent to HMRC.\n\nReference: ${ref}\nPeriod: January 2026\nAmount: £4,300.00\n\nPayment due by 22 February 2026.`
+                    title: 'RTI Report Ready',
+                    message: 'Your Full Payment Submission report is ready.\n\nDownload as PDF or Excel and share with your accountant for RTI submission to HMRC.',
                   });
                   setShowSuccessModal(true);
                 }}
                 className="flex-1 py-4 bg-linear-to-r from-teal-500 to-cyan-500 text-white font-bold rounded-xl hover:from-teal-600 hover:to-cyan-600 hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Send className="w-5 h-5" />
-                Submit to HMRC
+                <Download className="w-5 h-5" />
+                Download Report
               </button>
             </div>
           </div>
@@ -3140,9 +3270,9 @@ export default function TaxationPage() {
                     <Receipt className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight">VAT Return Submission</h2>
+                    <h2 className="text-2xl font-black text-white tracking-tight">VAT Return Report</h2>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold text-white uppercase tracking-wider">MTD Compliant</span>
+                      <span className="px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold text-white uppercase tracking-wider">For Your Accountant</span>
                       <p className="text-purple-100 text-sm font-medium">Q3: Oct - Dec 2025</p>
                     </div>
                   </div>
@@ -3163,9 +3293,9 @@ export default function TaxationPage() {
                   <Shield className="w-5 h-5 text-purple-700" />
                 </div>
                 <div>
-                  <p className="font-bold text-purple-900">Making Tax Digital Status: Active</p>
+                  <p className="font-bold text-purple-900">VAT Report Ready to Download</p>
                   <p className="text-xs text-purple-700 mt-0.5 leading-relaxed">
-                    This return will be filed directly with HMRC via their secure MTD gateway. Ensure all figures align with your accounting software.
+                    Download this report and share it with your accountant. They will submit it to HMRC via MTD. Ensure all figures align with your accounting records.
                   </p>
                 </div>
               </div>
@@ -3271,17 +3401,32 @@ export default function TaxationPage() {
               <button
                 onClick={() => {
                   setShowVATReturnModal(false);
-                  const ref = 'VAT-2026-A2B9C8';
+                  const outVAT = parseFloat(vatOutputSales || '0') * 0.2;
+                  const inVAT = parseFloat(vatInputPurchases || '0') * 0.2;
+                  const net = Math.max(0, outVAT - inVAT);
+                  const vatRows: [string, string][] = [
+                    ['VAT Period', 'Q3 2025/26 (Oct – Dec 2025)'],
+                    ['Output Sales (ex. VAT)', `£${parseFloat(vatOutputSales || '0').toLocaleString()}`],
+                    ['Input Purchases (ex. VAT)', `£${parseFloat(vatInputPurchases || '0').toLocaleString()}`],
+                    ['Output VAT (20%)', `£${outVAT.toFixed(2)}`],
+                    ['Input VAT (20%)', `£${inVAT.toFixed(2)}`],
+                    ['Net VAT Payable', `£${net.toFixed(2)}`],
+                    ['HMRC Deadline', '7 February 2026'],
+                  ];
+                  setSuccessDownloadFns({
+                    pdf: () => makeQuickPDF('VAT Return — Q3 2025/26', vatRows, 'Share with your accountant for VAT submission to HMRC.'),
+                    excel: () => makeQuickExcel('VAT Return — Q3 2025/26', vatRows),
+                  });
                   setSuccessContent({
-                    title: 'VAT Return Submitted',
-                    message: `Your return for Q3 2025/26 has been successfully submitted to HMRC via MTD.\n\nReference: ${ref}\nNet Amount: £${Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2)).toLocaleString('en-GB', {minimumFractionDigits: 2})}\n\nDeadline for payment: 7 February 2026.`
+                    title: 'VAT Report Ready',
+                    message: `Net VAT Payable: £${net.toFixed(2)}\nHMRC Deadline: 7 February 2026\n\nDownload as PDF or Excel and share with your accountant for HMRC filing.`,
                   });
                   setShowSuccessModal(true);
                 }}
                 className="flex-[1.5] py-4 bg-linear-to-r from-purple-600 to-blue-700 text-white font-bold rounded-2xl hover:shadow-xl hover:shadow-purple-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer group"
               >
-                <CheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                Submit to HMRC
+                <Download className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                Download Report
               </button>
             </div>
           </div>
