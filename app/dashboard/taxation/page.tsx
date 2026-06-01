@@ -1340,12 +1340,7 @@ export default function TaxationPage() {
                       {selectedReportType} • {selectedDownloadFormat}
                     </p>
                   </div>
-                  <FileText className={`w-5 h-5 ${
-                    selectedDownloadFormat === 'TXT' ? 'text-blue-600' :
-                    selectedDownloadFormat === 'CSV' ? 'text-green-600' :
-                    selectedDownloadFormat === 'PDF' ? 'text-red-600' :
-                    'text-purple-600'
-                  }`} />
+                  <FileText className={`w-5 h-5 ${selectedDownloadFormat === 'PDF' ? 'text-red-600' : 'text-green-600'}`} />
                 </div>
               </div>
 
