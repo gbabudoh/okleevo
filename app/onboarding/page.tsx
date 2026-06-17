@@ -123,31 +123,31 @@ export default function OnboardingPage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Logo */}
-        <div className="absolute top-8 left-8 md:top-12 md:left-12">
-           <Link href="/" className="hover:opacity-80 transition-opacity">
+        {/* Header: Logo and Step Progress */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          {/* Logo */}
+          <Link href="/" className="hover:opacity-80 transition-opacity self-start sm:self-auto">
             <Image src="/logo.png" alt="Okleevo" width={140} height={36} className="h-9 w-auto" />
-           </Link>
-        </div>
+          </Link>
 
-        <div className="flex justify-end mb-12">
-            <div className="bg-gray-100/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200/50 flex items-center gap-3">
-              <span className="text-sm font-semibold text-gray-500">
-                Step {step} of {totalSteps}
-              </span>
-              <div className="h-1.5 w-24 bg-gray-200 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(step / totalSteps) * 100}%` }}
-                  transition={{ duration: 0.3 }}
-                />
-              </div>
+          {/* Step Indicator */}
+          <div className="self-start sm:self-auto bg-gray-100/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200/50 flex items-center gap-3">
+            <span className="text-sm font-semibold text-gray-500">
+              Step {step} of {totalSteps}
+            </span>
+            <div className="h-1.5 w-24 bg-gray-200 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
+                initial={{ width: 0 }}
+                animate={{ width: `${(step / totalSteps) * 100}%` }}
+                transition={{ duration: 0.3 }}
+              />
             </div>
           </div>
+        </div>
 
         {/* Content Container */}
-        <div className="mt-8 md:mt-4">
+        <div className="mt-0">
           <AnimatePresence mode="wait">
             {/* Step 1: Business Information */}
             {step === 1 && (
