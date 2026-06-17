@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   Shield,
-  MessageSquare
+  MessageSquare,
+  Sliders
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -86,6 +87,7 @@ export default function AdminLayout({
     { href: "/admin/subscriptions", icon: CreditCard, label: "Subscriptions" },
     { href: "/admin/tickets", icon: MessageSquare, label: "Tickets" },
     { href: "/admin/analytics", icon: BarChart3, label: "Analytics" },
+    { href: "/admin/dashboard-preview", icon: Sliders, label: "Dashboard Preview" },
   ];
 
   return (

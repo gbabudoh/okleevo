@@ -393,6 +393,191 @@ export default function CRMPage() {
     </div>
   );
 
+  const renderContactsList = () => (
+    <>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+          <p className="text-sm font-semibold text-gray-500">Loading contacts...</p>
+        </div>
+      ) : filteredClients.length === 0 ? (
+        <div className="bg-white rounded-2xl p-12 border border-gray-100 shadow-sm text-center space-y-4">
+          <Users className="w-10 h-10 text-gray-200 mx-auto" />
+          <h3 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">No clients found</h3>
+          <button onClick={() => setShowAddModal(true)}
+            className="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center gap-2 text-sm cursor-pointer">
+            <Plus className="w-4 h-4" /> Add First Client
+          </button>
+        </div>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {filteredClients.map((client) => (
+            <div
+              key={client.id}
+              onClick={() => setSelectedClient(client)}
+              className={`bg-white rounded-2xl p-4 border transition-all cursor-pointer group ${
+                selectedClient?.id === client.id
+                  ? 'border-blue-500 shadow-md ring-2 ring-blue-100'
+                  : 'border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shrink-0">
+                    {client.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-gray-900 truncate">{client.name}</h3>
+                    <p className="text-[11px] text-gray-500 truncate">{client.company}</p>
+                  </div>
+                </div>
+                <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={(e) => { e.stopPropagation(); setEditingClient(client); setShowEditModal(true); }}
+                    className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-400 cursor-pointer">
+                    <Edit className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); setDeletingClient(client); setShowDeleteModal(true); }}
+                    className="p-1.5 hover:bg-rose-50 rounded-lg text-rose-400 cursor-pointer">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${getStatusColor(client.status)}`}>
+                  {client.status.toUpperCase()}
+                </span>
+                <span className="flex items-center gap-1 text-[11px] text-gray-400 truncate max-w-[55%]">
+                  <Mail className="w-3 h-3 shrink-0" />
+                  <span className="truncate">{client.email}</span>
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Mobile list */}
+          <div className="sm:hidden space-y-2">
+            {filteredClients.map((client) => (
+              <div key={client.id} onClick={() => setSelectedClient(client)}
+                className={`bg-white rounded-xl p-3 border flex items-center gap-3 cursor-pointer transition-all ${
+                  selectedClient?.id === client.id ? 'border-blue-500 shadow-sm' : 'border-gray-100 shadow-sm'
+                }`}>
+                <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0">
+                  {client.name[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-900 truncate">{client.name}</p>
+                  <p className="text-[11px] text-blue-100 font-medium opacity-90 truncate">{client.email}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${getStatusColor(client.status)}`}>
+                    {client.status.toUpperCase()}
+                  </span>
+                  <span className="text-[11px] font-semibold text-gray-700">£{client.revenue.toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden sm:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Client</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Email</th>
+                  <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wide">Revenue</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredClients.map((client) => (
+                  <tr key={client.id} onClick={() => setSelectedClient(client)}
+                    className={`cursor-pointer transition-colors ${selectedClient?.id === client.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0">
+                          {client.name[0]}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">{client.name}</p>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${getStatusColor(client.status)}`}>{client.status}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500 max-w-[180px] truncate">{client.email}</td>
+                    <td className="px-4 py-3 text-right text-sm font-bold text-gray-900">£{client.revenue.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </>
+  );
+
+  const renderCommunicationFeed = () => (
+    <>
+      <div className="px-5 py-4 border-b border-gray-100 shrink-0">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-sm font-bold text-gray-900">Communication Feed</h2>
+            <p className="text-[11px] text-gray-400 mt-0.5">Live global interaction feed</p>
+          </div>
+          <div className="p-2 bg-blue-100 rounded-xl">
+            <InboxIcon className="w-4 h-4 text-blue-600" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+            <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Total Sent</p>
+            <p className="text-xl font-bold text-blue-900">{globalTimeline.filter(e => e.type === 'SENT').length}</p>
+          </div>
+          <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+            <p className="text-[10px] font-bold text-indigo-600 uppercase mb-1">Received</p>
+            <p className="text-xl font-bold text-indigo-900">{globalTimeline.filter(e => e.type === 'RECEIVED').length}</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
+        {loadingGlobal ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <p className="text-sm text-gray-400">Loading feed...</p>
+          </div>
+        ) : globalTimeline.length === 0 ? (
+          <div className="text-center py-12">
+            <Sparkles className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-gray-400">No recent interactions</p>
+          </div>
+        ) : globalTimeline.map((item) => (
+          <div key={item.id} onClick={() => {
+            const clientEmail = item.type === 'RECEIVED' ? item.from.match(/<(.+)>/)?.[1] || item.from : item.to;
+            const client = clients.find(c => c.email === clientEmail);
+            if (client) setSelectedClient(client);
+          }}
+            className={`p-3.5 rounded-xl border cursor-pointer transition-all hover:shadow-sm ${
+              item.type === 'SENT' ? 'bg-blue-50 border-blue-100 hover:border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'
+            }`}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className={`p-1 rounded-lg ${item.type === 'SENT' ? 'bg-blue-600' : 'bg-indigo-600'}`}>
+                {item.type === 'SENT' ? <SendIcon className="w-3 h-3 text-white" /> : <InboxIcon className="w-3 h-3 text-white" />}
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold text-gray-700 block truncate">
+                  {item.type === 'SENT' ? `To: ${item.to}` : `From: ${item.from.split(' <')[0]}`}
+                </span>
+                <span className="text-[9px] text-gray-400">{new Date(item.date).toLocaleString()}</span>
+              </div>
+            </div>
+            <h4 className="text-xs font-bold text-gray-900 mb-1 truncate">{item.subject}</h4>
+            <div className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body) }} />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
 
@@ -502,135 +687,16 @@ export default function CRMPage() {
             </div>
           </div>
         </div>
+        {/* Main Content Area */}
+        {selectedClient ? (
+          <div className="md:flex md:gap-4 md:items-start md:h-[calc(100vh-360px)]">
+            {/* Left: Contacts List */}
+            <div className="hidden md:block md:flex-[1.2] md:h-full md:overflow-y-auto md:pr-1">
+              {renderContactsList()}
+            </div>
 
-        {/* Main Split Pane */}
-        <div className="md:flex md:gap-4 md:items-start md:h-[calc(100vh-360px)]">
-
-          {/* Left: Contacts List */}
-          <div className={`${selectedClient ? 'hidden md:block' : 'block'} md:flex-[1.2] md:h-full md:overflow-y-auto md:pr-1`}>
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-                <p className="text-sm font-semibold text-gray-500">Loading contacts...</p>
-              </div>
-            ) : filteredClients.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 border border-gray-100 shadow-sm text-center space-y-4">
-                <Users className="w-10 h-10 text-gray-200 mx-auto" />
-                <h3 className="text-sm sm:text-lg font-bold text-white tracking-tight">No clients found</h3>
-                <button onClick={() => setShowAddModal(true)}
-                  className="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center gap-2 text-sm cursor-pointer">
-                  <Plus className="w-4 h-4" /> Add First Client
-                </button>
-              </div>
-            ) : viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {filteredClients.map((client) => (
-                  <div
-                    key={client.id}
-                    onClick={() => setSelectedClient(client)}
-                    className={`bg-white rounded-2xl p-4 border transition-all cursor-pointer group ${
-                      selectedClient?.id === client.id
-                        ? 'border-blue-500 shadow-md ring-2 ring-blue-100'
-                        : 'border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shrink-0">
-                          {client.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-bold text-gray-900 truncate">{client.name}</h3>
-                          <p className="text-[11px] text-gray-500 truncate">{client.company}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={(e) => { e.stopPropagation(); setEditingClient(client); setShowEditModal(true); }}
-                          className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-400 cursor-pointer">
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); setDeletingClient(client); setShowDeleteModal(true); }}
-                          className="p-1.5 hover:bg-rose-50 rounded-lg text-rose-400 cursor-pointer">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${getStatusColor(client.status)}`}>
-                        {client.status.toUpperCase()}
-                      </span>
-                      <span className="flex items-center gap-1 text-[11px] text-gray-400 truncate max-w-[55%]">
-                        <Mail className="w-3 h-3 shrink-0" />
-                        <span className="truncate">{client.email}</span>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <>
-                {/* Mobile list */}
-                <div className="sm:hidden space-y-2">
-                  {filteredClients.map((client) => (
-                    <div key={client.id} onClick={() => setSelectedClient(client)}
-                      className={`bg-white rounded-xl p-3 border flex items-center gap-3 cursor-pointer transition-all ${
-                        selectedClient?.id === client.id ? 'border-blue-500 shadow-sm' : 'border-gray-100 shadow-sm'
-                      }`}>
-                      <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0">
-                        {client.name[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900 truncate">{client.name}</p>
-                        <p className="text-[11px] text-blue-100 font-medium opacity-90 truncate">{client.email}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${getStatusColor(client.status)}`}>
-                          {client.status.toUpperCase()}
-                        </span>
-                        <span className="text-[11px] font-semibold text-gray-700">£{client.revenue.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {/* Desktop table */}
-                <div className="hidden sm:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-100 bg-gray-50">
-                        <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Client</th>
-                        <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Email</th>
-                        <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wide">Revenue</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {filteredClients.map((client) => (
-                        <tr key={client.id} onClick={() => setSelectedClient(client)}
-                          className={`cursor-pointer transition-colors ${selectedClient?.id === client.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0">
-                                {client.name[0]}
-                              </div>
-                              <div>
-                                <p className="text-sm font-bold text-gray-900">{client.name}</p>
-                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${getStatusColor(client.status)}`}>{client.status}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-500 max-w-[180px] truncate">{client.email}</td>
-                          <td className="px-4 py-3 text-right text-sm font-bold text-gray-900">£{client.revenue.toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Mobile: full-screen detail */}
-          {selectedClient && (
-            <div className="block md:hidden bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-[70dvh]">
+            {/* Mobile: full-screen detail */}
+            <div className="block md:hidden bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex-col h-[70dvh]">
               <button onClick={() => setSelectedClient(null)}
                 className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-blue-600 border-b border-gray-100 bg-blue-50 w-full text-left cursor-pointer shrink-0">
                 <ArrowLeft className="w-4 h-4" /> Back to Contacts
@@ -639,75 +705,25 @@ export default function CRMPage() {
                 <DetailPanel client={selectedClient} />
               </div>
             </div>
-          )}
 
-          {/* Desktop right pane */}
-          {selectedClient ? (
+            {/* Desktop right pane: DetailPanel */}
             <div className="hidden md:flex md:flex-[0.8] h-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex-col">
               <DetailPanel client={selectedClient} />
             </div>
-          ) : (
-            <div className="hidden md:flex md:flex-[0.8] h-full flex-col bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100 shrink-0">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-sm font-bold text-gray-900">Communication Feed</h2>
-                    <p className="text-[11px] text-gray-400 mt-0.5">Live global interaction feed</p>
-                  </div>
-                  <div className="p-2 bg-blue-100 rounded-xl">
-                    <InboxIcon className="w-4 h-4 text-blue-600" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-                    <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Total Sent</p>
-                    <p className="text-xl font-bold text-blue-900">{globalTimeline.filter(e => e.type === 'SENT').length}</p>
-                  </div>
-                  <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
-                    <p className="text-[10px] font-bold text-indigo-600 uppercase mb-1">Received</p>
-                    <p className="text-xl font-bold text-indigo-900">{globalTimeline.filter(e => e.type === 'RECEIVED').length}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
-                {loadingGlobal ? (
-                  <div className="flex flex-col items-center justify-center py-12 gap-3">
-                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                    <p className="text-sm text-gray-400">Loading feed...</p>
-                  </div>
-                ) : globalTimeline.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Sparkles className="w-8 h-8 text-gray-200 mx-auto mb-3" />
-                    <p className="text-sm font-semibold text-gray-400">No recent interactions</p>
-                  </div>
-                ) : globalTimeline.map((item) => (
-                  <div key={item.id} onClick={() => {
-                    const clientEmail = item.type === 'RECEIVED' ? item.from.match(/<(.+)>/)?.[1] || item.from : item.to;
-                    const client = clients.find(c => c.email === clientEmail);
-                    if (client) setSelectedClient(client);
-                  }}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all hover:shadow-sm ${
-                      item.type === 'SENT' ? 'bg-blue-50 border-blue-100 hover:border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'
-                    }`}>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className={`p-1 rounded-lg ${item.type === 'SENT' ? 'bg-blue-600' : 'bg-indigo-600'}`}>
-                        {item.type === 'SENT' ? <SendIcon className="w-3 h-3 text-white" /> : <InboxIcon className="w-3 h-3 text-white" />}
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-[10px] font-bold text-gray-700 block truncate">
-                          {item.type === 'SENT' ? `To: ${item.to}` : `From: ${item.from.split(' <')[0]}`}
-                        </span>
-                        <span className="text-[9px] text-gray-400">{new Date(item.date).toLocaleString()}</span>
-                      </div>
-                    </div>
-                    <h4 className="text-xs font-bold text-gray-900 mb-1 truncate">{item.subject}</h4>
-                    <div className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body) }} />
-                  </div>
-                ))}
-              </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            {/* Contacts List (Full Width) */}
+            <div className="w-full">
+              {renderContactsList()}
             </div>
-          )}
-        </div>
+
+            {/* Communication Feed (Full Width at the bottom) */}
+            <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+              {renderCommunicationFeed()}
+            </div>
+          </div>
+        )}
       </div>
 
       <StatusModal

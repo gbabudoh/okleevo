@@ -77,9 +77,9 @@ export default function DashboardLayout({
       const createdDate = new Date(userData.business.createdAt);
       const now = new Date();
       const diffInMinutes = (now.getTime() - createdDate.getTime()) / (1000 * 60);
-      
+
       const hasSeenSession = sessionStorage.getItem('hasSeenWelcomeGuide');
-      
+
       if (diffInMinutes < 10 && !hasSeenSession) {
         setShowWelcomeGuide(true);
         sessionStorage.setItem('hasSeenWelcomeGuide', 'true');
@@ -92,7 +92,7 @@ export default function DashboardLayout({
   // Check if user is super admin and redirect
   useEffect(() => {
     if (status === 'loading') return;
-    
+
     if (!session?.user) {
       return;
     }
@@ -110,7 +110,7 @@ export default function DashboardLayout({
   useEffect(() => {
     async function fetchUserData() {
       if (status === 'loading') return;
-      
+
       if (!session?.user?.id) {
         setLoading(false);
         return;
@@ -125,10 +125,10 @@ export default function DashboardLayout({
 
       try {
         const response = await fetch('/api/user/profile');
-        
+
         if (response.ok) {
           const data = await response.json();
-          
+
           if (data && data.business) {
             setUserData(data);
           }
@@ -146,7 +146,7 @@ export default function DashboardLayout({
   // Presence heartbeat — keeps this user marked "online" on every dashboard page
   useEffect(() => {
     if (status === 'loading' || !session?.user?.id) return;
-    const sendHeartbeat = () => fetch('/api/presence', { method: 'POST' }).catch(() => {});
+    const sendHeartbeat = () => fetch('/api/presence', { method: 'POST' }).catch(() => { });
     sendHeartbeat(); // immediate on mount
     const interval = setInterval(sendHeartbeat, 15000);
     return () => clearInterval(interval);
@@ -170,9 +170,9 @@ export default function DashboardLayout({
       } catch (error) {
         if (error instanceof Error) {
           if (error.name === 'AbortError') return;
-          const isNetworkError = 
-            error.message.includes('Failed to fetch') || 
-            error.message.includes('NetworkError') || 
+          const isNetworkError =
+            error.message.includes('Failed to fetch') ||
+            error.message.includes('NetworkError') ||
             error.message.includes('Load failed');
           if (isNetworkError) {
             console.warn('Network issue fetching notifications:', error.message);
@@ -198,11 +198,11 @@ export default function DashboardLayout({
       n => n.type?.toUpperCase() === 'CHAT_MESSAGE' && n.status === 'unread'
     );
     console.log("[LAYOUT_TOAST] Found chatNotification:", chatNotification);
-    
+
     if (chatNotification) {
       if (lastSeenChatMsgIdRef.current !== chatNotification.id) {
         lastSeenChatMsgIdRef.current = chatNotification.id;
-        
+
         const meta = chatNotification.metadata;
         console.log("[LAYOUT_TOAST] Raw metadata:", meta);
         let parsedMeta: Record<string, string> | null = null;
@@ -215,9 +215,9 @@ export default function DashboardLayout({
         } else if (meta && typeof meta === 'object') {
           parsedMeta = meta;
         }
-        
+
         console.log("[LAYOUT_TOAST] Parsed metadata object:", parsedMeta);
-        
+
         if (parsedMeta) {
           setActiveChatToast({
             id: chatNotification.id,
@@ -250,7 +250,7 @@ export default function DashboardLayout({
     fetch('/api/billing/status')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setSubInfo(data); })
-      .catch(() => {});
+      .catch(() => { });
   }, [status, session]);
 
   // Unread mail badge — fetch on mount and poll every 60s
@@ -263,7 +263,7 @@ export default function DashboardLayout({
           const count = msgs.filter(m => m.folder === 'INBOX' && m.status === 'UNREAD').length;
           setUnreadMailCount(count);
         })
-        .catch(() => {});
+        .catch(() => { });
     };
     fetchUnread();
     const interval = setInterval(fetchUnread, 60_000);
@@ -311,7 +311,7 @@ export default function DashboardLayout({
             <Image src="/logo.png" alt="Okleevo" width={120} height={32} className="h-8 w-auto" />
           </Link>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
           {(() => {
             const enabledModules = userData?.business?.enabledModules || [];
@@ -321,23 +321,23 @@ export default function DashboardLayout({
               "collaboration", "tasks", "ai-content", "ai-notes", "kpi-dashboard",
               "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"
             ];
-            
+
             // In development, we show all modules to the user
-            const finalModules = process.env.NODE_ENV === 'development' 
-              ? defaultModules 
+            const finalModules = process.env.NODE_ENV === 'development'
+              ? defaultModules
               : (enabledModules.length > 0 ? enabledModules : defaultModules);
 
             return (
               <>
-                <Link 
-                  href="/dashboard" 
+                <Link
+                  href="/dashboard"
                   className="flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
                   style={{ backgroundColor: '#fc68131a', color: '#fc6813' }}
                 >
                   <LayoutDashboard className="w-5 h-5" />
                   <span>Dashboard</span>
                 </Link>
-                
+
                 <div className="space-y-4">
                   {/* Finance */}
                   {(() => {
@@ -373,11 +373,10 @@ export default function DashboardLayout({
                         </p>
                         <Link
                           href="/dashboard/mailbox"
-                          className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all ${
-                            mailActive
+                          className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all ${mailActive
                               ? 'bg-orange-50 border border-orange-200 text-orange-600 shadow-sm'
                               : 'text-orange-500 hover:bg-orange-50 border border-transparent hover:border-orange-100'
-                          }`}
+                            }`}
                         >
                           <div className="relative flex items-center justify-center w-8 h-8 rounded-xl shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
                             <Mail className="w-4 h-4 text-white" />
@@ -494,7 +493,7 @@ export default function DashboardLayout({
 
         {/* Bottom Actions */}
         <div className="p-4 border-t border-white/20 bg-white/60 backdrop-blur-xl space-y-2">
-          <button 
+          <button
             onClick={() => setShowWelcomeGuide(true)}
             className="flex items-center gap-3 px-4 py-2 rounded-lg text-indigo-600 font-bold hover:bg-white/50 transition-colors w-full text-left cursor-pointer"
           >
@@ -535,127 +534,126 @@ export default function DashboardLayout({
           </button>
         </div>
       </aside>
-      
+
       {/* Main Content */}
       <div className="ml-0 md:ml-64 h-screen pb-20 md:pb-0 overflow-y-auto relative" id="main-content">
         {/* Header */}
-        <header className="sticky top-0 z-30 bg-white/60 backdrop-blur-md border-b border-white/20">
+        <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-md border-b border-white/20">
           <div className="px-6 py-3 flex items-center justify-between">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {loading ? (
                 <div className="flex items-center gap-2 py-2">
                   <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                   <p className="text-sm text-gray-500">Loading...</p>
                 </div>
               ) : userData && userData.business ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 border border-white/50 rounded-lg shadow-sm">
-                    <Building2 className="w-4 h-4 text-slate-600" />
-                    <span className="text-sm font-semibold text-slate-800">{userData.business.name}</span>
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
+                  <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-white/50 border border-white/50 rounded-lg shadow-sm">
+                    <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" />
+                    <span className="text-xs sm:text-sm font-semibold text-slate-800">{userData.business.name}</span>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50/50 border border-emerald-100/50 rounded-lg shadow-sm">
-                    <Cpu className="w-4 h-4 text-emerald-600" />
-                    <span className="text-sm text-emerald-700 capitalize">{userData.business.industry}</span>
+                  <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-emerald-50/50 border border-emerald-100/50 rounded-lg shadow-sm">
+                    <Cpu className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
+                    <span className="text-xs sm:text-sm text-emerald-700 capitalize">{userData.business.industry}</span>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 border border-blue-100/50 rounded-lg shadow-sm">
-                    <UsersRound className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm text-blue-700">{userData.business.seatCount} / {userData.business.maxSeats} employees</span>
+                  <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50/50 border border-blue-100/50 rounded-lg shadow-sm">
+                    <UsersRound className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                    <span className="text-xs sm:text-sm text-blue-700">{userData.business.seatCount} / {userData.business.maxSeats} employees</span>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50/50 border border-amber-100/50 rounded-lg shadow-sm">
-                    <AtSign className="w-4 h-4 text-amber-600" />
-                    <span className="text-sm text-amber-700">{userData.email}</span>
+                  <div className="hidden md:flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-amber-50/50 border border-amber-100/50 rounded-lg shadow-sm">
+                    <AtSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600" />
+                    <span className="text-xs sm:text-sm text-amber-700">{userData.email}</span>
                   </div>
                 </div>
               ) : null}
             </div>
-            <div className="flex items-center gap-3">
-            <div className="flex items-center gap-3 relative">
-              <button 
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="p-2 rounded-lg hover:bg-white/50 transition-colors relative cursor-pointer"
-              >
-                <Bell className={`w-5 h-5 ${notifications.length > 0 ? 'text-orange-500' : 'text-gray-600'}`} />
-                {notifications.length > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {notifications.length > 9 ? '9+' : notifications.length}
-                  </span>
-                )}
-              </button>
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="flex items-center gap-3 relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="p-2 rounded-lg hover:bg-white/50 transition-colors relative cursor-pointer"
+                >
+                  <Bell className={`w-5 h-5 ${notifications.length > 0 ? 'text-orange-500' : 'text-gray-600'}`} />
+                  {notifications.length > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {notifications.length > 9 ? '9+' : notifications.length}
+                    </span>
+                  )}
+                </button>
 
-              {/* Notifications Dropdown */}
-              {showNotifications && (
-                <>
-                  {/* Mobile backdrop */}
-                  <div className="fixed inset-0 bg-black/30 z-40 sm:hidden" onClick={() => setShowNotifications(false)} />
-                  <div className="fixed left-1/2 -translate-x-1/2 top-16 w-[calc(100%-2rem)] max-w-sm z-50 sm:absolute sm:left-auto sm:translate-x-0 sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                      <h3 className="font-bold text-gray-900">Notifications</h3>
-                      <div className="flex items-center gap-3">
-                        <button onClick={async () => { const res = await fetch('/api/notifications', { method: 'DELETE' }); if (res.ok) setNotifications([]); }} className="text-xs text-indigo-600 font-bold cursor-pointer">Clear All</button>
-                        <button 
-                          onClick={() => setShowNotifications(false)}
-                          className="text-gray-400 hover:text-gray-600 cursor-pointer"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                {/* Notifications Dropdown */}
+                {showNotifications && (
+                  <>
+                    {/* Mobile backdrop */}
+                    <div className="fixed inset-0 bg-black/30 z-40 sm:hidden" onClick={() => setShowNotifications(false)} />
+                    <div className="fixed left-1/2 -translate-x-1/2 top-16 w-[calc(100%-2rem)] max-w-sm z-50 sm:absolute sm:left-auto sm:translate-x-0 sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-80 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
+                      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                        <h3 className="font-bold text-gray-900">Notifications</h3>
+                        <div className="flex items-center gap-3">
+                          <button onClick={async () => { const res = await fetch('/api/notifications', { method: 'DELETE' }); if (res.ok) setNotifications([]); }} className="text-xs text-indigo-600 font-bold cursor-pointer">Clear All</button>
+                          <button
+                            onClick={() => setShowNotifications(false)}
+                            className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto">
-                      {notifications.length > 0 ? (
-                        notifications.map((notification) => (
-                          <div 
-                            key={notification.id} 
-                            className="p-4 border-b border-gray-50 hover:bg-slate-50 transition-colors cursor-pointer group flex items-start gap-3"
+                      <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map((notification) => (
+                            <div
+                              key={notification.id}
+                              className="p-4 border-b border-gray-50 hover:bg-slate-50 transition-colors cursor-pointer group flex items-start gap-3"
+                              onClick={() => {
+                                if (notification.link) router.push(notification.link);
+                                markAsRead(notification.id);
+                                setShowNotifications(false);
+                              }}
+                            >
+                              <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${notification.type === 'error' ? 'bg-red-500' :
+                                  notification.type === 'success' ? 'bg-emerald-500' :
+                                    'bg-blue-500'
+                                }`} />
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
+                                <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
+                                <p className="text-[10px] text-gray-400 mt-1">
+                                  {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markAsRead(notification.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded text-red-400 transition-all"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-8 text-center text-gray-500">
+                            <p className="text-sm">All caught up!</p>
+                          </div>
+                        )}
+                      </div>
+                      {notifications.length > 0 && (
+                        <div className="p-3 bg-slate-50 text-center border-t border-gray-100">
+                          <button
                             onClick={() => {
-                              if (notification.link) router.push(notification.link);
-                              markAsRead(notification.id);
                               setShowNotifications(false);
                             }}
+                            className="text-xs font-semibold text-blue-600 hover:text-blue-700"
                           >
-                            <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
-                              notification.type === 'error' ? 'bg-red-500' : 
-                              notification.type === 'success' ? 'bg-emerald-500' : 
-                              'bg-blue-500'
-                            }`} />
-                            <div className="flex-1">
-                              <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
-                              <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
-                              <p className="text-[10px] text-gray-400 mt-1">
-                                {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </p>
-                            </div>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                markAsRead(notification.id);
-                              }}
-                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded text-red-400 transition-all"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="p-8 text-center text-gray-500">
-                          <p className="text-sm">All caught up!</p>
+                            View all notifications
+                          </button>
                         </div>
                       )}
                     </div>
-                    {notifications.length > 0 && (
-                      <div className="p-3 bg-slate-50 text-center border-t border-gray-100">
-                        <button 
-                          onClick={() => {
-                            setShowNotifications(false);
-                          }}
-                          className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                        >
-                          View all notifications
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
+                  </>
+                )}
               </div>
               <div className="w-9 h-9 rounded-full bg-linear-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-sm font-semibold shadow-md">
                 {userData?.firstName?.charAt(0) || 'U'}
@@ -663,7 +661,7 @@ export default function DashboardLayout({
             </div>
           </div>
         </header>
-        
+
         {/* Trial warning banner — shown when ≤ 7 days left */}
         {subInfo?.status === 'TRIAL' && subInfo.isActive && typeof subInfo.daysLeft === 'number' && subInfo.daysLeft <= 7 && (
           <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 flex items-center justify-between gap-4">
@@ -713,16 +711,16 @@ export default function DashboardLayout({
       </div>
 
       {/* Welcome Guide Modal */}
-      <WelcomeGuideModal 
-        isOpen={showWelcomeGuide} 
-        onClose={() => setShowWelcomeGuide(false)} 
-        businessName={userData?.business?.name || 'Business'} 
+      <WelcomeGuideModal
+        isOpen={showWelcomeGuide}
+        onClose={() => setShowWelcomeGuide(false)}
+        businessName={userData?.business?.name || 'Business'}
       />
       <IncomingCallModal />
-      
+
       {/* ── Chat Toast Popup ── */}
       {activeChatToast && (
-        <div 
+        <div
           onClick={async () => {
             await markAsRead(activeChatToast.id);
             setActiveChatToast(null);

@@ -1193,3 +1193,33 @@ model ReplyToken {
   @@index([businessId])
 }
 
+// =============================================================================
+// Landing Page Dashboard Preview Configuration
+// =============================================================================
+
+model LandingPreviewConfig {
+  id              String   @id @default("default")
+  activeTab       String   @default("crm")
+  
+  // CRM Tab Custom Mock Data
+  crmTotalRevenue Float    @default(12450.00)
+  crmClientCount  Int      @default(8)
+  crmContactsJson String   @default("[{\"name\": \"Alex Mercer\", \"email\": \"alex@designco.uk\", \"stage\": \"Lead\", \"value\": 4500.00}, {\"name\": \"Sarah Jenkins\", \"email\": \"sarah@jenkinslegal.co.uk\", \"stage\": \"Customer\", \"value\": 3200.00}, {\"name\": \"David Cole\", \"email\": \"david@colebuilders.uk\", \"stage\": \"Contact\", \"value\": 1500.00}]") @db.Text
+  
+  // Invoices Tab Custom Mock Data
+  invUnpaidCount  Int      @default(3)
+  invTotalUnpaid  Float    @default(1850.00)
+  invInvoicesJson String   @default("[{\"number\": \"INV-2026-001\", \"client\": \"Acme Corp Ltd\", \"amount\": 950.00, \"status\": \"Pending\"}, {\"number\": \"INV-2026-002\", \"client\": \"Sarah Jenkins\", \"amount\": 650.00, \"status\": \"Overdue\"}, {\"number\": \"INV-2026-003\", \"client\": \"David Cole\", \"amount\": 250.00, \"status\": \"Pending\"}]") @db.Text
+  
+  // Tasks Tab Custom Mock Data
+  tasksJson       String   @default("[{\"id\": \"1\", \"title\": \"Review UK VAT returns\", \"status\": \"TODO\", \"priority\": \"HIGH\"}, {\"id\": \"2\", \"title\": \"Follow up with Alex Mercer\", \"status\": \"IN_PROGRESS\", \"priority\": \"MEDIUM\"}, {\"id\": \"3\", \"title\": \"Submit corporation tax draft\", \"status\": \"TODO\", \"priority\": \"HIGH\"}]") @db.Text
+  
+  // AI Tab Custom Mock Data
+  aiInputText     String   @default("Spent 45 mins with John. He wants to order 12 more units by Friday. Send invoice ASAP.") @db.Text
+  aiOutputText    String   @default("• Client: John\\n• Action Item: Order 12 units by Friday\\n• Task: Generate and send invoice.") @db.Text
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+

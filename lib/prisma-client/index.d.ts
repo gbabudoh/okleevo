@@ -183,6 +183,11 @@ export type ChatMessage = $Result.DefaultSelection<Prisma.$ChatMessagePayload>
  * 
  */
 export type ReplyToken = $Result.DefaultSelection<Prisma.$ReplyTokenPayload>
+/**
+ * Model LandingPreviewConfig
+ * 
+ */
+export type LandingPreviewConfig = $Result.DefaultSelection<Prisma.$LandingPreviewConfigPayload>
 
 /**
  * Enums
@@ -991,6 +996,16 @@ export class PrismaClient<
     * ```
     */
   get replyToken(): Prisma.ReplyTokenDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.landingPreviewConfig`: Exposes CRUD operations for the **LandingPreviewConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LandingPreviewConfigs
+    * const landingPreviewConfigs = await prisma.landingPreviewConfig.findMany()
+    * ```
+    */
+  get landingPreviewConfig(): Prisma.LandingPreviewConfigDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1465,7 +1480,8 @@ export namespace Prisma {
     MailboxMessage: 'MailboxMessage',
     Notification: 'Notification',
     ChatMessage: 'ChatMessage',
-    ReplyToken: 'ReplyToken'
+    ReplyToken: 'ReplyToken',
+    LandingPreviewConfig: 'LandingPreviewConfig'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1484,7 +1500,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "business" | "subscription" | "invoice" | "contact" | "note" | "expense" | "inventoryItem" | "stockMovement" | "employee" | "supplier" | "campaign" | "ticket" | "ticketComment" | "appointment" | "complianceItem" | "task" | "subTask" | "auditLog" | "workspaceVisibility" | "ledgerAccount" | "journalEntry" | "ledgerEntry" | "emailLog" | "form" | "formResponse" | "aINote" | "mailboxMessage" | "notification" | "chatMessage" | "replyToken"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "business" | "subscription" | "invoice" | "contact" | "note" | "expense" | "inventoryItem" | "stockMovement" | "employee" | "supplier" | "campaign" | "ticket" | "ticketComment" | "appointment" | "complianceItem" | "task" | "subTask" | "auditLog" | "workspaceVisibility" | "ledgerAccount" | "journalEntry" | "ledgerEntry" | "emailLog" | "form" | "formResponse" | "aINote" | "mailboxMessage" | "notification" | "chatMessage" | "replyToken" | "landingPreviewConfig"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4004,6 +4020,80 @@ export namespace Prisma {
           }
         }
       }
+      LandingPreviewConfig: {
+        payload: Prisma.$LandingPreviewConfigPayload<ExtArgs>
+        fields: Prisma.LandingPreviewConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LandingPreviewConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LandingPreviewConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.LandingPreviewConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LandingPreviewConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload>
+          }
+          findMany: {
+            args: Prisma.LandingPreviewConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload>[]
+          }
+          create: {
+            args: Prisma.LandingPreviewConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload>
+          }
+          createMany: {
+            args: Prisma.LandingPreviewConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LandingPreviewConfigCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload>[]
+          }
+          delete: {
+            args: Prisma.LandingPreviewConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload>
+          }
+          update: {
+            args: Prisma.LandingPreviewConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.LandingPreviewConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LandingPreviewConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LandingPreviewConfigUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload>[]
+          }
+          upsert: {
+            args: Prisma.LandingPreviewConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LandingPreviewConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.LandingPreviewConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLandingPreviewConfig>
+          }
+          groupBy: {
+            args: Prisma.LandingPreviewConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LandingPreviewConfigGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LandingPreviewConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<LandingPreviewConfigCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4134,6 +4224,7 @@ export namespace Prisma {
     notification?: NotificationOmit
     chatMessage?: ChatMessageOmit
     replyToken?: ReplyTokenOmit
+    landingPreviewConfig?: LandingPreviewConfigOmit
   }
 
   /* Types for Logging */
@@ -21436,10 +21527,14 @@ export namespace Prisma {
 
   export type SupplierAvgAggregateOutputType = {
     rating: number | null
+    totalOrders: number | null
+    totalSpent: number | null
   }
 
   export type SupplierSumAggregateOutputType = {
     rating: number | null
+    totalOrders: number | null
+    totalSpent: number | null
   }
 
   export type SupplierMinAggregateOutputType = {
@@ -21456,6 +21551,8 @@ export namespace Prisma {
     paymentTerms: string | null
     website: string | null
     notes: string | null
+    totalOrders: number | null
+    totalSpent: number | null
     status: $Enums.SupplierStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -21475,6 +21572,8 @@ export namespace Prisma {
     paymentTerms: string | null
     website: string | null
     notes: string | null
+    totalOrders: number | null
+    totalSpent: number | null
     status: $Enums.SupplierStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -21494,6 +21593,8 @@ export namespace Prisma {
     paymentTerms: number
     website: number
     notes: number
+    totalOrders: number
+    totalSpent: number
     status: number
     createdAt: number
     updatedAt: number
@@ -21503,10 +21604,14 @@ export namespace Prisma {
 
   export type SupplierAvgAggregateInputType = {
     rating?: true
+    totalOrders?: true
+    totalSpent?: true
   }
 
   export type SupplierSumAggregateInputType = {
     rating?: true
+    totalOrders?: true
+    totalSpent?: true
   }
 
   export type SupplierMinAggregateInputType = {
@@ -21523,6 +21628,8 @@ export namespace Prisma {
     paymentTerms?: true
     website?: true
     notes?: true
+    totalOrders?: true
+    totalSpent?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -21542,6 +21649,8 @@ export namespace Prisma {
     paymentTerms?: true
     website?: true
     notes?: true
+    totalOrders?: true
+    totalSpent?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -21561,6 +21670,8 @@ export namespace Prisma {
     paymentTerms?: true
     website?: true
     notes?: true
+    totalOrders?: true
+    totalSpent?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -21667,6 +21778,8 @@ export namespace Prisma {
     paymentTerms: string | null
     website: string | null
     notes: string | null
+    totalOrders: number | null
+    totalSpent: number | null
     status: $Enums.SupplierStatus
     createdAt: Date
     updatedAt: Date
@@ -21705,6 +21818,8 @@ export namespace Prisma {
     paymentTerms?: boolean
     website?: boolean
     notes?: boolean
+    totalOrders?: boolean
+    totalSpent?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -21727,6 +21842,8 @@ export namespace Prisma {
     paymentTerms?: boolean
     website?: boolean
     notes?: boolean
+    totalOrders?: boolean
+    totalSpent?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -21747,6 +21864,8 @@ export namespace Prisma {
     paymentTerms?: boolean
     website?: boolean
     notes?: boolean
+    totalOrders?: boolean
+    totalSpent?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -21767,12 +21886,14 @@ export namespace Prisma {
     paymentTerms?: boolean
     website?: boolean
     notes?: boolean
+    totalOrders?: boolean
+    totalSpent?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type SupplierOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "name" | "contactName" | "email" | "phone" | "address" | "category" | "rating" | "leadTime" | "paymentTerms" | "website" | "notes" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["supplier"]>
+  export type SupplierOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "businessId" | "name" | "contactName" | "email" | "phone" | "address" | "category" | "rating" | "leadTime" | "paymentTerms" | "website" | "notes" | "totalOrders" | "totalSpent" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["supplier"]>
   export type SupplierInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     inventoryItems?: boolean | Supplier$inventoryItemsArgs<ExtArgs>
@@ -21805,6 +21926,8 @@ export namespace Prisma {
       paymentTerms: string | null
       website: string | null
       notes: string | null
+      totalOrders: number | null
+      totalSpent: number | null
       status: $Enums.SupplierStatus
       createdAt: Date
       updatedAt: Date
@@ -22246,6 +22369,8 @@ export namespace Prisma {
     readonly paymentTerms: FieldRef<"Supplier", 'String'>
     readonly website: FieldRef<"Supplier", 'String'>
     readonly notes: FieldRef<"Supplier", 'String'>
+    readonly totalOrders: FieldRef<"Supplier", 'Int'>
+    readonly totalSpent: FieldRef<"Supplier", 'Float'>
     readonly status: FieldRef<"Supplier", 'SupplierStatus'>
     readonly createdAt: FieldRef<"Supplier", 'DateTime'>
     readonly updatedAt: FieldRef<"Supplier", 'DateTime'>
@@ -45637,6 +45762,1151 @@ export namespace Prisma {
 
 
   /**
+   * Model LandingPreviewConfig
+   */
+
+  export type AggregateLandingPreviewConfig = {
+    _count: LandingPreviewConfigCountAggregateOutputType | null
+    _avg: LandingPreviewConfigAvgAggregateOutputType | null
+    _sum: LandingPreviewConfigSumAggregateOutputType | null
+    _min: LandingPreviewConfigMinAggregateOutputType | null
+    _max: LandingPreviewConfigMaxAggregateOutputType | null
+  }
+
+  export type LandingPreviewConfigAvgAggregateOutputType = {
+    crmTotalRevenue: number | null
+    crmClientCount: number | null
+    invUnpaidCount: number | null
+    invTotalUnpaid: number | null
+  }
+
+  export type LandingPreviewConfigSumAggregateOutputType = {
+    crmTotalRevenue: number | null
+    crmClientCount: number | null
+    invUnpaidCount: number | null
+    invTotalUnpaid: number | null
+  }
+
+  export type LandingPreviewConfigMinAggregateOutputType = {
+    id: string | null
+    activeTab: string | null
+    crmTotalRevenue: number | null
+    crmClientCount: number | null
+    crmContactsJson: string | null
+    invUnpaidCount: number | null
+    invTotalUnpaid: number | null
+    invInvoicesJson: string | null
+    tasksJson: string | null
+    aiInputText: string | null
+    aiOutputText: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LandingPreviewConfigMaxAggregateOutputType = {
+    id: string | null
+    activeTab: string | null
+    crmTotalRevenue: number | null
+    crmClientCount: number | null
+    crmContactsJson: string | null
+    invUnpaidCount: number | null
+    invTotalUnpaid: number | null
+    invInvoicesJson: string | null
+    tasksJson: string | null
+    aiInputText: string | null
+    aiOutputText: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LandingPreviewConfigCountAggregateOutputType = {
+    id: number
+    activeTab: number
+    crmTotalRevenue: number
+    crmClientCount: number
+    crmContactsJson: number
+    invUnpaidCount: number
+    invTotalUnpaid: number
+    invInvoicesJson: number
+    tasksJson: number
+    aiInputText: number
+    aiOutputText: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LandingPreviewConfigAvgAggregateInputType = {
+    crmTotalRevenue?: true
+    crmClientCount?: true
+    invUnpaidCount?: true
+    invTotalUnpaid?: true
+  }
+
+  export type LandingPreviewConfigSumAggregateInputType = {
+    crmTotalRevenue?: true
+    crmClientCount?: true
+    invUnpaidCount?: true
+    invTotalUnpaid?: true
+  }
+
+  export type LandingPreviewConfigMinAggregateInputType = {
+    id?: true
+    activeTab?: true
+    crmTotalRevenue?: true
+    crmClientCount?: true
+    crmContactsJson?: true
+    invUnpaidCount?: true
+    invTotalUnpaid?: true
+    invInvoicesJson?: true
+    tasksJson?: true
+    aiInputText?: true
+    aiOutputText?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LandingPreviewConfigMaxAggregateInputType = {
+    id?: true
+    activeTab?: true
+    crmTotalRevenue?: true
+    crmClientCount?: true
+    crmContactsJson?: true
+    invUnpaidCount?: true
+    invTotalUnpaid?: true
+    invInvoicesJson?: true
+    tasksJson?: true
+    aiInputText?: true
+    aiOutputText?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LandingPreviewConfigCountAggregateInputType = {
+    id?: true
+    activeTab?: true
+    crmTotalRevenue?: true
+    crmClientCount?: true
+    crmContactsJson?: true
+    invUnpaidCount?: true
+    invTotalUnpaid?: true
+    invInvoicesJson?: true
+    tasksJson?: true
+    aiInputText?: true
+    aiOutputText?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LandingPreviewConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LandingPreviewConfig to aggregate.
+     */
+    where?: LandingPreviewConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LandingPreviewConfigs to fetch.
+     */
+    orderBy?: LandingPreviewConfigOrderByWithRelationInput | LandingPreviewConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LandingPreviewConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LandingPreviewConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LandingPreviewConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LandingPreviewConfigs
+    **/
+    _count?: true | LandingPreviewConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LandingPreviewConfigAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LandingPreviewConfigSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LandingPreviewConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LandingPreviewConfigMaxAggregateInputType
+  }
+
+  export type GetLandingPreviewConfigAggregateType<T extends LandingPreviewConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateLandingPreviewConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLandingPreviewConfig[P]>
+      : GetScalarType<T[P], AggregateLandingPreviewConfig[P]>
+  }
+
+
+
+
+  export type LandingPreviewConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LandingPreviewConfigWhereInput
+    orderBy?: LandingPreviewConfigOrderByWithAggregationInput | LandingPreviewConfigOrderByWithAggregationInput[]
+    by: LandingPreviewConfigScalarFieldEnum[] | LandingPreviewConfigScalarFieldEnum
+    having?: LandingPreviewConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LandingPreviewConfigCountAggregateInputType | true
+    _avg?: LandingPreviewConfigAvgAggregateInputType
+    _sum?: LandingPreviewConfigSumAggregateInputType
+    _min?: LandingPreviewConfigMinAggregateInputType
+    _max?: LandingPreviewConfigMaxAggregateInputType
+  }
+
+  export type LandingPreviewConfigGroupByOutputType = {
+    id: string
+    activeTab: string
+    crmTotalRevenue: number
+    crmClientCount: number
+    crmContactsJson: string
+    invUnpaidCount: number
+    invTotalUnpaid: number
+    invInvoicesJson: string
+    tasksJson: string
+    aiInputText: string
+    aiOutputText: string
+    createdAt: Date
+    updatedAt: Date
+    _count: LandingPreviewConfigCountAggregateOutputType | null
+    _avg: LandingPreviewConfigAvgAggregateOutputType | null
+    _sum: LandingPreviewConfigSumAggregateOutputType | null
+    _min: LandingPreviewConfigMinAggregateOutputType | null
+    _max: LandingPreviewConfigMaxAggregateOutputType | null
+  }
+
+  type GetLandingPreviewConfigGroupByPayload<T extends LandingPreviewConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LandingPreviewConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LandingPreviewConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LandingPreviewConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], LandingPreviewConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LandingPreviewConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    activeTab?: boolean
+    crmTotalRevenue?: boolean
+    crmClientCount?: boolean
+    crmContactsJson?: boolean
+    invUnpaidCount?: boolean
+    invTotalUnpaid?: boolean
+    invInvoicesJson?: boolean
+    tasksJson?: boolean
+    aiInputText?: boolean
+    aiOutputText?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["landingPreviewConfig"]>
+
+  export type LandingPreviewConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    activeTab?: boolean
+    crmTotalRevenue?: boolean
+    crmClientCount?: boolean
+    crmContactsJson?: boolean
+    invUnpaidCount?: boolean
+    invTotalUnpaid?: boolean
+    invInvoicesJson?: boolean
+    tasksJson?: boolean
+    aiInputText?: boolean
+    aiOutputText?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["landingPreviewConfig"]>
+
+  export type LandingPreviewConfigSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    activeTab?: boolean
+    crmTotalRevenue?: boolean
+    crmClientCount?: boolean
+    crmContactsJson?: boolean
+    invUnpaidCount?: boolean
+    invTotalUnpaid?: boolean
+    invInvoicesJson?: boolean
+    tasksJson?: boolean
+    aiInputText?: boolean
+    aiOutputText?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["landingPreviewConfig"]>
+
+  export type LandingPreviewConfigSelectScalar = {
+    id?: boolean
+    activeTab?: boolean
+    crmTotalRevenue?: boolean
+    crmClientCount?: boolean
+    crmContactsJson?: boolean
+    invUnpaidCount?: boolean
+    invTotalUnpaid?: boolean
+    invInvoicesJson?: boolean
+    tasksJson?: boolean
+    aiInputText?: boolean
+    aiOutputText?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type LandingPreviewConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "activeTab" | "crmTotalRevenue" | "crmClientCount" | "crmContactsJson" | "invUnpaidCount" | "invTotalUnpaid" | "invInvoicesJson" | "tasksJson" | "aiInputText" | "aiOutputText" | "createdAt" | "updatedAt", ExtArgs["result"]["landingPreviewConfig"]>
+
+  export type $LandingPreviewConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LandingPreviewConfig"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      activeTab: string
+      crmTotalRevenue: number
+      crmClientCount: number
+      crmContactsJson: string
+      invUnpaidCount: number
+      invTotalUnpaid: number
+      invInvoicesJson: string
+      tasksJson: string
+      aiInputText: string
+      aiOutputText: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["landingPreviewConfig"]>
+    composites: {}
+  }
+
+  type LandingPreviewConfigGetPayload<S extends boolean | null | undefined | LandingPreviewConfigDefaultArgs> = $Result.GetResult<Prisma.$LandingPreviewConfigPayload, S>
+
+  type LandingPreviewConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LandingPreviewConfigFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LandingPreviewConfigCountAggregateInputType | true
+    }
+
+  export interface LandingPreviewConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LandingPreviewConfig'], meta: { name: 'LandingPreviewConfig' } }
+    /**
+     * Find zero or one LandingPreviewConfig that matches the filter.
+     * @param {LandingPreviewConfigFindUniqueArgs} args - Arguments to find a LandingPreviewConfig
+     * @example
+     * // Get one LandingPreviewConfig
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LandingPreviewConfigFindUniqueArgs>(args: SelectSubset<T, LandingPreviewConfigFindUniqueArgs<ExtArgs>>): Prisma__LandingPreviewConfigClient<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one LandingPreviewConfig that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LandingPreviewConfigFindUniqueOrThrowArgs} args - Arguments to find a LandingPreviewConfig
+     * @example
+     * // Get one LandingPreviewConfig
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LandingPreviewConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, LandingPreviewConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LandingPreviewConfigClient<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LandingPreviewConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LandingPreviewConfigFindFirstArgs} args - Arguments to find a LandingPreviewConfig
+     * @example
+     * // Get one LandingPreviewConfig
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LandingPreviewConfigFindFirstArgs>(args?: SelectSubset<T, LandingPreviewConfigFindFirstArgs<ExtArgs>>): Prisma__LandingPreviewConfigClient<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LandingPreviewConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LandingPreviewConfigFindFirstOrThrowArgs} args - Arguments to find a LandingPreviewConfig
+     * @example
+     * // Get one LandingPreviewConfig
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LandingPreviewConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, LandingPreviewConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__LandingPreviewConfigClient<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more LandingPreviewConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LandingPreviewConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LandingPreviewConfigs
+     * const landingPreviewConfigs = await prisma.landingPreviewConfig.findMany()
+     * 
+     * // Get first 10 LandingPreviewConfigs
+     * const landingPreviewConfigs = await prisma.landingPreviewConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const landingPreviewConfigWithIdOnly = await prisma.landingPreviewConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LandingPreviewConfigFindManyArgs>(args?: SelectSubset<T, LandingPreviewConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a LandingPreviewConfig.
+     * @param {LandingPreviewConfigCreateArgs} args - Arguments to create a LandingPreviewConfig.
+     * @example
+     * // Create one LandingPreviewConfig
+     * const LandingPreviewConfig = await prisma.landingPreviewConfig.create({
+     *   data: {
+     *     // ... data to create a LandingPreviewConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends LandingPreviewConfigCreateArgs>(args: SelectSubset<T, LandingPreviewConfigCreateArgs<ExtArgs>>): Prisma__LandingPreviewConfigClient<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many LandingPreviewConfigs.
+     * @param {LandingPreviewConfigCreateManyArgs} args - Arguments to create many LandingPreviewConfigs.
+     * @example
+     * // Create many LandingPreviewConfigs
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LandingPreviewConfigCreateManyArgs>(args?: SelectSubset<T, LandingPreviewConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LandingPreviewConfigs and returns the data saved in the database.
+     * @param {LandingPreviewConfigCreateManyAndReturnArgs} args - Arguments to create many LandingPreviewConfigs.
+     * @example
+     * // Create many LandingPreviewConfigs
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LandingPreviewConfigs and only return the `id`
+     * const landingPreviewConfigWithIdOnly = await prisma.landingPreviewConfig.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LandingPreviewConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, LandingPreviewConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a LandingPreviewConfig.
+     * @param {LandingPreviewConfigDeleteArgs} args - Arguments to delete one LandingPreviewConfig.
+     * @example
+     * // Delete one LandingPreviewConfig
+     * const LandingPreviewConfig = await prisma.landingPreviewConfig.delete({
+     *   where: {
+     *     // ... filter to delete one LandingPreviewConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LandingPreviewConfigDeleteArgs>(args: SelectSubset<T, LandingPreviewConfigDeleteArgs<ExtArgs>>): Prisma__LandingPreviewConfigClient<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one LandingPreviewConfig.
+     * @param {LandingPreviewConfigUpdateArgs} args - Arguments to update one LandingPreviewConfig.
+     * @example
+     * // Update one LandingPreviewConfig
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LandingPreviewConfigUpdateArgs>(args: SelectSubset<T, LandingPreviewConfigUpdateArgs<ExtArgs>>): Prisma__LandingPreviewConfigClient<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more LandingPreviewConfigs.
+     * @param {LandingPreviewConfigDeleteManyArgs} args - Arguments to filter LandingPreviewConfigs to delete.
+     * @example
+     * // Delete a few LandingPreviewConfigs
+     * const { count } = await prisma.landingPreviewConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LandingPreviewConfigDeleteManyArgs>(args?: SelectSubset<T, LandingPreviewConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LandingPreviewConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LandingPreviewConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LandingPreviewConfigs
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LandingPreviewConfigUpdateManyArgs>(args: SelectSubset<T, LandingPreviewConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LandingPreviewConfigs and returns the data updated in the database.
+     * @param {LandingPreviewConfigUpdateManyAndReturnArgs} args - Arguments to update many LandingPreviewConfigs.
+     * @example
+     * // Update many LandingPreviewConfigs
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more LandingPreviewConfigs and only return the `id`
+     * const landingPreviewConfigWithIdOnly = await prisma.landingPreviewConfig.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends LandingPreviewConfigUpdateManyAndReturnArgs>(args: SelectSubset<T, LandingPreviewConfigUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one LandingPreviewConfig.
+     * @param {LandingPreviewConfigUpsertArgs} args - Arguments to update or create a LandingPreviewConfig.
+     * @example
+     * // Update or create a LandingPreviewConfig
+     * const landingPreviewConfig = await prisma.landingPreviewConfig.upsert({
+     *   create: {
+     *     // ... data to create a LandingPreviewConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LandingPreviewConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LandingPreviewConfigUpsertArgs>(args: SelectSubset<T, LandingPreviewConfigUpsertArgs<ExtArgs>>): Prisma__LandingPreviewConfigClient<$Result.GetResult<Prisma.$LandingPreviewConfigPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of LandingPreviewConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LandingPreviewConfigCountArgs} args - Arguments to filter LandingPreviewConfigs to count.
+     * @example
+     * // Count the number of LandingPreviewConfigs
+     * const count = await prisma.landingPreviewConfig.count({
+     *   where: {
+     *     // ... the filter for the LandingPreviewConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends LandingPreviewConfigCountArgs>(
+      args?: Subset<T, LandingPreviewConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LandingPreviewConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LandingPreviewConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LandingPreviewConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LandingPreviewConfigAggregateArgs>(args: Subset<T, LandingPreviewConfigAggregateArgs>): Prisma.PrismaPromise<GetLandingPreviewConfigAggregateType<T>>
+
+    /**
+     * Group by LandingPreviewConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LandingPreviewConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LandingPreviewConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LandingPreviewConfigGroupByArgs['orderBy'] }
+        : { orderBy?: LandingPreviewConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LandingPreviewConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLandingPreviewConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LandingPreviewConfig model
+   */
+  readonly fields: LandingPreviewConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LandingPreviewConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LandingPreviewConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LandingPreviewConfig model
+   */
+  interface LandingPreviewConfigFieldRefs {
+    readonly id: FieldRef<"LandingPreviewConfig", 'String'>
+    readonly activeTab: FieldRef<"LandingPreviewConfig", 'String'>
+    readonly crmTotalRevenue: FieldRef<"LandingPreviewConfig", 'Float'>
+    readonly crmClientCount: FieldRef<"LandingPreviewConfig", 'Int'>
+    readonly crmContactsJson: FieldRef<"LandingPreviewConfig", 'String'>
+    readonly invUnpaidCount: FieldRef<"LandingPreviewConfig", 'Int'>
+    readonly invTotalUnpaid: FieldRef<"LandingPreviewConfig", 'Float'>
+    readonly invInvoicesJson: FieldRef<"LandingPreviewConfig", 'String'>
+    readonly tasksJson: FieldRef<"LandingPreviewConfig", 'String'>
+    readonly aiInputText: FieldRef<"LandingPreviewConfig", 'String'>
+    readonly aiOutputText: FieldRef<"LandingPreviewConfig", 'String'>
+    readonly createdAt: FieldRef<"LandingPreviewConfig", 'DateTime'>
+    readonly updatedAt: FieldRef<"LandingPreviewConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LandingPreviewConfig findUnique
+   */
+  export type LandingPreviewConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which LandingPreviewConfig to fetch.
+     */
+    where: LandingPreviewConfigWhereUniqueInput
+  }
+
+  /**
+   * LandingPreviewConfig findUniqueOrThrow
+   */
+  export type LandingPreviewConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which LandingPreviewConfig to fetch.
+     */
+    where: LandingPreviewConfigWhereUniqueInput
+  }
+
+  /**
+   * LandingPreviewConfig findFirst
+   */
+  export type LandingPreviewConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which LandingPreviewConfig to fetch.
+     */
+    where?: LandingPreviewConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LandingPreviewConfigs to fetch.
+     */
+    orderBy?: LandingPreviewConfigOrderByWithRelationInput | LandingPreviewConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LandingPreviewConfigs.
+     */
+    cursor?: LandingPreviewConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LandingPreviewConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LandingPreviewConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LandingPreviewConfigs.
+     */
+    distinct?: LandingPreviewConfigScalarFieldEnum | LandingPreviewConfigScalarFieldEnum[]
+  }
+
+  /**
+   * LandingPreviewConfig findFirstOrThrow
+   */
+  export type LandingPreviewConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which LandingPreviewConfig to fetch.
+     */
+    where?: LandingPreviewConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LandingPreviewConfigs to fetch.
+     */
+    orderBy?: LandingPreviewConfigOrderByWithRelationInput | LandingPreviewConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LandingPreviewConfigs.
+     */
+    cursor?: LandingPreviewConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LandingPreviewConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LandingPreviewConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LandingPreviewConfigs.
+     */
+    distinct?: LandingPreviewConfigScalarFieldEnum | LandingPreviewConfigScalarFieldEnum[]
+  }
+
+  /**
+   * LandingPreviewConfig findMany
+   */
+  export type LandingPreviewConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which LandingPreviewConfigs to fetch.
+     */
+    where?: LandingPreviewConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LandingPreviewConfigs to fetch.
+     */
+    orderBy?: LandingPreviewConfigOrderByWithRelationInput | LandingPreviewConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LandingPreviewConfigs.
+     */
+    cursor?: LandingPreviewConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LandingPreviewConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LandingPreviewConfigs.
+     */
+    skip?: number
+    distinct?: LandingPreviewConfigScalarFieldEnum | LandingPreviewConfigScalarFieldEnum[]
+  }
+
+  /**
+   * LandingPreviewConfig create
+   */
+  export type LandingPreviewConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * The data needed to create a LandingPreviewConfig.
+     */
+    data: XOR<LandingPreviewConfigCreateInput, LandingPreviewConfigUncheckedCreateInput>
+  }
+
+  /**
+   * LandingPreviewConfig createMany
+   */
+  export type LandingPreviewConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LandingPreviewConfigs.
+     */
+    data: LandingPreviewConfigCreateManyInput | LandingPreviewConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LandingPreviewConfig createManyAndReturn
+   */
+  export type LandingPreviewConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * The data used to create many LandingPreviewConfigs.
+     */
+    data: LandingPreviewConfigCreateManyInput | LandingPreviewConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LandingPreviewConfig update
+   */
+  export type LandingPreviewConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * The data needed to update a LandingPreviewConfig.
+     */
+    data: XOR<LandingPreviewConfigUpdateInput, LandingPreviewConfigUncheckedUpdateInput>
+    /**
+     * Choose, which LandingPreviewConfig to update.
+     */
+    where: LandingPreviewConfigWhereUniqueInput
+  }
+
+  /**
+   * LandingPreviewConfig updateMany
+   */
+  export type LandingPreviewConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LandingPreviewConfigs.
+     */
+    data: XOR<LandingPreviewConfigUpdateManyMutationInput, LandingPreviewConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which LandingPreviewConfigs to update
+     */
+    where?: LandingPreviewConfigWhereInput
+    /**
+     * Limit how many LandingPreviewConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * LandingPreviewConfig updateManyAndReturn
+   */
+  export type LandingPreviewConfigUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * The data used to update LandingPreviewConfigs.
+     */
+    data: XOR<LandingPreviewConfigUpdateManyMutationInput, LandingPreviewConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which LandingPreviewConfigs to update
+     */
+    where?: LandingPreviewConfigWhereInput
+    /**
+     * Limit how many LandingPreviewConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * LandingPreviewConfig upsert
+   */
+  export type LandingPreviewConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * The filter to search for the LandingPreviewConfig to update in case it exists.
+     */
+    where: LandingPreviewConfigWhereUniqueInput
+    /**
+     * In case the LandingPreviewConfig found by the `where` argument doesn't exist, create a new LandingPreviewConfig with this data.
+     */
+    create: XOR<LandingPreviewConfigCreateInput, LandingPreviewConfigUncheckedCreateInput>
+    /**
+     * In case the LandingPreviewConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LandingPreviewConfigUpdateInput, LandingPreviewConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * LandingPreviewConfig delete
+   */
+  export type LandingPreviewConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+    /**
+     * Filter which LandingPreviewConfig to delete.
+     */
+    where: LandingPreviewConfigWhereUniqueInput
+  }
+
+  /**
+   * LandingPreviewConfig deleteMany
+   */
+  export type LandingPreviewConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LandingPreviewConfigs to delete
+     */
+    where?: LandingPreviewConfigWhereInput
+    /**
+     * Limit how many LandingPreviewConfigs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * LandingPreviewConfig without action
+   */
+  export type LandingPreviewConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LandingPreviewConfig
+     */
+    select?: LandingPreviewConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LandingPreviewConfig
+     */
+    omit?: LandingPreviewConfigOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -45914,6 +47184,8 @@ export namespace Prisma {
     paymentTerms: 'paymentTerms',
     website: 'website',
     notes: 'notes',
+    totalOrders: 'totalOrders',
+    totalSpent: 'totalSpent',
     status: 'status',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -46261,6 +47533,25 @@ export namespace Prisma {
   };
 
   export type ReplyTokenScalarFieldEnum = (typeof ReplyTokenScalarFieldEnum)[keyof typeof ReplyTokenScalarFieldEnum]
+
+
+  export const LandingPreviewConfigScalarFieldEnum: {
+    id: 'id',
+    activeTab: 'activeTab',
+    crmTotalRevenue: 'crmTotalRevenue',
+    crmClientCount: 'crmClientCount',
+    crmContactsJson: 'crmContactsJson',
+    invUnpaidCount: 'invUnpaidCount',
+    invTotalUnpaid: 'invTotalUnpaid',
+    invInvoicesJson: 'invInvoicesJson',
+    tasksJson: 'tasksJson',
+    aiInputText: 'aiInputText',
+    aiOutputText: 'aiOutputText',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LandingPreviewConfigScalarFieldEnum = (typeof LandingPreviewConfigScalarFieldEnum)[keyof typeof LandingPreviewConfigScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -48171,6 +49462,8 @@ export namespace Prisma {
     paymentTerms?: StringNullableFilter<"Supplier"> | string | null
     website?: StringNullableFilter<"Supplier"> | string | null
     notes?: StringNullableFilter<"Supplier"> | string | null
+    totalOrders?: IntNullableFilter<"Supplier"> | number | null
+    totalSpent?: FloatNullableFilter<"Supplier"> | number | null
     status?: EnumSupplierStatusFilter<"Supplier"> | $Enums.SupplierStatus
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeFilter<"Supplier"> | Date | string
@@ -48192,6 +49485,8 @@ export namespace Prisma {
     paymentTerms?: SortOrderInput | SortOrder
     website?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    totalOrders?: SortOrderInput | SortOrder
+    totalSpent?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -48216,6 +49511,8 @@ export namespace Prisma {
     paymentTerms?: StringNullableFilter<"Supplier"> | string | null
     website?: StringNullableFilter<"Supplier"> | string | null
     notes?: StringNullableFilter<"Supplier"> | string | null
+    totalOrders?: IntNullableFilter<"Supplier"> | number | null
+    totalSpent?: FloatNullableFilter<"Supplier"> | number | null
     status?: EnumSupplierStatusFilter<"Supplier"> | $Enums.SupplierStatus
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeFilter<"Supplier"> | Date | string
@@ -48237,6 +49534,8 @@ export namespace Prisma {
     paymentTerms?: SortOrderInput | SortOrder
     website?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    totalOrders?: SortOrderInput | SortOrder
+    totalSpent?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -48264,6 +49563,8 @@ export namespace Prisma {
     paymentTerms?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
     website?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
     notes?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
+    totalOrders?: IntNullableWithAggregatesFilter<"Supplier"> | number | null
+    totalSpent?: FloatNullableWithAggregatesFilter<"Supplier"> | number | null
     status?: EnumSupplierStatusWithAggregatesFilter<"Supplier"> | $Enums.SupplierStatus
     createdAt?: DateTimeWithAggregatesFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Supplier"> | Date | string
@@ -50023,6 +51324,100 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"ReplyToken"> | Date | string
   }
 
+  export type LandingPreviewConfigWhereInput = {
+    AND?: LandingPreviewConfigWhereInput | LandingPreviewConfigWhereInput[]
+    OR?: LandingPreviewConfigWhereInput[]
+    NOT?: LandingPreviewConfigWhereInput | LandingPreviewConfigWhereInput[]
+    id?: StringFilter<"LandingPreviewConfig"> | string
+    activeTab?: StringFilter<"LandingPreviewConfig"> | string
+    crmTotalRevenue?: FloatFilter<"LandingPreviewConfig"> | number
+    crmClientCount?: IntFilter<"LandingPreviewConfig"> | number
+    crmContactsJson?: StringFilter<"LandingPreviewConfig"> | string
+    invUnpaidCount?: IntFilter<"LandingPreviewConfig"> | number
+    invTotalUnpaid?: FloatFilter<"LandingPreviewConfig"> | number
+    invInvoicesJson?: StringFilter<"LandingPreviewConfig"> | string
+    tasksJson?: StringFilter<"LandingPreviewConfig"> | string
+    aiInputText?: StringFilter<"LandingPreviewConfig"> | string
+    aiOutputText?: StringFilter<"LandingPreviewConfig"> | string
+    createdAt?: DateTimeFilter<"LandingPreviewConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"LandingPreviewConfig"> | Date | string
+  }
+
+  export type LandingPreviewConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    activeTab?: SortOrder
+    crmTotalRevenue?: SortOrder
+    crmClientCount?: SortOrder
+    crmContactsJson?: SortOrder
+    invUnpaidCount?: SortOrder
+    invTotalUnpaid?: SortOrder
+    invInvoicesJson?: SortOrder
+    tasksJson?: SortOrder
+    aiInputText?: SortOrder
+    aiOutputText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LandingPreviewConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LandingPreviewConfigWhereInput | LandingPreviewConfigWhereInput[]
+    OR?: LandingPreviewConfigWhereInput[]
+    NOT?: LandingPreviewConfigWhereInput | LandingPreviewConfigWhereInput[]
+    activeTab?: StringFilter<"LandingPreviewConfig"> | string
+    crmTotalRevenue?: FloatFilter<"LandingPreviewConfig"> | number
+    crmClientCount?: IntFilter<"LandingPreviewConfig"> | number
+    crmContactsJson?: StringFilter<"LandingPreviewConfig"> | string
+    invUnpaidCount?: IntFilter<"LandingPreviewConfig"> | number
+    invTotalUnpaid?: FloatFilter<"LandingPreviewConfig"> | number
+    invInvoicesJson?: StringFilter<"LandingPreviewConfig"> | string
+    tasksJson?: StringFilter<"LandingPreviewConfig"> | string
+    aiInputText?: StringFilter<"LandingPreviewConfig"> | string
+    aiOutputText?: StringFilter<"LandingPreviewConfig"> | string
+    createdAt?: DateTimeFilter<"LandingPreviewConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"LandingPreviewConfig"> | Date | string
+  }, "id">
+
+  export type LandingPreviewConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    activeTab?: SortOrder
+    crmTotalRevenue?: SortOrder
+    crmClientCount?: SortOrder
+    crmContactsJson?: SortOrder
+    invUnpaidCount?: SortOrder
+    invTotalUnpaid?: SortOrder
+    invInvoicesJson?: SortOrder
+    tasksJson?: SortOrder
+    aiInputText?: SortOrder
+    aiOutputText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LandingPreviewConfigCountOrderByAggregateInput
+    _avg?: LandingPreviewConfigAvgOrderByAggregateInput
+    _max?: LandingPreviewConfigMaxOrderByAggregateInput
+    _min?: LandingPreviewConfigMinOrderByAggregateInput
+    _sum?: LandingPreviewConfigSumOrderByAggregateInput
+  }
+
+  export type LandingPreviewConfigScalarWhereWithAggregatesInput = {
+    AND?: LandingPreviewConfigScalarWhereWithAggregatesInput | LandingPreviewConfigScalarWhereWithAggregatesInput[]
+    OR?: LandingPreviewConfigScalarWhereWithAggregatesInput[]
+    NOT?: LandingPreviewConfigScalarWhereWithAggregatesInput | LandingPreviewConfigScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LandingPreviewConfig"> | string
+    activeTab?: StringWithAggregatesFilter<"LandingPreviewConfig"> | string
+    crmTotalRevenue?: FloatWithAggregatesFilter<"LandingPreviewConfig"> | number
+    crmClientCount?: IntWithAggregatesFilter<"LandingPreviewConfig"> | number
+    crmContactsJson?: StringWithAggregatesFilter<"LandingPreviewConfig"> | string
+    invUnpaidCount?: IntWithAggregatesFilter<"LandingPreviewConfig"> | number
+    invTotalUnpaid?: FloatWithAggregatesFilter<"LandingPreviewConfig"> | number
+    invInvoicesJson?: StringWithAggregatesFilter<"LandingPreviewConfig"> | string
+    tasksJson?: StringWithAggregatesFilter<"LandingPreviewConfig"> | string
+    aiInputText?: StringWithAggregatesFilter<"LandingPreviewConfig"> | string
+    aiOutputText?: StringWithAggregatesFilter<"LandingPreviewConfig"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"LandingPreviewConfig"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LandingPreviewConfig"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -51649,6 +53044,8 @@ export namespace Prisma {
     paymentTerms?: string | null
     website?: string | null
     notes?: string | null
+    totalOrders?: number | null
+    totalSpent?: number | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51670,6 +53067,8 @@ export namespace Prisma {
     paymentTerms?: string | null
     website?: string | null
     notes?: string | null
+    totalOrders?: number | null
+    totalSpent?: number | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51689,6 +53088,8 @@ export namespace Prisma {
     paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    totalOrders?: NullableIntFieldUpdateOperationsInput | number | null
+    totalSpent?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51710,6 +53111,8 @@ export namespace Prisma {
     paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    totalOrders?: NullableIntFieldUpdateOperationsInput | number | null
+    totalSpent?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51730,6 +53133,8 @@ export namespace Prisma {
     paymentTerms?: string | null
     website?: string | null
     notes?: string | null
+    totalOrders?: number | null
+    totalSpent?: number | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51748,6 +53153,8 @@ export namespace Prisma {
     paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    totalOrders?: NullableIntFieldUpdateOperationsInput | number | null
+    totalSpent?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51767,6 +53174,8 @@ export namespace Prisma {
     paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    totalOrders?: NullableIntFieldUpdateOperationsInput | number | null
+    totalSpent?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53741,6 +55150,118 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LandingPreviewConfigCreateInput = {
+    id?: string
+    activeTab?: string
+    crmTotalRevenue?: number
+    crmClientCount?: number
+    crmContactsJson?: string
+    invUnpaidCount?: number
+    invTotalUnpaid?: number
+    invInvoicesJson?: string
+    tasksJson?: string
+    aiInputText?: string
+    aiOutputText?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LandingPreviewConfigUncheckedCreateInput = {
+    id?: string
+    activeTab?: string
+    crmTotalRevenue?: number
+    crmClientCount?: number
+    crmContactsJson?: string
+    invUnpaidCount?: number
+    invTotalUnpaid?: number
+    invInvoicesJson?: string
+    tasksJson?: string
+    aiInputText?: string
+    aiOutputText?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LandingPreviewConfigUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    activeTab?: StringFieldUpdateOperationsInput | string
+    crmTotalRevenue?: FloatFieldUpdateOperationsInput | number
+    crmClientCount?: IntFieldUpdateOperationsInput | number
+    crmContactsJson?: StringFieldUpdateOperationsInput | string
+    invUnpaidCount?: IntFieldUpdateOperationsInput | number
+    invTotalUnpaid?: FloatFieldUpdateOperationsInput | number
+    invInvoicesJson?: StringFieldUpdateOperationsInput | string
+    tasksJson?: StringFieldUpdateOperationsInput | string
+    aiInputText?: StringFieldUpdateOperationsInput | string
+    aiOutputText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LandingPreviewConfigUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    activeTab?: StringFieldUpdateOperationsInput | string
+    crmTotalRevenue?: FloatFieldUpdateOperationsInput | number
+    crmClientCount?: IntFieldUpdateOperationsInput | number
+    crmContactsJson?: StringFieldUpdateOperationsInput | string
+    invUnpaidCount?: IntFieldUpdateOperationsInput | number
+    invTotalUnpaid?: FloatFieldUpdateOperationsInput | number
+    invInvoicesJson?: StringFieldUpdateOperationsInput | string
+    tasksJson?: StringFieldUpdateOperationsInput | string
+    aiInputText?: StringFieldUpdateOperationsInput | string
+    aiOutputText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LandingPreviewConfigCreateManyInput = {
+    id?: string
+    activeTab?: string
+    crmTotalRevenue?: number
+    crmClientCount?: number
+    crmContactsJson?: string
+    invUnpaidCount?: number
+    invTotalUnpaid?: number
+    invInvoicesJson?: string
+    tasksJson?: string
+    aiInputText?: string
+    aiOutputText?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LandingPreviewConfigUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    activeTab?: StringFieldUpdateOperationsInput | string
+    crmTotalRevenue?: FloatFieldUpdateOperationsInput | number
+    crmClientCount?: IntFieldUpdateOperationsInput | number
+    crmContactsJson?: StringFieldUpdateOperationsInput | string
+    invUnpaidCount?: IntFieldUpdateOperationsInput | number
+    invTotalUnpaid?: FloatFieldUpdateOperationsInput | number
+    invInvoicesJson?: StringFieldUpdateOperationsInput | string
+    tasksJson?: StringFieldUpdateOperationsInput | string
+    aiInputText?: StringFieldUpdateOperationsInput | string
+    aiOutputText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LandingPreviewConfigUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    activeTab?: StringFieldUpdateOperationsInput | string
+    crmTotalRevenue?: FloatFieldUpdateOperationsInput | number
+    crmClientCount?: IntFieldUpdateOperationsInput | number
+    crmContactsJson?: StringFieldUpdateOperationsInput | string
+    invUnpaidCount?: IntFieldUpdateOperationsInput | number
+    invTotalUnpaid?: FloatFieldUpdateOperationsInput | number
+    invInvoicesJson?: StringFieldUpdateOperationsInput | string
+    tasksJson?: StringFieldUpdateOperationsInput | string
+    aiInputText?: StringFieldUpdateOperationsInput | string
+    aiOutputText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -55221,6 +56742,8 @@ export namespace Prisma {
     paymentTerms?: SortOrder
     website?: SortOrder
     notes?: SortOrder
+    totalOrders?: SortOrder
+    totalSpent?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -55228,6 +56751,8 @@ export namespace Prisma {
 
   export type SupplierAvgOrderByAggregateInput = {
     rating?: SortOrder
+    totalOrders?: SortOrder
+    totalSpent?: SortOrder
   }
 
   export type SupplierMaxOrderByAggregateInput = {
@@ -55244,6 +56769,8 @@ export namespace Prisma {
     paymentTerms?: SortOrder
     website?: SortOrder
     notes?: SortOrder
+    totalOrders?: SortOrder
+    totalSpent?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -55263,6 +56790,8 @@ export namespace Prisma {
     paymentTerms?: SortOrder
     website?: SortOrder
     notes?: SortOrder
+    totalOrders?: SortOrder
+    totalSpent?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -55270,6 +56799,8 @@ export namespace Prisma {
 
   export type SupplierSumOrderByAggregateInput = {
     rating?: SortOrder
+    totalOrders?: SortOrder
+    totalSpent?: SortOrder
   }
 
   export type EnumSupplierStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -56509,6 +58040,68 @@ export namespace Prisma {
     token?: SortOrder
     businessId?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type LandingPreviewConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    activeTab?: SortOrder
+    crmTotalRevenue?: SortOrder
+    crmClientCount?: SortOrder
+    crmContactsJson?: SortOrder
+    invUnpaidCount?: SortOrder
+    invTotalUnpaid?: SortOrder
+    invInvoicesJson?: SortOrder
+    tasksJson?: SortOrder
+    aiInputText?: SortOrder
+    aiOutputText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LandingPreviewConfigAvgOrderByAggregateInput = {
+    crmTotalRevenue?: SortOrder
+    crmClientCount?: SortOrder
+    invUnpaidCount?: SortOrder
+    invTotalUnpaid?: SortOrder
+  }
+
+  export type LandingPreviewConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    activeTab?: SortOrder
+    crmTotalRevenue?: SortOrder
+    crmClientCount?: SortOrder
+    crmContactsJson?: SortOrder
+    invUnpaidCount?: SortOrder
+    invTotalUnpaid?: SortOrder
+    invInvoicesJson?: SortOrder
+    tasksJson?: SortOrder
+    aiInputText?: SortOrder
+    aiOutputText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LandingPreviewConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    activeTab?: SortOrder
+    crmTotalRevenue?: SortOrder
+    crmClientCount?: SortOrder
+    crmContactsJson?: SortOrder
+    invUnpaidCount?: SortOrder
+    invTotalUnpaid?: SortOrder
+    invInvoicesJson?: SortOrder
+    tasksJson?: SortOrder
+    aiInputText?: SortOrder
+    aiOutputText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LandingPreviewConfigSumOrderByAggregateInput = {
+    crmTotalRevenue?: SortOrder
+    crmClientCount?: SortOrder
+    invUnpaidCount?: SortOrder
+    invTotalUnpaid?: SortOrder
   }
 
   export type BusinessCreateNestedOneWithoutUsersInput = {
@@ -62274,6 +63867,8 @@ export namespace Prisma {
     paymentTerms?: string | null
     website?: string | null
     notes?: string | null
+    totalOrders?: number | null
+    totalSpent?: number | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -62293,6 +63888,8 @@ export namespace Prisma {
     paymentTerms?: string | null
     website?: string | null
     notes?: string | null
+    totalOrders?: number | null
+    totalSpent?: number | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -63041,6 +64638,8 @@ export namespace Prisma {
     paymentTerms?: StringNullableFilter<"Supplier"> | string | null
     website?: StringNullableFilter<"Supplier"> | string | null
     notes?: StringNullableFilter<"Supplier"> | string | null
+    totalOrders?: IntNullableFilter<"Supplier"> | number | null
+    totalSpent?: FloatNullableFilter<"Supplier"> | number | null
     status?: EnumSupplierStatusFilter<"Supplier"> | $Enums.SupplierStatus
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
     updatedAt?: DateTimeFilter<"Supplier"> | Date | string
@@ -64986,6 +66585,8 @@ export namespace Prisma {
     paymentTerms?: string | null
     website?: string | null
     notes?: string | null
+    totalOrders?: number | null
+    totalSpent?: number | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -65006,6 +66607,8 @@ export namespace Prisma {
     paymentTerms?: string | null
     website?: string | null
     notes?: string | null
+    totalOrders?: number | null
+    totalSpent?: number | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -65157,6 +66760,8 @@ export namespace Prisma {
     paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    totalOrders?: NullableIntFieldUpdateOperationsInput | number | null
+    totalSpent?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65177,6 +66782,8 @@ export namespace Prisma {
     paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    totalOrders?: NullableIntFieldUpdateOperationsInput | number | null
+    totalSpent?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -71451,6 +73058,8 @@ export namespace Prisma {
     paymentTerms?: string | null
     website?: string | null
     notes?: string | null
+    totalOrders?: number | null
+    totalSpent?: number | null
     status?: $Enums.SupplierStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -72100,6 +73709,8 @@ export namespace Prisma {
     paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    totalOrders?: NullableIntFieldUpdateOperationsInput | number | null
+    totalSpent?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -72119,6 +73730,8 @@ export namespace Prisma {
     paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    totalOrders?: NullableIntFieldUpdateOperationsInput | number | null
+    totalSpent?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -72138,6 +73751,8 @@ export namespace Prisma {
     paymentTerms?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    totalOrders?: NullableIntFieldUpdateOperationsInput | number | null
+    totalSpent?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

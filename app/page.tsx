@@ -1,14 +1,29 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { HeroAnimation } from "@/components/hero-animation";
 import { FeaturesBentoGrid } from "@/components/features-bento-grid";
+import { DashboardPreviewRegion } from "@/components/dashboard-preview-region";
 
 export default function Home() {
   const { data: session, status } = useSession();
   const isLoggedIn = status === "authenticated" && session?.user;
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/public/dashboard-preview")
+      .then((res) => {
+        if (res.ok) return res.json();
+      })
+      .then((data) => {
+        if (data) setConfig(data);
+      })
+      .catch((err) => console.error("Error loading showcase config:", err));
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
       {/* Navigation */}
@@ -72,6 +87,9 @@ export default function Home() {
       <section id="home" className="pt-20 sm:pt-24 pb-10 sm:pb-20 px-4 sm:px-6 relative overflow-hidden">
         <HeroAnimation />
       </section>
+
+      {/* Interactive Mockup Preview Section */}
+      <DashboardPreviewRegion initialConfig={config} />
 
       {/* Benefits Section */}
       <FeaturesBentoGrid />
