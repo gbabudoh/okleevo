@@ -1,11 +1,26 @@
 'use client';
 
+import { useEffect } from 'react';
 import Script from 'next/script';
 
 export default function Analytics() {
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const matomoUrl = process.env.NEXT_PUBLIC_MATOMO_URL;
   const matomoSiteId = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
+
+  useEffect(() => {
+    const clarityId = "x8hmuaqwal";
+    const isDev = process.env.NODE_ENV === 'development';
+
+    import('@microsoft/clarity')
+      .then((Clarity) => {
+        Clarity.default.init(clarityId);
+        console.log(`[Analytics] Microsoft Clarity initialized (${isDev ? 'development' : 'production'})`);
+      })
+      .catch((error) => {
+        console.error('[Analytics] Failed to initialize Microsoft Clarity:', error);
+      });
+  }, []);
 
   // Don't render analytics in development unless forced,
   // or if the IDs are missing/placeholder.
