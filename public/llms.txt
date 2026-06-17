@@ -1,0 +1,50 @@
+# Okleevo
+
+Okleevo is an all-in-one SaaS platform and business workspace designed specifically for Small and Medium Enterprises (SMEs) in the United Kingdom. It replaces multiple single-purpose subscriptions (like Salesforce, Mailchimp, Slack, Zoom, Xero, and Monday) with one unified, highly integrated system.
+
+## Core Information & Value Proposition
+
+- **Pricing**: Simple, transparent flat fee of £9.99/month.
+- **Trial**: 14-day free trial, no credit card required.
+- **Seats**: Includes 10 user seats out of the box, allowing teams to collaborate natively without extra seat license fees.
+- **UK Focus & Localisation**: Fully optimized for UK business operations, incorporating GBP formatting, MTD (Making Tax Digital) compliant ledger structures, VAT rules, and HMRC tax guidelines. 
+- **Security & Hosting**: Hosted on secure UK-based servers. Fully GDPR compliant.
+
+## Module Directory (20 Integrated Tools)
+
+Okleevo is organized into four main business hubs:
+
+### 1. Finance Hub
+- **Invoicing**: Create professional, GBP-formatted invoices, track client payment status, and send automated late reminders.
+- **Accounting**: Double-entry bookkeeping system with automatic ledgers, balance sheets, and profit & loss statements.
+- **Taxation**: Simplified calculations mapping to HMRC requirements, built to support MTD standards.
+- **Cashflow**: Forecast liquidity based on pending invoices, upcoming expenses, and historical account balances.
+- **Expenses**: Digital expense logger allowing snap uploads of receipts and automated spend categorization.
+- **VAT Tools**: Specialized calculations for different UK VAT structures (standard, flat rate, margin).
+
+### 2. Growth Engine
+- **CRM**: Manage leads, client lists, and interactions. Built-in SMTP links directly with mailboxes.
+- **Forms**: Drag-and-drop builder to compile custom contact forms, lead intakes, and surveys.
+- **Booking**: Centralized appointment calendar supporting client scheduling that syncs with team availability.
+- **Helpdesk**: Customer ticketing dashboard allowing support query tracking and resolution.
+- **Campaigns**: Bulk email sender and newsletter organizer leveraging native SMTP servers to avoid third-party email campaign fees.
+
+### 3. Command Center
+- **Tasks**: Visual Kanban boards and lists to delegate work, set deadlines, and track projects.
+- **AI Content**: Generative copy editor to quickly draft blog outlines, marketing copy, and social blurbs.
+- **AI Notes**: Meeting summary engine that transcribes audio/notes to list action items and highlights.
+- **KPI Dashboard**: Business intelligence panels showing real-time revenue, unpaid invoice balances, and active pipeline values.
+
+### 4. Operations Hub
+- **Inventory**: Track stock levels across locations, assign barcodes, and trigger alerts when stock is running low.
+- **Suppliers**: Manage vendor catalogs, issue purchase orders, and track deliveries.
+- **HR Records**: Secure repository to store staff contracts, appraisals, emergency contact logs, and documents.
+- **E-Signature**: Send legally binding documents for electronic signature without leaving the workspace.
+- **Micro Pages**: Instant page builder to publish small public bio links, digital business cards, or product landing pages.
+- **Compliance**: Regulatory calendar checklists to stay compliant with Companies House filing dates, insurance renewals, and GDPR checks.
+
+## Key Technical Specs & Capabilities
+
+- **Development Stack**: React, Next.js (App Router), TailwindCSS, Prisma ORM, and PostgreSQL.
+- **Integrations**: Natively integrated SMTP client, built-in WebRTC engine for video calling and team chat, and modular database schemas.
+- **Bot/AI Accessibility**: Pages include clean accessibility tags (`aria-label`) and semantic HTML layout landmarks (`<main>`, `<nav>`, `<header>`) for straightforward indexing by automated web agents.

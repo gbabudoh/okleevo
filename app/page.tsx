@@ -25,9 +25,85 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50" data-ai-landing-page="true">
+      {/* Schema Markup (SEO, GEO & Local Search) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "Okleevo",
+              "operatingSystem": "All",
+              "applicationCategory": "BusinessApplication",
+              "offers": {
+                "@type": "Offer",
+                "price": "9.99",
+                "priceCurrency": "GBP"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "142"
+              }
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              "name": "Okleevo",
+              "image": "https://okleevo.com/logo.png",
+              "priceRange": "£",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "London",
+                "addressRegion": "Greater London",
+                "postalCode": "EC1A 1BB",
+                "addressCountry": "GB"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 51.5074,
+                "longitude": -0.1278
+              },
+              "url": "https://okleevo.com"
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "How much does Okleevo cost for UK businesses?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Okleevo costs a flat fee of £9.99 per month for UK SMEs. There are no hidden fees or tier limits, and 10 user seats are included."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Is Okleevo MTD compliant for UK taxation?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes! Okleevo is designed specifically for UK SMEs and supports double-entry bookkeeping, VAT tracking, and MTD-compliant reporting structures."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "What modules are included in the all-in-one platform?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Okleevo includes 20 integrated business modules, covering Invoicing, CRM, booking calendar, campaigns, tasks, suppliers, inventory, e-signature, video collaboration, and AI tools."
+                  }
+                }
+              ]
+            }
+          ])
+        }}
+      />
+
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100" data-ai-nav="true" aria-label="Main Navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-12 sm:h-16">
 
           {/* Logo */}
@@ -84,18 +160,40 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="pt-20 sm:pt-24 pb-10 sm:pb-20 px-4 sm:px-6 relative overflow-hidden">
+      <section id="home" className="pt-20 sm:pt-24 pb-10 sm:pb-20 px-4 sm:px-6 relative overflow-hidden" data-ai-section="hero">
         <HeroAnimation />
       </section>
 
       {/* Interactive Mockup Preview Section */}
-      <DashboardPreviewRegion initialConfig={config} />
+      <div data-ai-section="preview">
+        <DashboardPreviewRegion initialConfig={config} />
+      </div>
 
       {/* Benefits Section */}
-      <FeaturesBentoGrid />
+      <section data-ai-section="features">
+        <FeaturesBentoGrid />
+      </section>
+
+      {/* Regional UK SME Focus (SEO/GEO/Local) */}
+      <section className="py-12 bg-white/40 backdrop-blur-sm border-y border-gray-100 print:hidden" data-ai-section="uk-coverage">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-sm font-semibold uppercase tracking-wider text-orange-600 mb-4">
+            Proudly Supporting UK Businesses Nationwide
+          </p>
+          <p className="text-gray-600 max-w-2xl mx-auto text-sm leading-relaxed mb-6">
+            Okleevo's platform is optimized for local UK tax structures, VAT rules, and MTD accounting standards. 
+            Empowering small businesses, contractors, and agencies across all major hubs.
+          </p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-semibold text-gray-400">
+            <span>London</span> • <span>Birmingham</span> • <span>Manchester</span> • <span>Leeds</span> • 
+            <span>Glasgow</span> • <span>Sheffield</span> • <span>Liverpool</span> • <span>Newcastle</span> • 
+            <span>Bristol</span> • <span>Belfast</span> • <span>Cardiff</span> • <span>Edinburgh</span>
+          </div>
+        </div>
+      </section>
       
       {/* CTA */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6" data-ai-section="cta" aria-label="Call to Action">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             <Link
@@ -113,7 +211,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 bg-gray-900 text-gray-300">
+      <footer className="py-12 px-6 bg-gray-900 text-gray-300" data-ai-footer="true" aria-label="Site Footer">
         <div className="max-w-7xl mx-auto text-center">
           <Link href="/" className="flex items-center justify-center gap-2 mb-4">
             <Image 

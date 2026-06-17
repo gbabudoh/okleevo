@@ -27,7 +27,11 @@ export const metadata: Metadata = {
     default: 'Okleevo - 20 Business Tools, One Simple Platform',
   },
   description: "The all-in-one platform for UK SMEs. 20 integrated modules including invoicing, CRM, AI tools, and more. Just £9.99/month.",
-  keywords: ["SME", "UK business", "SaaS", "business tools", "invoicing", "CRM", "AI tools", "ERP", "small business software"],
+  keywords: [
+    "SME", "UK business", "SaaS", "business tools", "invoicing", "CRM", "AI tools", "ERP", "small business software",
+    "UK business software", "London SME tools", "VAT invoicing UK", "MTD compliant bookkeeping", 
+    "UK client database", "Manchester small business tools", "Birmingham business software", "Leeds SaaS for SMEs"
+  ],
   authors: [{ name: "Okleevo Team" }],
   creator: "Okleevo",
   publisher: "Okleevo",
@@ -96,6 +100,29 @@ export default function RootLayout({
                 g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
               })();
             `,
+          }}
+        />
+        
+        {/* Global Organization Schema Markup for SEO/GEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Okleevo",
+              "url": "https://okleevo.com",
+              "logo": "https://okleevo.com/logo.png",
+              "description": "The all-in-one platform for UK SMEs. 20 integrated modules including invoicing, CRM, MTD bookkeeping, and AI tools for just £9.99/month.",
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "GB"
+              },
+              "sameAs": [
+                "https://twitter.com/okleevo",
+                "https://github.com/gbabudoh/okleevo"
+              ]
+            })
           }}
         />
       </head>

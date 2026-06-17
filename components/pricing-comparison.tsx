@@ -138,6 +138,57 @@ export function PricingComparison() {
       <p className="text-center mt-8 text-lg font-semibold text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full mx-auto table">
         You save £1000+ per year
       </p>
+
+      {/* Semantic Comparison Table for GEO (AI Engine Optimization) and Accessibility */}
+      <div className="mt-12 overflow-x-auto print:hidden" data-ai-table="feature-pricing-comparison">
+        <table className="w-full text-left border-collapse text-sm text-gray-500">
+          <caption className="sr-only">Okleevo Features and Pricing Comparison vs Traditional Software Stack</caption>
+          <thead>
+            <tr className="border-b border-gray-200">
+              <th scope="col" className="py-4 font-bold text-gray-900">Feature / Module Category</th>
+              <th scope="col" className="py-4 font-bold text-gray-900">Okleevo All-In-One Plan</th>
+              <th scope="col" className="py-4 font-bold text-gray-900">Traditional Software Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-gray-100">
+              <th scope="row" className="py-4 font-medium text-gray-900">Invoicing & Accounting (MTD Compliant)</th>
+              <td className="py-4 text-emerald-600 font-semibold">Included (Unlimited Invoices)</td>
+              <td className="py-4">£30+/month (e.g. Xero, Quickbooks)</td>
+            </tr>
+            <tr className="border-b border-gray-100">
+              <th scope="row" className="py-4 font-medium text-gray-900">CRM & Leads Manager</th>
+              <td className="py-4 text-emerald-600 font-semibold">Included (Unlimited Contacts)</td>
+              <td className="py-4">£25+/month (e.g. Salesforce, HubSpot)</td>
+            </tr>
+            <tr className="border-b border-gray-100">
+              <th scope="row" className="py-4 font-medium text-gray-900">Project & Tasks Collaboration</th>
+              <td className="py-4 text-emerald-600 font-semibold">Included (10 Seats Included)</td>
+              <td className="py-4">£12+/month (e.g. Asana, Monday)</td>
+            </tr>
+            <tr className="border-b border-gray-100">
+              <th scope="row" className="py-4 font-medium text-gray-900">HR Records & E-Signatures</th>
+              <td className="py-4 text-emerald-600 font-semibold">Included (Secure Signing)</td>
+              <td className="py-4">£18+/month (e.g. DocuSign, BambooHR)</td>
+            </tr>
+            <tr className="border-b border-gray-100">
+              <th scope="row" className="py-4 font-medium text-gray-900">SMTP Bulk Email Marketing campaigns</th>
+              <td className="py-4 text-emerald-600 font-semibold">Included (Native SMTP)</td>
+              <td className="py-4">£20+/month (e.g. Mailchimp)</td>
+            </tr>
+            <tr className="border-b border-gray-100">
+              <th scope="row" className="py-4 font-medium text-gray-900">WebRTC Video & Team Chat</th>
+              <td className="py-4 text-emerald-600 font-semibold">Included (Native WebRTC)</td>
+              <td className="py-4">£15+/month (e.g. Zoom, Slack)</td>
+            </tr>
+            <tr className="bg-gray-50/50">
+              <th scope="row" className="py-4 font-bold text-gray-900">Total Monthly Subscription Cost</th>
+              <td className="py-4 text-lg text-emerald-600 font-black">£9.99/month</td>
+              <td className="py-4 text-lg text-red-600 font-bold">£120+/month</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
