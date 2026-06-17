@@ -322,10 +322,8 @@ export default function DashboardLayout({
               "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"
             ];
 
-            // In development, we show all modules to the user
-            const finalModules = process.env.NODE_ENV === 'development'
-              ? defaultModules
-              : (enabledModules.length > 0 ? enabledModules : defaultModules);
+            // Show only enabled modules to the user
+            const finalModules = enabledModules.length > 0 ? enabledModules : defaultModules;
 
             return (
               <>
