@@ -45,4 +45,5 @@ next-env.d.ts
 
 # scratch and temp files
 scratch/
-lib/prisma-client/query_engine-windows.dll.node.tmp*
+lib/prisma-client/
+build_log.txt
