@@ -20,6 +20,9 @@ const publicRoutes = [
   '/api/public',
   '/support',
   '/guide',
+  '/sitemap.xml',
+  '/robots.txt',
+  '/llms.txt',
 ];
 
 export async function proxy(request: NextRequest) {
