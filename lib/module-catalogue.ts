@@ -3,6 +3,7 @@ import {
   Users, FormInput, Calendar, MessageSquare, Mail,
   CheckSquare, FileEdit, BarChart3, Package,
   Truck, UserCheck, PenTool, Globe, Shield, Sparkles,
+  UsersRound,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -46,9 +47,13 @@ export const modules: ModuleCatalogueEntry[] = [
   { id: 'e-signature', label: 'E-Signature', icon: PenTool, group: 'Operations Hub', color: 'from-orange-400 to-rose-500', desc: 'Send and sign legally binding documents electronically without leaving the platform.' },
   { id: 'micro-pages', label: 'Micro Pages', icon: Globe, group: 'Operations Hub', color: 'from-yellow-400 to-orange-500', desc: 'Create stunning mini-websites or digital business cards to showcase your offerings.' },
   { id: 'compliance', label: 'Compliance', icon: Shield, group: 'Operations Hub', color: 'from-amber-600 to-orange-700', desc: 'Keep your business protected with automated regulatory reminders and checklists.' },
+
+  // Team & Comms
+  { id: 'mailbox', label: 'Mail Engine', icon: Mail, group: 'Team & Comms', color: 'from-orange-400 to-orange-600', desc: 'Your business email, all in one place — send, receive, and organise messages with CRM context built in.' },
+  { id: 'collaboration', label: 'Collaboration', icon: UsersRound, group: 'Team & Comms', color: 'from-indigo-500 to-violet-600', desc: 'Video-call and message your team without leaving Okleevo — no separate Slack or Zoom subscription, no extra login.' },
 ];
 
-export const moduleGroups = ['All', 'Finance Hub', 'Growth Engine', 'Command Center', 'Operations Hub'];
+export const moduleGroups = ['All', 'Finance Hub', 'Growth Engine', 'Command Center', 'Operations Hub', 'Team & Comms'];
 
 export function getModuleById(id: string): ModuleCatalogueEntry | undefined {
   return modules.find(m => m.id === id);

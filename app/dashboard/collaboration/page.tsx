@@ -207,11 +207,11 @@ function CollaborationHubInner() {
               <UsersRound className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Private Team Network</p>
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">No Slack. No Zoom. No Extra Login.</p>
               <h1 className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight leading-tight">
                 Team Collaboration
               </h1>
-              <p className="text-gray-500 text-sm">Okleevo Secure Workspace</p>
+              <p className="text-gray-500 text-sm">Video-call and message your team without ever leaving Okleevo</p>
             </div>
           </div>
 

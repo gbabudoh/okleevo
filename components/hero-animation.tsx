@@ -181,7 +181,7 @@ export function HeroAnimation() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
         >
-          One platform, zero headaches. All the tools you need to manage and grow your business, without the juggling act.
+          One platform, zero headaches. Everything you need to run and grow your business, without the juggling act — switch modules on or off instantly to match exactly what you&apos;re working on today.
         </motion.p>
 
         {/* Mobile: compact 2-col chips */}
