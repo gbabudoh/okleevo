@@ -312,7 +312,7 @@ export default function AINotesPage() {
         </div>
 
         {/* ── Stats row ── */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {[
             { icon: FileText,    label: 'Notes',   value: notes.length,                                                                                       color: 'text-blue-600',    bg: 'bg-blue-50'    },
             { icon: Star,        label: 'Starred',  value: notes.filter(n => n.isStarred).length,                                                             color: 'text-amber-600',   bg: 'bg-amber-50'   },

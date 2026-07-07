@@ -140,7 +140,49 @@ export default function AdminTicketsPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile card list */}
+        <div className="sm:hidden divide-y divide-gray-100">
+          {loading ? (
+            <div className="px-6 py-12 text-center">
+              <Loader2 className="w-8 h-8 text-orange-500 animate-spin mx-auto" />
+              <p className="mt-2 text-gray-500">Loading tickets...</p>
+            </div>
+          ) : filteredTickets.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <p className="text-gray-500">No tickets found matching your criteria.</p>
+            </div>
+          ) : (
+            filteredTickets.map((ticket) => (
+              <Link
+                key={ticket.id}
+                href={`/admin/tickets/${ticket.id}`}
+                className="block p-4 hover:bg-slate-50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-bold text-gray-900 min-w-0 truncate">{ticket.subject}</span>
+                  <div className="shrink-0">{getStatusBadge(ticket.status)}</div>
+                </div>
+                <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                  <MessageSquare className="w-3 h-3 shrink-0" />
+                  {ticket.responses} replies • Updated {new Date(ticket.updatedAt).toLocaleDateString()}
+                </span>
+                <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2">
+                  <div className="flex items-center gap-1 text-sm font-medium text-gray-900 min-w-0">
+                    <Building2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <span className="truncate">{ticket.businessName}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {getPriorityIcon(ticket.priority)}
+                    <span className="text-sm capitalize">{ticket.priority}</span>
+                  </div>
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">

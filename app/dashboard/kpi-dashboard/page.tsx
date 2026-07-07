@@ -769,7 +769,7 @@ export default function KPIDashboardPage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-4 gap-2 mb-5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
                 {[
                   { label: 'Value', value: analysisKPI.value, color: 'text-gray-900' },
                   { label: 'Target', value: analysisKPI.target || 'N/A', color: 'text-gray-900' },

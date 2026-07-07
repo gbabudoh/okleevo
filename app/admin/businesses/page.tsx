@@ -145,11 +145,11 @@ export default function BusinessesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-8 text-white shadow-2xl">
-        <div className="flex items-center justify-between">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-5 sm:p-8 text-white shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Business Management</h1>
-            <p className="text-slate-300">Manage all SMEs, view users, and control access</p>
+            <h1 className="text-2xl sm:text-4xl font-bold mb-2">Business Management</h1>
+            <p className="text-slate-300 text-sm sm:text-base">Manage all SMEs, view users, and control access</p>
           </div>
           <button
             onClick={() => {
@@ -164,7 +164,7 @@ export default function BusinessesPage() {
               });
               setShowCreateModal(true);
             }}
-            className="px-6 py-3 bg-white text-slate-900 rounded-xl hover:bg-slate-100 transition-colors flex items-center gap-2 font-semibold shadow-lg"
+            className="px-4 py-2.5 sm:px-6 sm:py-3 bg-white text-slate-900 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center gap-2 font-semibold shadow-lg shrink-0"
           >
             <Plus className="w-5 h-5" />
             Add Business
@@ -203,7 +203,90 @@ export default function BusinessesPage() {
             <p className="text-gray-400 text-sm mt-2">Try adjusting your search criteria</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            {/* Mobile card list */}
+            <div className="sm:hidden divide-y divide-gray-100">
+              {businesses.map((business) => (
+                <div key={business.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <Link href={`/admin/businesses/${business.id}`} className="flex items-start gap-3 min-w-0 flex-1 group">
+                      <div className="p-2 bg-gradient-to-br from-blue-400 to-purple-400 rounded-lg shrink-0">
+                        <Building2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors truncate">
+                          {business.name}
+                        </div>
+                        <div className="text-sm text-gray-500 truncate">{business.city}, {business.country}</div>
+                      </div>
+                    </Link>
+                    <span
+                      className={`px-2 py-1 rounded-lg text-xs font-semibold border shrink-0 ${
+                        business.subscription?.status === "ACTIVE"
+                          ? "bg-green-100 text-green-700 border-green-200"
+                          : business.subscription?.status === "TRIAL"
+                          ? "bg-orange-100 text-orange-700 border-orange-200"
+                          : "bg-gray-100 text-gray-700 border-gray-200"
+                      }`}
+                    >
+                      {business.subscription?.status || "None"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center flex-wrap gap-2 mt-3">
+                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
+                      {business.industry}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <Users className="w-3.5 h-3.5" />
+                      {business.userCount}/{business.maxSeats}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(business.createdAt).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+                    <Link
+                      href={`/admin/businesses/${business.id}`}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg font-medium"
+                    >
+                      <Eye className="w-4 h-4" /> View
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setEditingBusiness(business);
+                        setFormData({
+                          name: business.name,
+                          industry: business.industry,
+                          size: business.size,
+                          country: business.country,
+                          city: business.city || "",
+                          address: "",
+                          maxSeats: business.maxSeats,
+                        });
+                      }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg font-medium"
+                    >
+                      <Edit className="w-4 h-4" /> Edit
+                    </button>
+                    <button
+                      onClick={() => setDeletingBusiness(business)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm text-red-600 bg-red-50 rounded-lg font-medium"
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden sm:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
@@ -318,7 +401,8 @@ export default function BusinessesPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
 
         {/* Pagination */}

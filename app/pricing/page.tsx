@@ -19,52 +19,51 @@ export default function PricingPage() {
       
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo.png" alt="Okleevo" width={150} height={40} className="h-10 w-auto" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-12 sm:h-16">
+          <Link href="/" className="shrink-0 flex items-center">
+            <Image src="/logo.png" alt="Okleevo" width={100} height={28} className="h-6 sm:h-8 w-auto" />
+          </Link>
+          <div className="hidden md:flex items-center gap-7 text-sm font-medium text-gray-500">
+            <Link href="/#home" className="hover:text-gray-900 transition-colors">
+              Home
             </Link>
-            <div className="hidden md:flex items-center gap-8">
-              <Link href="/#home" className="text-gray-700 hover:text-primary-600 transition-colors">
-                Home
-              </Link>
-              <Link href="/#benefits" className="text-gray-700 hover:text-primary-600 transition-colors">
-                Benefits
-              </Link>
-              <Link href="/pricing" className="text-primary-600 font-medium">
-                Pricing
-              </Link>
-              <Link href="/guide" className="text-gray-700 hover:text-primary-600 transition-colors">
-                User Guide
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              {isLoggedIn ? (
-                 <Link 
-                    href="/dashboard" 
-                    className="px-6 py-2.5 rounded-full text-white font-medium hover:shadow-lg transition-all hover-lift"
-                    style={{ backgroundColor: '#fc6813' }}
-                  >
-                    Go to Dashboard
-                  </Link>
-              ) : (
-                <>
-                  <Link 
-                    href="/access" 
-                    className="px-4 py-2 text-gray-700 hover:text-primary-600 transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link 
-                    href="/onboarding" 
-                    className="px-6 py-2.5 rounded-full text-white font-medium hover:shadow-lg transition-all hover-lift"
-                    style={{ backgroundColor: '#fc6813' }}
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-            </div>
+            <Link href="/#benefits" className="hover:text-gray-900 transition-colors">
+              Benefits
+            </Link>
+            <Link href="/pricing" className="text-indigo-600 font-semibold">
+              Pricing
+            </Link>
+            <Link href="/guide" className="hover:text-gray-900 transition-colors">
+              User Guide
+            </Link>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {isLoggedIn ? (
+               <Link
+                  href="/dashboard"
+                  className="text-xs sm:text-sm font-semibold text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all active:scale-95"
+                  style={{ backgroundColor: '#fc6813' }}
+                >
+                  <span className="sm:hidden">Dashboard</span>
+                  <span className="hidden sm:inline">Go to Dashboard</span>
+                </Link>
+            ) : (
+              <>
+                <Link
+                  href="/access"
+                  className="text-xs sm:text-sm font-medium text-gray-500 hover:text-gray-900 px-2 sm:px-3 py-1.5 transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/onboarding"
+                  className="text-xs sm:text-sm font-semibold text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all active:scale-95"
+                  style={{ backgroundColor: '#fc6813' }}
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>

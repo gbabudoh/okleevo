@@ -171,27 +171,27 @@ export default function AdminDashboard() {
                   href={`/admin/businesses/${business.id}`}
                   className="block p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all group"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Building2 className="w-4 h-4 text-gray-400" />
-                        <p className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 min-w-0">
+                        <Building2 className="w-4 h-4 text-gray-400 shrink-0" />
+                        <p className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors truncate">
                           {business.name}
                         </p>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">{business.industry}</p>
+                      <p className="text-sm text-gray-600 mb-2 truncate">{business.industry}</p>
                       <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1 shrink-0">
                           <Users className="w-3 h-3" />
                           {business.userCount} users
                         </span>
-                        <span>
+                        <span className="shrink-0">
                           {business.seatCount}/{business.maxSeats} seats
                         </span>
                       </div>
                     </div>
                     <span
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold ${
+                      className={`px-2 py-1 sm:px-3 sm:py-1 rounded-lg text-xs font-semibold shrink-0 text-right ${
                         business.subscription?.status === "ACTIVE"
                           ? "bg-green-100 text-green-700 border border-green-200"
                           : business.subscription?.status === "TRIAL"
@@ -235,21 +235,21 @@ export default function AdminDashboard() {
                   href={`/admin/users?businessId=${user.business?.id}`}
                   className="block p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all group"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
                         {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                       </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors truncate">
                           {user.firstName} {user.lastName}
                         </p>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-500">{user.business?.name}</span>
-                          <span className="text-xs text-gray-400">•</span>
+                        <p className="text-sm text-gray-600 truncate">{user.email}</p>
+                        <div className="flex items-center gap-2 mt-1 min-w-0">
+                          <span className="text-xs text-gray-500 truncate">{user.business?.name}</span>
+                          <span className="text-xs text-gray-400 shrink-0">•</span>
                           <span
-                            className={`px-2 py-0.5 rounded text-xs font-medium ${
+                            className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${
                               user.role === "OWNER"
                                 ? "bg-amber-100 text-amber-700"
                                 : user.role === "ADMIN"
@@ -263,7 +263,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <span
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold ${
+                      className={`px-2 py-1 sm:px-3 sm:py-1 rounded-lg text-xs font-semibold shrink-0 ${
                         user.status === "ACTIVE"
                           ? "bg-green-100 text-green-700 border border-green-200"
                           : user.status === "SUSPENDED"

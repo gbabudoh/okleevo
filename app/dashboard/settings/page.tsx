@@ -1147,10 +1147,10 @@ function SettingsPageInner() {
       {/* Notifications Tab */}
       {activeTab === 'notifications' && (
         <div className="max-w-4xl mx-auto space-y-8">
-          <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden">
-             <div className="flex items-center justify-between mb-8">
+          <div className="bg-white rounded-[2.5rem] p-5 sm:p-8 border border-gray-100 shadow-sm relative overflow-hidden">
+             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
-                   <div className="p-3 bg-indigo-50 rounded-2xl">
+                   <div className="p-3 bg-indigo-50 rounded-2xl shrink-0">
                       <Bell className="w-6 h-6 text-indigo-600" />
                    </div>
                    <div>
@@ -1158,9 +1158,9 @@ function SettingsPageInner() {
                       <p className="text-sm font-medium text-gray-500">Choose how and when you want to be notified</p>
                    </div>
                 </div>
-                <button 
+                <button
                    onClick={handleSave}
-                   className="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer flex items-center gap-2"
+                   className="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
                 >
                    <Save className="w-4 h-4" />
                    Save Changes
@@ -1310,10 +1310,10 @@ function SettingsPageInner() {
       {/* Modules Tab */}
       {activeTab === 'modules' && (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden">
-            <div className="flex items-center justify-between mb-8">
+          <div className="bg-white rounded-[2.5rem] p-5 sm:p-8 border border-gray-100 shadow-sm relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-amber-50 rounded-2xl">
+                <div className="p-3 bg-amber-50 rounded-2xl shrink-0">
                   <Zap className="w-6 h-6 text-amber-600" />
                 </div>
                 <div>
@@ -1321,7 +1321,7 @@ function SettingsPageInner() {
                   <p className="text-sm font-medium text-gray-500">Enable or disable platform features to tailor your experience</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={async () => {
                   setUpdatingModules(true);
                   try {
@@ -1343,7 +1343,7 @@ function SettingsPageInner() {
                   }
                 }}
                 disabled={updatingModules}
-                className="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 w-full sm:w-auto shrink-0"
               >
                 {updatingModules ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
                 Save Module Configuration

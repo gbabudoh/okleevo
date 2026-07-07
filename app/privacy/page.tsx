@@ -13,18 +13,16 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <img src="/logo.png" alt="Okleevo" className="h-10 w-auto" />
-            </Link>
-            <Link
-              href="/"
-              className="px-4 py-2 text-gray-700 hover:text-primary-600 transition-colors"
-            >
-              Back to Home
-            </Link>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-12 sm:h-16">
+          <Link href="/" className="shrink-0 flex items-center">
+            <img src="/logo.png" alt="Okleevo" className="h-6 sm:h-8 w-auto" />
+          </Link>
+          <Link
+            href="/"
+            className="text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2 text-gray-700 hover:text-primary-600 transition-colors shrink-0"
+          >
+            Back to Home
+          </Link>
         </div>
       </nav>
 
