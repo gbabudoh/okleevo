@@ -25,6 +25,15 @@ interface JournalEntriesProps {
   onDeleteEntry: (id: string) => void;
 }
 
+// Journal entry status is stored as an uppercase Prisma enum (DRAFT/PENDING/POSTED/VOID) —
+// always normalize with .toLowerCase() before looking this up.
+const JOURNAL_STATUS_PILL: Record<string, string> = {
+  posted: "bg-emerald-100 text-emerald-700",
+  pending: "bg-amber-100 text-amber-700",
+  draft: "bg-blue-100 text-blue-700",
+  void: "bg-gray-100 text-gray-500",
+};
+
 export const JournalEntries: React.FC<JournalEntriesProps> = ({
   entries,
   onViewEntry,
@@ -53,7 +62,7 @@ export const JournalEntries: React.FC<JournalEntriesProps> = ({
                       {new Date(entry.date).toLocaleDateString("en-GB")}
                     </span>
                     <span className="text-sm text-gray-600">Ref: {entry.reference || "N/A"}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm bg-green-100 text-green-700`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${JOURNAL_STATUS_PILL[entry.status.toLowerCase()] ?? "bg-gray-100 text-gray-500"}`}>
                       {entry.status}
                     </span>
                   </div>

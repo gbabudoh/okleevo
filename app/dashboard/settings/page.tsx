@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import { 
   User, Mail, Phone, MapPin, Building2, Briefcase, Lock,
   Bell, CreditCard, Globe, Shield, Eye, EyeOff, Camera,
@@ -61,9 +62,14 @@ interface TeamMember {
   password?: string;
 }
 
-export default function SettingsPage() {
+// Hidden until real Shopify app credentials are configured — the backend
+// (connect/callback/sync routes) is fully built, just not exposed in the UI yet.
+const SHOPIFY_SYNC_ENABLED = false;
+
+function SettingsPageInner() {
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'profile');
   const [showPassword, setShowPassword] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -123,6 +129,9 @@ export default function SettingsPage() {
   const [enabledModules, setEnabledModules] = useState<string[]>([]);
   const [updatingModules, setUpdatingModules] = useState(false);
 
+  const [fiscalYearEnd, setFiscalYearEnd] = useState({ month: 3, day: 31 });
+  const [savingFiscalYearEnd, setSavingFiscalYearEnd] = useState(false);
+
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   function showToast(message: string, type: 'success' | 'error' = 'success') {
@@ -130,17 +139,103 @@ export default function SettingsPage() {
     setTimeout(() => setToast(null), 5000);
   }
 
-  // Handle Stripe return — open billing tab and show outcome toast
+  const [shopifyStatus, setShopifyStatus] = useState<{ connected: boolean; shopDomain?: string } | null>(null);
+  const [shopifyShopInput, setShopifyShopInput] = useState('');
+  const [shopifySyncing, setShopifySyncing] = useState(false);
+  const [shopifyDisconnecting, setShopifyDisconnecting] = useState(false);
+
+  const fetchShopifyStatus = async () => {
+    try {
+      const res = await fetch('/api/integrations/shopify');
+      if (res.ok) setShopifyStatus(await res.json());
+    } catch { /* silent */ }
+  };
+
+  useEffect(() => { if (SHOPIFY_SYNC_ENABLED) fetchShopifyStatus(); }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/business');
+        if (res.ok) {
+          const data = await res.json();
+          setFiscalYearEnd({ month: data.fiscalYearEndMonth, day: data.fiscalYearEndDay });
+        }
+      } catch { /* silent */ }
+    })();
+  }, []);
+
+  const handleSaveFiscalYearEnd = async () => {
+    setSavingFiscalYearEnd(true);
+    try {
+      const res = await fetch('/api/business', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fiscalYearEndMonth: fiscalYearEnd.month, fiscalYearEndDay: fiscalYearEnd.day }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      showToast('Fiscal year end updated');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to save fiscal year end', 'error');
+    } finally {
+      setSavingFiscalYearEnd(false);
+    }
+  };
+
+  const handleConnectShopify = () => {
+    const shop = shopifyShopInput.trim().toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(shop)) {
+      showToast('Enter a valid shop domain, e.g. your-store.myshopify.com', 'error');
+      return;
+    }
+    window.location.href = `/api/integrations/shopify/connect?shop=${encodeURIComponent(shop)}`;
+  };
+
+  const handleSyncShopify = async () => {
+    setShopifySyncing(true);
+    try {
+      const res = await fetch('/api/integrations/shopify/sync', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`Synced — ${data.created} created, ${data.updated} updated`, 'success');
+      } else {
+        showToast(data.error || 'Sync failed', 'error');
+      }
+    } catch {
+      showToast('Sync failed', 'error');
+    } finally {
+      setShopifySyncing(false);
+    }
+  };
+
+  const handleDisconnectShopify = async () => {
+    setShopifyDisconnecting(true);
+    try {
+      const res = await fetch('/api/integrations/shopify', { method: 'DELETE' });
+      if (res.ok) {
+        setShopifyStatus({ connected: false });
+        showToast('Disconnected from Shopify');
+      }
+    } finally {
+      setShopifyDisconnecting(false);
+    }
+  };
+
+  // Handle Stripe/Shopify return — open the right tab and show an outcome toast
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
     const success = params.get('success');
     const cancelled = params.get('cancelled');
+    const shopify = params.get('shopify');
     if (tab) setActiveTab(tab);
     if (success === 'true') showToast('Payment successful! Your subscription is now active.', 'success');
     if (cancelled === 'true') showToast('Checkout cancelled — no charge was made.', 'error');
+    if (shopify === 'connected') { showToast('Connected to Shopify!', 'success'); fetchShopifyStatus(); }
+    if (shopify === 'error') showToast('Failed to connect to Shopify. Please try again.', 'error');
     // Clean the URL without a page reload
-    if (tab || success || cancelled) {
+    if (tab || success || cancelled || shopify) {
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -1360,7 +1455,47 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <button 
+          <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-indigo-600" /> Tax Settings
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">Used by the UK Taxation tool to calculate Corporation Tax deadlines. Defaults to the common UK year-end of 31 March.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Fiscal Year End — Month</label>
+                <select
+                  value={fiscalYearEnd.month}
+                  onChange={(e) => setFiscalYearEnd({ ...fiscalYearEnd, month: Number(e.target.value) })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
+                    <option key={m} value={i + 1}>{m}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Fiscal Year End — Day</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={fiscalYearEnd.day}
+                  onChange={(e) => setFiscalYearEnd({ ...fiscalYearEnd, day: Number(e.target.value) })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveFiscalYearEnd}
+              disabled={savingFiscalYearEnd}
+              className="mt-4 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Save className="w-4 h-4" /> {savingFiscalYearEnd ? 'Saving…' : 'Save Tax Settings'}
+            </button>
+          </div>
+
+          <button
             type="button"
             onClick={handleSave}
             className="w-full px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
@@ -1374,6 +1509,59 @@ export default function SettingsPage() {
       {/* Integrations Tab */}
       {activeTab === 'integrations' && (
         <div className="space-y-6">
+          {SHOPIFY_SYNC_ENABLED && (
+            <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">🛍️</span>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Shopify</h3>
+                    <p className="text-sm text-gray-600">
+                      {shopifyStatus?.connected ? `Connected to ${shopifyStatus.shopDomain}` : 'Sync products and inventory from your store'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {shopifyStatus?.connected ? (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSyncShopify}
+                    disabled={shopifySyncing}
+                    className="flex-1 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 disabled:opacity-50 transition-colors font-medium cursor-pointer"
+                  >
+                    {shopifySyncing ? 'Syncing…' : 'Sync Now'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDisconnectShopify}
+                    disabled={shopifyDisconnecting}
+                    className="flex-1 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 disabled:opacity-50 transition-colors font-medium cursor-pointer"
+                  >
+                    {shopifyDisconnecting ? 'Disconnecting…' : 'Disconnect'}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={shopifyShopInput}
+                    onChange={(e) => setShopifyShopInput(e.target.value)}
+                    placeholder="your-store.myshopify.com"
+                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleConnectShopify}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium cursor-pointer whitespace-nowrap"
+                  >
+                    Connect
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Connected Apps</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2065,5 +2253,13 @@ Confidential - For Personal Use Only
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh] text-gray-400 text-sm font-semibold">Loading settings…</div>}>
+      <SettingsPageInner />
+    </Suspense>
   );
 }

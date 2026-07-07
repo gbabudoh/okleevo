@@ -4,12 +4,14 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Plus, Search, Filter, Download, Eye, Edit, Send, Trash2,
   DollarSign, Clock, CheckCircle, AlertCircle, MoreVertical, X,
-  Calendar, Mail, FileText, Copy,
+  Calendar, Mail, FileText,
   ChevronDown, Loader2, TableProperties, ArrowUpRight,
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import TourProvider from '@/components/tours/TourProvider';
+import { invoicingTourSteps } from './tour-steps';
 
 /* ── Interfaces ──────────────────────────────────────────────────── */
 interface Invoice {
@@ -209,7 +211,16 @@ export default function InvoicingPage() {
     date: new Date().toISOString().split('T')[0],
     dueDate: '',
     items: [{ description: '', quantity: 1, rate: 0 }],
+    projectId: '',
   });
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(res => res.json())
+      .then(data => setProjects(Array.isArray(data) ? data : []))
+      .catch(() => setProjects([]));
+  }, []);
 
   /* ── Data ──────────────────────────────────────────────────────── */
   const fetchInvoices = async () => {
@@ -262,7 +273,7 @@ export default function InvoicingPage() {
   /* ── Handlers ──────────────────────────────────────────────────── */
   const closeNewModal = () => {
     setShowNewInvoiceModal(false);
-    setNewInvoice({ clientType: 'business', client: '', clientEmail: '', date: new Date().toISOString().split('T')[0], dueDate: '', items: [{ description: '', quantity: 1, rate: 0 }] });
+    setNewInvoice({ clientType: 'business', client: '', clientEmail: '', date: new Date().toISOString().split('T')[0], dueDate: '', items: [{ description: '', quantity: 1, rate: 0 }], projectId: '' });
   };
 
   const handleViewInvoice = (invoice: Invoice) => {
@@ -280,19 +291,19 @@ export default function InvoicingPage() {
   };
 
   const sendInvoiceEmail = async () => {
+    if (!emailInvoice) return;
     try {
-      if (emailInvoice) {
-        const res = await fetch(`/api/invoices/${emailInvoice.id}`, {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'SENT' }),
-        });
-        if (!res.ok) throw new Error();
-        await fetchInvoices();
-      }
+      const res = await fetch(`/api/invoices/${emailInvoice.id}/send-email`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: emailData.to, subject: emailData.subject, message: emailData.message }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send email');
+      await fetchInvoices();
       showToast(`Invoice sent to ${emailData.to}!`);
       setShowEmailModal(false); setEmailInvoice(null);
-    } catch {
-      showToast('Failed to send invoice', 'error');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to send invoice', 'error');
     }
   };
 
@@ -300,7 +311,7 @@ export default function InvoicingPage() {
     try {
       const res = await fetch('/api/invoices', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientName: newInvoice.client, clientEmail: newInvoice.clientEmail, amount: newInvoiceTotal, items: newInvoice.items, dueDate: newInvoice.dueDate }),
+        body: JSON.stringify({ clientName: newInvoice.client, clientEmail: newInvoice.clientEmail, amount: newInvoiceTotal, items: newInvoice.items, dueDate: newInvoice.dueDate, projectId: newInvoice.projectId || undefined }),
       });
       if (!res.ok) throw new Error();
       await fetchInvoices();
@@ -329,6 +340,7 @@ export default function InvoicingPage() {
   /* ── Render ─────────────────────────────────────────────────────── */
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8 font-sans text-gray-900">
+      <TourProvider moduleId="invoicing" steps={invoicingTourSteps} />
 
       {/* ── STICKY HEADER ─────────────────────────────────────────── */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
@@ -345,7 +357,7 @@ export default function InvoicingPage() {
 
           <div className="flex items-center gap-2 shrink-0">
             {/* Export dropdown */}
-            <div className="relative">
+            <div id="tour-invoicing-export" className="relative">
               <button
                 onClick={() => setExportMenuOpen(!exportMenuOpen)}
                 className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:gap-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
@@ -378,6 +390,7 @@ export default function InvoicingPage() {
             </div>
 
             <button
+              id="tour-invoicing-new-button"
               onClick={() => setShowNewInvoiceModal(true)}
               className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm flex items-center gap-1.5 cursor-pointer transition-colors active:scale-95"
             >
@@ -392,7 +405,7 @@ export default function InvoicingPage() {
       <div className="px-4 sm:px-6 py-5 space-y-4 sm:space-y-5">
 
         {/* ── STATS ─────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div id="tour-invoicing-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { label: 'Total Revenue', value: stats.total,   sub: `${invoices.length} invoices`,                                              Icon: DollarSign,  iconBg: 'bg-blue-600',    valCls: 'text-gray-900'     },
             { label: 'Paid',          value: stats.paid,    sub: `${invoices.filter(i => i.status === 'paid').length} paid`,                  Icon: CheckCircle, iconBg: 'bg-emerald-500', valCls: 'text-emerald-600'  },
@@ -414,7 +427,7 @@ export default function InvoicingPage() {
         </div>
 
         {/* ── SEARCH + FILTER ───────────────────────────────────────── */}
-        <div className="flex gap-2">
+        <div id="tour-invoicing-search" className="flex gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -593,10 +606,6 @@ export default function InvoicingPage() {
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer">
                                         <Edit className="w-4 h-4 text-blue-600" /><span className="font-medium">Edit</span>
                                       </button>
-                                      <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}`); showToast('Link copied!'); setActiveMenu(null); setMenuPosition(null); }}
-                                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 flex items-center gap-2 cursor-pointer">
-                                        <Copy className="w-4 h-4 text-green-600" /><span className="font-medium">Copy Link</span>
-                                      </button>
                                       <button onClick={() => { handleSendEmail(invoice); setActiveMenu(null); setMenuPosition(null); }}
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 flex items-center gap-2 cursor-pointer">
                                         <Mail className="w-4 h-4 text-purple-600" /><span className="font-medium">Email</span>
@@ -663,10 +672,6 @@ export default function InvoicingPage() {
                                   <button onClick={() => { handleSendEmail(invoice); setActiveMenu(null); }}
                                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 flex items-center gap-2 cursor-pointer">
                                     <Send className="w-4 h-4 text-purple-600" /><span className="font-medium">Send Email</span>
-                                  </button>
-                                  <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}`); showToast('Link copied!'); setActiveMenu(null); }}
-                                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 flex items-center gap-2 cursor-pointer">
-                                    <Copy className="w-4 h-4 text-green-600" /><span className="font-medium">Copy Link</span>
                                   </button>
                                   <div className="border-t border-gray-100 my-1" />
                                   <button onClick={() => { setDeletingInvoice(invoice); setShowDeleteModal(true); setActiveMenu(null); }}
@@ -744,6 +749,15 @@ export default function InvoicingPage() {
                   <input type="date" value={newInvoice.dueDate}
                     onChange={e => setNewInvoice({ ...newInvoice, dueDate: e.target.value })}
                     className={inputCls} />
+                </div>
+                <div className="sm:col-span-4">
+                  <label className={labelCls}>Project</label>
+                  <select value={newInvoice.projectId}
+                    onChange={e => setNewInvoice({ ...newInvoice, projectId: e.target.value })}
+                    className={`${inputCls} appearance-none cursor-pointer`}>
+                    <option value="">No project</option>
+                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
                 </div>
               </div>
             </div>

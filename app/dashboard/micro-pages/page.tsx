@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Globe, Plus, Search, Upload, Eye, Edit3,
+  Globe, Plus, Search, Eye, Edit3,
   Trash2, Copy, BarChart3, Settings, Link, ExternalLink,
   Layout,
-  Zap, TrendingUp, Clock,
+  Zap, Clock,
   CheckCircle, XCircle, AlertCircle, MoreVertical,
   ShoppingCart, Calendar,
   Grid, List, X, Sparkles, Target, Award,
@@ -181,62 +181,45 @@ export default function MicroPagesPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] space-y-4 md:space-y-6">
 
-      {/* ── Hero Banner ── */}
-      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-linear-to-br from-gray-900 via-blue-950 to-gray-900 px-5 py-7 md:px-10 md:py-10">
-        {/* decorative blobs */}
-        <div className="pointer-events-none absolute -top-12 -right-12 w-48 h-48 md:w-72 md:h-72 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-10 -left-10 w-40 h-40 md:w-60 md:h-60 rounded-full bg-purple-500/15 blur-3xl" />
-
-        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1">
-              <Globe className="h-3.5 w-3.5 text-blue-400" />
-              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-300">Web Presence Hub</span>
+      {/* ── Hero ── */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-5 sm:p-7 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+              <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">
-              Micro <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-cyan-400">Pages</span>
-            </h1>
-            <p className="mt-1 text-[11px] font-semibold uppercase tracking-widest text-gray-400">
-              Landing Page Builder & Management
-            </p>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none">Micro Pages</h1>
+              <p className="text-gray-500 text-xs sm:text-sm font-medium mt-1.5">Landing page builder & management</p>
+            </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[11px] font-black uppercase tracking-widest text-white backdrop-blur transition hover:bg-white/10 active:scale-95">
-              <Upload className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Import</span>
-            </button>
-            <button
-              onClick={() => setShowTemplates(true)}
-              className="flex items-center gap-2 rounded-xl bg-blue-500 px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-600 active:scale-95"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Create New
-            </button>
-          </div>
+          <button
+            onClick={() => setShowTemplates(true)}
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl px-5 py-2.5 active:scale-95 transition-all w-full sm:w-auto cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Create New
+          </button>
         </div>
       </div>
 
       {/* ── Stats ── */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         {[
-          { label: 'Total Pages', val: stats.total, sub: `${stats.published} published`, icon: Globe, color: 'blue' },
-          { label: 'Total Views', val: stats.totalViews.toLocaleString(), sub: 'All time', icon: Eye, color: 'purple' },
-          { label: 'Avg Conversion', val: `${stats.avgConversion.toFixed(1)}%`, sub: 'Success rate', icon: Target, color: 'emerald' },
-          { label: 'Templates', val: templates.length, sub: 'Available', icon: Layout, color: 'orange' },
+          { label: 'Total Pages', val: stats.total, sub: `${stats.published} published`, icon: Globe, iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
+          { label: 'Total Views', val: stats.totalViews.toLocaleString(), sub: 'All time', icon: Eye, iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
+          { label: 'Avg Conversion', val: `${stats.avgConversion.toFixed(1)}%`, sub: 'Success rate', icon: Target, iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+          { label: 'Templates', val: templates.length, sub: 'Available', icon: Layout, iconBg: 'bg-orange-100', iconColor: 'text-orange-600' },
         ].map((s, i) => (
-          <div key={i} className="relative overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between">
-              <div className={`rounded-xl p-2.5 bg-${s.color}-100`}>
-                <s.icon className={`h-4 w-4 text-${s.color}-600`} />
-              </div>
-              <TrendingUp className={`h-4 w-4 text-${s.color}-400 opacity-50`} />
+          <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+            <div className={`shrink-0 p-2.5 rounded-xl ${s.iconBg}`}>
+              <s.icon className={`w-5 h-5 ${s.iconColor}`} />
             </div>
-            <p className="mt-3 text-2xl font-black tracking-tight text-gray-900">{s.val}</p>
-            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">{s.label}</p>
-            <p className={`mt-1 text-[10px] font-bold text-${s.color}-600 flex items-center gap-1`}>
-              <Zap className="h-2.5 w-2.5" />{s.sub}
-            </p>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider truncate">{s.label}</p>
+              <p className="text-xl font-bold text-gray-900 leading-tight">{s.val}</p>
+              <p className="text-[10px] text-gray-400 truncate">{s.sub}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -488,10 +471,8 @@ export default function MicroPagesPage() {
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-12 pb-5 border-b border-gray-100 shrink-0">
               <div>
-                <h2 className="text-xl font-black tracking-tight text-gray-900">
-                  Choose a <span className="text-blue-600">Template</span>
-                </h2>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-0.5">
+                <h2 className="text-lg font-bold tracking-tight text-gray-900">Choose a template</h2>
+                <p className="text-[11px] text-gray-500 font-medium mt-0.5">
                   {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''} available
                 </p>
               </div>
@@ -574,7 +555,7 @@ export default function MicroPagesPage() {
             <div className="px-6 pb-32 sm:pb-6 pt-4 border-t border-gray-100 bg-white">
               <button
                 onClick={() => setShowTemplates(false)}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 text-[11px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-100 transition cursor-pointer"
+                className="w-full rounded-xl border border-gray-300 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]"
               >
                 Cancel
               </button>

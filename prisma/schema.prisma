@@ -140,6 +140,10 @@ model Business {
   postcode String?
   country  String  @default("UK")
 
+  // Tax settings — defaults to the common UK company year-end (31 March) until configured
+  fiscalYearEndMonth Int @default(3)
+  fiscalYearEndDay   Int @default(31)
+
   // Subscription & Billing
   subscriptionId String?       @unique
   subscription   Subscription?
@@ -173,6 +177,9 @@ model Business {
   stockMovements  StockMovement[]
   mailboxMessages MailboxMessage[]
   replyTokens     ReplyToken[]
+  projects        Project[]
+  timeEntries     TimeEntry[]
+  shopifyConnection ShopifyConnection?
   enabledModules  String[]         @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
 
   @@index([name])
@@ -217,6 +224,24 @@ enum SubscriptionStatus {
 }
 
 // =============================================================================
+// Shopify Integration (one-way sync: Shopify -> Okleevo)
+// =============================================================================
+
+model ShopifyConnection {
+  id         String   @id @default(cuid())
+  businessId String   @unique
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  shopDomain  String // e.g. "example.myshopify.com"
+  accessToken String
+  scope       String
+
+  connectedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// =============================================================================
 // Invoicing Module
 // =============================================================================
 
@@ -237,6 +262,7 @@ model Invoice {
   amount   Float
   currency String        @default("GBP")
   status   InvoiceStatus @default(DRAFT)
+  category String?       @default("Sales")
 
   items Json // Array of invoice items
   notes String?
@@ -251,10 +277,15 @@ model Invoice {
   journalEntryId String?       @unique
   journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
 
+  // Project Profitability Integration
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
   @@index([businessId])
   @@index([userId])
   @@index([status])
   @@index([number])
+  @@index([projectId])
 }
 
 enum InvoiceStatus {
@@ -296,8 +327,18 @@ model Contact {
   tags   String[]
   notes  String?
 
+  // UK GDPR Compliance: gates bulk campaign sends (see app/api/campaigns/send).
+  // unsubscribeToken is nullable (not @default(cuid())) because existing
+  // production rows can't be backfilled by a schema push; it's generated
+  // lazily on first campaign send instead (see app/api/campaigns/send/route.ts).
+  gdprConsent      Boolean   @default(true)
+  unsubscribedAt   DateTime?
+  unsubscribeToken String?   @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  projects Project[]
 
   @@index([businessId])
   @@index([userId])
@@ -359,6 +400,12 @@ model Expense {
   receipt String? // URL to receipt image
   date    DateTime
 
+  // UK VAT/HMRC receipt validation (AI-extracted, see app/api/expenses/validate-receipt)
+  vatNumber              String?
+  vatAmount              Float?
+  receiptValidated       Boolean @default(false)
+  receiptValidationNotes String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -366,10 +413,15 @@ model Expense {
   journalEntryId String?       @unique
   journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
 
+  // Project Profitability Integration
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
   @@index([businessId])
   @@index([userId])
   @@index([category])
   @@index([date])
+  @@index([projectId])
 }
 
 // =============================================================================
@@ -410,6 +462,11 @@ model InventoryItem {
   supplierId String?
   supplier   Supplier? @relation(fields: [supplierId], references: [id])
 
+  // Shopify Sync: identifies rows imported from a connected Shopify store so
+  // re-running sync upserts instead of creating duplicates.
+  shopifyProductId String?
+  shopifyVariantId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -418,6 +475,7 @@ model InventoryItem {
   @@index([businessId])
   @@index([sku])
   @@index([status])
+  @@index([businessId, shopifyVariantId])
 }
 
 model StockMovement {
@@ -468,18 +526,30 @@ model Employee {
   startDate DateTime
   endDate   DateTime?
 
-  salary Float?
-  status EmployeeStatus @default(ACTIVE)
+  salary         Float?
+  hourlyRate     Float? // Used for Project Profitability labor-cost calculations
+  status         EmployeeStatus @default(ACTIVE)
+  employmentType EmploymentType @default(FULL_TIME)
 
+  reportingManager String?
   address          String?
   emergencyContact String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  timeEntries TimeEntry[]
+
   @@index([businessId])
   @@index([email])
   @@index([status])
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
 }
 
 enum EmployeeStatus {
@@ -769,10 +839,16 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Project Profitability + Automation Integration
+  projectId String?
+  project   Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  timeEntries TimeEntry[]
+
   @@index([businessId])
   @@index([userId])
   @@index([status])
   @@index([priority])
+  @@index([projectId])
 }
 
 model SubTask {
@@ -794,6 +870,7 @@ enum TaskStatus {
   IN_PROGRESS
   REVIEW
   DONE
+  PAUSED // Auto-set when a linked Project's invoice goes overdue
 }
 
 enum TaskPriority {
@@ -804,8 +881,89 @@ enum TaskPriority {
 }
 
 // =============================================================================
+// Projects Module (cross-module linkage for automation + profitability)
+// =============================================================================
+
+model Project {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  name   String
+  status ProjectStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks       Task[]
+  invoices    Invoice[]
+  expenses    Expense[]
+  timeEntries TimeEntry[]
+
+  @@index([businessId])
+  @@index([contactId])
+  @@index([status])
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+}
+
+model TimeEntry {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id])
+
+  hoursLogged Float
+  date        DateTime
+  notes       String?
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId])
+  @@index([employeeId])
+  @@index([projectId])
+  @@index([date])
+}
+
+// =============================================================================
 // Audit Logs (Tier 2: 10-20 Users)
 // =============================================================================
+
+model TaxReportDownload {
+  id String @id @default(cuid())
+
+  businessId String
+  userId     String
+
+  reportType String // 'PAYE_RTI' | 'SELF_ASSESSMENT' | 'CORPORATION_TAX' | 'VAT'
+  format     String // 'PDF' | 'Excel'
+  period     String // e.g. "December 2025", "2026/27", "Q2 2026"
+  amount     Float
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId])
+  @@index([reportType])
+  @@index([createdAt])
+}
 
 model AuditLog {
   id String @id @default(cuid())
@@ -885,6 +1043,7 @@ model LedgerAccount {
 
   isActive Boolean @default(true)
   isSystem Boolean @default(false) // If true, cannot be deleted (e.g., Accounts Payable)
+  isCashAccount Boolean @default(false) // Marks a bank/cash account for Cash Flow Statement categorization
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1102,6 +1261,7 @@ model MailboxMessage {
 
   folder MailFolder @default(INBOX)
   status MailStatus @default(UNREAD)
+  label  String? // e.g. "Marketing", "Clients", "Priority"
 
   date DateTime @default(now())
 

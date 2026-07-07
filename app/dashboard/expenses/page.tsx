@@ -5,10 +5,12 @@ import {
   Plus, Search, TrendingDown, Download, Receipt, Edit,
   Trash2, X, Upload, BarChart3, PieChart, DollarSign,
   ShoppingBag, Building2, Coffee, Car, Zap, Target,
-  Loader2, Tag, Filter, ArrowUpRight,
+  Loader2, Tag, Filter, ArrowUpRight, ShieldCheck, AlertTriangle,
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import StatusModal from '@/components/StatusModal';
+import TourProvider from '@/components/tours/TourProvider';
+import { expensesTourSteps } from './tour-steps';
 
 /* ── Interfaces ──────────────────────────────────────────────────── */
 interface Expense {
@@ -22,6 +24,10 @@ interface Expense {
   paymentMethod?: string;
   status?: string;
   notes?: string;
+  vatNumber?: string | null;
+  vatAmount?: number | null;
+  receiptValidated?: boolean;
+  receiptValidationNotes?: string | null;
 }
 
 interface PrismaExpense {
@@ -46,7 +52,7 @@ const ModalShell = ({ children, maxW = 'sm:max-w-lg', onClose }: {
     className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4"
     onClick={(e) => { if (e.target === e.currentTarget && onClose) onClose(); }}
   >
-    <div className={`bg-white rounded-2xl w-full ${maxW} max-h-[92dvh] sm:max-h-[88vh] flex flex-col shadow-2xl overflow-hidden border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300`}>
+    <div className={`bg-white rounded-2xl w-full ${maxW} max-h-[92dvh] sm:max-h-[88vh] flex flex-col shadow-xl overflow-hidden border border-gray-200 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300`}>
       {children}
     </div>
   </div>
@@ -91,9 +97,19 @@ export default function ExpensesPage() {
     amount: 0,
     category: 'Office',
     date: new Date().toISOString().split('T')[0],
+    projectId: '',
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  const [validatingReceipt, setValidatingReceipt] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(res => res.json())
+      .then(data => setProjects(Array.isArray(data) ? data : []))
+      .catch(() => setProjects([]));
+  }, []);
 
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info';
@@ -151,16 +167,28 @@ export default function ExpensesPage() {
 
   /* ── Handlers ────────────────────────────────────────────────── */
   const resetNewExpense = () => {
-    setNewExpense({ title: '', amount: 0, category: 'Office', date: new Date().toISOString().split('T')[0] });
+    setNewExpense({ title: '', amount: 0, category: 'Office', date: new Date().toISOString().split('T')[0], projectId: '' });
     setSelectedFile(null);
   };
 
   const handleAddExpense = async () => {
     try {
+      let receiptUrl: string | undefined;
+      if (selectedFile) {
+        const fd = new FormData();
+        fd.append('file', selectedFile);
+        fd.append('folder', 'receipts');
+        const uploadRes = await fetch('/api/storage/upload', { method: 'POST', body: fd });
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          receiptUrl = uploadData.url;
+        }
+      }
+
       const response = await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newExpense),
+        body: JSON.stringify({ ...newExpense, receipt: receiptUrl }),
       });
       if (!response.ok) throw new Error('Failed to save expense');
       const saved = await response.json();
@@ -178,6 +206,25 @@ export default function ExpensesPage() {
   const handleDeleteExpense = (expense: Expense) => {
     setDeletingExpense(expense);
     setShowDeleteModal(true);
+  };
+
+  const handleValidateReceipt = async () => {
+    if (!selectedExpense) return;
+    setValidatingReceipt(true);
+    try {
+      const response = await fetch('/api/expenses/validate-receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expenseId: selectedExpense.id }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Validation failed');
+      setSelectedExpense({ ...selectedExpense, ...data });
+    } catch (error) {
+      setStatusModal({ isOpen: true, title: 'Validation Failed', message: error instanceof Error ? error.message : 'Could not validate receipt.', type: 'error' });
+    } finally {
+      setValidatingReceipt(false);
+    }
   };
 
   const handleEditExpense = async () => {
@@ -226,6 +273,7 @@ export default function ExpensesPage() {
   /* ══════════════════════════════════════════════════════════════ */
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <TourProvider moduleId="expenses" steps={expensesTourSteps} />
 
       {/* ── Sticky Header ────────────────────────────────────────── */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
@@ -248,6 +296,7 @@ export default function ExpensesPage() {
               <span className="hidden sm:inline">Export</span>
             </button>
             <button
+              id="tour-expenses-add-button"
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-colors cursor-pointer"
             >
@@ -271,7 +320,7 @@ export default function ExpensesPage() {
       <div className="px-4 sm:px-6 py-4 space-y-4 max-w-4xl mx-auto">
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-expenses-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             {
               label: 'Total Spent',
@@ -317,7 +366,7 @@ export default function ExpensesPage() {
         </div>
 
         {/* Search + Filter */}
-        <div className="flex gap-2">
+        <div id="tour-expenses-search" className="flex gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -473,16 +522,16 @@ export default function ExpensesPage() {
       {showAddModal && (
         <ModalShell onClose={() => { setShowAddModal(false); resetNewExpense(); }}>
           <ModalHandle />
-          <div className="bg-linear-to-r from-rose-500 to-pink-600 px-4 sm:px-6 py-2.5 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
+          <div className="px-4 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-md border border-white/20">
-                <Plus className="w-5 h-5 text-white" />
+              <div className="p-2.5 bg-rose-50 rounded-xl">
+                <Plus className="w-5 h-5 text-rose-600" />
               </div>
-              <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight">Add Expense</h2>
+              <h2 className="text-sm sm:text-lg font-semibold text-gray-900 tracking-tight">Add Expense</h2>
             </div>
             <button
               onClick={() => { setShowAddModal(false); resetNewExpense(); }}
-              className="p-2.5 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white"
+              className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -575,6 +624,20 @@ export default function ExpensesPage() {
                 ))}
               </select>
             </div>
+
+            <div>
+              <label className={labelCls}>Project</label>
+              <select
+                value={newExpense.projectId}
+                onChange={(e) => setNewExpense({ ...newExpense, projectId: e.target.value })}
+                className={`${inputCls} cursor-pointer`}
+              >
+                <option value="">No project</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <ModalFooter>
@@ -653,6 +716,37 @@ export default function ExpensesPage() {
                 ))}
               </select>
             </div>
+
+            {selectedExpense.receipt && (
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className={labelCls}>VAT / HMRC Receipt Check</p>
+                  <button
+                    type="button"
+                    onClick={handleValidateReceipt}
+                    disabled={validatingReceipt}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    {validatingReceipt ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                    Validate Receipt
+                  </button>
+                </div>
+                {selectedExpense.receiptValidationNotes && (
+                  <div className={`flex items-start gap-2 text-xs p-2 rounded-lg ${
+                    selectedExpense.receiptValidated ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                  }`}>
+                    {selectedExpense.receiptValidated
+                      ? <ShieldCheck className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      : <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />}
+                    <div>
+                      <p>{selectedExpense.receiptValidationNotes}</p>
+                      {selectedExpense.vatNumber && <p className="mt-0.5 font-semibold">VAT No: {selectedExpense.vatNumber}</p>}
+                      {selectedExpense.vatAmount != null && <p className="font-semibold">VAT Amount: £{selectedExpense.vatAmount.toFixed(2)}</p>}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <ModalFooter>

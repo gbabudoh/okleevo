@@ -8,6 +8,13 @@ export const PUT = withMultiTenancy(async (req, { dataFilter, params }) => {
     const data = await req.json();
     const { name, sku, category, quantity, unitPrice, location, minStock, maxStock, unit, description, reorderPoint } = data;
 
+    const existing = await prisma.inventoryItem.findFirst({
+      where: { id: id as string, businessId: dataFilter.businessId },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+    }
+
     const updateData: Record<string, unknown> = {};
     if (name !== undefined) updateData.name = name;
     if (sku !== undefined) updateData.sku = sku;
@@ -19,10 +26,15 @@ export const PUT = withMultiTenancy(async (req, { dataFilter, params }) => {
     if (maxStock !== undefined) updateData.maxQuantity = Number(maxStock);
     if (reorderPoint !== undefined) updateData.reorderPoint = Number(reorderPoint);
     if (unitPrice !== undefined) updateData.price = Number(unitPrice);
-    if (quantity !== undefined) {
-      const qty = Number(quantity);
-      const rp = reorderPoint ? Number(reorderPoint) : (minStock ? Number(minStock) : 10);
-      const mxq = maxStock ? Number(maxStock) : 100;
+
+    // Recompute status whenever quantity or any of its thresholds change,
+    // always merging against the item's actual stored values rather than
+    // hardcoded fallbacks — otherwise a partial update (e.g. just `{ quantity }`
+    // with no reorderPoint in the body) would compute against the wrong threshold.
+    if (quantity !== undefined || reorderPoint !== undefined || maxStock !== undefined) {
+      const qty = quantity !== undefined ? Number(quantity) : existing.quantity;
+      const rp = reorderPoint !== undefined ? Number(reorderPoint) : existing.reorderPoint;
+      const mxq = maxStock !== undefined ? Number(maxStock) : existing.maxQuantity;
       updateData.quantity = qty;
       updateData.status = qty === 0 ? 'OUT_OF_STOCK' : qty <= rp ? 'LOW_STOCK' : qty >= mxq ? 'OVERSTOCKED' : 'IN_STOCK';
     }

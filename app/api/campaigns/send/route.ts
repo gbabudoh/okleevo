@@ -1,7 +1,9 @@
+import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 import { sendClientEmail } from '@/lib/services/email';
+import { env } from '@/config/env';
 
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
@@ -33,13 +35,16 @@ export const POST = withMultiTenancy(async (req, { user }) => {
       select: { name: true },
     });
 
-    // 3. Resolve Audience (for now, All Subscribers = All Contacts with emails)
+    // 3. Resolve Audience (for now, All Subscribers = All Contacts with emails).
+    // GDPR: excludes contacts who withdrew consent or unsubscribed.
     const contacts = await prisma.contact.findMany({
       where: {
         businessId: user.businessId,
         email: { not: '' },
+        gdprConsent: true,
+        unsubscribedAt: null,
       },
-      select: { email: true, name: true },
+      select: { id: true, email: true, name: true, unsubscribeToken: true },
     });
 
     if (contacts.length === 0) {
@@ -66,11 +71,26 @@ export const POST = withMultiTenancy(async (req, { user }) => {
 
     for (const contact of contacts) {
       try {
+        // Lazily backfill unsubscribeToken for contacts that predate this field
+        // (existing production rows can't be backfilled by a schema migration).
+        let unsubscribeToken = contact.unsubscribeToken;
+        if (!unsubscribeToken) {
+          unsubscribeToken = randomUUID();
+          await prisma.contact.update({
+            where: { id: contact.id },
+            data: { unsubscribeToken },
+          });
+        }
+
+        const unsubscribeUrl = `${env.APP_URL}/unsubscribe?token=${unsubscribeToken}`;
+        const htmlBody = `${campaign.content.replace(/\n/g, '<br/>')}<hr/><p style="font-size:12px;color:#888;">Don't want these emails? <a href="${unsubscribeUrl}">Unsubscribe</a></p>`;
+        const textBody = `${campaign.content}\n\nUnsubscribe: ${unsubscribeUrl}`;
+
         const result = await sendClientEmail({
           to: contact.email,
           subject: campaign.subject,
-          html: campaign.content.replace(/\n/g, '<br/>'),
-          text: campaign.content,
+          html: htmlBody,
+          text: textBody,
           businessName: business?.name || 'Your Business',
           businessEmail: user.email,
         });

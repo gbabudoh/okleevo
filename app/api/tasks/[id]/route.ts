@@ -22,13 +22,14 @@ interface TaskUpdateBody {
   assignedTo?: string;
   tags?: string[];
   subtasks?: { title: string; completed?: boolean }[];
+  projectId?: string;
 }
 
 export const PATCH = withMultiTenancy(async (req, { user, params }) => {
   try {
     const { id } = await params;
     const body: TaskUpdateBody = await req.json();
-    const { title, description, status, priority, dueDate, assignedTo, tags, subtasks } = body;
+    const { title, description, status, priority, dueDate, assignedTo, tags, subtasks, projectId } = body;
 
     const existing = await prisma.task.findFirst({ where: { id: id as string, businessId: user.businessId } });
     if (!existing) return NextResponse.json({ error: 'Task not found' }, { status: 404 });
@@ -57,6 +58,7 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
         ...(assignedTo !== undefined && { assignedTo }),
         ...(tags !== undefined && { tags: Array.isArray(tags) ? tags : [] }),
+        ...(projectId !== undefined && { projectId: projectId || null }),
       },
       include: { subtasks: true }
     });

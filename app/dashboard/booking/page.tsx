@@ -25,6 +25,8 @@ interface Booking {
 
 const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
 const selectCls = `${inputCls} appearance-none cursor-pointer`;
+const labelCls = 'block text-xs font-semibold text-gray-600 mb-1';
+const modalHeaderCls = 'px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100';
 
 const ModalHandle = () => (
   <div className="flex justify-center pt-2 pb-0 sm:hidden shrink-0">
@@ -81,37 +83,37 @@ const BookingFormFields = ({
   <div className="space-y-2 sm:space-y-4">
     <div className="grid grid-cols-2 gap-2 sm:gap-3">
       <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Client Name *</label>
+        <label className={labelCls}>Client name *</label>
         <input type="text" value={data.client} onChange={e => onChange({ client: e.target.value })}
           className={inputCls} placeholder="e.g. John Smith" />
       </div>
       <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Email *</label>
+        <label className={labelCls}>Email *</label>
         <input type="email" value={data.email} onChange={e => onChange({ email: e.target.value })}
           className={inputCls} placeholder="john@email.com" />
       </div>
       <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
+        <label className={labelCls}>Phone</label>
         <input type="tel" value={data.phone || ''} onChange={e => onChange({ phone: e.target.value })}
           className={inputCls} placeholder="+44 20 ..." />
       </div>
       <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Service *</label>
+        <label className={labelCls}>Service *</label>
         <input type="text" value={data.service} onChange={e => onChange({ service: e.target.value })}
           className={inputCls} placeholder="e.g. Consultation" />
       </div>
       <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Date *</label>
+        <label className={labelCls}>Date *</label>
         <input type="date" value={data.date} onChange={e => onChange({ date: e.target.value })}
           className={inputCls} />
       </div>
       <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Time *</label>
+        <label className={labelCls}>Time *</label>
         <input type="time" value={data.time} onChange={e => onChange({ time: e.target.value })}
           className={inputCls} />
       </div>
       <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Duration</label>
+        <label className={labelCls}>Duration</label>
         <select value={data.duration} onChange={e => onChange({ duration: parseInt(e.target.value) })}
           className={selectCls}>
           <option value="30">30 min</option>
@@ -122,7 +124,7 @@ const BookingFormFields = ({
         </select>
       </div>
       <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Type</label>
+        <label className={labelCls}>Type</label>
         <select value={data.type} onChange={e => onChange({ type: e.target.value as 'in-person' | 'video' | 'phone' })}
           className={selectCls}>
           <option value="video">Video Call</option>
@@ -133,7 +135,7 @@ const BookingFormFields = ({
     </div>
     {'status' in data && (
       <div>
-        <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+        <label className={labelCls}>Status</label>
         <select value={(data as Booking).status}
           onChange={e => onChange({ status: e.target.value as Booking['status'] })}
           className={selectCls}>
@@ -145,7 +147,7 @@ const BookingFormFields = ({
       </div>
     )}
     <div>
-      <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">
+      <label className={labelCls}>
         Location {data.type !== 'in-person' && <span className="text-gray-400 font-normal">(in-person only)</span>}
       </label>
       <input type="text" value={data.location || ''}
@@ -155,7 +157,7 @@ const BookingFormFields = ({
         placeholder="e.g. Room 1" />
     </div>
     <div>
-      <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Notes</label>
+      <label className={labelCls}>Notes</label>
       <textarea value={data.notes || ''} onChange={e => onChange({ notes: e.target.value })}
         className={`${inputCls} h-16 sm:h-20 resize-none`} placeholder="Additional details..." />
     </div>
@@ -266,6 +268,7 @@ export default function BookingPage() {
             <p className="text-xs text-gray-500 hidden sm:block">Manage appointments and schedule</p>
           </div>
           <button
+            id="tour-booking-new"
             type="button"
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0"
@@ -280,7 +283,7 @@ export default function BookingPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-booking-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Bookings', value: totalBookings,  icon: CalendarCheck, bg: 'bg-blue-100',    ic: 'text-blue-600',    val: 'text-blue-700' },
             { label: 'Confirmed',      value: confirmedCount, icon: CheckCircle,   bg: 'bg-emerald-100', ic: 'text-emerald-600', val: 'text-emerald-700' },
@@ -432,13 +435,14 @@ export default function BookingPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <ModalHandle />
-            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-                <Plus className="w-4 h-4" /> New Booking
-              </h2>
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">New booking</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Fill in the booking details</p>
+              </div>
               <button type="button" onClick={() => { setShowAddModal(false); setNewBooking(blankBooking()); }}
-                className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -469,13 +473,14 @@ export default function BookingPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <ModalHandle />
-            <div className="bg-linear-to-r from-amber-500 to-orange-600 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-                <Edit className="w-4 h-4" /> Edit Booking
-              </h2>
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Edit booking</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Update booking details</p>
+              </div>
               <button type="button" onClick={() => { setShowEditModal(false); setEditBooking(null); }}
-                className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -505,11 +510,11 @@ export default function BookingPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white w-full sm:max-w-md flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <ModalHandle />
-            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight">Booking Details</h2>
+            <div className={modalHeaderCls}>
+              <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Booking details</h2>
               <button type="button" onClick={() => setShowDetailModal(false)}
-                className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -543,12 +548,12 @@ export default function BookingPage() {
               {/* Contact info */}
               <div className="bg-gray-50 rounded-xl p-3 sm:p-3.5 border border-gray-100 space-y-2 sm:space-y-2.5">
                 <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700">
-                  <Mail className="w-3.5 h-3.5 sm:w-4 h-4 text-gray-400 shrink-0" />
+                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
                   <span className="font-medium break-all">{selectedBooking.email}</span>
                 </div>
                 {selectedBooking.phone && (
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700">
-                    <Phone className="w-3.5 h-3.5 sm:w-4 h-4 text-gray-400 shrink-0" />
+                    <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
                     <span className="font-medium">{selectedBooking.phone}</span>
                   </div>
                 )}
@@ -558,7 +563,7 @@ export default function BookingPage() {
                 </div>
                 {selectedBooking.location && (
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700">
-                    <MapPin className="w-3.5 h-3.5 sm:w-4 h-4 text-gray-400 shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
                     <span className="font-medium">{selectedBooking.location}</span>
                   </div>
                 )}

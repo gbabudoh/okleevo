@@ -7,7 +7,7 @@ export const PATCH = withMultiTenancy(async (req, { params, user }) => {
     const resolvedParams = await params;
     const id = resolvedParams.id as string;
     const body = await req.json();
-    const { status, folder } = body;
+    const { status, folder, label } = body;
 
     // Verify ownership
     const message = await prisma.mailboxMessage.findFirst({
@@ -26,7 +26,7 @@ export const PATCH = withMultiTenancy(async (req, { params, user }) => {
       data: {
         ...(status !== undefined && { status }),
         ...(folder !== undefined && { folder }),
-        // Note: isStarred is not currently in the schema, but keeping it prepared for future use.
+        ...(label !== undefined && { label }),
       },
     });
 

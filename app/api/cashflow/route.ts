@@ -69,10 +69,10 @@ export const GET = withMultiTenancy(async (req, { dataFilter }) => {
       ...invoices.map(inv => ({
         id: inv.id,
         type: 'income',
-        description: `Invoice: ${inv.number}`,
+        description: inv.clientName,
         amount: inv.amount,
         date: inv.createdAt,
-        category: 'Sales'
+        category: inv.category || 'Sales'
       })),
       ...expenses.map(exp => ({
         id: exp.id,

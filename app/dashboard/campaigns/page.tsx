@@ -23,6 +23,8 @@ interface Campaign {
 }
 
 const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
+const labelCls = 'block text-xs font-semibold text-gray-600 mb-1';
+const modalHeaderCls = 'px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100';
 
 const ModalHandle = () => (
   <div className="flex justify-center pt-2 pb-0 sm:hidden shrink-0">
@@ -397,13 +399,14 @@ export default function CampaignsPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-                <Plus className="w-4 h-4" /> New Campaign
-              </h2>
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">New campaign</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Fill in the campaign details</p>
+              </div>
               <button type="button" onClick={resetModal}
-                className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -411,13 +414,13 @@ export default function CampaignsPage() {
               <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5 space-y-3 sm:space-y-4">
                 <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <div>
-                    <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Campaign Name *</label>
+                    <label className={labelCls}>Campaign name *</label>
                     <input type="text" required value={newCampaign.name}
                       onChange={e => setNewCampaign({ ...newCampaign, name: e.target.value })}
                       className={inputCls} placeholder="e.g. Summer Sale 2025" />
                   </div>
                   <div>
-                    <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Type</label>
+                    <label className={labelCls}>Type</label>
                     <select value={newCampaign.type}
                       onChange={e => setNewCampaign({ ...newCampaign, type: e.target.value })}
                       className={`${inputCls} appearance-none cursor-pointer`}>
@@ -430,14 +433,14 @@ export default function CampaignsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Email Subject *</label>
+                  <label className={labelCls}>Email subject *</label>
                   <input type="text" required value={newCampaign.subject}
                     onChange={e => setNewCampaign({ ...newCampaign, subject: e.target.value })}
                     className={inputCls} placeholder="e.g. You don't want to miss this!" />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Audience</label>
+                  <label className={labelCls}>Audience</label>
                   <input type="text" value={newCampaign.audience}
                     onChange={e => setNewCampaign({ ...newCampaign, audience: e.target.value })}
                     className={`${inputCls} mb-2`} placeholder="e.g. All Subscribers" />
@@ -457,7 +460,7 @@ export default function CampaignsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Content</label>
+                  <label className={labelCls}>Content</label>
                   <div className="relative">
                     <textarea value={newCampaign.content}
                       onChange={e => setNewCampaign({ ...newCampaign, content: e.target.value })}

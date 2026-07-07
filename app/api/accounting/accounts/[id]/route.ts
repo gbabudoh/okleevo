@@ -6,12 +6,12 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
   try {
     const { id } = await params;
     const body = await req.json();
-    const { code, name, type, description, openingBalance } = body;
+    const { code, name, type, description, openingBalance, isCashAccount } = body;
     const upperType = (type as string).toUpperCase();
 
     await prisma.ledgerAccount.updateMany({
       where: { id: id as string, businessId: user.businessId },
-      data: { code, name, type: upperType as any, description },
+      data: { code, name, type: upperType as any, description, isCashAccount: Boolean(isCashAccount) },
     });
 
     // If openingBalance provided, create a balance adjustment journal entry

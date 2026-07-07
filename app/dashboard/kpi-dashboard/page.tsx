@@ -10,9 +10,12 @@ import {
   ShoppingBag, CreditCard, MousePointer,
   ChevronRight, Minus,
   Gauge, Layers, Grid, List, MoreVertical,
-  X, Sparkles, Brain, CheckSquare, LucideIcon,
+  X, Sparkles, CheckSquare, LucideIcon,
   Edit3, Trash2, ExternalLink
 } from 'lucide-react';
+
+const inputCls = 'w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition-all outline-none text-sm font-medium text-gray-900';
+const labelCls = 'text-xs font-semibold text-gray-600';
 
 interface KPI {
   id: string;
@@ -52,6 +55,7 @@ export default function KPIDashboardPage() {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
   const [kpis, setKpis] = useState<KPI[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [timeRange, setTimeRange] = useState('month');
@@ -93,6 +97,34 @@ export default function KPIDashboardPage() {
       setLoading(false);
     }
   }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchKPIs();
+    setRefreshing(false);
+    showNotification('KPI data refreshed', 'success');
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['Name', 'Category', 'Value', 'Target', 'Change %', 'Progress %'];
+    const rows = filteredKPIs.map(kpi => [
+      kpi.name, kpi.category, String(kpi.value), String(kpi.target ?? 'N/A'),
+      `${kpi.changeType === 'increase' ? '+' : kpi.changeType === 'decrease' ? '-' : ''}${Math.abs(kpi.change)}`,
+      String(kpi.progress ?? 'N/A'),
+    ]);
+    let csv = 'KPI Dashboard Report\n';
+    csv += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+    csv += headers.join(',') + '\n';
+    csv += rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kpi-dashboard-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showNotification('KPIs exported to CSV', 'success');
+  };
 
   useEffect(() => { fetchKPIs(); }, [fetchKPIs]);
 
@@ -186,45 +218,42 @@ export default function KPIDashboardPage() {
     <div className="max-w-7xl mx-auto space-y-5 pb-24 md:pb-10">
 
       {/* ── Hero Header ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 via-indigo-700 to-purple-800 p-5 sm:p-7 text-white shadow-xl shadow-blue-200/40">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-10 left-10 w-36 h-36 bg-purple-400/20 rounded-full blur-xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2.5">
-              <div className="p-1.5 bg-white/15 rounded-lg"><BarChart3 className="w-4 h-4 text-white" /></div>
-              <span className="text-blue-200 text-[10px] font-black uppercase tracking-widest">Business Intelligence</span>
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-emerald-300 text-[9px] font-black uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />Live
-              </span>
+      <div className="bg-white border border-gray-100 rounded-2xl p-5 sm:p-7 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-0.5">KPI Dashboard</h1>
-            <p className="text-blue-300 text-xs font-medium">Strategic Performance Metrics</p>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none">KPI Dashboard</h1>
+              <p className="text-gray-500 text-xs sm:text-sm font-medium mt-1.5">Strategic performance metrics</p>
+            </div>
           </div>
 
           <div className="flex flex-col gap-2 sm:items-end">
             <div className="flex items-center gap-2">
               <div className="relative">
                 <select value={timeRange} onChange={e => setTimeRange(e.target.value)}
-                  className="pl-3 pr-8 py-2 bg-white/10 border border-white/20 rounded-xl text-white text-xs font-black uppercase tracking-wide appearance-none cursor-pointer outline-none backdrop-blur-sm">
-                  <option value="today" className="text-gray-900">Today</option>
-                  <option value="week" className="text-gray-900">This Week</option>
-                  <option value="month" className="text-gray-900">This Month</option>
-                  <option value="quarter" className="text-gray-900">This Quarter</option>
-                  <option value="year" className="text-gray-900">This Year</option>
+                  className="pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 text-xs font-semibold appearance-none cursor-pointer outline-none">
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="quarter">This Quarter</option>
+                  <option value="year">This Year</option>
                 </select>
-                <Calendar className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/60 pointer-events-none" />
+                <Calendar className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
               </div>
-              <button onClick={() => fetchKPIs()} className="p-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all active:scale-95">
-                <RefreshCw className="w-4 h-4 text-white" />
+              <button onClick={handleRefresh} disabled={refreshing} title="Refresh KPI data"
+                className="p-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                <RefreshCw className={`w-4 h-4 text-gray-500 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
-              <button className="p-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all active:scale-95">
-                <Download className="w-4 h-4 text-white" />
+              <button onClick={handleExportCSV} title="Export KPIs to CSV"
+                className="p-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl transition-all active:scale-95 cursor-pointer">
+                <Download className="w-4 h-4 text-gray-500" />
               </button>
             </div>
             <button onClick={() => setShowAddKPI(true)}
-              className="flex items-center justify-center gap-2 bg-white text-indigo-700 font-black text-xs rounded-xl px-5 py-2.5 shadow-lg hover:bg-indigo-50 active:scale-95 transition-all w-full sm:w-auto cursor-pointer">
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl px-5 py-2.5 active:scale-95 transition-all w-full sm:w-auto cursor-pointer">
               <Plus className="w-4 h-4" />
               Add KPI
             </button>
@@ -244,8 +273,8 @@ export default function KPIDashboardPage() {
             <div className={`w-9 h-9 rounded-xl bg-linear-to-br ${stat.color} flex items-center justify-center mb-3 shadow-sm`}>
               <stat.icon className="w-4 h-4 text-white" />
             </div>
-            <p className="text-2xl font-black text-gray-900 tracking-tight leading-none mb-1">{stat.value}</p>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider leading-tight">{stat.label}</p>
+            <p className="text-2xl font-bold text-gray-900 tracking-tight leading-none mb-1">{stat.value}</p>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider leading-tight">{stat.label}</p>
             <p className="text-[10px] text-gray-400 mt-0.5">{stat.sub}</p>
           </div>
         ))}
@@ -259,12 +288,12 @@ export default function KPIDashboardPage() {
             const isSelected = selectedCategory === category.id;
             return (
               <button key={category.id} onClick={() => setSelectedCategory(category.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider whitespace-nowrap transition-all border cursor-pointer shrink-0 ${
-                  isSelected ? 'bg-gray-900 border-gray-900 text-white shadow-md' : 'bg-white border-gray-100 text-gray-500 hover:border-blue-300 hover:text-blue-600'
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold text-xs whitespace-nowrap transition-all border cursor-pointer shrink-0 ${
+                  isSelected ? 'bg-gray-900 border-gray-900 text-white shadow-sm' : 'bg-white border-gray-100 text-gray-500 hover:border-blue-300 hover:text-blue-600'
                 }`}>
                 <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-blue-400' : ''}`} />
                 {category.name}
-                <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>
                   {category.count}
                 </span>
               </button>
@@ -323,7 +352,7 @@ export default function KPIDashboardPage() {
                     </div>
                   </div>
 
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-0.5">{kpi.category}</p>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{kpi.category}</p>
                   <h4 className="text-sm font-black text-gray-900 leading-tight mb-3 group-hover:text-blue-600 transition-colors">{kpi.name}</h4>
 
                   <div className="flex items-end justify-between mb-3">
@@ -607,84 +636,59 @@ export default function KPIDashboardPage() {
       {showAddKPI && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowAddKPI(false)} />
-          <div className="relative w-full sm:max-w-4xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92dvh] sm:max-h-[90vh] -translate-y-6 sm:translate-y-0">
-            {/* Sidebar — hidden on mobile */}
-            <div className="hidden md:flex w-72 bg-gray-950 p-8 text-white flex-col justify-between shrink-0">
+          <div className="relative w-full sm:max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92dvh] sm:max-h-[90vh] -translate-y-6 sm:translate-y-0 flex flex-col">
+            <div className="px-5 sm:px-8 py-5 sm:py-6 border-b border-gray-100 flex items-center justify-between shrink-0">
               <div>
-                <h2 className="text-3xl font-black tracking-tight mb-4 leading-tight">Add Strategic KPI</h2>
-                <p className="text-xs text-gray-400 leading-relaxed mb-8">Define parameters for real-time performance tracking.</p>
-                <div className="space-y-3">
-                  {[{ icon: Brain, label: 'AI Synthesis', sub: 'Predictive Modeling', color: 'blue' }, { icon: CheckSquare, label: 'Validation', sub: 'Automated Audit', color: 'purple' }].map(item => (
-                    <div key={item.label} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/5">
-                      <div className={`w-10 h-10 rounded-xl bg-${item.color}-500/20 flex items-center justify-center`}>
-                        <item.icon className={`w-5 h-5 text-${item.color}-400`} />
-                      </div>
-                      <div>
-                        <p className={`text-[10px] font-black uppercase tracking-wider text-${item.color}-400`}>{item.label}</p>
-                        <p className="text-sm font-bold text-white">{item.sub}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <h3 className="text-lg font-bold text-gray-900">Add strategic KPI</h3>
+                <p className="text-xs text-gray-500 mt-1">Define parameters for real-time performance tracking</p>
               </div>
-              <p className="text-[9px] text-gray-600 uppercase tracking-widest">KPI Node v2.4</p>
+              <button onClick={() => setShowAddKPI(false)} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
             </div>
 
-            {/* Form */}
-            <div className="flex-1 p-5 sm:p-8 overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">New KPI</p>
-                  <h3 className="text-xl font-black text-gray-900">Configuration</h3>
-                </div>
-                <button onClick={() => setShowAddKPI(false)} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
+            <div className="flex-1 overflow-y-auto p-5 sm:p-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {[
-                  { label: 'KPI Name', placeholder: 'e.g. Monthly Revenue', icon: Layers, type: 'text' },
-                  { label: 'Target Value', placeholder: 'e.g. 500,000', icon: Target, type: 'text' },
+                  { label: 'KPI name', placeholder: 'e.g. Monthly Revenue', type: 'text' },
+                  { label: 'Target value', placeholder: 'e.g. 500,000', type: 'text' },
                 ].map(field => (
                   <div key={field.label} className="space-y-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{field.label}</label>
-                    <div className="relative">
-                      <input type={field.type} placeholder={field.placeholder}
-                        className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-xl transition-all font-bold text-gray-900 outline-none text-sm" />
-                      <field.icon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                    </div>
+                    <label className={labelCls}>{field.label}</label>
+                    <input type={field.type} placeholder={field.placeholder} className={inputCls} />
                   </div>
                 ))}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Category</label>
-                  <select className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-xl transition-all font-bold text-gray-900 outline-none cursor-pointer text-sm appearance-none">
+                  <label className={labelCls}>Category</label>
+                  <select className={`${inputCls} cursor-pointer appearance-none`}>
                     {metricCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Unit</label>
-                  <select className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-xl transition-all font-bold text-gray-900 outline-none cursor-pointer text-sm appearance-none">
+                  <label className={labelCls}>Unit</label>
+                  <select className={`${inputCls} cursor-pointer appearance-none`}>
                     <option value="USD">USD ($)</option>
                     <option value="%">Percentage (%)</option>
                     <option value="number">Integer</option>
                   </select>
                 </div>
                 <div className="sm:col-span-2 space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Description</label>
+                  <label className={labelCls}>Description</label>
                   <textarea placeholder="Provide context for this KPI…" rows={3}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-xl transition-all font-bold text-gray-900 outline-none resize-none text-sm" />
+                    className={`${inputCls} resize-none`} />
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 mt-6 pb-2">
-                <button onClick={() => setShowAddKPI(false)}
-                  className="w-full sm:w-auto px-6 py-3 bg-gray-100 text-gray-600 font-black text-[10px] uppercase tracking-wider rounded-xl hover:bg-gray-200 transition-all cursor-pointer">
-                  Cancel
-                </button>
-                <button onClick={() => { showNotification('KPI added successfully', 'success'); setShowAddKPI(false); }}
-                  className="w-full sm:w-auto px-8 py-3 bg-gray-900 text-white font-black text-[10px] uppercase tracking-wider rounded-xl hover:bg-blue-600 transition-all duration-300 cursor-pointer active:scale-95">
-                  Add KPI
-                </button>
-              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 px-5 sm:px-8 py-4 border-t border-gray-100 shrink-0">
+              <button onClick={() => setShowAddKPI(false)}
+                className="w-full sm:w-auto px-6 py-2.5 border border-gray-200 text-gray-600 font-semibold text-sm rounded-xl hover:bg-gray-50 transition-all cursor-pointer">
+                Cancel
+              </button>
+              <button onClick={() => { showNotification('KPI added successfully', 'success'); setShowAddKPI(false); }}
+                className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-all cursor-pointer active:scale-95">
+                Add KPI
+              </button>
             </div>
           </div>
         </div>
@@ -699,11 +703,11 @@ export default function KPIDashboardPage() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   {(() => { const Icon = editingKPI.icon || Activity; return (
-                    <div className={`p-2.5 rounded-xl bg-linear-to-br ${editingKPI.gradient} shadow-md`}><Icon className="w-5 h-5 text-white" /></div>
+                    <div className={`p-2.5 rounded-xl bg-linear-to-br ${editingKPI.gradient}`}><Icon className="w-5 h-5 text-white" /></div>
                   ); })()}
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Edit KPI</p>
-                    <h3 className="text-lg font-black text-gray-900">{editingKPI.name}</h3>
+                    <p className="text-xs font-semibold text-gray-500">Edit KPI</p>
+                    <h3 className="text-lg font-bold text-gray-900">{editingKPI.name}</h3>
                   </div>
                 </div>
                 <button onClick={() => { setShowEditModal(false); setEditingKPI(null); }} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
@@ -712,30 +716,30 @@ export default function KPIDashboardPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { label: 'Current Value', value: String(editingKPI.value), onChange: (v: string) => setEditingKPI({ ...editingKPI, value: v }), type: 'text' },
+                  { label: 'Current value', value: String(editingKPI.value), onChange: (v: string) => setEditingKPI({ ...editingKPI, value: v }), type: 'text' },
                   { label: 'Target', value: String(editingKPI.target || ''), onChange: (v: string) => setEditingKPI({ ...editingKPI, target: v }), type: 'text' },
                   { label: 'Progress %', value: String(editingKPI.progress || 0), onChange: (v: string) => setEditingKPI({ ...editingKPI, progress: Number(v) }), type: 'number' },
                   { label: 'Change %', value: String(editingKPI.change), onChange: (v: string) => setEditingKPI({ ...editingKPI, change: Number(v) }), type: 'number' },
                 ].map(field => (
                   <div key={field.label} className="space-y-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{field.label}</label>
+                    <label className={labelCls}>{field.label}</label>
                     <input type={field.type} value={field.value} onChange={e => field.onChange(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-xl transition-all font-bold text-gray-900 outline-none text-sm" />
+                      className={inputCls} />
                   </div>
                 ))}
                 <div className="sm:col-span-2 space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Description</label>
+                  <label className={labelCls}>Description</label>
                   <textarea value={editingKPI.description || ''} onChange={e => setEditingKPI({ ...editingKPI, description: e.target.value })} rows={3}
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-xl transition-all font-bold text-gray-900 outline-none resize-none text-sm" />
+                    className={`${inputCls} resize-none`} />
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-center justify-end gap-3 mt-6">
                 <button onClick={() => { setShowEditModal(false); setEditingKPI(null); }}
-                  className="w-full sm:w-auto px-6 py-3 bg-gray-100 text-gray-600 font-black text-[10px] uppercase tracking-wider rounded-xl hover:bg-gray-200 transition-all cursor-pointer">
+                  className="w-full sm:w-auto px-6 py-2.5 border border-gray-200 text-gray-600 font-semibold text-sm rounded-xl hover:bg-gray-50 transition-all cursor-pointer">
                   Cancel
                 </button>
                 <button onClick={saveKPIEdit}
-                  className="w-full sm:w-auto px-8 py-3 bg-gray-900 text-white font-black text-[10px] uppercase tracking-wider rounded-xl hover:bg-blue-600 transition-all duration-300 cursor-pointer active:scale-95">
+                  className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-all cursor-pointer active:scale-95">
                   Save Changes
                 </button>
               </div>

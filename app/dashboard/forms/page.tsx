@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import StatusModal from '@/components/StatusModal';
+import TourProvider from '@/components/tours/TourProvider';
+import { formsTourSteps } from './tour-steps';
 
 type FieldType = 'text' | 'email' | 'phone' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date';
 
@@ -55,6 +57,8 @@ const blankField = (): FormField => ({
 });
 
 const inputCls = 'w-full px-3 py-1.5 sm:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
+const labelCls = 'block text-xs font-semibold text-gray-600 mb-1';
+const modalHeaderCls = 'px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100';
 
 const ModalHandle = () => (
   <div className="flex justify-center pt-2 pb-0 sm:hidden shrink-0">
@@ -236,6 +240,7 @@ export default function FormsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <TourProvider moduleId="forms" steps={formsTourSteps} />
 
       {/* Sticky header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
@@ -248,6 +253,7 @@ export default function FormsPage() {
             <p className="text-xs text-gray-500 hidden sm:block">Create and manage custom forms</p>
           </div>
           <button
+            id="tour-forms-create"
             type="button"
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0"
@@ -270,7 +276,7 @@ export default function FormsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-forms-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Forms',     value: forms.length,   icon: FileText,    bg: 'bg-blue-100',    ic: 'text-blue-600',    val: 'text-blue-700' },
             { label: 'Active Forms',    value: activeForms,    icon: CheckCircle, bg: 'bg-emerald-100', ic: 'text-emerald-600', val: 'text-emerald-700' },
@@ -399,19 +405,20 @@ export default function FormsPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className="bg-linear-to-r from-purple-600 to-indigo-700 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-                <Plus className="w-4 h-4" /> Create New Form
-              </h2>
-              <button type="button" onClick={resetCreate} className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Create new form</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Fill in the form details</p>
+              </div>
+              <button type="button" onClick={resetCreate} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5 space-y-2 sm:space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Form Name <span className="text-red-500">*</span></label>
+                <label className={labelCls}>Form name <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={newForm.name}
@@ -423,7 +430,7 @@ export default function FormsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                  <label className={labelCls}>Category</label>
                   <select
                     value={newForm.category}
                     onChange={(e) => setNewForm({ ...newForm, category: e.target.value })}
@@ -433,7 +440,7 @@ export default function FormsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+                  <label className={labelCls}>Status</label>
                   <select
                     value={newForm.status}
                     onChange={(e) => setNewForm({ ...newForm, status: e.target.value as Form['status'] })}
@@ -446,7 +453,7 @@ export default function FormsPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Description</label>
+                <label className={labelCls}>Description</label>
                 <textarea
                   value={newForm.description}
                   onChange={(e) => setNewForm({ ...newForm, description: e.target.value })}
@@ -458,8 +465,8 @@ export default function FormsPage() {
               {/* Field builder */}
               <div className="border border-dashed border-purple-200 rounded-xl p-2.5 space-y-2 bg-purple-50/30">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1.5">
-                    <GripVertical className="w-3.5 h-3.5" /> Form Fields
+                  <p className="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
+                    <GripVertical className="w-3.5 h-3.5" /> Form fields
                   </p>
                   {newForm.fieldList.length > 0 && (
                     <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">
@@ -492,7 +499,7 @@ export default function FormsPage() {
                 {/* Add field row */}
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">Field Label</label>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">Field label</label>
                     <input
                       type="text"
                       value={newField.label}
@@ -504,7 +511,7 @@ export default function FormsPage() {
                   </div>
                   <div className="flex gap-2 items-end">
                     <div className="flex-1">
-                      <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">Type</label>
+                      <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">Type</label>
                       <select
                         value={newField.type}
                         onChange={(e) => setNewField({ ...newField, type: e.target.value as FieldType })}
@@ -514,7 +521,7 @@ export default function FormsPage() {
                       </select>
                     </div>
                     <div className="flex flex-col items-center gap-1 shrink-0">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Req.</label>
+                      <label className="text-[11px] font-semibold text-gray-500">Req.</label>
                       <button
                         type="button"
                         onClick={() => setNewField(prev => ({ ...prev, required: !prev.required }))}
@@ -556,18 +563,19 @@ export default function FormsPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className="bg-linear-to-r from-amber-500 to-orange-600 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-                <Edit className="w-4 h-4" /> Edit Form
-              </h2>
-              <button type="button" onClick={() => { setShowEditModal(false); setEditForm(null); }} className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Edit form</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Update form details</p>
+              </div>
+              <button type="button" onClick={() => { setShowEditModal(false); setEditForm(null); }} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5 space-y-2 sm:space-y-4">
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Form Name</label>
+                <label className={labelCls}>Form name</label>
                 <input
                   type="text"
                   value={editForm.name}
@@ -577,7 +585,7 @@ export default function FormsPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Description</label>
+                <label className={labelCls}>Description</label>
                 <textarea
                   value={editForm.description || ''}
                   onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
@@ -587,7 +595,7 @@ export default function FormsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                  <label className={labelCls}>Category</label>
                   <select
                     value={editForm.category}
                     onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
@@ -597,7 +605,7 @@ export default function FormsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+                  <label className={labelCls}>Status</label>
                   <select
                     value={editForm.status}
                     onChange={(e) => setEditForm({ ...editForm, status: e.target.value as Form['status'] })}
@@ -611,7 +619,7 @@ export default function FormsPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Webhook URL <span className="text-gray-400 font-normal">(optional)</span></label>
+                <label className={labelCls}>Webhook URL <span className="text-gray-400 font-normal">(optional)</span></label>
                 <input
                   type="url"
                   value={editForm.webhookUrl || ''}
@@ -641,12 +649,10 @@ export default function FormsPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-                <Eye className="w-4 h-4" /> Form Details
-              </h2>
-              <button type="button" onClick={() => setShowViewModal(false)} className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+            <div className={modalHeaderCls}>
+              <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Form details</h2>
+              <button type="button" onClick={() => setShowViewModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 

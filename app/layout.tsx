@@ -24,9 +24,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
     template: '%s | Okleevo',
-    default: 'Okleevo - 20 Business Tools, One Simple Platform',
+    default: 'Okleevo - 23 Business Tools, One Simple Platform',
   },
-  description: "The all-in-one platform for UK SMEs. 20 integrated modules including invoicing, CRM, AI tools, and more. Just £9.99/month.",
+  description: "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, AI tools, and more. Just £9.99/month.",
   keywords: [
     "SME", "UK business", "SaaS", "business tools", "invoicing", "CRM", "AI tools", "ERP", "small business software",
     "UK business software", "London SME tools", "VAT invoicing UK", "MTD compliant bookkeeping", 
@@ -39,14 +39,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_GB",
     url: "/",
-    title: "Okleevo - 20 Business Tools, One Simple Platform",
-    description: "The all-in-one platform for UK SMEs. 20 integrated modules including invoicing, CRM, AI tools, and more.",
+    title: "Okleevo - 23 Business Tools, One Simple Platform",
+    description: "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, AI tools, and more.",
     siteName: "Okleevo",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Okleevo - 20 Business Tools, One Simple Platform",
-    description: "The all-in-one platform for UK SMEs. 20 integrated modules including invoicing, CRM, AI tools, and more.",
+    title: "Okleevo - 23 Business Tools, One Simple Platform",
+    description: "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, AI tools, and more.",
   },
   icons: {
     icon: "/favicon.png",
@@ -113,7 +113,7 @@ export default function RootLayout({
               "name": "Okleevo",
               "url": "https://okleevo.com",
               "logo": "https://okleevo.com/logo.png",
-              "description": "The all-in-one platform for UK SMEs. 20 integrated modules including invoicing, CRM, MTD bookkeeping, and AI tools for just £9.99/month.",
+              "description": "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, MTD bookkeeping, and AI tools for just £9.99/month.",
               "address": {
                 "@type": "PostalAddress",
                 "addressCountry": "GB"

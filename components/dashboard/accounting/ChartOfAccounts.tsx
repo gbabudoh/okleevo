@@ -11,7 +11,16 @@ interface LedgerAccount {
   type: string;
   category: string;
   balance: number;
+  isCashAccount?: boolean;
 }
+
+const ACCOUNT_TYPE_PILL: Record<string, string> = {
+  asset: "bg-blue-100 text-blue-700",
+  liability: "bg-red-100 text-red-700",
+  equity: "bg-purple-100 text-purple-700",
+  revenue: "bg-green-100 text-green-700",
+  expense: "bg-orange-100 text-orange-700",
+};
 
 interface ChartOfAccountsProps {
   accounts: LedgerAccount[];
@@ -73,9 +82,14 @@ export const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
             ) : accounts.map((account) => (
               <tr key={account.id} className="hover:bg-white/50 transition-colors group">
                 <td className="px-6 py-4 font-mono text-sm font-semibold text-gray-900">{account.code}</td>
-                <td className="px-6 py-4 font-semibold text-gray-900">{account.name}</td>
+                <td className="px-6 py-4 font-semibold text-gray-900">
+                  {account.name}
+                  {account.isCashAccount && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded align-middle">CASH</span>
+                  )}
+                </td>
                 <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm bg-gray-100 text-gray-700`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${ACCOUNT_TYPE_PILL[account.type] ?? "bg-gray-100 text-gray-700"}`}>
                     {account.type}
                   </span>
                 </td>

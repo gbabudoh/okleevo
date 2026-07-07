@@ -200,34 +200,31 @@ function CollaborationHubInner() {
     <div className="max-w-5xl mx-auto space-y-5 pb-24 md:pb-10">
 
       {/* ── Hero Header ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-indigo-600 via-indigo-700 to-violet-800 p-6 sm:p-8 text-white shadow-xl shadow-indigo-200/40">
-        <div className="absolute -top-16 -right-16 w-56 h-56 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 left-12 w-40 h-40 bg-violet-400/20 rounded-full blur-xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 bg-white/15 rounded-lg">
-                <UsersRound className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-indigo-200 text-[10px] font-black uppercase tracking-widest">Private Team Network</span>
+      <div className="rounded-2xl bg-white border border-gray-200 p-5 sm:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-50 rounded-xl shrink-0">
+              <UsersRound className="w-6 h-6 text-indigo-600" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-1">
-              Team Collaboration
-            </h1>
-            <p className="text-indigo-300 text-sm font-medium">Okleevo Secure Workspace</p>
+            <div>
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Private Team Network</p>
+              <h1 className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight leading-tight">
+                Team Collaboration
+              </h1>
+              <p className="text-gray-500 text-sm">Okleevo Secure Workspace</p>
+            </div>
           </div>
 
           <div className="flex flex-col gap-2.5 sm:items-end">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-3.5 py-2 border border-white/20 self-start sm:self-auto">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-sm font-black text-white">
+            <div className="inline-flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200 self-start sm:self-auto">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+              <span className="text-xs font-semibold text-gray-700">
                 {onlineCount} / {team.length} online
               </span>
             </div>
             <button
               onClick={() => startMeeting('general_hq', true, true)}
-              className="flex items-center justify-center gap-2 bg-white text-indigo-700 font-black text-sm rounded-xl px-5 py-2.5 shadow-lg hover:bg-indigo-50 active:scale-95 transition-all w-full sm:w-auto cursor-pointer"
+              className="flex items-center justify-center gap-2 bg-indigo-600 text-white font-medium text-sm rounded-lg px-5 py-2.5 hover:bg-indigo-700 transition-colors w-full sm:w-auto cursor-pointer"
             >
               <Video className="w-4 h-4" />
               General Meeting
@@ -239,8 +236,8 @@ function CollaborationHubInner() {
       {/* ── Security Banner ── */}
       <div className="flex items-center gap-3 px-4 py-3 bg-indigo-50 border border-indigo-100 rounded-xl">
         <ShieldCheck className="w-4 h-4 text-indigo-500 shrink-0" />
-        <p className="text-xs font-bold text-indigo-800/80 leading-relaxed">
-          <span className="text-indigo-600">End-to-end encrypted.</span>{' '}
+        <p className="text-xs font-medium text-indigo-800/80 leading-relaxed">
+          <span className="text-indigo-600 font-semibold">End-to-end encrypted.</span>{' '}
           All communication is locked to your organisation and never shared externally.
         </p>
       </div>
@@ -248,19 +245,19 @@ function CollaborationHubInner() {
       {/* ── Team Grid ── */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Your Team</h2>
-          <span className="text-xs font-bold text-gray-400">{team.length} member{team.length !== 1 ? 's' : ''}</span>
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Your Team</h2>
+          <span className="text-xs font-medium text-gray-400">{team.length} member{team.length !== 1 ? 's' : ''}</span>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Syncing Team…</p>
+            <p className="text-gray-400 font-semibold uppercase tracking-widest text-[10px]">Syncing Team…</p>
           </div>
         ) : team.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white rounded-2xl border border-gray-100">
+          <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white rounded-2xl border border-gray-200">
             <UsersRound className="w-10 h-10 text-gray-200" />
-            <p className="text-sm font-bold text-gray-400">No team members yet</p>
+            <p className="text-sm font-semibold text-gray-400">No team members yet</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -269,31 +266,31 @@ function CollaborationHubInner() {
               return (
                 <div
                   key={member.userId}
-                  className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-gray-100 transition-all group cursor-pointer"
+                  className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-gray-300 transition-colors"
                 >
                   {/* Card body */}
                   <div className="flex items-center gap-4 p-4 pb-3">
                     {/* Avatar */}
                     <div className="relative shrink-0">
-                      <div className={`w-14 h-14 rounded-2xl bg-linear-to-br ${gradient} flex items-center justify-center text-white text-xl font-black shadow-md`}>
+                      <div className={`w-14 h-14 rounded-2xl bg-linear-to-br ${gradient} flex items-center justify-center text-white text-xl font-bold`}>
                         {member.firstName.charAt(0)}{member.lastName.charAt(0)}
                       </div>
                       {member.isOnline && (
-                        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+                        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
                       )}
                     </div>
 
                     {/* Identity */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-black text-gray-900 truncate leading-tight">
+                      <h3 className="text-base font-semibold text-gray-900 truncate leading-tight">
                         {member.firstName} {member.lastName}
                       </h3>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide truncate mt-0.5">
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide truncate mt-0.5">
                         {member.role || 'Team Member'}
                       </p>
                       <div className="flex items-center gap-1.5 mt-1.5">
                         <div className={`w-1.5 h-1.5 rounded-full ${member.isOnline ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                        <span className={`text-[10px] font-black uppercase tracking-wider ${member.isOnline ? 'text-emerald-600' : 'text-gray-400'}`}>
+                        <span className={`text-[10px] font-semibold uppercase tracking-wider ${member.isOnline ? 'text-emerald-600' : 'text-gray-400'}`}>
                           {member.isOnline ? 'Online' : 'Offline'}
                         </span>
                       </div>
@@ -304,24 +301,24 @@ function CollaborationHubInner() {
                   <div className="grid grid-cols-3 gap-2 px-4 pb-4">
                     <button
                       onClick={() => startMeeting(`call_${member.userId}`, true, true)}
-                      className="flex flex-col items-center gap-1 py-2.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white rounded-xl transition-all active:scale-95 cursor-pointer"
+                      className="flex flex-col items-center gap-1 py-2.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white rounded-xl transition-colors cursor-pointer"
                     >
                       <Video className="w-4 h-4" />
-                      <span className="text-[9px] font-black uppercase tracking-wide">Video</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wide">Video</span>
                     </button>
                     <button
                       onClick={() => startMeeting(`call_${member.userId}`, false, true)}
-                      className="flex flex-col items-center gap-1 py-2.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white rounded-xl transition-all active:scale-95 cursor-pointer"
+                      className="flex flex-col items-center gap-1 py-2.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white rounded-xl transition-colors cursor-pointer"
                     >
                       <Phone className="w-4 h-4" />
-                      <span className="text-[9px] font-black uppercase tracking-wide">Voice</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wide">Voice</span>
                     </button>
                     <button
                       onClick={() => setActiveChatMember(member)}
-                      className="flex flex-col items-center gap-1 py-2.5 bg-amber-50 hover:bg-amber-500 text-amber-600 hover:text-white rounded-xl transition-all active:scale-95 cursor-pointer"
+                      className="flex flex-col items-center gap-1 py-2.5 bg-amber-50 hover:bg-amber-500 text-amber-600 hover:text-white rounded-xl transition-colors cursor-pointer"
                     >
                       <MessageSquare className="w-4 h-4" />
-                      <span className="text-[9px] font-black uppercase tracking-wide">Chat</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wide">Chat</span>
                     </button>
                   </div>
                 </div>
@@ -333,24 +330,27 @@ function CollaborationHubInner() {
 
       {/* ── Feature Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2">
-        <div className="relative overflow-hidden bg-indigo-600 rounded-2xl p-5 text-white group cursor-pointer">
-          <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
-          <Video className="w-7 h-7 mb-3 text-indigo-300" />
-          <h4 className="font-black mb-1 text-base">Instant Meetings</h4>
-          <p className="text-indigo-200 text-xs leading-relaxed">HD video calls with screen sharing and encrypted audio.</p>
+        <div className="bg-white border border-gray-200 rounded-2xl p-5">
+          <div className="p-2 bg-indigo-50 rounded-xl w-fit mb-3">
+            <Video className="w-5 h-5 text-indigo-600" />
+          </div>
+          <h4 className="font-semibold mb-1 text-base text-gray-900">Instant Meetings</h4>
+          <p className="text-gray-500 text-xs leading-relaxed">HD video calls with screen sharing and encrypted audio.</p>
         </div>
 
-        <div className="relative overflow-hidden bg-gray-900 rounded-2xl p-5 text-white group cursor-pointer">
-          <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
-          <MessageSquare className="w-7 h-7 mb-3 text-indigo-400" />
-          <h4 className="font-black mb-1 text-base">Encrypted Chat</h4>
-          <p className="text-gray-400 text-xs leading-relaxed">Secure team messaging with persistent history and file sharing.</p>
+        <div className="bg-white border border-gray-200 rounded-2xl p-5">
+          <div className="p-2 bg-violet-50 rounded-xl w-fit mb-3">
+            <MessageSquare className="w-5 h-5 text-violet-600" />
+          </div>
+          <h4 className="font-semibold mb-1 text-base text-gray-900">Encrypted Chat</h4>
+          <p className="text-gray-500 text-xs leading-relaxed">Secure team messaging with persistent history and file sharing.</p>
         </div>
 
-        <div className="relative overflow-hidden bg-white border border-gray-100 rounded-2xl p-5 group cursor-pointer">
-          <div className="absolute -top-8 -right-8 w-24 h-24 bg-amber-50 rounded-full group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
-          <Lock className="w-7 h-7 mb-3 text-amber-500" />
-          <h4 className="font-black mb-1 text-base text-gray-900">Total Privacy</h4>
+        <div className="bg-white border border-gray-200 rounded-2xl p-5">
+          <div className="p-2 bg-amber-50 rounded-xl w-fit mb-3">
+            <Lock className="w-5 h-5 text-amber-600" />
+          </div>
+          <h4 className="font-semibold mb-1 text-base text-gray-900">Total Privacy</h4>
           <p className="text-gray-500 text-xs leading-relaxed">Locked to your organisation domain and never shared externally.</p>
         </div>
       </div>
@@ -380,7 +380,7 @@ function CollaborationHubInner() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white leading-tight">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">
                     {activeChatMember.firstName} {activeChatMember.lastName}
                   </h3>
                   <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wide">

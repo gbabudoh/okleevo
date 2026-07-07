@@ -421,7 +421,7 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
             A Fully Integrated Light-Mode Workspace
           </h2>
           <p className="text-base sm:text-xl text-gray-600 leading-relaxed">
-            Instantly preview how Okleevo unifies invoicing, CRM pipeline, mail servers, VAT tools, and artificial intelligence in one lightning-fast system. **Click any of the 20 modules in the sidebar to explore.**
+            Instantly preview how Okleevo unifies invoicing, CRM pipeline, mail servers, VAT tools, and artificial intelligence in one lightning-fast system. **Click any of the 23 modules in the sidebar to explore.**
           </p>
         </div>
 

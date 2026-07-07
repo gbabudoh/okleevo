@@ -26,6 +26,12 @@ interface Task {
   tags?: string[];
   subtasks: SubTask[];
   createdAt: string;
+  projectId?: string | null;
+}
+
+interface ProjectOption {
+  id: string;
+  name: string;
 }
 
 const STATUS_COLS = [
@@ -62,6 +68,8 @@ const initials = (name?: string) =>
   name ? name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?';
 
 const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
+const labelCls = 'block text-xs font-semibold text-gray-600 mb-0.5 sm:mb-1';
+const modalHeaderCls = 'px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100';
 
 const ModalHandle = () => (
   <div className="flex justify-center pt-2 pb-0 sm:hidden shrink-0">
@@ -103,8 +111,9 @@ export default function TasksPage() {
 
   const [newTask, setNewTask] = useState({
     title: '', description: '', priority: 'medium' as Task['priority'],
-    dueDate: '', assignedTo: '', tags: '',
+    dueDate: '', assignedTo: '', tags: '', projectId: '',
   });
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -114,6 +123,13 @@ export default function TasksPage() {
   }, []);
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(res => res.json())
+      .then(data => setProjects(Array.isArray(data) ? data : []))
+      .catch(() => setProjects([]));
+  }, []);
 
   const handleCreateTask = async () => {
     if (!newTask.title.trim()) return;
@@ -127,7 +143,7 @@ export default function TasksPage() {
         const created = await res.json();
         setTasks(prev => [created, ...prev]);
         setShowAddModal(false);
-        setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', assignedTo: '', tags: '' });
+        setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', assignedTo: '', tags: '', projectId: '' });
       }
     } catch { /* silent */ }
   };
@@ -575,31 +591,32 @@ export default function TasksPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] -translate-y-6 sm:translate-y-0 rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-                <Plus className="w-4 h-4" /> New Task
-              </h2>
-              <button type="button" onClick={() => setShowAddModal(false)} className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">New task</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Fill in the task details</p>
+              </div>
+              <button type="button" onClick={() => setShowAddModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1 sm:py-5 space-y-1 sm:space-y-4">
               <div>
-                <label className="block text-[9px] sm:text-xs font-bold text-gray-500 uppercase mb-0.5 sm:mb-1">Title *</label>
+                <label className={labelCls}>Title *</label>
                 <input type="text" value={newTask.title}
                   onChange={e => setNewTask({ ...newTask, title: e.target.value })}
                   className={inputCls} placeholder="e.g. Design new landing page" />
               </div>
               <div>
-                <label className="block text-[9px] sm:text-xs font-bold text-gray-500 uppercase mb-0.5 sm:mb-1">Description</label>
+                <label className={labelCls}>Description</label>
                 <textarea value={newTask.description}
                   onChange={e => setNewTask({ ...newTask, description: e.target.value })}
                   className={`${inputCls} h-12 sm:h-20 resize-none`} placeholder="What needs to be done?" />
               </div>
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div>
-                  <label className="block text-[9px] sm:text-xs font-bold text-gray-500 uppercase mb-0.5 sm:mb-1">Priority</label>
+                  <label className={labelCls}>Priority</label>
                   <select value={newTask.priority}
                     onChange={e => setNewTask({ ...newTask, priority: e.target.value as Task['priority'] })}
                     className={`${inputCls} appearance-none cursor-pointer py-2 text-xs`}>
@@ -610,20 +627,29 @@ export default function TasksPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[9px] sm:text-xs font-bold text-gray-500 uppercase mb-0.5 sm:mb-1">Due Date</label>
+                  <label className={labelCls}>Due date</label>
                   <input type="date" value={newTask.dueDate}
                     onChange={e => setNewTask({ ...newTask, dueDate: e.target.value })}
                     className={`${inputCls} py-2 text-xs`} />
                 </div>
               </div>
               <div>
-                <label className="block text-[9px] sm:text-xs font-bold text-gray-500 uppercase mb-0.5 sm:mb-1">Assigned To</label>
+                <label className={labelCls}>Assigned to</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
                   <input type="text" value={newTask.assignedTo}
                     onChange={e => setNewTask({ ...newTask, assignedTo: e.target.value })}
                     className={`${inputCls} pl-9 py-2 text-xs`} placeholder="Assign to someone..." />
                 </div>
+              </div>
+              <div>
+                <label className={labelCls}>Project</label>
+                <select value={newTask.projectId}
+                  onChange={e => setNewTask({ ...newTask, projectId: e.target.value })}
+                  className={`${inputCls} appearance-none cursor-pointer py-2 text-xs`}>
+                  <option value="">No project</option>
+                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
               </div>
             </div>
 
@@ -646,26 +672,26 @@ export default function TasksPage() {
             <ModalHandle />
 
             {/* Detail header */}
-            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-2 sm:py-5 flex items-start justify-between gap-3 shrink-0 shadow-lg">
+            <div className={`${modalHeaderCls} items-start`}>
               <div className="flex-1 min-w-0">
                 {isEditing ? (
                   <input type="text" value={editData.title}
                     onChange={e => setEditData({ ...editData, title: e.target.value })}
-                    className="text-sm sm:text-base font-bold text-white w-full border-b border-white/30 outline-none pb-1 bg-transparent" />
+                    className="text-sm sm:text-base font-bold text-gray-900 w-full border-b border-gray-200 outline-none pb-1 bg-transparent" />
                 ) : (
-                  <h2 className="text-sm sm:text-base font-bold text-white leading-snug tracking-tight">{selectedTask.title}</h2>
+                  <h2 className="text-sm sm:text-base font-bold text-gray-900 leading-snug tracking-tight">{selectedTask.title}</h2>
                 )}
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border border-white/20 bg-white/10 text-white`}>
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${priorityBadge(selectedTask.priority)}`}>
                     {selectedTask.priority}
                   </span>
                   {selectedTask.assignedTo && (
-                    <span className="text-[10px] sm:text-xs text-blue-50 flex items-center gap-1">
+                    <span className="text-[10px] sm:text-xs text-gray-500 flex items-center gap-1">
                       <User className="w-3 h-3" /> {selectedTask.assignedTo}
                     </span>
                   )}
                   {selectedTask.dueDate && (
-                    <span className="text-[10px] sm:text-xs text-blue-50 flex items-center gap-1">
+                    <span className="text-[10px] sm:text-xs text-gray-500 flex items-center gap-1">
                       <Calendar className="w-3 h-3" /> {selectedTask.dueDate}
                     </span>
                   )}
@@ -674,18 +700,18 @@ export default function TasksPage() {
               <div className="flex items-center gap-2 shrink-0">
                 {isEditing ? (
                   <button type="button" onClick={saveEdit}
-                    className="px-3 py-1.5 bg-white text-blue-600 text-[10px] sm:text-xs font-bold rounded-lg hover:bg-gray-50 transition-colors cursor-pointer shadow-sm">
+                    className="px-3 py-1.5 bg-blue-600 text-white text-[10px] sm:text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer shadow-sm">
                     Save
                   </button>
                 ) : (
                   <button type="button" onClick={() => startEditing(selectedTask)}
-                    className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
+                    className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
                     <Pencil className="w-4 h-4" />
                   </button>
                 )}
                 <button type="button" onClick={() => { setShowDetailModal(false); setIsEditing(false); }}
-                  className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                  <X className="w-5 h-5 text-white" />
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>

@@ -23,7 +23,7 @@ export const GET = withMultiTenancy(async (req, { dataFilter }) => {
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body = await req.json();
-    const { title, amount, category, date } = body;
+    const { title, amount, category, date, projectId, receipt } = body;
 
     const expense = await prisma.expense.create({
       data: {
@@ -31,6 +31,8 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         amount: parseFloat(amount),
         category,
         date: new Date(date),
+        projectId: projectId || null,
+        receipt: receipt || null,
         businessId: user.businessId,
         userId: user.id,
       },

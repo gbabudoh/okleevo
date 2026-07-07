@@ -2,14 +2,22 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize';
+import Link from 'next/link';
 import {
   Mail, Trash2, Search, RefreshCw, Star,
   MoreVertical, Reply, Forward, Paperclip, FileText, Image as ImageIcon,
   ChevronLeft, Loader2,
   Inbox as InboxIcon, Send as SendIcon,
   Trash as TrashIcon, AlertTriangle as SpamIcon,
-  X, Send as SendActionIcon, PenSquare, Upload
+  X, Send as SendActionIcon, PenSquare, Upload,
+  UserPlus, Receipt, LifeBuoy, Tag, Check
 } from 'lucide-react';
+
+const MAIL_LABELS = [
+  { color: 'bg-pink-500', bgSoft: 'bg-pink-50', text: 'text-pink-600', label: 'Marketing' },
+  { color: 'bg-blue-500', bgSoft: 'bg-blue-50', text: 'text-blue-600', label: 'Clients' },
+  { color: 'bg-amber-500', bgSoft: 'bg-amber-50', text: 'text-amber-600', label: 'Priority' },
+] as const;
 
 interface ComposeAttachment {
   objectKey: string;
@@ -34,8 +42,35 @@ interface EmailMessage {
   date: string;
   status: 'READ' | 'UNREAD' | 'FLAGGED';
   folder: 'INBOX' | 'SENT' | 'DRAFTS' | 'TRASH' | 'SPAM';
+  label?: string | null;
   hasAttachments: boolean;
   attachments?: Attachment[];
+}
+
+interface ContextContact {
+  id: string;
+  name: string;
+  company?: string | null;
+  pipelineStage: string;
+}
+
+interface ContextInvoice {
+  id: string;
+  number: string;
+  amount: number;
+  status: string;
+}
+
+interface ContextTicket {
+  id: string;
+  subject: string;
+  status: string;
+}
+
+interface ClientContext {
+  contact: ContextContact | null;
+  invoices: ContextInvoice[];
+  tickets: ContextTicket[];
 }
 
 export default function MailboxPage() {
@@ -43,7 +78,9 @@ export default function MailboxPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState<'INBOX' | 'SENT' | 'TRASH' | 'SPAM'>('INBOX');
+  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<EmailMessage | null>(null);
+  const [showLabelMenu, setShowLabelMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [showCompose, setShowCompose] = useState(false);
@@ -55,6 +92,29 @@ export default function MailboxPage() {
   const [sendError, setSendError] = useState<string | null>(null);
   const [sendToast, setSendToast] = useState(false);
   const [showMessageMenu, setShowMessageMenu] = useState(false);
+  const [clientContext, setClientContext] = useState<ClientContext | null>(null);
+  const [contextLoading, setContextLoading] = useState(false);
+  const contextCacheRef = useRef<Record<string, ClientContext>>({});
+
+  useEffect(() => {
+    if (!selectedMessage) { setClientContext(null); return; }
+
+    const senderEmail = selectedMessage.from.match(/<([^>]+)>/)?.[1] || selectedMessage.from;
+    if (!senderEmail) { setClientContext(null); return; }
+
+    const cached = contextCacheRef.current[senderEmail];
+    if (cached) { setClientContext(cached); return; }
+
+    setContextLoading(true);
+    fetch(`/api/crm/context?email=${encodeURIComponent(senderEmail)}`)
+      .then(res => res.json())
+      .then((data: ClientContext) => {
+        contextCacheRef.current[senderEmail] = data;
+        setClientContext(data);
+      })
+      .catch(() => setClientContext(null))
+      .finally(() => setContextLoading(false));
+  }, [selectedMessage]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -193,6 +253,7 @@ export default function MailboxPage() {
 
   const filteredMessages = messages
     .filter(m => m.folder === selectedFolder)
+    .filter(m => !selectedLabel || m.label === selectedLabel)
     .filter(m =>
       m.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
       m.from.toLowerCase().includes(searchTerm.toLowerCase())
@@ -297,7 +358,7 @@ export default function MailboxPage() {
               return (
                 <button
                   key={folder.id}
-                  onClick={() => { setSelectedFolder(folder.id); setSelectedMessage(null); }}
+                  onClick={() => { setSelectedFolder(folder.id); setSelectedMessage(null); setSelectedLabel(null); }}
                   className={`flex items-center gap-2 px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-colors cursor-pointer shrink-0 ${
                     isActive ? `border-indigo-600 text-indigo-600` : 'border-transparent text-gray-400 hover:text-gray-700'
                   }`}
@@ -327,7 +388,7 @@ export default function MailboxPage() {
             return (
               <button
                 key={folder.id}
-                onClick={() => { setSelectedFolder(folder.id); setSelectedMessage(null); }}
+                onClick={() => { setSelectedFolder(folder.id); setSelectedMessage(null); setSelectedLabel(null); }}
                 className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
                   isActive ? 'bg-white text-indigo-600 shadow-sm border border-gray-100' : 'text-gray-500 hover:bg-white/70 hover:text-gray-900'
                 }`}
@@ -345,19 +406,43 @@ export default function MailboxPage() {
 
           <div className="mt-5 px-3">
             <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-2.5">Labels</p>
-            <div className="space-y-2">
-              {[{ color: 'bg-pink-500', label: 'Marketing' }, { color: 'bg-blue-500', label: 'Clients' }, { color: 'bg-amber-500', label: 'Priority' }].map(l => (
-                <div key={l.label} className="flex items-center gap-2 text-xs font-semibold text-gray-400 hover:text-gray-700 cursor-pointer transition-colors">
-                  <div className={`w-2 h-2 rounded-full ${l.color} shrink-0`} />
-                  {l.label}
-                </div>
-              ))}
+            <div className="space-y-1">
+              {MAIL_LABELS.map(l => {
+                const isActive = selectedLabel === l.label;
+                return (
+                  <button
+                    key={l.label}
+                    onClick={() => { setSelectedLabel(isActive ? null : l.label); setSelectedMessage(null); }}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                      isActive ? `${l.bgSoft} ${l.text}` : 'text-gray-400 hover:text-gray-700 hover:bg-white/70'
+                    }`}
+                  >
+                    <div className={`w-2 h-2 rounded-full ${l.color} shrink-0`} />
+                    {l.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
         {/* Message List */}
         <div className={`flex-1 flex flex-col min-w-0 border-r border-gray-100 bg-white ${selectedMessage ? 'hidden lg:flex' : 'flex'}`}>
+          {selectedLabel && (
+            <div className="shrink-0 flex items-center gap-2 px-4 py-2 border-b border-gray-100 bg-gray-50/60">
+              <span className="text-xs text-gray-500">Filtered by label:</span>
+              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${MAIL_LABELS.find(l => l.label === selectedLabel)?.bgSoft} ${MAIL_LABELS.find(l => l.label === selectedLabel)?.text}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${MAIL_LABELS.find(l => l.label === selectedLabel)?.color}`} />
+                {selectedLabel}
+              </span>
+              <button
+                onClick={() => setSelectedLabel(null)}
+                className="ml-auto p-1 hover:bg-gray-200 rounded-lg text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex flex-col items-center justify-center h-full gap-4">
@@ -369,7 +454,9 @@ export default function MailboxPage() {
                 <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center">
                   <InboxIcon className="w-7 h-7 text-gray-300" />
                 </div>
-                <p className="text-sm font-semibold text-gray-400">No messages in {selectedFolder.toLowerCase()}</p>
+                <p className="text-sm font-semibold text-gray-400">
+                  No messages in {selectedFolder.toLowerCase()}{selectedLabel ? ` labeled "${selectedLabel}"` : ''}
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-gray-50">
@@ -409,6 +496,12 @@ export default function MailboxPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
+                      {msg.label && (
+                        <div
+                          className={`w-2 h-2 rounded-full shrink-0 ${MAIL_LABELS.find(l => l.label === msg.label)?.color || 'bg-gray-300'}`}
+                          title={msg.label}
+                        />
+                      )}
                       {msg.status === 'UNREAD' && (
                         <div className="w-2 h-2 bg-indigo-600 rounded-full" />
                       )}
@@ -441,6 +534,45 @@ export default function MailboxPage() {
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLabelMenu(v => !v)}
+                    className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                      selectedMessage.label
+                        ? `${MAIL_LABELS.find(l => l.label === selectedMessage.label)?.bgSoft} ${MAIL_LABELS.find(l => l.label === selectedMessage.label)?.text}`
+                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Tag className="w-4 h-4" />
+                  </button>
+                  {showLabelMenu && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setShowLabelMenu(false)} />
+                      <div className="absolute left-0 top-10 z-20 w-40 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden">
+                        <button
+                          onClick={() => { updateMessage(selectedMessage.id, { label: null }); setShowLabelMenu(false); }}
+                          className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer"
+                        >
+                          No label
+                          {!selectedMessage.label && <Check className="w-3.5 h-3.5" />}
+                        </button>
+                        {MAIL_LABELS.map(l => (
+                          <button
+                            key={l.label}
+                            onClick={() => { updateMessage(selectedMessage.id, { label: l.label }); setShowLabelMenu(false); }}
+                            className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                          >
+                            <span className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${l.color} shrink-0`} />
+                              {l.label}
+                            </span>
+                            {selectedMessage.label === l.label && <Check className="w-3.5 h-3.5" />}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2 relative">
                 {selectedFolder !== 'SENT' && (
@@ -511,6 +643,84 @@ export default function MailboxPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Unified Context: 360° client snapshot, no tab-switching required */}
+              {contextLoading ? (
+                <div className="flex items-center gap-2 text-gray-400 text-xs py-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading client context…
+                </div>
+              ) : clientContext?.contact ? (
+                <div className="p-4 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{clientContext.contact.name}</p>
+                      {clientContext.contact.company && (
+                        <p className="text-xs text-gray-500">{clientContext.contact.company}</p>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 bg-white rounded-full border border-indigo-200 text-indigo-600">
+                      {clientContext.contact.pipelineStage.replace('_', ' ')}
+                    </span>
+                  </div>
+
+                  {clientContext.invoices.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+                        <Receipt className="w-3 h-3" /> Recent Invoices
+                      </p>
+                      <div className="space-y-1">
+                        {clientContext.invoices.map(inv => (
+                          <div key={inv.id} className="flex items-center justify-between text-xs bg-white rounded-lg px-2.5 py-1.5 border border-gray-100">
+                            <span className="font-medium text-gray-700">{inv.number}</span>
+                            <span className="flex items-center gap-2">
+                              <span className="text-gray-500">£{inv.amount.toFixed(2)}</span>
+                              <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                                inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' :
+                                inv.status === 'OVERDUE' ? 'bg-red-100 text-red-700' :
+                                'bg-amber-100 text-amber-700'
+                              }`}>
+                                {inv.status}
+                              </span>
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {clientContext.tickets.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+                        <LifeBuoy className="w-3 h-3" /> Recent Tickets
+                      </p>
+                      <div className="space-y-1">
+                        {clientContext.tickets.map(t => (
+                          <div key={t.id} className="flex items-center justify-between text-xs bg-white rounded-lg px-2.5 py-1.5 border border-gray-100">
+                            <span className="font-medium text-gray-700 truncate">{t.subject}</span>
+                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-700 shrink-0">
+                              {t.status}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <Link href="/dashboard/crm" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 inline-block">
+                    View in CRM →
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                  <p className="text-xs text-gray-400">No CRM record for this sender</p>
+                  <Link
+                    href="/dashboard/crm"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" /> Create Contact
+                  </Link>
+                </div>
+              )}
 
               <div className="text-sm text-gray-700 leading-relaxed">
                 {selectedMessage.html ? (

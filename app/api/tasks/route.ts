@@ -35,12 +35,13 @@ interface TaskBody {
   assignedTo?: string;
   tags?: string | string[];
   subtasks?: { title: string; completed?: boolean }[];
+  projectId?: string;
 }
 
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body: TaskBody = await req.json();
-    const { title, description, priority, dueDate, assignedTo, tags, subtasks } = body;
+    const { title, description, priority, dueDate, assignedTo, tags, subtasks, projectId } = body;
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Task title is required' }, { status: 400 });
@@ -54,6 +55,7 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         dueDate: dueDate ? new Date(dueDate) : null,
         assignedTo: assignedTo || null,
         tags: Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',').map((s: string) => s.trim()) : []),
+        projectId: projectId || null,
         businessId: user.businessId,
         userId: user.id,
         subtasks: {

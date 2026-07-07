@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Users, Plus, Search, Filter, Download, Upload,
-  DollarSign, Award, TrendingUp, Zap, Building2,
-  Grid, List, CheckCircle, XCircle, AlertCircle, Clock,
+  Users, Plus, Search, Filter, Download,
+  DollarSign, Award, TrendingUp, Building2,
+  Grid, List, CheckCircle, XCircle, AlertCircle,
   MessageSquare, Trash2, X,
   Laptop, Target, Shield, Activity, FileText,
-  Database, RefreshCw, User, Briefcase,
+  Database, RefreshCw, Briefcase,
   MoreVertical
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
@@ -55,6 +55,16 @@ const departmentConfigs = [
   { id: 'data',               name: 'Data & Analytics',                 icon: Activity },
 ];
 
+const EMPLOYMENT_TYPE_TO_API: Record<string, string> = {
+  'full-time': 'FULL_TIME', 'part-time': 'PART_TIME', 'contract': 'CONTRACT', 'intern': 'INTERN',
+};
+const EMPLOYMENT_TYPE_FROM_API: Record<string, 'full-time' | 'part-time' | 'contract' | 'intern'> = {
+  FULL_TIME: 'full-time', PART_TIME: 'part-time', CONTRACT: 'contract', INTERN: 'intern',
+};
+const STATUS_FROM_API: Record<string, Employee['status']> = {
+  ACTIVE: 'active', ON_LEAVE: 'on-leave', TERMINATED: 'inactive',
+};
+
 const AVATAR_GRADIENTS = [
   'from-purple-500 to-pink-600',
   'from-indigo-500 to-violet-600',
@@ -79,42 +89,45 @@ export default function HRRecordsPage() {
   const [messageBody, setMessageBody] = useState('');
   const [messagePriority, setMessagePriority] = useState('normal');
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
-  const [showSyncModal, setShowSyncModal] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncProgress, setSyncProgress] = useState({ payroll: 0, attendance: 0, benefits: 0, performance: 0 });
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [newEmpFirstName, setNewEmpFirstName] = useState('');
   const [newEmpLastName, setNewEmpLastName] = useState('');
   const [newEmpEmail, setNewEmpEmail] = useState('');
   const [newEmpPhone, setNewEmpPhone] = useState('');
   const [newEmpType, setNewEmpType] = useState<'full-time' | 'part-time' | 'contract' | 'intern'>('full-time');
+  const [newEmpDepartment, setNewEmpDepartment] = useState('engineering');
+  const [newEmpJobTitle, setNewEmpJobTitle] = useState('');
+  const [newEmpStartDate, setNewEmpStartDate] = useState('');
+  const [newEmpSalary, setNewEmpSalary] = useState('');
+  const [newEmpManager, setNewEmpManager] = useState('');
 
   const fetchEmployees = useCallback(async () => {
     try {
-      const res = await fetch('/api/employees');
+      const res = await fetch('/api/hr-employees');
       if (res.ok) {
         const data = await res.json();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped = (data.users || []).map((u: any): Employee => ({
-          id: u.id,
-          firstName: u.firstName || '',
-          lastName: u.lastName || '',
-          email: u.email,
-          phone: u.phone || '',
-          position: u.role || 'Member',
-          department: 'engineering',
-          employeeId: u.id.slice(0, 8).toUpperCase(),
+        const mapped = (data || []).map((e: any): Employee => ({
+          id: e.id,
+          firstName: e.firstName || '',
+          lastName: e.lastName || '',
+          email: e.email,
+          phone: e.phone || '',
+          position: e.position,
+          department: e.department,
+          employeeId: e.id.slice(0, 8).toUpperCase(),
           dateOfBirth: new Date(),
-          hireDate: new Date(u.createdAt),
-          status: u.status === 'ACTIVE' ? 'active' : 'inactive',
-          employmentType: 'full-time',
-          salary: 0,
-          address: '',
+          hireDate: new Date(e.startDate),
+          status: STATUS_FROM_API[e.status] || 'active',
+          employmentType: EMPLOYMENT_TYPE_FROM_API[e.employmentType] || 'full-time',
+          salary: e.salary || 0,
+          address: e.address || '',
           city: '',
           country: 'UK',
           emergencyContact: { name: '', relationship: '', phone: '' },
           skills: [],
           education: '',
+          manager: e.reportingManager || undefined,
           performance: { rating: 0, lastReview: new Date(), goals: 0 },
           benefits: [],
           documents: [],
@@ -129,9 +142,9 @@ export default function HRRecordsPage() {
   useEffect(() => { fetchEmployees(); }, [fetchEmployees]);
 
   const handleAddEmployee = async () => {
-    if (!newEmpFirstName || !newEmpLastName || !newEmpEmail) return;
+    if (!newEmpFirstName || !newEmpLastName || !newEmpEmail || !newEmpDepartment || !newEmpJobTitle || !newEmpStartDate) return;
     try {
-      const res = await fetch('/api/employees', {
+      const res = await fetch('/api/hr-employees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -139,7 +152,12 @@ export default function HRRecordsPage() {
           lastName: newEmpLastName,
           email: newEmpEmail,
           phone: newEmpPhone,
-          role: 'MEMBER',
+          department: newEmpDepartment,
+          position: newEmpJobTitle,
+          startDate: newEmpStartDate,
+          salary: newEmpSalary,
+          employmentType: EMPLOYMENT_TYPE_TO_API[newEmpType],
+          reportingManager: newEmpManager,
         }),
       });
       if (res.ok) {
@@ -159,7 +177,7 @@ export default function HRRecordsPage() {
   const handleDeleteEmployee = async () => {
     if (!deletingEmployee) return;
     try {
-      const res = await fetch(`/api/employees/${deletingEmployee.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/hr-employees/${deletingEmployee.id}`, { method: 'DELETE' });
       if (res.ok) {
         await fetchEmployees();
         setSelectedEmployee(null);
@@ -233,42 +251,40 @@ export default function HRRecordsPage() {
     return `${years} yr${years > 1 ? 's' : ''}`;
   };
 
-  const resetAddForm = () => { setNewEmpFirstName(''); setNewEmpLastName(''); setNewEmpEmail(''); setNewEmpPhone(''); setNewEmpType('full-time'); };
+  const resetAddForm = () => {
+    setNewEmpFirstName(''); setNewEmpLastName(''); setNewEmpEmail(''); setNewEmpPhone(''); setNewEmpType('full-time');
+    setNewEmpDepartment('engineering'); setNewEmpJobTitle(''); setNewEmpStartDate(''); setNewEmpSalary(''); setNewEmpManager('');
+  };
 
   const avatarGradient = (emp: Employee) =>
     AVATAR_GRADIENTS[(emp.firstName.charCodeAt(0) + emp.lastName.charCodeAt(0)) % AVATAR_GRADIENTS.length];
 
-  const inputCls = "w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all";
+  const inputCls = "w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all";
+  const labelCls = "block text-xs font-semibold text-gray-600 mb-1.5";
+  const modalHeaderCls = "px-5 sm:px-6 py-4 flex items-center justify-between shrink-0 border-b border-gray-100";
 
   return (
     <div className="max-w-5xl mx-auto space-y-5 pb-24 md:pb-10">
 
       {/* ── Hero ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-purple-600 via-purple-700 to-pink-700 p-6 sm:p-8 text-white shadow-xl shadow-purple-200/40">
-        <div className="absolute -top-16 -right-16 w-56 h-56 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 left-12 w-40 h-40 bg-pink-400/20 rounded-full blur-xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 bg-white/15 rounded-lg"><Users className="w-4 h-4 text-white" /></div>
-              <span className="text-purple-200 text-[10px] font-black uppercase tracking-widest">People & Culture</span>
+      <div className="bg-white border border-gray-100 rounded-2xl p-5 sm:p-7 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-purple-600 flex items-center justify-center">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-1">HR Records</h1>
-            <p className="text-purple-300 text-sm font-medium">Employee management & records</p>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none">HR Records</h1>
+              <p className="text-gray-500 text-xs sm:text-sm font-medium mt-1.5">Employee management & records</p>
+            </div>
           </div>
           <div className="flex flex-col gap-2.5 sm:items-end">
             <div className="flex items-center gap-1.5 self-start sm:self-auto">
-              <button onClick={() => setShowSyncModal(true)} className="p-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all cursor-pointer" title="Sync">
-                <RefreshCw className={`w-4 h-4 text-white ${isSyncing ? 'animate-spin' : ''}`} />
-              </button>
-              <button onClick={() => showNotify('Opening import…')} className="p-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all cursor-pointer" title="Import">
-                <Upload className="w-4 h-4 text-white" />
-              </button>
-              <button onClick={handleExport} className="p-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all cursor-pointer" title="Export">
-                <Download className="w-4 h-4 text-white" />
+              <button onClick={handleExport} className="p-2.5 bg-white hover:bg-gray-50 rounded-xl transition-all border border-gray-200 cursor-pointer" title="Export">
+                <Download className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-            <button onClick={() => setShowAddEmployee(true)} className="flex items-center justify-center gap-2 bg-white text-purple-700 font-black text-sm rounded-xl px-5 py-2.5 shadow-lg hover:bg-purple-50 active:scale-95 transition-all w-full sm:w-auto cursor-pointer">
+            <button onClick={() => setShowAddEmployee(true)} className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm rounded-xl px-5 py-2.5 active:scale-95 transition-all w-full sm:w-auto cursor-pointer">
               <Plus className="w-4 h-4" />Add Employee
             </button>
           </div>
@@ -288,9 +304,9 @@ export default function HRRecordsPage() {
               <s.icon className={`w-4 h-4 ${s.color}`} />
             </div>
             <div className="min-w-0">
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider truncate">{s.label}</p>
-              <p className="text-lg font-black text-gray-900 leading-tight">{s.value}</p>
-              <p className="text-[9px] font-bold text-gray-400 truncate">{s.sub}</p>
+              <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider truncate">{s.label}</p>
+              <p className="text-lg font-bold text-gray-900 leading-tight">{s.value}</p>
+              <p className="text-[9px] font-semibold text-gray-400 truncate">{s.sub}</p>
             </div>
           </div>
         ))}
@@ -619,140 +635,49 @@ export default function HRRecordsPage() {
       {showAddEmployee && (
         <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => { setShowAddEmployee(false); resetAddForm(); }} />
-          <div className="relative w-full sm:max-w-2xl bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
-            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 bg-gray-200 rounded-full" /></div>
-
-            {/* Mobile header */}
-            <div className="flex sm:hidden items-center justify-between px-5 py-3 border-b border-gray-100 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-black text-sm shadow-md">
-                  {newEmpFirstName || newEmpLastName ? `${newEmpFirstName.charAt(0)}${newEmpLastName.charAt(0)}`.toUpperCase() : <User className="w-4 h-4" />}
-                </div>
-                <p className="text-sm font-black text-gray-900">
-                  {newEmpFirstName || newEmpLastName ? `${newEmpFirstName} ${newEmpLastName}`.trim() : 'New Employee'}
-                </p>
+          <div className="relative w-full sm:max-w-lg bg-white sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Add employee</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Add a new team member</p>
               </div>
-              <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer">
-                <X className="w-4 h-4 text-gray-400" />
+              <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Desktop: sidebar + form */}
-            <div className="hidden sm:flex flex-1 overflow-hidden">
-              <div className="w-64 bg-gray-950 p-6 flex flex-col gap-4 shrink-0">
-                <div>
-                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4">New Employee</p>
-                  <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-black mb-3 shadow-lg">
-                    {newEmpFirstName || newEmpLastName ? `${newEmpFirstName.charAt(0)}${newEmpLastName.charAt(0)}`.toUpperCase() : <User className="w-6 h-6" />}
-                  </div>
-                  <p className="text-white font-black text-base leading-tight">
-                    {newEmpFirstName || newEmpLastName ? `${newEmpFirstName} ${newEmpLastName}`.trim() : 'Preview'}
-                  </p>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-1 capitalize">{newEmpType.replace('-', ' ')}</p>
-                </div>
-                <div className="mt-auto space-y-2">
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600"><Shield className="w-3.5 h-3.5 text-emerald-500" />Secure & Encrypted</div>
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600"><Users className="w-3.5 h-3.5 text-purple-400" />Added to your team</div>
-                </div>
-              </div>
-
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-                  <h2 className="text-base font-black text-gray-900">Add Employee</h2>
-                  <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer"><X className="w-4 h-4 text-gray-400" /></button>
-                </div>
-                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
-                  {/* Personal */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-lg bg-purple-50 flex items-center justify-center"><User className="w-3.5 h-3.5 text-purple-600" /></div>
-                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Personal Info</h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">First Name *</label><input type="text" value={newEmpFirstName} onChange={e => setNewEmpFirstName(e.target.value)} placeholder="Sarah" className={inputCls} /></div>
-                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Last Name *</label><input type="text" value={newEmpLastName} onChange={e => setNewEmpLastName(e.target.value)} placeholder="Johnson" className={inputCls} /></div>
-                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Email *</label><input type="email" value={newEmpEmail} onChange={e => setNewEmpEmail(e.target.value)} placeholder="sarah@company.com" className={inputCls} /></div>
-                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Phone</label><input type="tel" value={newEmpPhone} onChange={e => setNewEmpPhone(e.target.value)} placeholder="+44 7911 123456" className={inputCls} /></div>
-                    </div>
-                  </div>
-                  {/* Role */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center"><Briefcase className="w-3.5 h-3.5 text-blue-600" /></div>
-                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Role & Department</h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 mb-3">
-                      <div>
-                        <label className="block text-xs font-black text-gray-700 mb-1.5">Department *</label>
-                        <select className={inputCls}>{departmentConfigs.filter(d => d.id !== 'all').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select>
-                      </div>
-                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Job Title *</label><input type="text" placeholder="Senior Developer" className={inputCls} /></div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-black text-gray-700 mb-1.5">Employment Type</label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {(['full-time', 'part-time', 'contract', 'intern'] as const).map(t => (
-                          <button key={t} type="button" onClick={() => setNewEmpType(t)}
-                            className={`py-2 rounded-xl text-[9px] font-black uppercase tracking-wide transition-all cursor-pointer border ${newEmpType === t ? 'bg-purple-500 border-purple-500 text-white' : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-purple-300'}`}>
-                            {t.replace('-', ' ')}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  {/* Admin */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center"><Shield className="w-3.5 h-3.5 text-emerald-600" /></div>
-                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Administrative</h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Start Date *</label><input type="date" className={inputCls} /></div>
-                      <div><label className="block text-xs font-black text-gray-700 mb-1.5">Base Salary (£)</label><input type="number" placeholder="35000" className={inputCls} /></div>
-                      <div className="col-span-2"><label className="block text-xs font-black text-gray-700 mb-1.5">Reporting Manager</label><input type="text" placeholder="e.g. Jane Smith" className={inputCls} /></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
-                  <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="px-5 py-2.5 border border-gray-200 text-sm font-black text-gray-600 rounded-xl hover:bg-gray-50 transition-all cursor-pointer">Cancel</button>
-                  <button onClick={handleAddEmployee}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white text-sm font-black rounded-xl hover:bg-purple-700 transition-all cursor-pointer shadow-lg shadow-purple-200">
-                    <CheckCircle className="w-4 h-4" />Add Employee
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile form */}
-            <div className="flex-1 overflow-y-auto sm:hidden px-5 pt-8 pb-4 space-y-5">
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-5">
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-lg bg-purple-50 flex items-center justify-center"><User className="w-3.5 h-3.5 text-purple-600" /></div>
-                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Personal Info</h3>
-                </div>
+                <p className="text-xs font-semibold text-gray-600 mb-2.5">Personal info</p>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
-                    <div><label className="block text-xs font-black text-gray-700 mb-1.5">First Name *</label><input type="text" value={newEmpFirstName} onChange={e => setNewEmpFirstName(e.target.value)} placeholder="Sarah" className={inputCls} /></div>
-                    <div><label className="block text-xs font-black text-gray-700 mb-1.5">Last Name *</label><input type="text" value={newEmpLastName} onChange={e => setNewEmpLastName(e.target.value)} placeholder="Johnson" className={inputCls} /></div>
+                    <div><label className={labelCls}>First name *</label><input type="text" value={newEmpFirstName} onChange={e => setNewEmpFirstName(e.target.value)} placeholder="Sarah" className={inputCls} /></div>
+                    <div><label className={labelCls}>Last name *</label><input type="text" value={newEmpLastName} onChange={e => setNewEmpLastName(e.target.value)} placeholder="Johnson" className={inputCls} /></div>
                   </div>
-                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Email *</label><input type="email" value={newEmpEmail} onChange={e => setNewEmpEmail(e.target.value)} placeholder="sarah@company.com" className={inputCls} /></div>
-                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Phone</label><input type="tel" value={newEmpPhone} onChange={e => setNewEmpPhone(e.target.value)} placeholder="+44 7911 123456" className={inputCls} /></div>
+                  <div><label className={labelCls}>Email *</label><input type="email" value={newEmpEmail} onChange={e => setNewEmpEmail(e.target.value)} placeholder="sarah@company.com" className={inputCls} /></div>
+                  <div><label className={labelCls}>Phone</label><input type="tel" value={newEmpPhone} onChange={e => setNewEmpPhone(e.target.value)} placeholder="+44 7911 123456" className={inputCls} /></div>
                 </div>
               </div>
+
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center"><Briefcase className="w-3.5 h-3.5 text-blue-600" /></div>
-                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Role & Department</h3>
-                </div>
+                <p className="text-xs font-semibold text-gray-600 mb-2.5">Role & department</p>
                 <div className="space-y-3">
-                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Department *</label><select className={inputCls}>{departmentConfigs.filter(d => d.id !== 'all').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
-                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Job Title *</label><input type="text" placeholder="Senior Developer" className={inputCls} /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelCls}>Department *</label>
+                      <select value={newEmpDepartment} onChange={e => setNewEmpDepartment(e.target.value)} className={inputCls}>{departmentConfigs.filter(d => d.id !== 'all').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select>
+                    </div>
+                    <div><label className={labelCls}>Job title *</label><input type="text" value={newEmpJobTitle} onChange={e => setNewEmpJobTitle(e.target.value)} placeholder="Senior Developer" className={inputCls} /></div>
+                  </div>
                   <div>
-                    <label className="block text-xs font-black text-gray-700 mb-1.5">Employment Type</label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <label className={labelCls}>Employment type</label>
+                    <div className="grid grid-cols-4 gap-2">
                       {(['full-time', 'part-time', 'contract', 'intern'] as const).map(t => (
                         <button key={t} type="button" onClick={() => setNewEmpType(t)}
-                          className={`py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wide transition-all cursor-pointer border ${newEmpType === t ? 'bg-purple-500 border-purple-500 text-white' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                          className={`py-2 rounded-xl text-[10px] font-semibold capitalize transition-all cursor-pointer border ${newEmpType === t ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-300'}`}>
                           {t.replace('-', ' ')}
                         </button>
                       ))}
@@ -760,112 +685,28 @@ export default function HRRecordsPage() {
                   </div>
                 </div>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center"><Shield className="w-3.5 h-3.5 text-emerald-600" /></div>
-                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Administrative</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div><label className="block text-xs font-black text-gray-700 mb-1.5">Start Date *</label><input type="date" className={inputCls} /></div>
-                    <div><label className="block text-xs font-black text-gray-700 mb-1.5">Salary (£)</label><input type="number" placeholder="35000" className={inputCls} /></div>
-                  </div>
-                  <div><label className="block text-xs font-black text-gray-700 mb-1.5">Reporting Manager</label><input type="text" placeholder="e.g. Jane Smith" className={inputCls} /></div>
-                </div>
-              </div>
-              {/* Mobile buttons inside scroll — extended scroll space */}
-              <div className="flex items-center justify-end gap-3 pt-2 pb-32">
-                <button onClick={() => { setShowAddEmployee(false); resetAddForm(); }} className="px-5 py-2.5 border border-gray-200 text-sm font-black text-gray-600 rounded-xl hover:bg-gray-50 transition-all cursor-pointer">Cancel</button>
-                <button onClick={handleAddEmployee}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white text-sm font-black rounded-xl hover:bg-purple-700 transition-all cursor-pointer shadow-lg shadow-purple-200">
-                  <CheckCircle className="w-4 h-4" />Add Employee
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* ── Sync Modal ── */}
-      {showSyncModal && (
-        <div className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => !isSyncing && setShowSyncModal(false)} />
-          <div className="relative w-full sm:max-w-md bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
-            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 bg-gray-200 rounded-full" /></div>
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
               <div>
-                <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
-                  <RefreshCw className={`w-5 h-5 text-purple-500 ${isSyncing ? 'animate-spin' : ''}`} />Sync HR Data
-                </h2>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">HRIS reconciliation</p>
-              </div>
-              {!isSyncing && (
-                <button onClick={() => setShowSyncModal(false)} className="p-2 hover:bg-gray-100 rounded-xl cursor-pointer">
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
-              )}
-            </div>
-            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
-              <div className="flex flex-col items-center py-6 gap-3">
-                <div className={`w-20 h-20 rounded-full border-4 border-purple-100 flex items-center justify-center relative ${isSyncing ? 'animate-pulse' : ''}`}>
-                  <div className={`absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent ${isSyncing ? 'animate-spin' : 'opacity-20'}`} />
-                  <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
-                    <Database className="w-5 h-5 text-white" />
-                  </div>
+                <p className="text-xs font-semibold text-gray-600 mb-2.5">Administrative</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label className={labelCls}>Start date *</label><input type="date" value={newEmpStartDate} onChange={e => setNewEmpStartDate(e.target.value)} className={inputCls} /></div>
+                  <div><label className={labelCls}>Base salary (£)</label><input type="number" value={newEmpSalary} onChange={e => setNewEmpSalary(e.target.value)} placeholder="35000" className={inputCls} /></div>
+                  <div className="col-span-2"><label className={labelCls}>Reporting manager</label><input type="text" value={newEmpManager} onChange={e => setNewEmpManager(e.target.value)} placeholder="e.g. Jane Smith" className={inputCls} /></div>
                 </div>
-                <p className="text-[10px] font-black text-purple-500 uppercase tracking-widest">{isSyncing ? 'Syncing…' : 'Ready to sync'}</p>
               </div>
-              <div className="space-y-3">
-                {([
-                  { id: 'payroll', label: 'Payroll', icon: DollarSign, progress: syncProgress.payroll },
-                  { id: 'attendance', label: 'Attendance', icon: Clock, progress: syncProgress.attendance },
-                  { id: 'benefits', label: 'Benefits', icon: Zap, progress: syncProgress.benefits },
-                  { id: 'performance', label: 'Performance', icon: Activity, progress: syncProgress.performance },
-                ] as const).map(m => (
-                  <div key={m.id}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-wider">
-                        <m.icon className="w-3 h-3" />{m.label}
-                      </div>
-                      <span className="text-[10px] font-black text-purple-600">{m.progress}%</span>
-                    </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-linear-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300" style={{ width: `${m.progress}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
+
+              <p className="text-[11px] text-gray-400">Fields marked * are required.</p>
             </div>
-            <div className="px-5 sm:px-6 py-4 border-t border-gray-100 shrink-0">
-              {!isSyncing ? (
-                <button
-                  onClick={() => {
-                    setIsSyncing(true);
-                    const run = async () => {
-                      const modules = ['payroll', 'attendance', 'benefits', 'performance'];
-                      for (const m of modules) {
-                        for (let i = 0; i <= 100; i += Math.floor(Math.random() * 15) + 5) {
-                          setSyncProgress(prev => ({ ...prev, [m]: Math.min(i, 100) }));
-                          await new Promise(r => setTimeout(r, 150));
-                        }
-                        setSyncProgress(prev => ({ ...prev, [m]: 100 }));
-                      }
-                      setIsSyncing(false);
-                      showNotify('HR data synced successfully', 'success');
-                      setTimeout(() => { setShowSyncModal(false); setSyncProgress({ payroll: 0, attendance: 0, benefits: 0, performance: 0 }); }, 1500);
-                    };
-                    run();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-purple-700 transition-all cursor-pointer"
-                >
-                  <RefreshCw className="w-4 h-4" />Start Sync
-                </button>
-              ) : (
-                <div className="flex items-center justify-center gap-2 py-3 bg-purple-50 rounded-xl">
-                  <RefreshCw className="w-4 h-4 text-purple-600 animate-spin" />
-                  <span className="text-[10px] font-black text-purple-600 uppercase tracking-wider">Syncing…</span>
-                </div>
-              )}
+
+            <div className="shrink-0 bg-white border-t border-gray-100 px-5 sm:px-6 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+              <button type="button" onClick={() => { setShowAddEmployee(false); resetAddForm(); }}
+                className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
+                Cancel
+              </button>
+              <button type="button" onClick={handleAddEmployee}
+                className="flex-2 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-purple-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
+                <CheckCircle className="w-4 h-4" /> Add employee
+              </button>
             </div>
           </div>
         </div>

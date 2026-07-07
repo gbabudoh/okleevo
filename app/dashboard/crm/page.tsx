@@ -9,6 +9,8 @@ import {
   Clock, Send as SendIcon, Inbox as InboxIcon, ArrowLeft
 } from 'lucide-react';
 import StatusModal from '@/components/StatusModal';
+import TourProvider from '@/components/tours/TourProvider';
+import { crmTourSteps } from './tour-steps';
 
 interface Client {
   id: string;
@@ -70,6 +72,56 @@ interface ReceivedEmail {
   date: string;
   from: string;
   to: string;
+}
+
+const labelCls = "block text-xs font-semibold text-gray-600 mb-1 sm:mb-1.5";
+const inputCls = "w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm outline-none";
+const selectCls = "w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer text-sm outline-none";
+const modalHeaderCls = "px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100";
+
+function TagInput({ value, onChange, placeholder }: {
+  value: string[];
+  onChange: (tags: string[]) => void;
+  placeholder?: string;
+}) {
+  const [draft, setDraft] = useState('');
+
+  const commitDraft = () => {
+    const trimmed = draft.trim();
+    if (trimmed && !value.includes(trimmed)) onChange([...value, trimmed]);
+    setDraft('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      commitDraft();
+    } else if (e.key === 'Backspace' && !draft && value.length > 0) {
+      onChange(value.slice(0, -1));
+    }
+  };
+
+  return (
+    <div className="w-full min-h-[42px] px-2.5 py-1.5 border border-gray-200 rounded-xl bg-white flex flex-wrap items-center gap-1.5 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+      {value.map(tag => (
+        <span key={tag} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-semibold pl-2 pr-1 py-1 rounded-lg">
+          {tag}
+          <button type="button" onClick={() => onChange(value.filter(t => t !== tag))} className="hover:text-blue-900 cursor-pointer">
+            <X className="w-3 h-3" />
+          </button>
+        </span>
+      ))}
+      <input
+        type="text"
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={commitDraft}
+        placeholder={value.length === 0 ? placeholder : ''}
+        className="flex-1 min-w-[80px] outline-none text-sm bg-transparent border-none p-0.5"
+      />
+    </div>
+  );
 }
 
 export default function CRMPage() {
@@ -580,6 +632,7 @@ export default function CRMPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <TourProvider moduleId="crm" steps={crmTourSteps} />
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
@@ -606,6 +659,7 @@ export default function CRMPage() {
               <Mail className="w-4 h-4" /> Bulk Email
             </button>
             <button
+              id="tour-crm-add-button"
               type="button"
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
@@ -629,7 +683,7 @@ export default function CRMPage() {
       <div className="px-4 sm:px-6 space-y-4 pt-4">
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-crm-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'All Clients', value: clients.length, sub: 'Total database', icon: Users, bg: 'bg-blue-100', text: 'text-blue-600' },
             { label: 'Active', value: activeClients, sub: 'Currently engaged', icon: Star, bg: 'bg-emerald-100', text: 'text-emerald-600' },
@@ -650,7 +704,7 @@ export default function CRMPage() {
         </div>
 
         {/* Search & Filter */}
-        <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3">
+        <div id="tour-crm-search" className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -739,56 +793,53 @@ export default function CRMPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
           <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
-            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-1.5 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md border border-white/20"><Plus className="w-5 h-5 text-white" /></div>
-                <div>
-                  <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight">Add New Client</h2>
-                  <p className="text-[11px] text-blue-100 font-medium opacity-90">Fill in the client details</p>
-                </div>
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Add new client</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Fill in the client details</p>
               </div>
-              <button onClick={() => setShowAddModal(false)} className="p-2.5 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+              <button onClick={() => setShowAddModal(false)} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto px-5 py-1.5 sm:py-6 space-y-2 sm:space-y-5">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Full Name *</label>
+                  <label className={labelCls}>Full name *</label>
                   <input type="text" placeholder="John Smith" value={newClient.name} onChange={(e) => setNewClient({...newClient, name: e.target.value})}
-                    className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                    className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Email *</label>
+                  <label className={labelCls}>Email *</label>
                   <input type="email" placeholder="john@company.com" value={newClient.email} onChange={(e) => setNewClient({...newClient, email: e.target.value})}
-                    className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                    className={inputCls} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Phone</label>
+                  <label className={labelCls}>Phone</label>
                   <input type="tel" placeholder="+44 20 1234 5678" value={newClient.phone} onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
-                    className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                    className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Company *</label>
+                  <label className={labelCls}>Company{newClient.clientType === 'business' ? ' *' : ''}</label>
                   <input type="text" placeholder="Acme Corp" value={newClient.company} onChange={(e) => setNewClient({...newClient, company: e.target.value})}
-                    className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                    className={inputCls} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Client Type</label>
+                  <label className={labelCls}>Client type</label>
                   <select value={newClient.clientType} onChange={(e) => setNewClient({...newClient, clientType: e.target.value as 'business' | 'individual'})}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all cursor-pointer text-sm outline-none">
+                    className={selectCls}>
                     <option value="business">Business</option>
                     <option value="individual">Individual</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Status</label>
+                  <label className={labelCls}>Status</label>
                   <select value={newClient.status} onChange={(e) => setNewClient({...newClient, status: e.target.value as 'active' | 'lead' | 'inactive'})}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all cursor-pointer text-sm outline-none">
+                    className={selectCls}>
                     <option value="lead">Lead</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -796,14 +847,13 @@ export default function CRMPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Location</label>
+                <label className={labelCls}>Location</label>
                 <input type="text" placeholder="London, UK" value={newClient.location} onChange={(e) => setNewClient({...newClient, location: e.target.value})}
-                  className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                  className={inputCls} />
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Tags (comma separated)</label>
-                <input type="text" placeholder="Enterprise, Priority, VIP" value={newClient.tags.join(', ')} onChange={(e) => setNewClient({...newClient, tags: e.target.value.split(',').map(t => t.trim())})}
-                  className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                <label className={labelCls}>Tags</label>
+                <TagInput value={newClient.tags} onChange={(tags) => setNewClient({...newClient, tags})} placeholder="Type a tag and press Enter" />
               </div>
             </div>
             <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
@@ -825,56 +875,53 @@ export default function CRMPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
           <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
-            <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-5 sm:px-6 py-1.5 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md border border-white/20"><Edit className="w-5 h-5 text-white" /></div>
-                <div>
-                  <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight">Edit Client</h2>
-                  <p className="text-[11px] text-blue-100 font-medium opacity-90">Update client details</p>
-                </div>
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Edit client</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Update client details</p>
               </div>
-              <button onClick={() => { setShowEditModal(false); setEditingClient(null); }} className="p-2.5 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+              <button onClick={() => { setShowEditModal(false); setEditingClient(null); }} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto px-5 py-1.5 sm:py-6 space-y-2 sm:space-y-5">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Full Name *</label>
+                  <label className={labelCls}>Full name *</label>
                   <input type="text" value={editingClient.name} onChange={(e) => setEditingClient({...editingClient, name: e.target.value})}
-                    className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                    className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Email *</label>
+                  <label className={labelCls}>Email *</label>
                   <input type="email" value={editingClient.email} onChange={(e) => setEditingClient({...editingClient, email: e.target.value})}
-                    className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                    className={inputCls} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Phone</label>
+                  <label className={labelCls}>Phone</label>
                   <input type="tel" value={editingClient.phone || ''} onChange={(e) => setEditingClient({...editingClient, phone: e.target.value})}
-                    className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                    className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Company *</label>
+                  <label className={labelCls}>Company{editingClient.clientType === 'business' ? ' *' : ''}</label>
                   <input type="text" value={editingClient.company} onChange={(e) => setEditingClient({...editingClient, company: e.target.value})}
-                    className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                    className={inputCls} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Client Type</label>
+                  <label className={labelCls}>Client type</label>
                   <select value={editingClient.clientType} onChange={(e) => setEditingClient({...editingClient, clientType: e.target.value as 'business' | 'individual'})}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 cursor-pointer text-sm outline-none">
+                    className={selectCls}>
                     <option value="business">Business</option>
                     <option value="individual">Individual</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Status</label>
+                  <label className={labelCls}>Status</label>
                   <select value={editingClient.status} onChange={(e) => setEditingClient({...editingClient, status: e.target.value as 'active' | 'lead' | 'inactive'})}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 cursor-pointer text-sm outline-none">
+                    className={selectCls}>
                     <option value="lead">Lead</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -882,14 +929,26 @@ export default function CRMPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Location</label>
+                <label className={labelCls}>Location</label>
                 <input type="text" value={editingClient.location || ''} onChange={(e) => setEditingClient({...editingClient, location: e.target.value})}
-                  className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                  className={inputCls} />
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Revenue (£)</label>
+                <label className={labelCls}>Pipeline stage</label>
+                <select value={editingClient.pipelineStage} onChange={(e) => setEditingClient({...editingClient, pipelineStage: e.target.value as Client['pipelineStage']})}
+                  className={selectCls}>
+                  <option value="new">New</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="proposal">Proposal</option>
+                  <option value="negotiation">Negotiation</option>
+                  <option value="closed-won">Closed Won</option>
+                  <option value="closed-lost">Closed Lost</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Revenue (£)</label>
                 <input type="number" value={editingClient.revenue} onChange={(e) => setEditingClient({...editingClient, revenue: parseFloat(e.target.value) || 0})}
-                  className="w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                  className={inputCls} />
               </div>
             </div>
             <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">

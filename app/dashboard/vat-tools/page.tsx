@@ -7,6 +7,8 @@ import {
   Activity, Target, Zap, Trash2, Sparkles
 } from 'lucide-react';
 import StatusModal from '@/components/StatusModal';
+import TourProvider from '@/components/tours/TourProvider';
+import { vatToolsTourSteps } from './tour-steps';
 
 export default function VATToolsPage() {
   const [calculatorMode, setCalculatorMode] = useState<'add' | 'remove'>('add');
@@ -104,6 +106,7 @@ export default function VATToolsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <TourProvider moduleId="vat-tools" steps={vatToolsTourSteps} />
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
@@ -141,7 +144,7 @@ export default function VATToolsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="px-4 sm:px-6 pt-4">
+      <div id="tour-vat-tools-stats" className="px-4 sm:px-6 pt-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Calculations', value: vatHistory.length.toString(), sub: 'Total operations', icon: Calculator, bg: 'bg-blue-100', text: 'text-blue-600', badge: 'Today' },
@@ -169,7 +172,7 @@ export default function VATToolsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Input */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 space-y-5">
+          <div id="tour-vat-tools-calculator" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 space-y-5">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                 <div className="p-1.5 bg-indigo-100 rounded-lg">
@@ -314,7 +317,7 @@ export default function VATToolsPage() {
       </div>
 
       {/* UK VAT Rates Reference */}
-      <div className="px-4 sm:px-6 pt-4">
+      <div id="tour-vat-tools-rates" className="px-4 sm:px-6 pt-4">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
           <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4">
             <div className="p-1.5 bg-amber-100 rounded-lg">

@@ -9,6 +9,8 @@ import {
 
 import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
+import TourProvider from '@/components/tours/TourProvider';
+import { taxationTourSteps } from './tour-steps';
 
 interface TaxObligation {
   id: string;
@@ -30,6 +32,84 @@ interface TaxObligationResponse {
   period: string;
 }
 
+// Real UK Corporation Tax calculation (post-April 2023 rules), assuming no
+// associated companies and no exempt distributions:
+// - profit <= £50,000: 19%
+// - profit >= £250,000: 25%
+// - in between: 25% less Marginal Relief = (250,000 - profit) x 3/200
+function calculateCorporationTax(profit: number): { tax: number; rateLabel: string } {
+  if (!Number.isFinite(profit) || profit <= 0) return { tax: 0, rateLabel: '19%' };
+  if (profit <= 50000) return { tax: profit * 0.19, rateLabel: '19%' };
+  if (profit >= 250000) return { tax: profit * 0.25, rateLabel: '25%' };
+  const marginalRelief = (250000 - profit) * (3 / 200);
+  const tax = profit * 0.25 - marginalRelief;
+  const effectiveRate = (tax / profit) * 100;
+  return { tax, rateLabel: `${effectiveRate.toFixed(1)}% (Marginal Relief)` };
+}
+
+// Parses the trailing "DD/MM/YYYY" out of a "Year ending DD/MM/YYYY" label.
+function parsePeriodEndDate(period: string): Date | null {
+  const match = period.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!match) return null;
+  const [, dd, mm, yyyy] = match;
+  return new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+}
+
+function addMonthsToDate(date: Date, months: number): Date {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+function formatUkDate(date: Date): string {
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// UK VAT/PAYE quarters run in tax-year blocks: Apr-Jun (Q1), Jul-Sep (Q2), Oct-Dec (Q3), Jan-Mar (Q4).
+// Returns the block containing `now`, its due date (quarter end + 1 month + 7 days), and display labels.
+function getCurrentTaxQuarter(now: Date, taxYearLabel: string) {
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = now.getMonth();
+  let index: number, startMonth: number;
+  if (month >= 3 && month <= 5) { index = 1; startMonth = 3; }
+  else if (month >= 6 && month <= 8) { index = 2; startMonth = 6; }
+  else if (month >= 9 && month <= 11) { index = 3; startMonth = 9; }
+  else { index = 4; startMonth = 0; }
+  const year = now.getFullYear();
+  const quarterEnd = new Date(year, startMonth + 3, 0);
+  const dueDate = addMonthsToDate(quarterEnd, 1);
+  dueDate.setDate(dueDate.getDate() + 7);
+  return {
+    label: `Q${index} ${taxYearLabel}`,
+    rangeLabel: `${monthNames[startMonth]} - ${monthNames[startMonth + 2]} ${year}`,
+    dueDate,
+  };
+}
+
+// Clamps the day to the last real day of the month (e.g. day 31 in a 30-day month)
+// so an invalid configured date can't silently roll into the next month.
+function makeYearEndDate(year: number, monthIndex: number, day: number): Date {
+  const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+  return new Date(year, monthIndex, Math.min(day, lastDay));
+}
+
+// Builds a small set of accounting-period options (previous, most recently
+// completed, and next) around today's date, based on the business's configured
+// fiscal year end — replacing what used to be two permanently-fixed years.
+function buildAccountingPeriodOptions(now: Date, fyMonth: number, fyDay: number): string[] {
+  const monthIndex = fyMonth - 1;
+  const thisYearEnd = makeYearEndDate(now.getFullYear(), monthIndex, fyDay);
+  const mostRecentCompleted = thisYearEnd > now ? makeYearEndDate(now.getFullYear() - 1, monthIndex, fyDay) : thisYearEnd;
+  const options = [
+    new Date(mostRecentCompleted.getFullYear() - 1, monthIndex, mostRecentCompleted.getDate()),
+    mostRecentCompleted,
+    new Date(mostRecentCompleted.getFullYear() + 1, monthIndex, mostRecentCompleted.getDate()),
+  ];
+  return options
+    .sort((a, b) => b.getTime() - a.getTime())
+    .map((d) => `Year ending ${d.toLocaleDateString('en-GB')}`);
+}
+
 export default function TaxationPage() {
   // Calculate current UK tax year (runs April 6 to April 5)
   const today = new Date();
@@ -43,6 +123,11 @@ export default function TaxationPage() {
     ? `${year - 1}/${String(year).slice(-2)}`
     : `${year}/${String(year + 1).slice(-2)}`;
 
+  // Corporation Tax financial year runs 1 April to 31 March
+  const currentCtFinancialYear = month < 3
+    ? `${year - 1}/${String(year).slice(-2)}`
+    : `${year}/${String(year + 1).slice(-2)}`;
+
   // Parse the start year from current tax year
   const [startYear] = currentTaxYear.split('/');
   const baseYear = parseInt(startYear);
@@ -53,6 +138,23 @@ export default function TaxationPage() {
     { year: `${baseYear - 1}/${String(baseYear).slice(-2)}`, label: 'Previous year' },
     { year: `${baseYear - 2}/${String(baseYear - 1).slice(-2)}`, label: 'Earlier year' },
   ];
+
+  // Current UK VAT/PAYE quarter and pay period, computed from today rather than fixed dates
+  const vatQuarter = getCurrentTaxQuarter(today, currentTaxYear);
+  const vatQuarterFullLabel = `${vatQuarter.label} (${vatQuarter.rangeLabel})`;
+  const vatQuarterDueLabel = formatUkDate(vatQuarter.dueDate);
+
+  const payePeriodDate = new Date(year, month - 1, 1);
+  const payeMonthLabel = payePeriodDate.toLocaleString('en-GB', { month: 'long', year: 'numeric' });
+  const payeDueDate = new Date(year, month, 22);
+  if (payeDueDate < today) payeDueDate.setMonth(payeDueDate.getMonth() + 1);
+  const payeDueLabel = formatUkDate(payeDueDate);
+  const payeTaxMonthNumber = ((payePeriodDate.getMonth() - 3 + 12) % 12) + 1;
+
+  // Generic calendar-quarter labels for the "new return" period picker (current + previous quarter)
+  const calQuarterLabel = `Q${Math.floor(month / 3) + 1} ${year}`;
+  const prevCalQuarterDate = new Date(year, month - 3, 1);
+  const prevCalQuarterLabel = `Q${Math.floor(prevCalQuarterDate.getMonth() / 3) + 1} ${prevCalQuarterDate.getFullYear()}`;
 
   // Get tax deadlines for a specific month
   const getTaxEventsForMonth = (year: number, month: number) => {
@@ -68,8 +170,10 @@ export default function TaxationPage() {
       events['31'] = { label: 'Self Assessment', color: 'red', fullTask: 'Self Assessment Deadline & Balance Payment', type: 'SA' };
     }
     if (month === 3) { // April
-      events['5'] = { label: 'Year End', color: 'orange', fullTask: 'End of Tax Year 2024/25', type: 'ANNUAL' };
-      events['6'] = { label: 'New Year', color: 'green', fullTask: 'Start of Tax Year 2025/26', type: 'ANNUAL' };
+      const endingTaxYear = `${year - 1}/${String(year).slice(-2)}`;
+      const startingTaxYear = `${year}/${String(year + 1).slice(-2)}`;
+      events['5'] = { label: 'Year End', color: 'orange', fullTask: `End of Tax Year ${endingTaxYear}`, type: 'ANNUAL' };
+      events['6'] = { label: 'New Year', color: 'green', fullTask: `Start of Tax Year ${startingTaxYear}`, type: 'ANNUAL' };
     }
     if (month === 4) { // May
       events['31'] = { label: 'P60', color: 'indigo', fullTask: 'Deadline to Give Employees P60s', type: 'ANNUAL' };
@@ -188,15 +292,27 @@ export default function TaxationPage() {
   const [newReturnStep, setNewReturnStep] = useState(1);
   const [newReturnData, setNewReturnData] = useState({
     type: '',
-    period: 'Q1 2025',
+    period: vatQuarter.label,
     reference: '',
     turnover: '',
     expenses: '',
     notes: ''
   });
   const [ctProfit, setCtProfit] = useState('50000');
-  const [ctPeriod, setCtPeriod] = useState('Year ending 31/03/2024');
+  const [ctPeriodOptions, setCtPeriodOptions] = useState<string[]>(() => buildAccountingPeriodOptions(new Date(), 3, 31));
+  const [ctPeriod, setCtPeriod] = useState(() => buildAccountingPeriodOptions(new Date(), 3, 31)[1]);
   const [showCT600Modal, setShowCT600Modal] = useState(false);
+
+  const ctProfitNumber = Number(ctProfit) || 0;
+  const { tax: ctTax, rateLabel: ctRateLabel } = calculateCorporationTax(ctProfitNumber);
+  const ctPeriodEndDate = parsePeriodEndDate(ctPeriod);
+  const ctFilingDeadline = ctPeriodEndDate ? formatUkDate(addMonthsToDate(ctPeriodEndDate, 12)) : '—';
+  const ctPaymentDeadlineDate = ctPeriodEndDate ? (() => {
+    const d = addMonthsToDate(ctPeriodEndDate, 9);
+    d.setDate(d.getDate() + 1);
+    return d;
+  })() : null;
+  const ctPaymentDeadline = ctPaymentDeadlineDate ? formatUkDate(ctPaymentDeadlineDate) : '—';
 
   // Self Assessment States - Initialize with current tax year
   const [saTaxYear, setSaTaxYear] = useState(currentTaxYear);
@@ -238,6 +354,19 @@ export default function TaxationPage() {
     fetchTaxData();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/business');
+        if (!res.ok) return;
+        const data = await res.json();
+        const options = buildAccountingPeriodOptions(new Date(), data.fiscalYearEndMonth, data.fiscalYearEndDay);
+        setCtPeriodOptions(options);
+        setCtPeriod(options[1]);
+      } catch { /* keep the UK-default period options */ }
+    })();
+  }, []);
+
   const fetchTaxData = async () => {
     try {
       setLoading(true);
@@ -265,6 +394,7 @@ export default function TaxationPage() {
         setVatOutputSales((data.details.vatOutput / 0.20).toFixed(2)); // Reverse VAT to get sales estimate
         setVatInputPurchases((data.details.vatInput / 0.20).toFixed(2));
         setPayeGrossSalary((data.details.totalMonthlySalary).toFixed(2));
+        setEmployeeCount(data.details.employeeCount || 0);
       }
     } catch (error) {
       console.error('Error fetching tax data:', error);
@@ -286,7 +416,41 @@ export default function TaxationPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successContent, setSuccessContent] = useState({ title: '', message: '' });
   const [successDownloadFns, setSuccessDownloadFns] = useState<{ pdf?: () => void; excel?: () => void } | null>(null);
+  const [pendingReportLog, setPendingReportLog] = useState<{ reportType: string; period: string; amount: number } | null>(null);
   const [editingSource, setEditingSource] = useState<{ id: string, name: string, value: number } | null>(null);
+
+  interface TaxReportDownloadRecord { id: string; reportType: string; format: string; period: string; amount: number; createdAt: string }
+  const [rtiReports, setRtiReports] = useState<TaxReportDownloadRecord[]>([]);
+  const [vatReports, setVatReports] = useState<TaxReportDownloadRecord[]>([]);
+
+  const fetchReportsByType = async (reportType: string, setter: (records: TaxReportDownloadRecord[]) => void) => {
+    try {
+      const res = await fetch(`/api/taxation/reports?type=${reportType}`);
+      if (!res.ok) return;
+      setter(await res.json());
+    } catch { /* leave existing list on failure */ }
+  };
+  const fetchRtiReports = () => fetchReportsByType('PAYE_RTI', setRtiReports);
+  const fetchVatReports = () => fetchReportsByType('VAT', setVatReports);
+
+  useEffect(() => {
+    fetchRtiReports();
+    fetchVatReports();
+  }, []);
+
+  const logReportDownload = async (format: 'PDF' | 'Excel') => {
+    if (!pendingReportLog) return;
+    try {
+      await fetch('/api/taxation/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...pendingReportLog, format }),
+      });
+      if (pendingReportLog.reportType === 'PAYE_RTI') fetchRtiReports();
+      if (pendingReportLog.reportType === 'VAT') fetchVatReports();
+    } catch { /* download already happened locally; logging is best-effort */ }
+    setPendingReportLog(null);
+  };
   
   // Calendar state
   const [calendarMonth, setCalendarMonth] = useState(today.getMonth());
@@ -298,6 +462,7 @@ export default function TaxationPage() {
   const [showRTIModal, setShowRTIModal] = useState(false);
   const [payeGrossSalary, setPayeGrossSalary] = useState('3500');
   const [payeTaxCode, setPayeTaxCode] = useState('1257L');
+  const [employeeCount, setEmployeeCount] = useState(0);
   
   // VAT States
   const [showVATReturnModal, setShowVATReturnModal] = useState(false);
@@ -377,7 +542,16 @@ export default function TaxationPage() {
     }
     return Math.round(annualNI / 12 * 100) / 100;
   };
-  
+
+  // Real PAYE/NI figures for the current month, derived from actual payroll data
+  // (payeGrossSalary is the aggregate monthly salary across active employees, fetched from the API)
+  const payeAnnualSalary = parseFloat(payeGrossSalary) * 12 || 0;
+  const currentMonthlyPAYE = calculateMonthlyPAYE(payeAnnualSalary);
+  const currentMonthlyEmployeeNI = calculateEmployeeNI(payeAnnualSalary);
+  const currentMonthlyEmployerNI = calculateEmployerNI(payeAnnualSalary);
+  const currentMonthlyNIDue = currentMonthlyEmployeeNI + currentMonthlyEmployerNI;
+  const currentMonthlyTotalDue = currentMonthlyPAYE + currentMonthlyNIDue;
+
   const personalAllowance = 12570;
 
   const totalIncome = saSelfEmployment + saEmployment + saProperty + saDividends;
@@ -426,6 +600,7 @@ export default function TaxationPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <TourProvider moduleId="taxation" steps={taxationTourSteps} />
       {/* ── Sticky Header ────────────────────────────────────────────── */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
@@ -440,6 +615,7 @@ export default function TaxationPage() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
+              id="tour-taxation-export"
               onClick={() => { setSelectedReportType('Self Assessment'); setShowDownloadModal(true); }}
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
             >
@@ -447,6 +623,7 @@ export default function TaxationPage() {
               <span className="hidden sm:inline">Export</span>
             </button>
             <button
+              id="tour-taxation-new-return"
               onClick={() => setShowNewReturnModal(true)}
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors cursor-pointer"
             >
@@ -460,7 +637,7 @@ export default function TaxationPage() {
 
       {/* ── Stats ──────────────────────────────────────────────────── */}
       <div className="px-4 sm:px-6 pt-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-taxation-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Corporation Tax', value: `£${taxSummary.corporationTax.toLocaleString()}`, icon: Building2,   bg: 'bg-blue-500'    },
             { label: 'VAT Liability',   value: `£${taxSummary.vatLiability.toLocaleString()}`,   icon: Receipt,      bg: 'bg-purple-500'  },
@@ -479,7 +656,7 @@ export default function TaxationPage() {
       </div>
 
       {/* ── HMRC Disclaimer Banner ── */}
-      <div className="mx-4 sm:mx-6 mt-3 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+      <div id="tour-taxation-disclaimer" className="mx-4 sm:mx-6 mt-3 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
         <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         <p className="text-xs text-amber-800 leading-relaxed">
           <strong>Okleevo is not directly connected to HMRC.</strong> This tool helps you calculate and prepare your tax figures. Download your reports and share them with your accountant for official submission to HMRC.
@@ -487,7 +664,7 @@ export default function TaxationPage() {
       </div>
 
       {/* ── Tab Bar ──────────────────────────────────────────────────── */}
-      <div className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100 mt-3">
+      <div id="tour-taxation-tabs" className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100 mt-3">
         <div className="flex overflow-x-auto scrollbar-hide px-4">
           {tabs.map(({ id, name, icon: Icon }) => {
             const active = activeTab === id;
@@ -519,7 +696,7 @@ export default function TaxationPage() {
           {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Upcoming Tax Obligations */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-4 sm:p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
             <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
               <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               {loading ? 'Loading...' : 'Upcoming Tax Obligations'}
@@ -537,7 +714,7 @@ export default function TaxationPage() {
                   </div>
                 ) : (
                   taxObligations.map((obligation) => (
-                    <div key={obligation.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 p-3 sm:p-4 bg-white/40 border border-white/30 rounded-xl hover:bg-white/60 hover:shadow-lg transition-all cursor-pointer">
+                    <div key={obligation.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 hover:shadow-lg transition-all cursor-pointer">
                       <div className="flex items-center gap-4">
                         <div className={`p-3 rounded-lg ${
                           obligation.status === 'paid' ? 'bg-green-100' :
@@ -576,7 +753,7 @@ export default function TaxationPage() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <button className="p-6 bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
+            <button className="p-6 bg-white rounded-xl border border-gray-200 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
               <div className="p-3 bg-blue-500 rounded-lg w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <Calculator className="w-6 h-6 text-white" />
               </div>
@@ -584,7 +761,7 @@ export default function TaxationPage() {
               <p className="text-sm text-gray-600">Estimate your CT liability for the year</p>
             </button>
 
-            <button onClick={() => setActiveTab('vat')} className="p-6 bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
+            <button onClick={() => setActiveTab('vat')} className="p-6 bg-white rounded-xl border border-gray-200 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
               <div className="p-3 bg-green-500 rounded-lg w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <Receipt className="w-6 h-6 text-white" />
               </div>
@@ -592,7 +769,7 @@ export default function TaxationPage() {
               <p className="text-sm text-gray-600">Calculate &amp; download for your accountant</p>
             </button>
 
-            <button onClick={() => setActiveTab('paye')} className="p-6 bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
+            <button onClick={() => setActiveTab('paye')} className="p-6 bg-white rounded-xl border border-gray-200 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
               <div className="p-3 bg-purple-500 rounded-lg w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <Users className="w-6 h-6 text-white" />
               </div>
@@ -630,18 +807,17 @@ export default function TaxationPage() {
 
       {activeTab === 'corporation-tax' && (
         <div className="space-y-6">
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Corporation Tax Calculator</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Accounting Period</label>
-                <select 
+                <select
                   value={ctPeriod}
                   onChange={(e) => setCtPeriod(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/50 border border-white/50 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-pointer"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-colors cursor-pointer"
                 >
-                  <option>Year ending 31/03/2024</option>
-                  <option>Year ending 31/03/2025</option>
+                  {ctPeriodOptions.map((opt) => <option key={opt}>{opt}</option>)}
                 </select>
               </div>
               <div>
@@ -651,20 +827,20 @@ export default function TaxationPage() {
                   placeholder="50000"
                   value={ctProfit}
                   onChange={(e) => setCtProfit(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/50 border border-white/50 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-colors"
                 />
               </div>
             </div>
-            <div className="mt-6 p-6 bg-linear-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+            <div className="mt-6 p-6 bg-green-50 rounded-xl border border-green-100">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <p className="text-sm text-green-600 font-medium mb-1">Estimated Corporation Tax</p>
-                  <p className="text-2xl sm:text-4xl font-bold text-green-900">£{(Number(ctProfit) * 0.19).toLocaleString()}</p>
-                  <p className="text-xs text-green-600 mt-1">At 19% rate</p>
+                  <p className="text-sm text-green-700 font-medium mb-1">Estimated Corporation Tax</p>
+                  <p className="text-2xl sm:text-4xl font-bold text-green-900">£{ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                  <p className="text-xs text-green-700 mt-1">At {ctRateLabel}</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowCT600Modal(true)}
-                  className="w-full sm:w-auto px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all cursor-pointer text-center"
+                  className="w-full sm:w-auto px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors cursor-pointer text-center"
                 >
                   Generate CT600
                 </button>
@@ -672,10 +848,10 @@ export default function TaxationPage() {
             </div>
           </div>
 
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
-            <h3 className="font-bold text-gray-900 mb-4">Corporation Tax Rates 2024/25</h3>
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-bold text-gray-900 mb-4">Corporation Tax Rates {currentCtFinancialYear}</h3>
             <div className="space-y-3">
-              <div className="p-4 bg-blue-50/50 backdrop-blur-sm rounded-lg border border-blue-200/50 hover:bg-blue-50 hover:shadow-md transition-all cursor-pointer">
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 hover:border-blue-200 transition-colors cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-blue-900">Small Profits Rate</p>
@@ -684,7 +860,7 @@ export default function TaxationPage() {
                   <span className="text-2xl font-bold text-blue-900">19%</span>
                 </div>
               </div>
-              <div className="p-4 bg-purple-50/50 backdrop-blur-sm rounded-lg border border-purple-200/50 hover:bg-purple-50 hover:shadow-md transition-all cursor-pointer">
+              <div className="p-4 bg-purple-50 rounded-lg border border-purple-100 hover:border-purple-200 transition-colors cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-purple-900">Marginal Relief</p>
@@ -693,7 +869,7 @@ export default function TaxationPage() {
                   <span className="text-2xl font-bold text-purple-900">19-25%</span>
                 </div>
               </div>
-              <div className="p-4 bg-red-50/50 backdrop-blur-sm rounded-lg border border-red-200/50 hover:bg-red-50 hover:shadow-md transition-all cursor-pointer">
+              <div className="p-4 bg-red-50 rounded-lg border border-red-100 hover:border-red-200 transition-colors cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-red-900">Main Rate</p>
@@ -710,28 +886,30 @@ export default function TaxationPage() {
       {activeTab === 'self-assessment' && (
         <div className="space-y-6">
           {/* Self Assessment Overview */}
-          <div className="bg-linear-to-br from-purple-500 to-pink-500 rounded-xl p-5 sm:p-8 text-white">
-            <div className="flex items-center gap-3 mb-4">
-              <User className="w-8 h-8" />
+          <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-8">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="p-3 bg-purple-50 rounded-xl shrink-0">
+                <User className="w-6 h-6 text-purple-600" />
+              </div>
               <div>
-                <h2 className="text-lg sm:text-2xl font-bold">Self Assessment Tax Return</h2>
-                <p className="text-purple-100 text-sm sm:text-base">Individual tax return for sole traders, partners, and directors</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Self Assessment Tax Return</h2>
+                <p className="text-gray-500 text-sm">Individual tax return for sole traders, partners, and directors</p>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-              <button 
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+              <button
                 onClick={() => {
                   setNewReturnData({ ...newReturnData, type: 'Self Assessment' });
                   setNewReturnStep(2);
                   setShowNewReturnModal(true);
                 }}
-                className="px-6 py-3 bg-white text-purple-600 font-bold rounded-xl hover:bg-purple-50 hover:shadow-lg transition-all cursor-pointer"
+                className="px-5 py-2.5 bg-purple-600 text-white font-medium text-sm rounded-lg hover:bg-purple-700 transition-colors cursor-pointer"
               >
                 Start New Return
               </button>
-              <button 
+              <button
                 onClick={() => setShowHistoryModal(true)}
-                className="px-6 py-3 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 hover:shadow-lg transition-all cursor-pointer"
+                className="px-5 py-2.5 border border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 View Previous Returns
               </button>
@@ -739,7 +917,7 @@ export default function TaxationPage() {
           </div>
 
           {/* Tax Year Selection */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Mini Calendar */}
               <div className="lg:w-72 shrink-0">
@@ -873,12 +1051,12 @@ export default function TaxationPage() {
 
           {/* Income Sources */}
           <div className={`transition-all duration-300 ${isSwitchingYear ? 'opacity-30 blur-sm translate-y-2' : 'opacity-100 translate-y-0'}`}>
-            <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6 mb-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
             <h3 className="font-bold text-gray-900 mb-4">Income Sources</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div 
                 onClick={() => { setEditingSource({ id: 'self-employment', name: 'Self-Employment', value: saSelfEmployment }); setShowEditIncomeModal(true); }}
-                className="p-4 bg-white/40 border border-white/50 rounded-xl hover:bg-blue-50/50 hover:border-blue-200 hover:shadow-lg transition-all group cursor-pointer"
+                className="p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-blue-50/50 hover:border-blue-200 hover:shadow-lg transition-all group cursor-pointer"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-blue-500 rounded-lg shadow-md group-hover:scale-110 transition-transform">
@@ -897,7 +1075,7 @@ export default function TaxationPage() {
 
               <div 
                 onClick={() => { setEditingSource({ id: 'employment', name: 'Employment Income', value: saEmployment }); setShowEditIncomeModal(true); }}
-                className="p-4 bg-white/40 border border-white/50 rounded-xl hover:bg-green-50/50 hover:border-green-200 hover:shadow-lg transition-all group cursor-pointer"
+                className="p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-green-50/50 hover:border-green-200 hover:shadow-lg transition-all group cursor-pointer"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-green-500 rounded-lg shadow-md group-hover:scale-110 transition-transform">
@@ -916,7 +1094,7 @@ export default function TaxationPage() {
 
               <div 
                 onClick={() => { setEditingSource({ id: 'property', name: 'Property Income', value: saProperty }); setShowEditIncomeModal(true); }}
-                className="p-4 bg-white/40 border border-white/50 rounded-xl hover:bg-purple-50/50 hover:border-purple-200 hover:shadow-lg transition-all group cursor-pointer"
+                className="p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-purple-50/50 hover:border-purple-200 hover:shadow-lg transition-all group cursor-pointer"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-purple-500 rounded-lg shadow-md group-hover:scale-110 transition-transform">
@@ -935,7 +1113,7 @@ export default function TaxationPage() {
 
               <div 
                 onClick={() => { setEditingSource({ id: 'dividends', name: 'Dividends & Interest', value: saDividends }); setShowEditIncomeModal(true); }}
-                className="p-4 bg-white/40 border border-white/50 rounded-xl hover:bg-orange-50/50 hover:border-orange-200 hover:shadow-lg transition-all group cursor-pointer"
+                className="p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-orange-50/50 hover:border-orange-200 hover:shadow-lg transition-all group cursor-pointer"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-orange-500 rounded-lg shadow-md group-hover:scale-110 transition-transform">
@@ -957,32 +1135,32 @@ export default function TaxationPage() {
 
           {/* Tax Calculation */}
           <div className={`transition-all duration-300 delay-75 ${isSwitchingYear ? 'opacity-30 blur-sm translate-y-2' : 'opacity-100 translate-y-0'}`}>
-            <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6 mb-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
               <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Calculator className="w-5 h-5 text-purple-600" />
               Tax Calculation Summary
             </h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-white/40 border border-white/50 rounded-lg hover:bg-white/60 hover:shadow-sm transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Total Income</span>
                 <span className="font-bold text-gray-900">£{totalIncome.toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-white/40 border border-white/50 rounded-lg hover:bg-white/60 hover:shadow-sm transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Personal Allowance</span>
                 <span className="font-bold text-gray-900">-£{personalAllowance.toLocaleString()}</span>
               </div>
               <div 
                 onClick={() => { setEditingSource({ id: 'expenses', name: 'Allowable Expenses', value: saExpenses }); setShowEditIncomeModal(true); }}
-                className="flex items-center justify-between p-3 bg-white/40 border border-white/50 rounded-lg hover:bg-white/60 hover:shadow-sm transition-all cursor-pointer"
+                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer"
               >
                 <span className="text-gray-700">Allowable Expenses</span>
                 <span className="font-bold text-gray-900">-£{saExpenses.toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-blue-50/50 backdrop-blur-sm rounded-lg border border-blue-200/50 hover:bg-blue-50 hover:shadow-md transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100 hover:border-blue-200 transition-colors cursor-pointer">
                 <span className="font-semibold text-blue-900">Taxable Income</span>
                 <span className="font-bold text-blue-900 text-xl">£{taxableIncomeValue.toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-linear-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-lg border border-purple-200/50 hover:from-purple-500/20 hover:to-pink-500/20 transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100 hover:border-purple-200 transition-colors cursor-pointer">
                 <div>
                   <p className="font-semibold text-purple-900">Total Tax Due</p>
                   <p className="text-xs text-purple-700">Including NI contributions</p>
@@ -996,7 +1174,7 @@ export default function TaxationPage() {
           {/* Important Deadlines */}
           <div className={`transition-all duration-300 delay-150 ${isSwitchingYear ? 'opacity-30 blur-sm translate-y-2' : 'opacity-100 translate-y-0'}`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-red-50/50 backdrop-blur-sm border border-red-200/50 rounded-xl p-5 hover:bg-red-50/80 hover:shadow-lg transition-all cursor-pointer">
+            <div className="bg-red-50 border border-red-100 rounded-xl p-5 hover:border-red-200 transition-colors cursor-pointer">
               <div className="flex items-center gap-2 mb-3">
                 <AlertCircle className="w-6 h-6 text-red-600" />
                 <h3 className="font-bold text-red-900">Key Deadlines</h3>
@@ -1017,8 +1195,8 @@ export default function TaxationPage() {
               </div>
             </div>
 
-            <div className={`backdrop-blur-sm border rounded-xl p-5 hover:shadow-lg transition-all cursor-pointer ${
-              saProgress === 100 ? 'bg-green-50/50 border-green-200/50 hover:bg-green-50/80' : 'bg-amber-50/50 border-amber-200/50 hover:bg-amber-50/80'
+            <div className={`border rounded-xl p-5 transition-colors cursor-pointer ${
+              saProgress === 100 ? 'bg-green-50 border-green-100 hover:border-green-200' : 'bg-amber-50 border-amber-100 hover:border-amber-200'
             }`}>
               <div className="flex items-center gap-2 mb-3">
                 {saProgress === 100 ? (
@@ -1068,21 +1246,21 @@ export default function TaxationPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
               onClick={() => setShowCalculatorModal(true)}
-              className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all text-center cursor-pointer group"
+              className="p-5 bg-white border border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all text-center cursor-pointer group"
             >
               <Calculator className="w-8 h-8 text-purple-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-gray-900 text-sm">Tax Calculator</p>
             </button>
             <button 
               onClick={() => setShowDownloadModal(true)}
-              className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all text-center cursor-pointer group"
+              className="p-5 bg-white border border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all text-center cursor-pointer group"
             >
               <Download className="w-8 h-8 text-purple-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-gray-900 text-sm">Download SA100</p>
             </button>
             <button
               onClick={() => setShowDownloadModal(true)}
-              className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all text-center cursor-pointer group"
+              className="p-5 bg-white border border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all text-center cursor-pointer group"
             >
               <Download className="w-8 h-8 text-purple-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-gray-900 text-sm">Download for Accountant</p>
@@ -1204,101 +1382,90 @@ export default function TaxationPage() {
       )}
 
       {showDownloadModal && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-xl max-h-[85dvh] flex flex-col border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-xl max-h-[85dvh] flex flex-col border border-gray-200 transform animate-in slide-in-from-bottom-10 duration-300">
 
-
-
-
-            <div className="bg-linear-to-r from-blue-600 to-indigo-600 p-4 rounded-t-2xl shadow-lg">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                  <Download className="w-5 h-5" />
-                  Export Tax Reports
-                </h2>
-                <button 
-                  onClick={() => setShowDownloadModal(false)}
-                  className="p-1.5 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
-              </div>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2.5">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Download className="w-4 h-4 text-blue-600" />
+                </div>
+                Export Tax Reports
+              </h2>
+              <button
+                onClick={() => setShowDownloadModal(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
 
-
-
-
-            <div className="p-5 space-y-4">
+            <div className="p-5 space-y-4 overflow-y-auto">
               <div>
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Select Report Type:</h3>
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Select Report Type</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-
-
-
                   {(['Self Assessment', 'Corporation Tax', 'VAT', 'PAYE'] as const).map((type) => (
                     <button
                       key={type}
                       onClick={() => setSelectedReportType(type)}
-                      className={`p-3 border-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        selectedReportType === type 
-                          ? 'bg-blue-600 border-blue-600 text-white shadow-lg' 
-                          : 'bg-white border-gray-100 text-gray-600 hover:border-blue-300'
+                      className={`px-3 py-2.5 border rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                        selectedReportType === type
+                          ? 'bg-blue-600 border-blue-600 text-white'
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-700'
                       }`}
                     >
                       {type}
                     </button>
                   ))}
-
-
                 </div>
               </div>
 
-              <div className="bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5">
-                <h3 className="font-bold text-blue-900 mb-2.5 text-xs">{selectedReportType} Details:</h3>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[15px]">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-gray-500 mb-2.5 text-xs uppercase tracking-wide">{selectedReportType} Details</h3>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                   {selectedReportType === 'Self Assessment' ? (
                     <>
-                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
-                        <span className="text-blue-700 font-semibold">Tax Year:</span>
-                        <span className="font-bold text-blue-900">{saTaxYear}</span>
+                      <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                        <span className="text-gray-500">Tax Year</span>
+                        <span className="font-semibold text-gray-900">{saTaxYear}</span>
                       </div>
-                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
-                        <span className="text-blue-700 font-semibold">Total Tax:</span>
-                        <span className="font-bold text-blue-900">£{totalTaxDueValue.toLocaleString()}</span>
+                      <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                        <span className="text-gray-500">Total Tax</span>
+                        <span className="font-semibold text-gray-900">£{totalTaxDueValue.toLocaleString()}</span>
                       </div>
                     </>
                   ) : selectedReportType === 'Corporation Tax' ? (
                     <>
-                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
-                        <span className="text-blue-700 font-semibold">Period:</span>
-                        <span className="font-bold text-blue-900">{ctPeriod}</span>
+                      <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                        <span className="text-gray-500">Period</span>
+                        <span className="font-semibold text-gray-900">{ctPeriod}</span>
                       </div>
-                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
-                        <span className="text-blue-700 font-semibold">Est. Tax:</span>
-                        <span className="font-bold text-blue-900">£{(Number(ctProfit) * 0.19).toLocaleString()}</span>
+                      <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                        <span className="text-gray-500">Est. Tax</span>
+                        <span className="font-semibold text-gray-900">£{ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
                   ) : selectedReportType === 'VAT' ? (
                     <>
-                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
-                        <span className="text-blue-700 font-semibold">VAT Period:</span>
-                        <span className="font-bold text-blue-900">Q3 2025/26</span>
+                      <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                        <span className="text-gray-500">VAT Period</span>
+                        <span className="font-semibold text-gray-900">{vatQuarter.label}</span>
                       </div>
-                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
-                        <span className="text-blue-700 font-semibold">Payable:</span>
-                        <span className="font-bold text-blue-900">£{Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2)).toLocaleString()}</span>
+                      <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                        <span className="text-gray-500">Payable</span>
+                        <span className="font-semibold text-gray-900">£{Math.max(0, (parseFloat(vatOutputSales || '0') * 0.2) - (parseFloat(vatInputPurchases || '0') * 0.2)).toLocaleString()}</span>
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="flex justify-between border-b border-blue-200/40 pb-1">
-                        <span className="text-blue-700 font-semibold">Month:</span>
-                        <span className="font-bold text-blue-900">January 2026</span>
+                      <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                        <span className="text-gray-500">Month</span>
+                        <span className="font-semibold text-gray-900">{payeMonthLabel}</span>
                       </div>
-                      <div className="flex justify-between border-b border-blue-100/40 pb-1">
-                        <span className="text-blue-700 font-semibold">HMRC Total:</span>
-                        <span className="font-bold text-blue-900">£4,300.00</span>
+                      <div className="flex justify-between border-b border-gray-200 pb-1.5">
+                        <span className="text-gray-500">HMRC Total</span>
+                        <span className="font-semibold text-gray-900">£4,300.00</span>
                       </div>
                     </>
                   )}
@@ -1306,23 +1473,23 @@ export default function TaxationPage() {
               </div>
 
               <div>
-                <h3 className="font-bold text-gray-900 mb-2.5 text-xs">Select Download Format:</h3>
+                <h3 className="font-semibold text-gray-500 mb-2.5 text-xs uppercase tracking-wide">Select Download Format</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {(['PDF', 'Excel'] as const).map((format) => (
                     <button
                       key={format}
                       onClick={() => setSelectedDownloadFormat(format)}
-                      className={`p-4 border-2 rounded-xl transition-all cursor-pointer flex items-center gap-3 ${
+                      className={`p-3.5 border rounded-lg transition-colors cursor-pointer flex items-center gap-3 ${
                         selectedDownloadFormat === format
-                          ? 'border-blue-500 bg-blue-50 shadow-lg'
-                          : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                          ? 'border-blue-500 bg-blue-50/60'
+                          : 'border-gray-200 hover:border-blue-300'
                       }`}
                     >
-                      <div className={`p-2 rounded-lg shrink-0 ${format === 'PDF' ? 'bg-red-100' : 'bg-green-100'}`}>
+                      <div className={`p-2 rounded-lg shrink-0 ${format === 'PDF' ? 'bg-red-50' : 'bg-green-50'}`}>
                         <FileText className={`w-5 h-5 ${format === 'PDF' ? 'text-red-600' : 'text-green-600'}`} />
                       </div>
                       <div className="text-left">
-                        <p className="font-bold text-sm text-gray-900">{format}</p>
+                        <p className="font-semibold text-sm text-gray-900">{format}</p>
                         <p className="text-xs text-gray-400">{format === 'PDF' ? 'Formatted report' : 'Opens in Excel (.csv)'}</p>
                       </div>
                       {selectedDownloadFormat === format && <CheckCircle className="w-4 h-4 text-blue-600 ml-auto shrink-0" />}
@@ -1332,11 +1499,11 @@ export default function TaxationPage() {
               </div>
 
               {/* Ready to Download Display */}
-              <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5">
+              <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-3.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-semibold text-blue-700 mb-0.5">Ready to Download:</p>
-                    <p className="text-base font-bold text-blue-900">
+                    <p className="text-[11px] font-semibold text-blue-600 uppercase tracking-wide mb-0.5">Ready to Download</p>
+                    <p className="text-sm font-semibold text-gray-900">
                       {selectedReportType} • {selectedDownloadFormat}
                     </p>
                   </div>
@@ -1345,34 +1512,29 @@ export default function TaxationPage() {
               </div>
 
               {/* Download Features List */}
-              <div className="bg-green-50 border border-green-200 rounded-xl p-3.5">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3.5">
                 <div className="flex gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                   <div>
-                    <p className="font-bold text-green-900 mb-1 text-xs">Features:</p>
-                    <ul className="text-[11px] text-green-800 grid grid-cols-2 gap-x-4 gap-y-0.5">
-                      <li>• HMRC-compliant</li>
-                      <li>• Income breakdown</li>
-                      <li>• Payment schedule</li>
-                      <li>• Record-keeping</li>
+                    <p className="font-semibold text-gray-500 mb-1 text-xs uppercase tracking-wide">Features</p>
+                    <ul className="text-xs text-gray-600 grid grid-cols-2 gap-x-4 gap-y-1">
+                      <li>HMRC-compliant</li>
+                      <li>Income breakdown</li>
+                      <li>Payment schedule</li>
+                      <li>Record-keeping</li>
                     </ul>
                   </div>
                 </div>
               </div>
 
-
-
-
               {/* Action Buttons */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 pt-1">
                 <button
                   onClick={() => setShowDownloadModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-bold text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="flex-1 px-5 py-2.5 border border-gray-200 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
-
-
                 <button
                   onClick={() => {
                     const reportName = selectedReportType.split(' ').join('_');
@@ -1411,17 +1573,17 @@ export default function TaxationPage() {
                         doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
                         doc.text(`Total Tax & NI Due: GBP ${totalTaxDueValue.toLocaleString()}`, 14, y + 4);
                       } else if (selectedReportType === 'Corporation Tax') {
-                        const tax = Number(ctProfit) * 0.19;
+                        const tax = ctTax;
                         row('Accounting Period:', ctPeriod);
                         row('Taxable Profit:', `GBP ${Number(ctProfit).toLocaleString()}`);
-                        row('CT Rate:', '19%');
+                        row('CT Rate:', ctRateLabel);
                         doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
                         doc.text(`Corporation Tax Due: GBP ${tax.toLocaleString()}`, 14, y + 4);
                       } else if (selectedReportType === 'VAT') {
                         const outVAT = parseFloat(vatOutputSales || '0') * 0.2;
                         const inVAT = parseFloat(vatInputPurchases || '0') * 0.2;
                         const net = Math.max(0, outVAT - inVAT);
-                        row('VAT Period:', 'Q3 2025/26');
+                        row('VAT Period:', vatQuarter.label);
                         row('Output Sales (ex. VAT):', `GBP ${parseFloat(vatOutputSales || '0').toLocaleString()}`);
                         row('Input Purchases (ex. VAT):', `GBP ${parseFloat(vatInputPurchases || '0').toLocaleString()}`);
                         row('Output VAT (20%):', `GBP ${outVAT.toLocaleString()}`);
@@ -1429,7 +1591,7 @@ export default function TaxationPage() {
                         doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
                         doc.text(`Net VAT Payable: GBP ${net.toLocaleString()}`, 14, y + 4);
                       } else {
-                        row('Pay Period:', 'January 2026');
+                        row('Pay Period:', payeMonthLabel);
                         row('Employees:', '12');
                         row('PAYE Income Tax:', 'GBP 2,450.00');
                         row('Employee NI:', 'GBP 850.00');
@@ -1458,11 +1620,11 @@ export default function TaxationPage() {
                           `${esc('Total Tax & NI Due')},${esc(totalTaxDueValue)}`,
                         ]);
                       } else if (selectedReportType === 'Corporation Tax') {
-                        const tax = (Number(ctProfit) * 0.19).toFixed(2);
+                        const tax = ctTax.toFixed(2);
                         csvRows = csvRows.concat([
                           `${esc('Accounting Period')},${esc(ctPeriod)}`,
                           `${esc('Taxable Profit')},${esc(ctProfit)}`,
-                          `${esc('CT Rate')},${esc('19%')}`,
+                          `${esc('CT Rate')},${esc(ctRateLabel)}`,
                           `${esc('Corporation Tax Due')},${esc(tax)}`,
                         ]);
                       } else if (selectedReportType === 'VAT') {
@@ -1470,7 +1632,7 @@ export default function TaxationPage() {
                         const inVAT = (parseFloat(vatInputPurchases || '0') * 0.2).toFixed(2);
                         const net = Math.max(0, parseFloat(outVAT) - parseFloat(inVAT)).toFixed(2);
                         csvRows = csvRows.concat([
-                          `${esc('VAT Period')},${esc('Q3 2025/26')}`,
+                          `${esc('VAT Period')},${esc(vatQuarter.label)}`,
                           `${esc('Output Sales (ex. VAT)')},${esc(vatOutputSales)}`,
                           `${esc('Input Purchases (ex. VAT)')},${esc(vatInputPurchases)}`,
                           `${esc('Output VAT (20%)')},${esc(outVAT)}`,
@@ -1479,7 +1641,7 @@ export default function TaxationPage() {
                         ]);
                       } else {
                         csvRows = csvRows.concat([
-                          `${esc('Month')},${esc('January 2026')}`,
+                          `${esc('Month')},${esc(payeMonthLabel)}`,
                           `${esc('Employees')},${esc('12')}`,
                           `${esc('PAYE Income Tax')},${esc('2450')}`,
                           `${esc('Employee NI')},${esc('850')}`,
@@ -1499,15 +1661,11 @@ export default function TaxationPage() {
                     setShowDownloadModal(false);
                     showToast(`${selectedReportType} ${selectedDownloadFormat} downloaded`);
                   }}
-                  className="flex-[1.5] px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold text-base rounded-2xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 cursor-pointer"
+                  className="flex-[1.5] px-5 py-2.5 bg-blue-600 text-white font-medium text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
                 >
-                  <Download className="w-5 h-5" />
+                  <Download className="w-4 h-4" />
                   Download {selectedDownloadFormat}
                 </button>
-
-
-
-
 
               </div>
             </div>
@@ -1590,24 +1748,26 @@ export default function TaxationPage() {
       {activeTab === 'paye' && (
         <div className="space-y-6">
           {/* PAYE Overview */}
-          <div className="bg-linear-to-br from-green-500 to-emerald-500 rounded-xl p-8 text-white">
-            <div className="flex items-center gap-3 mb-4">
-              <Users className="w-8 h-8" />
+          <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-8">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="p-3 bg-green-50 rounded-xl shrink-0">
+                <Users className="w-6 h-6 text-green-600" />
+              </div>
               <div>
-                <h2 className="text-2xl font-bold">PAYE & National Insurance</h2>
-                <p className="text-green-100">Calculate payroll taxes &amp; download reports for your accountant (2025/26 Rates)</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">PAYE & National Insurance</h2>
+                <p className="text-gray-500 text-sm">Calculate payroll taxes &amp; download reports for your accountant ({currentTaxYear} Rates)</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
               <button
                 onClick={() => setShowRTIModal(true)}
-                className="px-6 py-3 bg-white text-green-600 font-bold rounded-xl hover:bg-green-50 hover:shadow-lg transition-all cursor-pointer"
+                className="px-5 py-2.5 bg-green-600 text-white font-medium text-sm rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
               >
                 Download RTI Report
               </button>
-              <button 
+              <button
                 onClick={() => setShowPAYECalculatorModal(true)}
-                className="px-6 py-3 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 hover:shadow-lg transition-all cursor-pointer"
+                className="px-5 py-2.5 border border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 PAYE Calculator
               </button>
@@ -1615,28 +1775,28 @@ export default function TaxationPage() {
           </div>
 
           {/* UK 2025/26 Tax Rates */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Shield className="w-5 h-5 text-green-600" />
-              UK 2025/26 Tax Rates & Thresholds
+              UK {currentTaxYear} Tax Rates & Thresholds
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-200/50">
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
                 <p className="text-xs text-blue-600 font-medium mb-1">Personal Allowance</p>
                 <p className="text-xl font-bold text-blue-900">£12,570</p>
                 <p className="text-xs text-blue-700 mt-1">Tax-free income</p>
               </div>
-              <div className="p-4 bg-green-50/50 rounded-xl border border-green-200/50">
+              <div className="p-4 bg-green-50 rounded-xl border border-green-100">
                 <p className="text-xs text-green-600 font-medium mb-1">Basic Rate (20%)</p>
                 <p className="text-xl font-bold text-green-900">£12,571 - £50,270</p>
                 <p className="text-xs text-green-700 mt-1">Standard tax band</p>
               </div>
-              <div className="p-4 bg-orange-50/50 rounded-xl border border-orange-200/50">
+              <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
                 <p className="text-xs text-orange-600 font-medium mb-1">Higher Rate (40%)</p>
                 <p className="text-xl font-bold text-orange-900">£50,271 - £125,140</p>
                 <p className="text-xs text-orange-700 mt-1">Higher earners</p>
               </div>
-              <div className="p-4 bg-red-50/50 rounded-xl border border-red-200/50">
+              <div className="p-4 bg-red-50 rounded-xl border border-red-100">
                 <p className="text-xs text-red-600 font-medium mb-1">Additional Rate (45%)</p>
                 <p className="text-xl font-bold text-red-900">Over £125,140</p>
                 <p className="text-xs text-red-700 mt-1">Top earners</p>
@@ -1645,19 +1805,19 @@ export default function TaxationPage() {
 
             {/* NI Rates */}
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <h4 className="font-semibold text-gray-900 mb-3">National Insurance 2025/26</h4>
+              <h4 className="font-semibold text-gray-900 mb-3">National Insurance {currentTaxYear}</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-3 bg-purple-50/50 rounded-lg border border-purple-200/50">
+                <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
                   <p className="text-xs text-purple-600 font-medium">Employee NI (Class 1)</p>
                   <p className="font-bold text-purple-900">8%</p>
                   <p className="text-xs text-purple-700">£12,570 - £50,270</p>
                 </div>
-                <div className="p-3 bg-purple-50/50 rounded-lg border border-purple-200/50">
+                <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
                   <p className="text-xs text-purple-600 font-medium">Employee NI (Upper)</p>
                   <p className="font-bold text-purple-900">2%</p>
                   <p className="text-xs text-purple-700">Over £50,270</p>
                 </div>
-                <div className="p-3 bg-indigo-50/50 rounded-lg border border-indigo-200/50">
+                <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
                   <p className="text-xs text-indigo-600 font-medium">Employer NI</p>
                   <p className="font-bold text-indigo-900">15%</p>
                   <p className="text-xs text-indigo-700">Over £9,100 (from Apr 2025)</p>
@@ -1668,40 +1828,40 @@ export default function TaxationPage() {
 
           {/* Employee Summary */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6 cursor-pointer hover:shadow-lg transition-all group">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all group">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Total Employees</p>
-                  <p className="text-3xl font-bold text-gray-900">12</p>
+                  <p className="text-3xl font-bold text-gray-900">{employeeCount}</p>
                 </div>
               </div>
               <p className="text-xs text-gray-600">Active on payroll</p>
             </div>
 
-            <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6 cursor-pointer hover:shadow-lg transition-all group">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all group">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
                   <DollarSign className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Monthly PAYE</p>
-                  <p className="text-3xl font-bold text-gray-900">£2,450</p>
+                  <p className="text-3xl font-bold text-gray-900">£{currentMonthlyPAYE.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                 </div>
               </div>
               <p className="text-xs text-gray-600">Current month liability</p>
             </div>
 
-            <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6 cursor-pointer hover:shadow-lg transition-all group">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all group">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
                   <Receipt className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Monthly NI</p>
-                  <p className="text-3xl font-bold text-gray-900">£1,850</p>
+                  <p className="text-3xl font-bold text-gray-900">£{currentMonthlyNIDue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                 </div>
               </div>
               <p className="text-xs text-gray-600">Employer & Employee NI</p>
@@ -1709,67 +1869,71 @@ export default function TaxationPage() {
           </div>
 
           {/* RTI Reports */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Download className="w-5 h-5 text-green-600" />
               Recent RTI Reports
             </h3>
-            <div className="space-y-3">
-              {[
-                { month: 'December 2025', submitted: '19 Dec 2025', amount: 4300, status: 'downloaded' },
-                { month: 'November 2025', submitted: '19 Nov 2025', amount: 4250, status: 'downloaded' },
-                { month: 'October 2025', submitted: '19 Oct 2025', amount: 4200, status: 'downloaded' },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 bg-white/40 border border-white/30 rounded-xl hover:bg-white/60 transition-all cursor-pointer hover:shadow-md">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-green-100/50 rounded-lg">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+            {rtiReports.length === 0 ? (
+              <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-500">No RTI reports downloaded yet.</p>
+                <p className="text-xs text-gray-400 mt-1">Reports you download below will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {rtiReports.map((report) => (
+                  <div key={report.id} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-all cursor-pointer hover:shadow-md">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-green-100/50 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{report.period}</p>
+                        <p className="text-sm text-gray-600">Downloaded: {new Date(report.createdAt).toLocaleDateString('en-GB')} • {report.format}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{item.month}</p>
-                      <p className="text-sm text-gray-600">Prepared: {item.submitted}</p>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-900">£{report.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                        downloaded
+                      </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">£{item.amount.toLocaleString()}</p>
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                      {item.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* PAYE Calculation */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
-            <h3 className="font-bold text-gray-900 mb-4">Current Month Breakdown (January 2026)</h3>
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-bold text-gray-900 mb-4">Current Month Breakdown ({payeMonthLabel})</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-white/40 border border-white/30 rounded-lg hover:bg-white/60 hover:shadow-sm transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Employee Income Tax (PAYE)</span>
-                <span className="font-bold text-gray-900">£2,450.00</span>
+                <span className="font-bold text-gray-900">£{currentMonthlyPAYE.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-white/40 border border-white/30 rounded-lg hover:bg-white/60 hover:shadow-sm transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Employee NI (8% of £12,570-£50,270)</span>
-                <span className="font-bold text-gray-900">£850.00</span>
+                <span className="font-bold text-gray-900">£{currentMonthlyEmployeeNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-white/40 border border-white/30 rounded-lg hover:bg-white/60 hover:shadow-sm transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Employer NI (15% over £9,100)</span>
-                <span className="font-bold text-gray-900">£1,000.00</span>
+                <span className="font-bold text-gray-900">£{currentMonthlyEmployerNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-linear-to-br from-green-50/50 to-emerald-50/50 backdrop-blur-sm rounded-lg border border-green-200/50 hover:from-green-50/80 hover:to-emerald-50/80 transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-100 hover:border-green-200 transition-colors cursor-pointer">
                 <div>
                   <p className="font-semibold text-green-900">Total Payment Due to HMRC</p>
-                  <p className="text-xs text-green-700">Due: 22 February 2026</p>
+                  <p className="text-xs text-green-700">Due: {payeDueLabel}</p>
                 </div>
-                <span className="font-bold text-green-900 text-3xl">£4,300</span>
+                <span className="font-bold text-green-900 text-3xl">£{currentMonthlyTotalDue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
               </div>
             </div>
           </div>
 
           {/* Important Information */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-blue-50/50 backdrop-blur-sm border border-blue-200/50 rounded-xl p-5 hover:bg-blue-50/80 hover:shadow-lg transition-all cursor-pointer">
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 hover:border-blue-200 transition-colors cursor-pointer">
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="w-6 h-6 text-blue-600" />
                 <h3 className="font-bold text-blue-900">Payment Deadline</h3>
@@ -1779,7 +1943,7 @@ export default function TaxationPage() {
               <p className="text-xs text-blue-700 mt-2">For previous month&apos;s deductions</p>
             </div>
 
-            <div className="bg-orange-50/50 backdrop-blur-sm border border-orange-200/50 rounded-xl p-5 hover:bg-orange-50/80 hover:shadow-lg transition-all cursor-pointer">
+            <div className="bg-orange-50 border border-orange-100 rounded-xl p-5 hover:border-orange-200 transition-colors cursor-pointer">
               <div className="flex items-center gap-2 mb-3">
                 <AlertCircle className="w-6 h-6 text-orange-600" />
                 <h3 className="font-bold text-orange-900">RTI Deadline</h3>
@@ -1794,14 +1958,14 @@ export default function TaxationPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button 
               onClick={() => setShowRTIModal(true)}
-              className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-center cursor-pointer group"
+              className="p-5 bg-white border border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-center cursor-pointer group"
             >
               <Download className="w-8 h-8 text-green-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-gray-900 text-sm">Download FPS Report</p>
             </button>
             <button 
               onClick={() => setShowPAYECalculatorModal(true)}
-              className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-center cursor-pointer group"
+              className="p-5 bg-white border border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-center cursor-pointer group"
             >
               <Calculator className="w-8 h-8 text-green-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-gray-900 text-sm">Calculate PAYE</p>
@@ -1810,11 +1974,11 @@ export default function TaxationPage() {
               onClick={() => {
                 setSuccessContent({
                   title: 'P60 Download Ready',
-                  message: 'P60 certificates for all employees are being generated.\n\nTax Year: 2025/26\nEmployees: 12\n\nDownload will begin shortly.'
+                  message: `P60 certificates for all employees are being generated.\n\nTax Year: ${currentTaxYear}\nEmployees: ${employeeCount}\n\nDownload will begin shortly.`
                 });
                 setShowSuccessModal(true);
               }}
-              className="p-5 bg-white/60 backdrop-blur-xl border border-white/50 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-center cursor-pointer group"
+              className="p-5 bg-white border border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-center cursor-pointer group"
             >
               <Download className="w-8 h-8 text-green-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-gray-900 text-sm">Download P60s</p>
@@ -1826,24 +1990,26 @@ export default function TaxationPage() {
       {activeTab === 'vat' && (
         <div className="space-y-6">
           {/* VAT Header */}
-          <div className="bg-linear-to-br from-purple-500 to-pink-500 rounded-xl p-8 text-white">
-            <div className="flex items-center gap-3 mb-4">
-              <Receipt className="w-8 h-8" />
+          <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-8">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="p-3 bg-purple-50 rounded-xl shrink-0">
+                <Receipt className="w-6 h-6 text-purple-600" />
+              </div>
               <div>
-                <h2 className="text-2xl font-bold">VAT Management</h2>
-                <p className="text-purple-100">Calculate VAT &amp; download for your accountant to file</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">VAT Management</h2>
+                <p className="text-gray-500 text-sm">Calculate VAT &amp; download for your accountant to file</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
               <button
                 onClick={() => setShowVATReturnModal(true)}
-                className="px-6 py-3 bg-white text-purple-600 font-bold rounded-xl hover:bg-purple-50 hover:shadow-lg transition-all cursor-pointer"
+                className="px-5 py-2.5 bg-purple-600 text-white font-medium text-sm rounded-lg hover:bg-purple-700 transition-colors cursor-pointer"
               >
                 Prepare VAT Return
               </button>
-              <button 
+              <button
                 onClick={() => setShowVATHistoryModal(true)}
-                className="px-6 py-3 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 hover:shadow-lg transition-all cursor-pointer"
+                className="px-5 py-2.5 border border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 View Returns
               </button>
@@ -1851,38 +2017,38 @@ export default function TaxationPage() {
           </div>
 
           {/* UK VAT Rates 2025/26 */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Shield className="w-5 h-5 text-purple-600" />
-              UK VAT Rates 2025/26
+              UK VAT Rates {currentTaxYear}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-200/50">
+              <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
                 <p className="text-xs text-purple-600 font-medium mb-1">Standard Rate</p>
                 <p className="text-3xl font-bold text-purple-900">20%</p>
                 <p className="text-xs text-purple-700 mt-1">Most goods & services</p>
               </div>
-              <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-200/50">
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
                 <p className="text-xs text-blue-600 font-medium mb-1">Reduced Rate</p>
                 <p className="text-3xl font-bold text-blue-900">5%</p>
                 <p className="text-xs text-blue-700 mt-1">Home energy, child car seats</p>
               </div>
-              <div className="p-4 bg-green-50/50 rounded-xl border border-green-200/50">
+              <div className="p-4 bg-green-50 rounded-xl border border-green-100">
                 <p className="text-xs text-green-600 font-medium mb-1">Zero Rate</p>
                 <p className="text-3xl font-bold text-green-900">0%</p>
                 <p className="text-xs text-green-700 mt-1">Food, books, children&apos;s clothes</p>
               </div>
             </div>
-            
+
             {/* VAT Thresholds */}
             <div className="mt-4 pt-4 border-t border-gray-200">
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 bg-red-50/50 rounded-lg border border-red-200/50">
+                <div className="p-3 bg-red-50 rounded-lg border border-red-100">
                   <p className="text-xs text-red-600 font-medium">Registration Threshold</p>
                   <p className="font-bold text-red-900 text-xl">£90,000</p>
                   <p className="text-xs text-red-700">Taxable turnover in 12 months</p>
                 </div>
-                <div className="p-3 bg-amber-50/50 rounded-lg border border-amber-200/50">
+                <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
                   <p className="text-xs text-amber-600 font-medium">Deregistration Threshold</p>
                   <p className="font-bold text-amber-900 text-xl">£88,000</p>
                   <p className="text-xs text-amber-700">Below this, can deregister</p>
@@ -1892,21 +2058,21 @@ export default function TaxationPage() {
           </div>
 
           {/* Current Quarter */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
-            <h3 className="font-bold text-gray-900 mb-4">Current Quarter (Q3 {currentTaxYear}: Oct - Dec 2025)</h3>
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-bold text-gray-900 mb-4">Current Quarter ({vatQuarterFullLabel})</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-white/40 border border-white/30 rounded-lg hover:bg-white/60 hover:shadow-sm transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Output VAT (Sales)</span>
                 <span className="font-bold text-gray-900">£{parseFloat(vatOutputSales).toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-white/40 border border-white/30 rounded-lg hover:bg-white/60 hover:shadow-sm transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Input VAT (Purchases)</span>
                 <span className="font-bold text-gray-900">-£{parseFloat(vatInputPurchases).toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-purple-50/50 backdrop-blur-sm rounded-lg border border-purple-200/50">
+              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100">
                 <div>
                   <p className="font-semibold text-purple-900">Net VAT Due to HMRC</p>
-                  <p className="text-xs text-purple-700">Due: 7 February 2026 — share with accountant</p>
+                  <p className="text-xs text-purple-700">Due: {vatQuarterDueLabel} — share with accountant</p>
                 </div>
                 <span className="font-bold text-purple-900 text-3xl">£{(parseFloat(vatOutputSales) * vatRate - parseFloat(vatInputPurchases) * vatRate / 2).toLocaleString('en-GB', {minimumFractionDigits: 0})}*</span>
               </div>
@@ -1915,7 +2081,7 @@ export default function TaxationPage() {
           </div>
 
           {/* MTD Information */}
-          <div className="bg-blue-50/50 backdrop-blur-sm border border-blue-200/50 rounded-xl p-5">
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-3">
               <Shield className="w-6 h-6 text-blue-600" />
               <h3 className="font-bold text-blue-900">Making Tax Digital (MTD)</h3>
@@ -1932,17 +2098,17 @@ export default function TaxationPage() {
 
           {/* VAT Scheme Info */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-5 text-center cursor-pointer hover:shadow-lg transition-all">
+            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center cursor-pointer hover:shadow-lg transition-all">
               <p className="text-xs text-gray-600 mb-1">Your Scheme</p>
               <p className="font-bold text-gray-900">Standard VAT</p>
             </div>
-            <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-5 text-center cursor-pointer hover:shadow-lg transition-all">
+            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center cursor-pointer hover:shadow-lg transition-all">
               <p className="text-xs text-gray-600 mb-1">Return Frequency</p>
               <p className="font-bold text-gray-900">Quarterly</p>
             </div>
-            <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-5 text-center cursor-pointer hover:shadow-lg transition-all">
+            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center cursor-pointer hover:shadow-lg transition-all">
               <p className="text-xs text-gray-600 mb-1">Next Deadline</p>
-              <p className="font-bold text-purple-600">7 Feb 2026</p>
+              <p className="font-bold text-purple-600">{vatQuarter.dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
             </div>
           </div>
         </div>
@@ -1951,31 +2117,33 @@ export default function TaxationPage() {
       {activeTab === 'capital-gains' && (
         <div className="space-y-6">
           {/* CGT Header */}
-          <div className="bg-linear-to-br from-orange-500 to-red-500 rounded-xl p-8 text-white">
-            <div className="flex items-center gap-3 mb-4">
-              <TrendingUp className="w-8 h-8" />
+          <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-8">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="p-3 bg-orange-50 rounded-xl shrink-0">
+                <TrendingUp className="w-6 h-6 text-orange-600" />
+              </div>
               <div>
-                <h2 className="text-2xl font-bold">Capital Gains Tax</h2>
-                <p className="text-orange-100">Calculate and report capital gains on asset disposals (2025/26)</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Capital Gains Tax</h2>
+                <p className="text-gray-500 text-sm">Calculate and report capital gains on asset disposals ({currentTaxYear})</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setShowCGTCalculatorModal(true)}
-              className="px-6 py-3 bg-white text-orange-600 font-bold rounded-xl hover:bg-orange-50 hover:shadow-lg transition-all cursor-pointer"
+              className="px-5 py-2.5 bg-orange-600 text-white font-medium text-sm rounded-lg hover:bg-orange-700 transition-colors cursor-pointer"
             >
               Calculate CGT
             </button>
           </div>
 
           {/* UK CGT Rates 2025/26 */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Shield className="w-5 h-5 text-orange-600" />
-              UK CGT Rates 2025/26
+              UK CGT Rates {currentTaxYear}
             </h3>
-            
+
             {/* Annual Exempt Amount */}
-            <div className="mb-6 p-6 bg-linear-to-br from-orange-50/50 to-red-50/50 backdrop-blur-sm rounded-xl border border-orange-200/50">
+            <div className="mb-6 p-6 bg-orange-50 rounded-xl border border-orange-100">
               <p className="text-sm text-orange-700 mb-2">Annual Exempt Amount (AEA)</p>
               <p className="text-4xl font-bold text-orange-900">£3,000</p>
               <p className="text-xs text-orange-700 mt-2">Reduced from £6,000 in 2024/25</p>
@@ -1983,7 +2151,7 @@ export default function TaxationPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Basic Rate Taxpayer */}
-              <div className="p-4 bg-green-50/50 rounded-xl border border-green-200/50">
+              <div className="p-4 bg-green-50 rounded-xl border border-green-100">
                 <p className="text-sm font-semibold text-green-800 mb-3">Basic Rate Taxpayers</p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
@@ -2002,7 +2170,7 @@ export default function TaxationPage() {
               </div>
 
               {/* Higher Rate Taxpayer */}
-              <div className="p-4 bg-red-50/50 rounded-xl border border-red-200/50">
+              <div className="p-4 bg-red-50 rounded-xl border border-red-100">
                 <p className="text-sm font-semibold text-red-800 mb-3">Higher/Additional Rate Taxpayers</p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
@@ -2023,15 +2191,15 @@ export default function TaxationPage() {
           </div>
 
           {/* Special Rates */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-bold text-gray-900 mb-4">Special CGT Rates</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-200/50">
+              <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
                 <p className="text-sm font-semibold text-purple-800 mb-2">Business Asset Disposal Relief (BADR)</p>
                 <p className="text-3xl font-bold text-purple-900">14%</p>
                 <p className="text-xs text-purple-700 mt-2">Lifetime limit: £1 million</p>
               </div>
-              <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-200/50">
+              <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
                 <p className="text-sm font-semibold text-indigo-800 mb-2">Investors&apos; Relief</p>
                 <p className="text-3xl font-bold text-indigo-900">10%</p>
                 <p className="text-xs text-indigo-700 mt-2">Lifetime limit: £10 million</p>
@@ -2040,7 +2208,7 @@ export default function TaxationPage() {
           </div>
 
           {/* Reporting Deadlines */}
-          <div className="bg-yellow-50/50 backdrop-blur-sm border border-yellow-200/50 rounded-xl p-5">
+          <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-3">
               <AlertCircle className="w-6 h-6 text-yellow-600" />
               <h3 className="font-bold text-yellow-900">Reporting Requirements</h3>
@@ -2193,7 +2361,7 @@ export default function TaxationPage() {
                     <div className="bg-linear-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200">
                       <p className="text-sm font-bold text-gray-500">{monthNames[calendarMonth]}</p>
                       <h4 className="text-4xl font-black text-gray-900 mt-1">{selectedCalendarDay}</h4>
-                      <p className="text-xs font-bold text-gray-400 uppercase mt-1">2026 Tax Insight</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase mt-1">{calendarYear} Tax Insight</p>
                     </div>
 
                     {selectedEvent ? (
@@ -2279,7 +2447,7 @@ export default function TaxationPage() {
           </div>
 
           {/* Annual Tax Calendar Reference */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-xl border border-white/50 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">UK Tax Calendar Reference</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-200/50">
@@ -2412,10 +2580,10 @@ export default function TaxationPage() {
                         onChange={(e) => setNewReturnData({ ...newReturnData, period: e.target.value })}
                         className="w-full px-4 py-3 bg-white/50 border border-white/50 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-pointer"
                       >
-                        <option>Q1 2025</option>
-                        <option>Q4 2024</option>
-                        <option>FY 2024/25</option>
-                        <option>FY 2023/24</option>
+                        <option>{calQuarterLabel}</option>
+                        <option>{prevCalQuarterLabel}</option>
+                        <option>{`FY ${taxYearOptions[0].year}`}</option>
+                        <option>{`FY ${taxYearOptions[1].year}`}</option>
                       </select>
                     </div>
                     <div>
@@ -2481,7 +2649,7 @@ export default function TaxationPage() {
               {/* Step 4: Review */}
               {newReturnStep === 4 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                  <div className="bg-white/40 border border-white/50 rounded-2xl overflow-hidden backdrop-blur-sm shadow-sm">
+                  <div className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden backdrop-blur-sm shadow-sm">
                     <div className="bg-gray-50 border-b border-gray-100 px-5 sm:px-6 py-4">
                       <h3 className="font-bold text-gray-900">Report Summary</h3>
                     </div>
@@ -2617,12 +2785,12 @@ export default function TaxationPage() {
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-blue-100">
                     <span className="text-blue-800">Effective Tax Rate</span>
-                    <span className="font-bold text-blue-900">{Number(ctProfit) <= 50000 ? '19%' : Number(ctProfit) >= 250000 ? '25%' : 'Marginal Rate'}</span>
+                    <span className="font-bold text-blue-900">{ctRateLabel}</span>
                   </div>
                   <div className="flex justify-between items-center py-4 bg-white/60 -mx-6 px-6 mt-4">
                     <span className="text-blue-900 font-bold">Estimated Tax Liability</span>
                     <span className="text-3xl font-black text-blue-600">
-                      £{(Number(ctProfit) * (Number(ctProfit) <= 50000 ? 0.19 : 0.25)).toLocaleString()}
+                      £{ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                 </div>
@@ -2635,7 +2803,7 @@ export default function TaxationPage() {
                 </div>
                 <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
                   <p className="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">Payment Deadline</p>
-                  <p className="font-bold text-gray-900">1 January 2025</p>
+                  <p className="font-bold text-gray-900">{ctPaymentDeadline}</p>
                 </div>
               </div>
 
@@ -2681,27 +2849,27 @@ export default function TaxationPage() {
                     
                     y += 10;
                     doc.text('Applicable Tax Rate:', 20, y);
-                    doc.text(Number(ctProfit) <= 50000 ? '19%' : '25%', 150, y, { align: 'right' });
-                    
+                    doc.text(ctRateLabel, 150, y, { align: 'right' });
+
                     y += 15;
                     doc.setFont('helvetica', 'bold');
                     doc.text('TOTAL CORPORATION TAX PAYABLE:', 20, y);
-                    doc.text(`£${(Number(ctProfit) * (Number(ctProfit) <= 50000 ? 0.19 : 0.25)).toLocaleString()}`, 150, y, { align: 'right' });
-                    
+                    doc.text(`£${ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, 150, y, { align: 'right' });
+
                     y += 30;
                     doc.setFontSize(14);
                     doc.text('FILING INFORMATION', 20, y);
                     doc.line(20, y + 2, 190, y + 2);
-                    
+
                     y += 15;
                     doc.setFontSize(12);
                     doc.setFont('helvetica', 'normal');
                     doc.text('Filing Deadline:', 20, y);
-                    doc.text('31 March 2025', 100, y);
-                    
+                    doc.text(ctFilingDeadline, 100, y);
+
                     y += 10;
                     doc.text('Payment Deadline:', 20, y);
-                    doc.text('1 January 2025', 100, y);
+                    doc.text(ctPaymentDeadline, 100, y);
                     
                     y += 40;
                     doc.setFontSize(10);
@@ -2727,43 +2895,57 @@ export default function TaxationPage() {
           </div>
       )}
       {/* Edit Income Source Modal */}
-      {showEditIncomeModal && editingSource && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[70] p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
-            <div className="bg-linear-to-r from-purple-600 to-pink-600 p-5 rounded-t-2xl shadow-lg">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <DollarSign className="w-6 h-6" />
-                  </div>
-                  Edit {editingSource.name}
-                </h2>
-                <button 
-                  onClick={() => setShowEditIncomeModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
+      {showEditIncomeModal && editingSource && (() => {
+        const sourceIcon: Record<string, React.ComponentType<{ className?: string }>> = {
+          'self-employment': Briefcase,
+          'employment': DollarSign,
+          'property': Home,
+          'dividends': TrendingUp,
+          'expenses': Calculator,
+        };
+        const SourceIcon = sourceIcon[editingSource.id] ?? DollarSign;
+        return (
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-[70] p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl max-w-md w-full border border-gray-200 transform animate-in slide-in-from-bottom-10 duration-300">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-purple-50 rounded-lg">
+                  <SourceIcon className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900">Edit {editingSource.name}</h2>
+                  <p className="text-xs text-gray-500">Tax year {saTaxYear}</p>
+                </div>
               </div>
+              <button
+                onClick={() => setShowEditIncomeModal(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             <div className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Amount (£)
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  Amount
                 </label>
-                <input
-                  type="number"
-                  defaultValue={editingSource.value}
-                  onChange={(e) => setEditingSource({ ...editingSource, value: Number(e.target.value) })}
-                  className="w-full px-4 py-3 bg-white/50 border border-white/50 rounded-xl focus:border-purple-500 focus:outline-none text-lg backdrop-blur-sm font-semibold"
-                />
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">£</span>
+                  <input
+                    type="number"
+                    autoFocus
+                    defaultValue={editingSource.value}
+                    onChange={(e) => setEditingSource({ ...editingSource, value: Number(e.target.value) })}
+                    className="w-full pl-8 pr-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 focus:outline-none text-lg font-semibold text-gray-900 transition-colors"
+                  />
+                </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 pt-1">
                 <button
                   onClick={() => setShowEditIncomeModal(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="flex-1 px-5 py-2.5 border border-gray-200 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -2777,7 +2959,7 @@ export default function TaxationPage() {
                     setSaYearData(newYearData);
                     setShowEditIncomeModal(false);
                   }}
-                  className="flex-1 px-6 py-3 bg-linear-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all cursor-pointer shadow-lg"
+                  className="flex-1 px-5 py-2.5 bg-purple-600 text-white font-medium text-sm rounded-lg hover:bg-purple-700 transition-colors cursor-pointer shadow-sm"
                 >
                   Save Changes
                 </button>
@@ -2785,7 +2967,8 @@ export default function TaxationPage() {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
       {/* Previous Returns History Modal */}
       {showHistoryModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
@@ -2808,32 +2991,12 @@ export default function TaxationPage() {
             </div>
 
             <div className="p-6">
-              <div className="space-y-4">
-                {[
-                  { year: '2022/23', submitted: '24 Jan 2024', status: 'Downloaded', amount: 16420, ref: 'SA-2324-XJ92' },
-                  { year: '2021/22', submitted: '15 Jan 2023', status: 'Downloaded', amount: 14850, ref: 'SA-2223-BK45' },
-                  { year: '2020/21', submitted: '31 Jan 2022', status: 'Downloaded', amount: 12300, ref: 'SA-2122-PL11' },
-                ].map((ret, idx) => (
-                  <div key={idx} className="p-4 bg-white/50 border border-gray-100 rounded-xl hover:bg-purple-50 transition-colors flex items-center justify-between group">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-purple-100 rounded-lg group-hover:scale-110 transition-transform">
-                        <CheckCircle className="w-5 h-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-900">Tax Year {ret.year}</p>
-                        <p className="text-xs text-gray-500">Ref: {ret.ref} • Downloaded {ret.submitted}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-purple-900">£{ret.amount.toLocaleString()}</p>
-                      <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                        {ret.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-500">No previous returns yet.</p>
+                <p className="text-xs text-gray-400 mt-1">Returns you generate with &quot;Start New Return&quot; will appear here once tracking is enabled.</p>
               </div>
-              
+
               <button
                 onClick={() => setShowHistoryModal(false)}
                 className="mt-6 w-full px-6 py-3 border border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer shadow-sm"
@@ -2847,28 +3010,24 @@ export default function TaxationPage() {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl max-w-sm w-full border border-white/50 overflow-hidden transform animate-in zoom-in-95 duration-300">
-            <div className="h-2 bg-linear-to-r from-green-400 to-emerald-500" />
-            <div className="p-8 text-center">
-              <div className="relative w-24 h-24 mx-auto mb-6">
-                <div className="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-25" />
-                <div className="relative flex items-center justify-center w-full h-full bg-green-50 rounded-full border-4 border-white shadow-inner">
-                  <CheckCircle className="w-12 h-12 text-green-500" />
-                </div>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-100 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full border border-gray-200 transform animate-in zoom-in-95 duration-200">
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-green-50 rounded-full">
+                <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
-              
-              <h2 className="text-2xl font-black text-gray-900 mb-2">{successContent.title}</h2>
-              <div className="text-gray-600 mb-6 whitespace-pre-wrap leading-relaxed text-sm">
+
+              <h2 className="text-lg font-semibold text-gray-900 mb-1.5">{successContent.title}</h2>
+              <div className="text-gray-500 mb-6 whitespace-pre-wrap leading-relaxed text-sm">
                 {successContent.message}
               </div>
 
               {successDownloadFns && (
-                <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="grid grid-cols-2 gap-2.5 mb-2.5">
                   {successDownloadFns.pdf && (
                     <button
-                      onClick={() => { successDownloadFns.pdf!(); setShowSuccessModal(false); setSuccessDownloadFns(null); }}
-                      className="py-3 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg"
+                      onClick={() => { successDownloadFns.pdf!(); logReportDownload('PDF'); setShowSuccessModal(false); setSuccessDownloadFns(null); }}
+                      className="py-2.5 bg-red-50 text-red-700 font-medium text-sm rounded-lg hover:bg-red-100 transition-colors cursor-pointer flex items-center justify-center gap-2 border border-red-100"
                     >
                       <Download className="w-4 h-4" />
                       PDF
@@ -2876,8 +3035,8 @@ export default function TaxationPage() {
                   )}
                   {successDownloadFns.excel && (
                     <button
-                      onClick={() => { successDownloadFns.excel!(); setShowSuccessModal(false); setSuccessDownloadFns(null); }}
-                      className="py-3 bg-green-600 text-white font-bold rounded-2xl hover:bg-green-700 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg"
+                      onClick={() => { successDownloadFns.excel!(); logReportDownload('Excel'); setShowSuccessModal(false); setSuccessDownloadFns(null); }}
+                      className="py-2.5 bg-green-50 text-green-700 font-medium text-sm rounded-lg hover:bg-green-100 transition-colors cursor-pointer flex items-center justify-center gap-2 border border-green-100"
                     >
                       <Download className="w-4 h-4" />
                       Excel
@@ -2887,8 +3046,8 @@ export default function TaxationPage() {
               )}
 
               <button
-                onClick={() => { setShowSuccessModal(false); setSuccessDownloadFns(null); }}
-                className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-black hover:shadow-xl active:scale-95 transition-all cursor-pointer shadow-lg"
+                onClick={() => { setShowSuccessModal(false); setSuccessDownloadFns(null); setPendingReportLog(null); }}
+                className="w-full py-2.5 bg-gray-900 text-white font-medium text-sm rounded-lg hover:bg-black transition-colors cursor-pointer"
               >
                 {successDownloadFns ? 'Skip Download' : 'Great, thanks!'}
               </button>
@@ -2915,7 +3074,7 @@ export default function TaxationPage() {
                   </div>
                   <div>
                     <h2 className="text-2xl font-black text-white tracking-tight">PAYE Calculator</h2>
-                    <p className="text-emerald-100 text-sm font-medium">UK Tax Year 2025/26</p>
+                    <p className="text-emerald-100 text-sm font-medium">UK Tax Year {currentTaxYear}</p>
                   </div>
                 </div>
                 <button 
@@ -3055,7 +3214,7 @@ export default function TaxationPage() {
               <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
-                  <strong>2025/26 Rates:</strong> Employee NI reduced to 8%. Employer NI increased to 15% with £9,100 threshold.
+                  <strong>{currentTaxYear} Rates:</strong> Employee NI reduced to 8%. Employer NI increased to 15% with £9,100 threshold.
                 </p>
               </div>
             </div>
@@ -3130,7 +3289,7 @@ export default function TaxationPage() {
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       <span className="text-gray-700 font-medium">Pay Period</span>
                     </div>
-                    <span className="font-bold text-gray-900">January 2026 <span className="text-gray-500 text-sm font-normal">(Month 10)</span></span>
+                    <span className="font-bold text-gray-900">{payeMonthLabel} <span className="text-gray-500 text-sm font-normal">(Month {payeTaxMonthNumber})</span></span>
                   </div>
                   
                   <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
@@ -3140,7 +3299,7 @@ export default function TaxationPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-purple-500" />
-                      <span className="font-bold text-gray-900">12</span>
+                      <span className="font-bold text-gray-900">{employeeCount}</span>
                     </div>
                   </div>
                 </div>
@@ -3151,30 +3310,30 @@ export default function TaxationPage() {
                 <div className="p-4 bg-gray-50 border-b border-gray-200">
                   <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Financial Summary</h3>
                 </div>
-                
+
                 <div className="p-4 space-y-3">
                   <div className="flex items-center justify-between p-3 bg-red-50/50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                       <span className="text-red-800 font-medium">PAYE Income Tax</span>
                     </div>
-                    <span className="font-bold text-red-900 text-lg">£2,450.00</span>
+                    <span className="font-bold text-red-900 text-lg">£{currentMonthlyPAYE.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-3 bg-purple-50/50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                       <span className="text-purple-800 font-medium">Employee NI (8%)</span>
                     </div>
-                    <span className="font-bold text-purple-900 text-lg">£850.00</span>
+                    <span className="font-bold text-purple-900 text-lg">£{currentMonthlyEmployeeNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-3 bg-indigo-50/50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>
                       <span className="text-indigo-800 font-medium">Employer NI (15%)</span>
                     </div>
-                    <span className="font-bold text-indigo-900 text-lg">£1,000.00</span>
+                    <span className="font-bold text-indigo-900 text-lg">£{currentMonthlyEmployerNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 </div>
 
@@ -3186,10 +3345,10 @@ export default function TaxationPage() {
                     </div>
                     <div>
                       <span className="text-white font-bold text-lg">Total to HMRC</span>
-                      <p className="text-cyan-100 text-xs">Due: 22 February 2026</p>
+                      <p className="text-cyan-100 text-xs">Due: {payeDueLabel}</p>
                     </div>
                   </div>
-                  <span className="text-3xl font-black text-white">£4,300.00</span>
+                  <span className="text-3xl font-black text-white">£{currentMonthlyTotalDue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
 
@@ -3221,18 +3380,19 @@ export default function TaxationPage() {
                 onClick={() => {
                   setShowRTIModal(false);
                   const rtiRows: [string, string][] = [
-                    ['Pay Period', 'January 2026 (Month 10)'],
-                    ['Employees', '12'],
-                    ['PAYE Income Tax', '£2,450.00'],
-                    ['Employee NI', '£850.00'],
-                    ['Employer NI', '£1,000.00'],
-                    ['Total Due to HMRC', '£4,300.00'],
-                    ['HMRC Deadline', '22 February 2026'],
+                    ['Pay Period', payeMonthLabel],
+                    ['Employees', String(employeeCount)],
+                    ['PAYE Income Tax', `£${currentMonthlyPAYE.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+                    ['Employee NI', `£${currentMonthlyEmployeeNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+                    ['Employer NI', `£${currentMonthlyEmployerNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+                    ['Total Due to HMRC', `£${currentMonthlyTotalDue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+                    ['HMRC Deadline', payeDueLabel],
                   ];
                   setSuccessDownloadFns({
-                    pdf: () => makeQuickPDF('RTI Full Payment Submission — January 2026', rtiRows, 'Share with your accountant for RTI submission to HMRC.'),
-                    excel: () => makeQuickExcel('RTI Full Payment Submission — January 2026', rtiRows),
+                    pdf: () => makeQuickPDF(`RTI Full Payment Submission — ${payeMonthLabel}`, rtiRows, 'Share with your accountant for RTI submission to HMRC.'),
+                    excel: () => makeQuickExcel(`RTI Full Payment Submission — ${payeMonthLabel}`, rtiRows),
                   });
+                  setPendingReportLog({ reportType: 'PAYE_RTI', period: payeMonthLabel, amount: currentMonthlyTotalDue });
                   setSuccessContent({
                     title: 'RTI Report Ready',
                     message: 'Your Full Payment Submission report is ready.\n\nDownload as PDF or Excel and share with your accountant for RTI submission to HMRC.',
@@ -3268,7 +3428,7 @@ export default function TaxationPage() {
                     <h2 className="text-2xl font-black text-white tracking-tight">VAT Return Report</h2>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold text-white uppercase tracking-wider">For Your Accountant</span>
-                      <p className="text-purple-100 text-sm font-medium">Q3: Oct - Dec 2025</p>
+                      <p className="text-purple-100 text-sm font-medium">{vatQuarterFullLabel}</p>
                     </div>
                   </div>
                 </div>
@@ -3400,21 +3560,22 @@ export default function TaxationPage() {
                   const inVAT = parseFloat(vatInputPurchases || '0') * 0.2;
                   const net = Math.max(0, outVAT - inVAT);
                   const vatRows: [string, string][] = [
-                    ['VAT Period', 'Q3 2025/26 (Oct – Dec 2025)'],
+                    ['VAT Period', vatQuarterFullLabel],
                     ['Output Sales (ex. VAT)', `£${parseFloat(vatOutputSales || '0').toLocaleString()}`],
                     ['Input Purchases (ex. VAT)', `£${parseFloat(vatInputPurchases || '0').toLocaleString()}`],
                     ['Output VAT (20%)', `£${outVAT.toFixed(2)}`],
                     ['Input VAT (20%)', `£${inVAT.toFixed(2)}`],
                     ['Net VAT Payable', `£${net.toFixed(2)}`],
-                    ['HMRC Deadline', '7 February 2026'],
+                    ['HMRC Deadline', vatQuarterDueLabel],
                   ];
                   setSuccessDownloadFns({
-                    pdf: () => makeQuickPDF('VAT Return — Q3 2025/26', vatRows, 'Share with your accountant for VAT submission to HMRC.'),
-                    excel: () => makeQuickExcel('VAT Return — Q3 2025/26', vatRows),
+                    pdf: () => makeQuickPDF(`VAT Return — ${vatQuarter.label}`, vatRows, 'Share with your accountant for VAT submission to HMRC.'),
+                    excel: () => makeQuickExcel(`VAT Return — ${vatQuarter.label}`, vatRows),
                   });
+                  setPendingReportLog({ reportType: 'VAT', period: vatQuarter.label, amount: net });
                   setSuccessContent({
                     title: 'VAT Report Ready',
-                    message: `Net VAT Payable: £${net.toFixed(2)}\nHMRC Deadline: 7 February 2026\n\nDownload as PDF or Excel and share with your accountant for HMRC filing.`,
+                    message: `Net VAT Payable: £${net.toFixed(2)}\nHMRC Deadline: ${vatQuarterDueLabel}\n\nDownload as PDF or Excel and share with your accountant for HMRC filing.`,
                   });
                   setShowSuccessModal(true);
                 }}
@@ -3443,11 +3604,11 @@ export default function TaxationPage() {
                     <History className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight">VAT Return History</h2>
-                    <p className="text-indigo-100 text-sm font-medium">Archived MTD Submissions</p>
+                    <h2 className="text-2xl font-black text-white tracking-tight">VAT Report History</h2>
+                    <p className="text-indigo-100 text-sm font-medium">Reports downloaded for your accountant</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowVATHistoryModal(false)}
                   className="p-2.5 bg-white/10 hover:bg-white/30 rounded-xl transition-all cursor-pointer backdrop-blur-sm group"
                 >
@@ -3455,58 +3616,45 @@ export default function TaxationPage() {
                 </button>
               </div>
             </div>
-            
-            <div className="p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
-              {[
-                { period: 'Q2 2025/26', range: 'Jul - Sep', date: '07 Nov 2025', amount: '£3,840.00', status: 'Submitted', ref: 'X8D2F1' },
-                { period: 'Q1 2025/26', range: 'Apr - Jun', date: '07 Aug 2025', amount: '£4,120.00', status: 'Submitted', ref: 'A2B9C8' },
-                { period: 'Q4 2024/25', range: 'Jan - Mar', date: '07 May 2025', amount: '£3,650.00', status: 'Submitted', ref: 'L9K4M2' },
-                { period: 'Q3 2024/25', range: 'Oct - Dec', date: '07 Feb 2025', amount: '£4,200.00', status: 'Submitted', ref: 'P3Q7R5' },
-              ].map((item, idx) => (
-                <div key={idx} className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -translate-y-1/2 translate-x-1/2 -z-10 group-hover:scale-110 transition-transform"></div>
-                  
-                  <div className="flex items-start justify-between relative z-10">
-                    <div className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
-                          <Calendar className="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors" />
-                        </div>
-                        <div className="w-0.5 h-full bg-indigo-50 mt-2"></div>
-                      </div>
-                      <div>
-                        <h3 className="font-black text-gray-900 text-lg leading-tight">{item.period}</h3>
-                        <p className="text-sm text-indigo-600 font-bold">{item.range}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Submitted on</span>
-                          <span className="text-xs font-bold text-gray-700">{item.date}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-black text-gray-900 tracking-tight">{item.amount}</p>
-                      <div className="flex items-center justify-end gap-1.5 mt-1">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">{item.status}</span>
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1 px-2 bg-gray-50 rounded text-[9px] font-mono font-bold text-gray-500">
-                        REF: {item.ref}
+            <div className="p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+              {vatReports.length === 0 ? (
+                <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+                  <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-500">No VAT reports downloaded yet.</p>
+                  <p className="text-xs text-gray-400 mt-1">Reports you download from &quot;Prepare VAT Return&quot; will appear here.</p>
+                </div>
+              ) : (
+                vatReports.map((item) => (
+                  <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -translate-y-1/2 translate-x-1/2 -z-10 group-hover:scale-110 transition-transform"></div>
+
+                    <div className="flex items-start justify-between relative z-10">
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
+                            <Calendar className="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors" />
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-black text-gray-900 text-lg leading-tight">{item.period}</h3>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Downloaded on</span>
+                            <span className="text-xs font-bold text-gray-700">{new Date(item.createdAt).toLocaleDateString('en-GB')}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-black text-gray-900 tracking-tight">£{item.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                        <div className="flex items-center justify-end gap-1.5 mt-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                          <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">{item.format}</span>
+                        </div>
                       </div>
                     </div>
-                    <button className="flex items-center gap-2 text-indigo-600 font-bold text-xs hover:text-indigo-800 transition-colors">
-                      <div className="p-1.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
-                        <Download className="w-3 h-3" />
-                      </div>
-                      VAT Certificate (PDF)
-                    </button>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
             <div className="p-5 bg-gray-50 border-t border-gray-200">
@@ -3536,7 +3684,7 @@ export default function TaxationPage() {
                   </div>
                   <div>
                     <h2 className="text-2xl font-black text-white tracking-tight">CGT Calculator</h2>
-                    <p className="text-orange-100 text-sm font-medium">UK Tax Year 2025/26</p>
+                    <p className="text-orange-100 text-sm font-medium">UK Tax Year {currentTaxYear}</p>
                   </div>
                 </div>
                 <button 
@@ -3634,7 +3782,7 @@ export default function TaxationPage() {
                         <span className="font-bold text-gray-900">£{totalGain.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-orange-600">Annual Exempt Amount (2025/26)</span>
+                        <span className="text-orange-600">Annual Exempt Amount ({currentTaxYear})</span>
                         <span className="font-bold text-orange-600">-£{aeAmount.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
                       </div>
                       <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
@@ -3651,7 +3799,7 @@ export default function TaxationPage() {
                           </span>
                         </div>
                         <p className={`text-[10px] italic ${cgtAssetType === 'badr' ? 'text-purple-700' : 'text-orange-700'}`}>
-                          * {cgtAssetType === 'badr' ? 'BADR relief applied (Lifetime limit £1m).' : 'Based on 2025/26 higher rates (24%).'}
+                          * {cgtAssetType === 'badr' ? 'BADR relief applied (Lifetime limit £1m).' : `Based on ${currentTaxYear} higher rates (24%).`}
                         </p>
                       </div>
                     </div>
@@ -3783,6 +3931,7 @@ export default function TaxationPage() {
                    <div className="flex items-center gap-3 text-purple-600 mb-6">
                      <History className="w-5 h-5" />
                      <h3 className="font-black uppercase tracking-tighter text-sm">Submission Log</h3>
+                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded-full">Sample</span>
                    </div>
                    <div className="space-y-6">
                      {[
@@ -3814,7 +3963,7 @@ export default function TaxationPage() {
                    </div>
                    <div>
                      <p className="font-bold text-indigo-900">Digital Certificate Authorization</p>
-                     <p className="text-xs text-indigo-700 mt-0.5 font-medium">Valid until December 2026 • Issued by HMRC Secure Gateway</p>
+                     <p className="text-xs text-indigo-700 mt-0.5 font-medium">Valid until {addMonthsToDate(today, 12).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })} • Issued by HMRC Secure Gateway</p>
                    </div>
                  </div>
                  <button className="p-2.5 bg-white text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm border border-indigo-200 group">
@@ -3912,7 +4061,7 @@ export default function TaxationPage() {
                      doc.setTextColor(75, 85, 99);
                      doc.setFontSize(10);
                      doc.text('This certificate verifies that the systems listed above are fully compliant', 30, y + 15);
-                     doc.text('with HMRC Making Tax Digital (MTD) requirements for the 2025/26 tax year.', 30, y + 22);
+                     doc.text(`with HMRC Making Tax Digital (MTD) requirements for the ${currentTaxYear} tax year.`, 30, y + 22);
                      doc.text('Verified by Okleevo Digital Compliance Engine.', 30, y + 29);
                      
                      // Save the PDF

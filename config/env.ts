@@ -33,7 +33,10 @@ export const env = {
   
   // UK VAT API (HMRC)
   HMRC_API_KEY: process.env.HMRC_API_KEY || '',
-  
+
+  // Scheduled Jobs (Vercel Cron)
+  CRON_SECRET: process.env.CRON_SECRET || '',
+
   // Subscription
   SUBSCRIPTION_PRICE_ID: process.env.STRIPE_SUBSCRIPTION_PRICE_ID || '',
   SUBSCRIPTION_PRICE_GBP: 9.99,
@@ -48,6 +51,7 @@ if (process.env.NODE_ENV === 'production') {
     'GEMINI_API_KEY',
     'GROQ_API_KEY',
     'JWT_SECRET',
+    'CRON_SECRET',
   ];
   
   const missing = required.filter(key => !process.env[key]);

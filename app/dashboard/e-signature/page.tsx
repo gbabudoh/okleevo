@@ -166,22 +166,21 @@ export default function ESignaturePage() {
     <div className="max-w-5xl mx-auto space-y-5 pb-24 md:pb-10">
 
       {/* ── Hero ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-indigo-600 via-indigo-700 to-violet-800 p-6 sm:p-8 text-white shadow-xl shadow-indigo-200/40">
-        <div className="absolute -top-16 -right-16 w-56 h-56 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 left-12 w-40 h-40 bg-violet-400/20 rounded-full blur-xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 bg-white/15 rounded-lg"><PenTool className="w-4 h-4 text-white" /></div>
-              <span className="text-indigo-200 text-[10px] font-black uppercase tracking-widest">Digital Signatures</span>
+      <div className="bg-white border border-gray-100 rounded-2xl p-5 sm:p-7 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-indigo-600 flex items-center justify-center">
+              <PenTool className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-1">E-Signature</h1>
-            <p className="text-indigo-300 text-sm font-medium">Secure document signing & management</p>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none">E-Signature</h1>
+              <p className="text-gray-500 text-xs sm:text-sm font-medium mt-1.5">Secure document signing & management</p>
+            </div>
           </div>
           <div className="flex flex-col gap-2.5 sm:items-end">
             <div className="flex items-center gap-1.5 self-start sm:self-auto">
-              <label className="p-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all cursor-pointer" title="Upload Document">
-                <Upload className="w-4 h-4 text-white" />
+              <label className="p-2.5 bg-white hover:bg-gray-50 rounded-xl transition-all border border-gray-200 cursor-pointer" title="Upload Document">
+                <Upload className="w-4 h-4 text-gray-500" />
                 <input type="file" accept=".pdf,.doc,.docx,image/*" className="hidden"
                   onChange={e => {
                     const file = e.target.files?.[0];
@@ -192,12 +191,12 @@ export default function ESignaturePage() {
                     }
                   }} />
               </label>
-              <button onClick={() => showNotify('Verifying signatures…', 'info')} className="p-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all cursor-pointer" title="Verify">
-                <FileCheck className="w-4 h-4 text-white" />
+              <button onClick={() => showNotify('Verifying signatures…', 'info')} className="p-2.5 bg-white hover:bg-gray-50 rounded-xl transition-all border border-gray-200 cursor-pointer" title="Verify">
+                <FileCheck className="w-4 h-4 text-gray-500" />
               </button>
             </div>
             <button onClick={() => setShowSignModal(true)}
-              className="flex items-center justify-center gap-2 bg-white text-indigo-700 font-black text-sm rounded-xl px-5 py-2.5 shadow-lg hover:bg-indigo-50 active:scale-95 transition-all w-full sm:w-auto cursor-pointer">
+              className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl px-5 py-2.5 active:scale-95 transition-all w-full sm:w-auto cursor-pointer">
               <Plus className="w-4 h-4" />New Signature Request
             </button>
           </div>
@@ -217,9 +216,9 @@ export default function ESignaturePage() {
               <s.icon className={`w-4 h-4 ${s.color}`} />
             </div>
             <div className="min-w-0">
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider truncate">{s.label}</p>
-              <p className="text-lg font-black text-gray-900 leading-tight">{s.value}</p>
-              <p className="text-[9px] font-bold text-gray-400 truncate">{s.sub}</p>
+              <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider truncate">{s.label}</p>
+              <p className="text-lg font-bold text-gray-900 leading-tight">{s.value}</p>
+              <p className="text-[9px] font-semibold text-gray-400 truncate">{s.sub}</p>
             </div>
           </div>
         ))}

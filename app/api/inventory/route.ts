@@ -58,18 +58,37 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
   }
 });
 
-export const POST = withMultiTenancy(async (req, { dataFilter }) => {
+export const POST = withMultiTenancy(async (req, { user, dataFilter }) => {
   try {
     const data = await req.json();
+    const status = data.quantity === 0 ? 'OUT_OF_STOCK' :
+                   data.quantity <= (data.reorderPoint || 10) ? 'LOW_STOCK' :
+                   data.quantity >= (data.maxQuantity || 100) ? 'OVERSTOCKED' : 'IN_STOCK';
+
     const item = await prisma.inventoryItem.create({
       data: {
         ...data,
         businessId: dataFilter.businessId,
-        status: data.quantity === 0 ? 'OUT_OF_STOCK' : 
-                data.quantity <= (data.reorderPoint || 10) ? 'LOW_STOCK' : 
-                data.quantity >= (data.maxQuantity || 100) ? 'OVERSTOCKED' : 'IN_STOCK'
+        status,
       }
     });
+
+    // Notify immediately if the item starts out already low/out of stock —
+    // today this is the only point an item can enter that state, since no
+    // quantity-adjustment mechanism exists yet after creation.
+    if (status === 'LOW_STOCK' || status === 'OUT_OF_STOCK') {
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          businessId: dataFilter.businessId,
+          title: 'Low Stock Alert',
+          message: `${item.name} is ${status === 'OUT_OF_STOCK' ? 'out of stock' : 'running low'} (${item.quantity} left, reorder at ${item.reorderPoint ?? 10})`,
+          type: 'warning',
+          link: '/dashboard/inventory',
+        },
+      });
+    }
+
     return NextResponse.json(item);
   } catch (error) {
     console.error('Error creating inventory item:', error);

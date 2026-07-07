@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 import { ContactStatus } from '@/lib/prisma-client';
+import { createAuditLog } from '@/lib/clerk/audit-log';
+
+// Canonical pipelineStage value that triggers Closed/Won automation.
+// Must match the literal value the CRM UI sends (app/dashboard/crm/page.tsx
+// uses 'closed-won' with a hyphen) — pipelineStage is free-text, so this
+// string must match exactly; no fuzzy/case-insensitive matching is done.
+const CLOSED_WON_STAGE = 'closed-won';
 
 export const GET = withMultiTenancy(async (req, { dataFilter }) => {
   try {
@@ -98,6 +105,44 @@ export const PUT = withMultiTenancy(async (req, { user }) => {
         lastContact: new Date(),
       },
     });
+
+    // Trigger-Based Financial Automation: deal reaching Closed/Won auto-creates
+    // a Project and notifies the contact owner. Only fires on the transition
+    // into the stage, not on every unrelated update to an already-won contact.
+    if (pipelineStage === CLOSED_WON_STAGE && existing.pipelineStage !== CLOSED_WON_STAGE) {
+      let project = await prisma.project.findFirst({
+        where: { businessId: user.businessId, contactId: contact.id },
+      });
+
+      if (!project) {
+        project = await prisma.project.create({
+          data: {
+            businessId: user.businessId,
+            contactId: contact.id,
+            name: `${contact.company || contact.name} — Project`,
+          },
+        });
+      }
+
+      await prisma.notification.create({
+        data: {
+          userId: contact.userId,
+          businessId: user.businessId,
+          title: 'Deal Closed/Won',
+          message: `${contact.name} moved to Closed/Won. Project "${project.name}" is ready.`,
+          type: 'success',
+          link: `/dashboard/projects`,
+        },
+      });
+
+      await createAuditLog({
+        action: 'STAGE_TRANSITION',
+        resourceType: 'Contact',
+        resourceId: contact.id,
+        changes: { pipelineStage: { from: existing.pipelineStage, to: CLOSED_WON_STAGE } },
+        metadata: { projectId: project.id },
+      });
+    }
 
     return NextResponse.json(contact);
   } catch (error: unknown) {

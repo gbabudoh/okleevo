@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, ChevronRight, ChevronLeft, Sparkles, 
+import {
+  X, ChevronRight, ChevronLeft, Sparkles,
   Users, PoundSterling, CheckSquare,
   Zap, Rocket, Heart, Mail, Video
 } from 'lucide-react';
+import { modules, moduleGroups } from '@/lib/module-catalogue';
 
 interface WelcomeGuideModalProps {
   isOpen: boolean;
@@ -168,18 +169,37 @@ export default function WelcomeGuideModal({ isOpen, onClose, businessName }: Wel
 
             {/* Step 4: Module Manager */}
             {step === 4 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="p-12 text-center space-y-6"
+                className="p-8 sm:p-12 text-center space-y-6"
               >
-                <div className="w-20 h-20 bg-amber-100 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                <div className="w-20 h-20 bg-amber-100 rounded-3xl flex items-center justify-center mx-auto mb-2">
                   <Zap className="w-10 h-10 text-amber-600" />
                 </div>
                 <h3 className="text-3xl font-black text-gray-900">Tailor Your Workspace</h3>
                 <p className="text-lg text-gray-600 max-w-md mx-auto leading-relaxed">
-                  Okleevo has over 20 modules. We&apos;ve only enabled the essentials to keep things simple for you.
+                  Okleevo has {modules.length} modules. We&apos;ve only enabled the essentials to keep things simple for you.
                 </p>
+
+                <div className="max-h-64 overflow-y-auto pr-1 -mr-1 space-y-4 text-left">
+                  {moduleGroups.filter(g => g !== 'All').map((group) => (
+                    <div key={group}>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{group}</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {modules.filter(m => m.group === group).map((mod) => (
+                          <div key={mod.id} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-100 bg-gray-50/60">
+                            <div className={`p-1.5 rounded-lg bg-linear-to-br ${mod.color} shrink-0`}>
+                              <mod.icon className="w-3.5 h-3.5 text-white" />
+                            </div>
+                            <span className="text-sm font-semibold text-gray-700 truncate">{mod.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 inline-block">
                   <p className="text-sm font-bold text-amber-900 flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
@@ -187,7 +207,7 @@ export default function WelcomeGuideModal({ isOpen, onClose, businessName }: Wel
                   </p>
                 </div>
 
-                <div className="flex justify-between pt-8">
+                <div className="flex justify-between pt-4">
                   <button onClick={prevStep} className="px-6 py-3 text-gray-500 font-bold hover:text-gray-900 transition-colors cursor-pointer flex items-center gap-2">
                     <ChevronLeft className="w-5 h-5" /> Back
                   </button>

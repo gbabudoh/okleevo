@@ -53,7 +53,7 @@ export const GET = withMultiTenancy(async (req, { dataFilter }) => {
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body = await req.json();
-    const { clientName, clientEmail, amount, items, dueDate } = body;
+    const { clientName, clientEmail, amount, items, dueDate, projectId } = body;
 
     // Generate invoice number
     const invoiceCount = await prisma.invoice.count({
@@ -72,6 +72,7 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         items: items || [],
         dueDate: dueDate ? new Date(dueDate) : new Date(),
         status: 'DRAFT',
+        projectId: projectId || null,
       },
     });
 

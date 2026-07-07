@@ -5,7 +5,6 @@ import {
   Calculator,
   Plus,
   Download,
-  Upload,
   Eye,
   Edit3,
   Trash2,
@@ -22,15 +21,15 @@ import {
   Printer,
   Save,
   X,
-  Receipt,
   FileCheck,
   Search,
   Filter,
-  DollarSign,
 } from "lucide-react";
 import useSWR, { mutate as globalMutate } from "swr";
 import accounting from "accounting";
 import { AccountingSummary } from "@/components/dashboard/accounting/AccountingSummary";
+import TourProvider from "@/components/tours/TourProvider";
+import { accountingTourSteps } from "./tour-steps";
 import { ChartOfAccounts } from "@/components/dashboard/accounting/ChartOfAccounts";
 import { JournalEntries } from "@/components/dashboard/accounting/JournalEntries";
 import { jsPDF } from "jspdf";
@@ -45,6 +44,7 @@ interface Account {
   category: string;
   balance: number;
   lastTransaction?: Date;
+  isCashAccount?: boolean;
 }
 
 interface Transaction {
@@ -60,6 +60,10 @@ interface Transaction {
     account: { id: string; name: string };
   }[];
 }
+
+interface ReportRow { label: string; amount: number; }
+interface ReportSection { heading: string; rows: ReportRow[]; total: number; totalLabel: string; }
+interface ReportDocument { title: string; sections: ReportSection[]; summaryLines: ReportRow[]; note?: string; }
 
 // Separate impure logic from the React component to avoid render-purity errors
 const exportAccountingData = (
@@ -250,6 +254,119 @@ const exportAccountingData = (
   }
 };
 
+const exportReportPDF = (report: ReportDocument) => {
+  const doc = new jsPDF();
+  doc.setFillColor(63, 81, 181);
+  doc.rect(0, 0, 210, 40, "F");
+  doc.setFontSize(24); doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold");
+  doc.text("Okleevo", 14, 25);
+  doc.setFontSize(12); doc.setFont("helvetica", "normal");
+  doc.text("Professional Accounting Services", 14, 33);
+
+  doc.setTextColor(0, 0, 0); doc.setFontSize(18); doc.setFont("helvetica", "bold");
+  doc.text(report.title, 14, 55);
+  doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(100);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 63);
+  doc.setDrawColor(230); doc.line(14, 70, 196, 70);
+
+  let y = 82;
+  doc.setTextColor(0);
+  report.sections.forEach((section) => {
+    if (y > 260) { doc.addPage(); y = 20; }
+    doc.setFont("helvetica", "bold"); doc.setFontSize(12);
+    doc.text(section.heading, 14, y); y += 7;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+    section.rows.forEach((r) => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      doc.text(r.label, 18, y);
+      doc.text(`£${r.amount.toLocaleString()}`, 196, y, { align: "right" });
+      y += 6;
+    });
+    doc.setDrawColor(240); doc.line(14, y - 2, 196, y - 2);
+    doc.setFont("helvetica", "bold");
+    doc.text(section.totalLabel, 18, y + 3);
+    doc.text(`£${section.total.toLocaleString()}`, 196, y + 3, { align: "right" });
+    y += 12;
+    doc.setFont("helvetica", "normal");
+  });
+
+  if (report.summaryLines.length > 0) {
+    if (y > 250) { doc.addPage(); y = 20; }
+    doc.setFillColor(239, 246, 255); doc.rect(14, y - 6, 182, report.summaryLines.length * 7 + 6, "F");
+    report.summaryLines.forEach((l) => {
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(0);
+      doc.text(l.label, 18, y);
+      doc.text(`£${l.amount.toLocaleString()}`, 192, y, { align: "right" });
+      y += 7;
+    });
+    y += 6;
+  }
+
+  if (report.note) {
+    doc.setFont("helvetica", "italic"); doc.setFontSize(8); doc.setTextColor(120);
+    const split = doc.splitTextToSize(report.note, 180);
+    doc.text(split, 14, y);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pageCount = (doc as any).internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8); doc.setTextColor(150);
+    doc.text(`Okleevo | Financial Document | Page ${i} of ${pageCount}`, 105, 285, { align: "center" });
+  }
+
+  doc.save(`Okleevo_${report.title.replace(/\s+/g, "_")}_${Date.now()}.pdf`);
+};
+
+const exportReportCSV = (report: ReportDocument) => {
+  let csv = `${report.title}\nGenerated: ${new Date().toLocaleString()}\n\n`;
+  report.sections.forEach((section) => {
+    csv += `${section.heading}\n`;
+    section.rows.forEach((r) => { csv += `"${r.label}",£${r.amount}\n`; });
+    csv += `"${section.totalLabel}",£${section.total}\n\n`;
+  });
+  if (report.summaryLines.length > 0) {
+    report.summaryLines.forEach((l) => { csv += `"${l.label}",£${l.amount}\n`; });
+  }
+  if (report.note) csv += `\n"${report.note.replace(/"/g, '""')}"\n`;
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `${report.title.replace(/\s+/g, "_")}_${Date.now()}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+const exportReportExcel = (report: ReportDocument) => {
+  let xml = `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Worksheet ss:Name="${report.title.slice(0, 31)}">
+  <Table>`;
+  xml += `<Row><Cell><Data ss:Type="String">${report.title}</Data></Cell></Row>`;
+  report.sections.forEach((section) => {
+    xml += `<Row><Cell><Data ss:Type="String">${section.heading}</Data></Cell></Row>`;
+    section.rows.forEach((r) => {
+      xml += `<Row><Cell><Data ss:Type="String">${r.label}</Data></Cell><Cell><Data ss:Type="Number">${r.amount}</Data></Cell></Row>`;
+    });
+    xml += `<Row><Cell><Data ss:Type="String">${section.totalLabel}</Data></Cell><Cell><Data ss:Type="Number">${section.total}</Data></Cell></Row>`;
+  });
+  report.summaryLines.forEach((l) => {
+    xml += `<Row><Cell><Data ss:Type="String">${l.label}</Data></Cell><Cell><Data ss:Type="Number">${l.amount}</Data></Cell></Row>`;
+  });
+  xml += `</Table></Worksheet></Workbook>`;
+  const blob = new Blob([xml], { type: "application/vnd.ms-excel" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `${report.title.replace(/\s+/g, "_")}_${Date.now()}.xls`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
 // Shared field styles
 const inputCls =
   "w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all";
@@ -261,6 +378,15 @@ const ACCOUNT_COLORS: Record<string, { pill: string; border: string }> = {
   equity:    { pill: "bg-purple-100 text-purple-700", border: "border-purple-400" },
   revenue:   { pill: "bg-green-100 text-green-700",  border: "border-green-400" },
   expense:   { pill: "bg-orange-100 text-orange-700", border: "border-orange-400" },
+};
+
+// Journal entry status is stored as an uppercase Prisma enum (DRAFT/PENDING/POSTED/VOID) —
+// always normalize with .toLowerCase() before looking this up.
+const JOURNAL_STATUS_PILL: Record<string, string> = {
+  posted:  "bg-emerald-100 text-emerald-700",
+  pending: "bg-amber-100 text-amber-700",
+  draft:   "bg-blue-100 text-blue-700",
+  void:    "bg-gray-100 text-gray-500",
 };
 
 // ── Shared Modal Shell ──────────────────────────────────────────
@@ -433,6 +559,7 @@ interface NewAccountState {
   type: "asset" | "liability" | "equity" | "revenue" | "expense";
   description: string;
   openingBalance: string;
+  isCashAccount: boolean;
 }
 
 interface AccountTypeSelectorProps {
@@ -457,8 +584,10 @@ const AccountTypeSelector = ({ newAccount, setNewAccount }: AccountTypeSelectorP
 
 export default function AccountingPage() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [journalSearchQuery, setJournalSearchQuery] = useState("");
+  const [journalStatusFilter, setJournalStatusFilter] = useState<"all" | "draft" | "pending" | "posted" | "void">("all");
+  const [showJournalFilterMenu, setShowJournalFilterMenu] = useState(false);
   const [showNewEntryModal, setShowNewEntryModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [showViewAccountModal, setShowViewAccountModal] = useState(false);
@@ -468,7 +597,7 @@ export default function AccountingPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showYearEndModal, setShowYearEndModal] = useState(false);
-  const [toast, setToast] = useState("");
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<Transaction | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ type: "account" | "entry"; id: string } | null>(null);
@@ -490,6 +619,7 @@ export default function AccountingPage() {
     type: "asset",
     description: "",
     openingBalance: "",
+    isCashAccount: false,
   });
 
   const { data: accountsData } = useSWR("/api/accounting/accounts", fetcher);
@@ -508,6 +638,17 @@ export default function AccountingPage() {
   };
   financialSummary.netProfit = financialSummary.totalRevenue - financialSummary.totalExpenses;
 
+  const trialBalanceDebitTotal = accounts.filter((a) => ["asset", "expense"].includes(a.type)).reduce((s, a) => s + a.balance, 0);
+  const trialBalanceCreditTotal = accounts.filter((a) => ["liability", "equity", "revenue"].includes(a.type)).reduce((s, a) => s + a.balance, 0);
+  const trialBalanceIsBalanced = Math.abs(trialBalanceDebitTotal - trialBalanceCreditTotal) < 0.005;
+
+  const filteredJournalEntries = recentTransactions.filter((tx) => {
+    const q = journalSearchQuery.toLowerCase();
+    const matchesSearch = !q || tx.description.toLowerCase().includes(q) || (tx.reference?.toLowerCase().includes(q) ?? false);
+    const matchesStatus = journalStatusFilter === "all" || tx.status.toLowerCase() === journalStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   const tabs = [
     { id: "overview",          name: "Overview",          icon: BarChart3  },
     { id: "chart-of-accounts", name: "Chart of Accounts", icon: BookOpen   },
@@ -517,9 +658,9 @@ export default function AccountingPage() {
     { id: "year-end",          name: "Year-End",          icon: Calendar   },
   ];
 
-  const showToastMsg = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(""), 3000);
+  const showToastMsg = (msg: string, type: "success" | "error" = "success") => {
+    setToast({ message: msg, type });
+    setTimeout(() => setToast(null), 3000);
   };
 
   const resetEntry = () =>
@@ -527,11 +668,11 @@ export default function AccountingPage() {
 
   const handleSaveEntry = async () => {
     if (!newEntry.description || !newEntry.debitAccount || !newEntry.creditAccount || !newEntry.debitAmount || !newEntry.creditAmount) {
-      alert("Please fill in all required fields");
+      showToastMsg("Please fill in all required fields", "error");
       return;
     }
     if (parseFloat(newEntry.debitAmount) !== parseFloat(newEntry.creditAmount)) {
-      alert("Debit and Credit amounts must be equal");
+      showToastMsg("Debit and Credit amounts must be equal", "error");
       return;
     }
     try {
@@ -561,17 +702,17 @@ export default function AccountingPage() {
         showToastMsg(isEdit ? "Journal entry updated successfully" : "Journal entry saved successfully");
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to save entry");
+        showToastMsg(err.error || "Failed to save entry", "error");
       }
     } catch (err) {
       console.error("Save entry error:", err);
-      alert("Failed to save entry");
+      showToastMsg("Failed to save entry", "error");
     }
   };
 
   const handleSeedAccounts = async () => {
     const defaultAccounts = [
-      { code: "1200", name: "Bank Current Account", type: "ASSET", category: "Cash and Cash Equivalents" },
+      { code: "1200", name: "Bank Current Account", type: "ASSET", category: "Cash and Cash Equivalents", isCashAccount: true },
       { code: "1100", name: "Accounts Receivable", type: "ASSET", category: "Current Assets" },
       { code: "2100", name: "Accounts Payable", type: "LIABILITY", category: "Current Liabilities" },
       { code: "4000", name: "Sales Revenue", type: "REVENUE", category: "Operating Revenue" },
@@ -596,7 +737,7 @@ export default function AccountingPage() {
 
   const handleSaveAccount = async () => {
     if (!newAccount.code || !newAccount.name) {
-      alert("Please fill in all required fields");
+      showToastMsg("Please fill in all required fields", "error");
       return;
     }
     try {
@@ -613,10 +754,11 @@ export default function AccountingPage() {
           description: newAccount.description,
           category: newAccount.type.toUpperCase(),
           openingBalance: newAccount.openingBalance,
+          isCashAccount: newAccount.isCashAccount,
         })
       });
       if (res.ok) {
-        setNewAccount({ code: "", name: "", type: "asset", description: "", openingBalance: "" });
+        setNewAccount({ code: "", name: "", type: "asset", description: "", openingBalance: "", isCashAccount: false });
         setShowAddAccountModal(false);
         setShowEditAccountModal(false);
         setSelectedAccount(null);
@@ -625,18 +767,18 @@ export default function AccountingPage() {
         showToastMsg(isEdit ? "Account updated successfully" : "Account created successfully");
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to save account");
+        showToastMsg(err.error || "Failed to save account", "error");
       }
     } catch (err) {
       console.error("Save account error:", err);
-      alert("Failed to save account");
+      showToastMsg("Failed to save account", "error");
     }
   };
 
   const handleViewAccount  = (a: Account) => { setSelectedAccount(a); setShowViewAccountModal(true); };
   const handleEditAccount  = (a: Account) => {
     setSelectedAccount(a);
-    setNewAccount({ code: a.code, name: a.name, type: a.type as never, description: "", openingBalance: a.balance.toString() });
+    setNewAccount({ code: a.code, name: a.name, type: a.type as never, description: "", openingBalance: a.balance.toString(), isCashAccount: Boolean(a.isCashAccount) });
     setShowEditAccountModal(true);
   };
   const handleViewEntry    = (e: Transaction) => { setSelectedEntry(e); setShowViewEntryModal(true); };
@@ -666,11 +808,11 @@ export default function AccountingPage() {
         globalMutate("/api/accounting/accounts");
         globalMutate("/api/accounting/journal");
       } else {
-        alert("Failed to delete");
+        showToastMsg("Failed to delete", "error");
       }
     } catch (err) {
       console.error("Delete error:", err);
-      alert("Failed to delete");
+      showToastMsg("Failed to delete", "error");
     }
     setShowDeleteModal(false);
     setDeleteTarget(null);
@@ -681,10 +823,172 @@ export default function AccountingPage() {
     showToastMsg(`Exported as ${selectedExportFormat}`);
   };
 
+  // Prefer the explicit isCashAccount flag; fall back to category/name matching for
+  // accounts created before that field existed, so nothing that worked before regresses.
+  const isCashAccount = (a: Account) =>
+    a.isCashAccount === true ||
+    a.category?.toLowerCase().includes("cash") ||
+    /bank|cash|paypal|stripe/i.test(a.name);
+
+  const buildProfitAndLossReport = (): ReportDocument => {
+    const revenueRows = accounts.filter((a) => a.type === "revenue").map((a) => ({ label: a.name, amount: a.balance }));
+    const expenseRows = accounts.filter((a) => a.type === "expense").map((a) => ({ label: a.name, amount: a.balance }));
+    const totalRevenue = revenueRows.reduce((s, r) => s + r.amount, 0);
+    const totalExpenses = expenseRows.reduce((s, r) => s + r.amount, 0);
+    return {
+      title: "Profit & Loss Statement",
+      sections: [
+        { heading: "Revenue", rows: revenueRows, total: totalRevenue, totalLabel: "Total Revenue" },
+        { heading: "Expenses", rows: expenseRows, total: totalExpenses, totalLabel: "Total Expenses" },
+      ],
+      summaryLines: [{ label: "Net Profit", amount: totalRevenue - totalExpenses }],
+    };
+  };
+
+  const buildBalanceSheetReport = (): ReportDocument => {
+    const assetRows = accounts.filter((a) => a.type === "asset").map((a) => ({ label: a.name, amount: a.balance }));
+    const liabilityRows = accounts.filter((a) => a.type === "liability").map((a) => ({ label: a.name, amount: a.balance }));
+    const equityRows = accounts.filter((a) => a.type === "equity").map((a) => ({ label: a.name, amount: a.balance }));
+    const totalAssets = assetRows.reduce((s, r) => s + r.amount, 0);
+    const totalLiabilities = liabilityRows.reduce((s, r) => s + r.amount, 0);
+    const totalEquity = equityRows.reduce((s, r) => s + r.amount, 0);
+    const balanced = Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.005;
+    return {
+      title: "Balance Sheet",
+      sections: [
+        { heading: "Assets", rows: assetRows, total: totalAssets, totalLabel: "Total Assets" },
+        { heading: "Liabilities", rows: liabilityRows, total: totalLiabilities, totalLabel: "Total Liabilities" },
+        { heading: "Equity", rows: equityRows, total: totalEquity, totalLabel: "Total Equity" },
+      ],
+      summaryLines: [{ label: "Liabilities + Equity", amount: totalLiabilities + totalEquity }],
+      note: balanced
+        ? "Assets = Liabilities + Equity — the balance sheet balances."
+        : `Out of balance — Assets differ from Liabilities + Equity by £${Math.abs(totalAssets - (totalLiabilities + totalEquity)).toLocaleString()}.`,
+    };
+  };
+
+  const buildCashFlowReport = (): ReportDocument => {
+    const cashAccounts = accounts.filter(isCashAccount);
+    const cashIds = new Set(cashAccounts.map((a) => a.id));
+    const totalCashPosition = cashAccounts.reduce((s, a) => s + a.balance, 0);
+
+    let operating = 0, investing = 0, financing = 0;
+    recentTransactions.forEach((tx) => {
+      const debitEntry = tx.entries[0];
+      const creditEntry = tx.entries[1];
+      if (!debitEntry || !creditEntry) return;
+      const debitIsCash = cashIds.has(debitEntry.accountId);
+      const creditIsCash = cashIds.has(creditEntry.accountId);
+      if (debitIsCash === creditIsCash) return; // both cash (transfer) or neither — no net cash-flow category to assign
+      const netCashImpact = debitIsCash ? debitEntry.debit : -creditEntry.credit;
+      const otherAccountId = debitIsCash ? creditEntry.accountId : debitEntry.accountId;
+      const otherAccount = accounts.find((a) => a.id === otherAccountId);
+      if (!otherAccount) return;
+      if (["revenue", "expense"].includes(otherAccount.type)) operating += netCashImpact;
+      else if (otherAccount.type === "asset") investing += netCashImpact;
+      else if (["liability", "equity"].includes(otherAccount.type)) financing += netCashImpact;
+    });
+
+    return {
+      title: "Cash Flow Statement",
+      sections: [
+        { heading: "Cash Accounts", rows: cashAccounts.map((a) => ({ label: a.name, amount: a.balance })), total: totalCashPosition, totalLabel: "Total Cash Position" },
+      ],
+      summaryLines: [
+        { label: "Operating Activities", amount: operating },
+        { label: "Investing Activities", amount: investing },
+        { label: "Financing Activities", amount: financing },
+        { label: "Net Change in Cash", amount: operating + investing + financing },
+      ],
+      note: cashAccounts.length > 0
+        ? `Cash accounts identified: ${cashAccounts.map((a) => a.name).join(", ")}. Each transaction is categorized by the type of the other account it touches (Revenue/Expense = Operating, other Assets = Investing, Liabilities/Equity = Financing).`
+        : "No cash/bank accounts found — add an account categorized \"Cash and Cash Equivalents\", or with a name containing \"Bank\" or \"Cash\", to enable this statement.",
+    };
+  };
+
+  const computeReportDocument = (reportType: string): ReportDocument => {
+    if (reportType.includes("Balance Sheet")) return buildBalanceSheetReport();
+    if (reportType.includes("Cash Flow")) return buildCashFlowReport();
+    return buildProfitAndLossReport();
+  };
+
   const handleGenerateReport = (reportType: string) => { setSelectedReport(reportType); setShowReportModal(true); };
-  const handleDownloadReport = (fmt: string) => {
-    setSelectedExportFormat(fmt as "CSV" | "Excel" | "PDF");
-    setTimeout(() => { handleExportReport(selectedReport || "Financial_Report"); setShowReportModal(false); }, 100);
+  const handleDownloadReport = (fmt: "CSV" | "Excel" | "PDF") => {
+    const report = computeReportDocument(selectedReport);
+    if (fmt === "PDF") exportReportPDF(report);
+    else if (fmt === "Excel") exportReportExcel(report);
+    else exportReportCSV(report);
+    setShowReportModal(false);
+    showToastMsg(`${report.title} exported as ${fmt}`);
+  };
+
+  const handleGenerateYearEnd = () => {
+    const doc = new jsPDF();
+
+    doc.setFillColor(79, 70, 229);
+    doc.rect(0, 0, 210, 40, "F");
+    doc.setFontSize(24); doc.setFont("helvetica", "bold"); doc.setTextColor(255, 255, 255);
+    doc.text("Year-End Accounts", 14, 25);
+    doc.setFontSize(11); doc.setFont("helvetica", "normal");
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 33);
+
+    doc.setTextColor(0, 0, 0);
+    let y = 55;
+
+    doc.setFontSize(14); doc.setFont("helvetica", "bold");
+    doc.text("Profit & Loss Summary", 14, y);
+    y += 8;
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    [
+      ["Total Revenue", financialSummary.totalRevenue],
+      ["Total Expenses", financialSummary.totalExpenses],
+      ["Net Profit", financialSummary.netProfit],
+    ].forEach(([label, value]) => {
+      doc.text(String(label), 16, y);
+      doc.text(`£${Number(value).toLocaleString()}`, 180, y, { align: "right" });
+      y += 7;
+    });
+
+    y += 8;
+    doc.setFontSize(14); doc.setFont("helvetica", "bold");
+    doc.text("Balance Sheet Summary", 14, y);
+    y += 8;
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    [
+      ["Total Assets", financialSummary.totalAssets],
+      ["Total Liabilities", financialSummary.totalLiabilities],
+      ["Total Equity", financialSummary.totalEquity],
+    ].forEach(([label, value]) => {
+      doc.text(String(label), 16, y);
+      doc.text(`£${Number(value).toLocaleString()}`, 180, y, { align: "right" });
+      y += 7;
+    });
+
+    y += 8;
+    doc.setFontSize(14); doc.setFont("helvetica", "bold");
+    doc.text("Trial Balance", 14, y);
+    y += 8;
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    doc.text("Total Debits", 16, y);
+    doc.text(`£${trialBalanceDebitTotal.toLocaleString()}`, 180, y, { align: "right" });
+    y += 7;
+    doc.text("Total Credits", 16, y);
+    doc.text(`£${trialBalanceCreditTotal.toLocaleString()}`, 180, y, { align: "right" });
+    y += 10;
+
+    if (trialBalanceIsBalanced) {
+      doc.setTextColor(16, 130, 80);
+      doc.text("✓ Trial Balance is balanced", 16, y);
+    } else {
+      doc.setTextColor(190, 30, 30);
+      doc.text(`⚠ Trial Balance is NOT balanced — difference of £${Math.abs(trialBalanceDebitTotal - trialBalanceCreditTotal).toLocaleString()}`, 16, y);
+    }
+
+    doc.setTextColor(150);
+    doc.setFontSize(8);
+    doc.text("Okleevo | Year-End Accounts Pack", 105, 285, { align: "center" });
+
+    doc.save(`Okleevo_Year_End_Accounts_${new Date().toISOString().split("T")[0]}.pdf`);
   };
 
   const isBalanced = Boolean(
@@ -697,6 +1001,7 @@ export default function AccountingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <TourProvider moduleId="accounting" steps={accountingTourSteps} />
 
       {/* ── Sticky Header ── */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
@@ -711,17 +1016,12 @@ export default function AccountingPage() {
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <button onClick={() => setShowImportModal(true)}
-              className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
-              <Upload className="w-4 h-4 cursor-pointer" />
-              <span className="hidden sm:inline cursor-pointer">Import</span>
-            </button>
-            <button onClick={() => setShowExportModal(true)}
+            <button id="tour-accounting-export" onClick={() => setShowExportModal(true)}
               className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
               <Download className="w-4 h-4 cursor-pointer" />
               <span className="hidden sm:inline cursor-pointer">Export</span>
             </button>
-            <button onClick={() => setShowNewEntryModal(true)}
+            <button id="tour-accounting-new-entry" onClick={() => setShowNewEntryModal(true)}
               className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
               <Plus className="w-4 h-4 cursor-pointer" />
               <span className="hidden sm:inline cursor-pointer">New Entry</span>
@@ -732,7 +1032,7 @@ export default function AccountingPage() {
       </div>
 
       {/* ── Tab Bar ── */}
-      <div className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100">
+      <div id="tour-accounting-tabs" className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100">
         <div className="flex overflow-x-auto scrollbar-hide px-4">
           {tabs.map(({ id, name, icon: Icon }) => {
             const active = activeTab === id;
@@ -816,12 +1116,41 @@ export default function AccountingPage() {
                 <div className="flex items-center gap-2">
                   <div className="relative hidden sm:block">
                     <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input type="text" placeholder="Search…" className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none w-40 transition-all" />
+                    <input
+                      type="text"
+                      placeholder="Search…"
+                      value={journalSearchQuery}
+                      onChange={(e) => setJournalSearchQuery(e.target.value)}
+                      className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none w-40 transition-all"
+                    />
                   </div>
-                  <button className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
-                    <Filter className="w-4 h-4" />
-                    <span className="hidden sm:inline">Filter</span>
-                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowJournalFilterMenu((v) => !v)}
+                      className={`p-2 sm:px-3 sm:py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium ${
+                        journalStatusFilter !== "all" ? "bg-blue-50 text-blue-700" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                      }`}
+                    >
+                      <Filter className="w-4 h-4" />
+                      <span className="hidden sm:inline capitalize">{journalStatusFilter === "all" ? "Filter" : journalStatusFilter}</span>
+                    </button>
+                    {showJournalFilterMenu && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowJournalFilterMenu(false)} />
+                        <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 overflow-hidden">
+                          {(["all", "draft", "pending", "posted", "void"] as const).map((s) => (
+                            <button
+                              key={s}
+                              onClick={() => { setJournalStatusFilter(s); setShowJournalFilterMenu(false); }}
+                              className={`w-full px-4 py-2 text-left text-sm capitalize cursor-pointer transition-colors ${journalStatusFilter === s ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
+                            >
+                              {s === "all" ? "All statuses" : s}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                   <button onClick={() => setShowNewEntryModal(true)}
                     className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer">
                     <Plus className="w-4 h-4" />
@@ -832,21 +1161,30 @@ export default function AccountingPage() {
               </div>
             </div>
 
-            {recentTransactions.length === 0 ? (
+            {filteredJournalEntries.length === 0 ? (
               <div className="text-center py-16 px-4">
                 <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <FileText className="w-7 h-7 text-gray-400" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-900 mb-1">No Journal Entries Yet</h3>
-                <p className="text-xs text-gray-400 mb-5">Start recording transactions with double-entry bookkeeping</p>
-                <button onClick={() => setShowNewEntryModal(true)}
-                  className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center gap-2 cursor-pointer">
-                  <Plus className="w-4 h-4" /> Create First Entry
-                </button>
+                {recentTransactions.length === 0 ? (
+                  <>
+                    <h3 className="text-sm font-bold text-gray-900 mb-1">No Journal Entries Yet</h3>
+                    <p className="text-xs text-gray-400 mb-5">Start recording transactions with double-entry bookkeeping</p>
+                    <button onClick={() => setShowNewEntryModal(true)}
+                      className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center gap-2 cursor-pointer">
+                      <Plus className="w-4 h-4" /> Create First Entry
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-sm font-bold text-gray-900 mb-1">No matching entries</h3>
+                    <p className="text-xs text-gray-400">Try a different search term or status filter</p>
+                  </>
+                )}
               </div>
             ) : (
               <div className="divide-y divide-gray-50">
-                {recentTransactions.map((tx) => (
+                {filteredJournalEntries.map((tx) => (
                   <div key={tx.id} className="p-4 sm:p-5 hover:bg-gray-50/60 transition-colors">
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex items-start gap-3 min-w-0">
@@ -861,10 +1199,7 @@ export default function AccountingPage() {
                               {new Date(tx.date).toLocaleDateString("en-GB")}
                             </span>
                             {tx.reference && <span className="text-xs text-gray-400">Ref: {tx.reference}</span>}
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                              tx.status === "posted" ? "bg-emerald-100 text-emerald-700"
-                              : tx.status === "pending" ? "bg-amber-100 text-amber-700"
-                              : "bg-gray-100 text-gray-500"}`}>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${JOURNAL_STATUS_PILL[tx.status.toLowerCase()] ?? "bg-gray-100 text-gray-500"}`}>
                               {tx.status}
                             </span>
                           </div>
@@ -957,10 +1292,10 @@ export default function AccountingPage() {
                   <tr>
                     <td colSpan={2} className="px-4 sm:px-6 py-4 text-sm font-bold text-gray-900">TOTALS</td>
                     <td className="px-4 sm:px-6 py-4 text-right text-sm font-bold text-emerald-800">
-                      £{accounts.filter((a) => ["asset","expense"].includes(a.type)).reduce((s, a) => s + a.balance, 0).toLocaleString()}
+                      £{trialBalanceDebitTotal.toLocaleString()}
                     </td>
                     <td className="px-4 sm:px-6 py-4 text-right text-sm font-bold text-rose-800">
-                      £{accounts.filter((a) => ["liability","equity","revenue"].includes(a.type)).reduce((s, a) => s + a.balance, 0).toLocaleString()}
+                      £{trialBalanceCreditTotal.toLocaleString()}
                     </td>
                   </tr>
                 </tfoot>
@@ -968,13 +1303,25 @@ export default function AccountingPage() {
             </div>
 
             <div className="px-4 sm:px-5 py-4 border-t border-gray-100">
-              <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-                <div>
-                  <p className="text-sm font-bold text-emerald-900">Trial Balance is Balanced</p>
-                  <p className="text-xs text-emerald-600 mt-0.5">Total Debits = Total Credits — books are in order</p>
+              {trialBalanceIsBalanced ? (
+                <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-emerald-900">Trial Balance is Balanced</p>
+                    <p className="text-xs text-emerald-600 mt-0.5">Total Debits = Total Credits — books are in order</p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-red-900">Trial Balance is Out of Balance</p>
+                    <p className="text-xs text-red-600 mt-0.5">
+                      Debits (£{trialBalanceDebitTotal.toLocaleString()}) do not equal Credits (£{trialBalanceCreditTotal.toLocaleString()}) — difference of £{Math.abs(trialBalanceDebitTotal - trialBalanceCreditTotal).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1033,13 +1380,22 @@ export default function AccountingPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileCheck className="w-4 h-4 text-emerald-600" /> Required Documents
+                  <FileCheck className="w-4 h-4 text-indigo-600" /> Documents Required for Filing
                 </h3>
                 <div className="space-y-2">
-                  {["Profit & Loss Statement","Balance Sheet","Directors Report","Notes to Accounts","Corporation Tax Computation"].map((doc) => (
+                  {[
+                    { doc: "Profit & Loss Statement", included: true },
+                    { doc: "Balance Sheet", included: true },
+                    { doc: "Trial Balance", included: true },
+                    { doc: "Directors Report", included: false },
+                    { doc: "Notes to Accounts", included: false },
+                    { doc: "Corporation Tax Computation", included: false },
+                  ].map(({ doc, included }) => (
                     <div key={doc} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl">
                       <span className="text-xs font-medium text-gray-700">{doc}</span>
-                      <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                      {included
+                        ? <span className="text-[10px] font-semibold text-indigo-600 shrink-0">In generated pack</span>
+                        : <span className="text-[10px] font-medium text-gray-400 shrink-0">Prepare separately</span>}
                     </div>
                   ))}
                 </div>
@@ -1165,6 +1521,16 @@ export default function AccountingPage() {
             <input type="number" step="0.01" value={newAccount.openingBalance} onChange={(e) => setNewAccount({ ...newAccount, openingBalance: e.target.value })} placeholder="0.00" className={inputCls} />
           </div>
 
+          {newAccount.type === "asset" && (
+            <label className="flex items-center gap-2.5 p-3 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer">
+              <input type="checkbox" checked={newAccount.isCashAccount} onChange={(e) => setNewAccount({ ...newAccount, isCashAccount: e.target.checked })} className="w-4 h-4 accent-violet-600 cursor-pointer" />
+              <div>
+                <p className="text-sm font-semibold text-gray-800">This is a cash or bank account</p>
+                <p className="text-xs text-gray-400">Used to categorize movements in the Cash Flow Statement</p>
+              </div>
+            </label>
+          )}
+
           <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
             <p className="text-xs font-semibold text-indigo-800 mb-1.5 flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> Account Type Guide</p>
             <ul className="text-xs text-indigo-700 space-y-0.5">
@@ -1200,9 +1566,14 @@ export default function AccountingPage() {
           </div>
           <div>
             <p className={labelCls}>Type</p>
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-block ${ACCOUNT_COLORS[selectedAccount.type]?.pill ?? "bg-gray-100 text-gray-600"}`}>
-              {selectedAccount.type.toUpperCase()}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-block ${ACCOUNT_COLORS[selectedAccount.type]?.pill ?? "bg-gray-100 text-gray-600"}`}>
+                {selectedAccount.type.toUpperCase()}
+              </span>
+              {selectedAccount.isCashAccount && (
+                <span className="px-2 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full">CASH ACCOUNT</span>
+              )}
+            </div>
           </div>
           <div>
             <p className={labelCls}>Balance</p>
@@ -1242,6 +1613,15 @@ export default function AccountingPage() {
             <label className={labelCls}>Balance (£)</label>
             <input type="number" step="0.01" value={newAccount.openingBalance} onChange={(e) => setNewAccount({ ...newAccount, openingBalance: e.target.value })} className={inputCls} />
           </div>
+          {newAccount.type === "asset" && (
+            <label className="flex items-center gap-2.5 p-3 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer">
+              <input type="checkbox" checked={newAccount.isCashAccount} onChange={(e) => setNewAccount({ ...newAccount, isCashAccount: e.target.checked })} className="w-4 h-4 accent-violet-600 cursor-pointer" />
+              <div>
+                <p className="text-sm font-semibold text-gray-800">This is a cash or bank account</p>
+                <p className="text-xs text-gray-400">Used to categorize movements in the Cash Flow Statement</p>
+              </div>
+            </label>
+          )}
           <div className="flex gap-3 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
             <button onClick={() => setShowEditAccountModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
             <button onClick={handleSaveAccount} className="flex-1 py-3 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -1271,53 +1651,6 @@ export default function AccountingPage() {
         </div>
       )}
 
-      {/* Import */}
-      {showImportModal && (
-        <ModalShell onClose={() => setShowImportModal(false)} title="Import Accounting Data" icon={Upload} iconColor="text-emerald-600">
-          <div className="border-2 border-dashed border-gray-200 hover:border-emerald-400 rounded-xl p-6 text-center transition-colors">
-            <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm font-semibold text-gray-800 mb-1">Drop file or click to browse</p>
-            <p className="text-xs text-gray-400 mb-3">CSV, Excel (.xlsx, .xls), QuickBooks (.qbo)</p>
-            <input type="file" accept=".csv,.xlsx,.xls,.qbo" className="hidden" id="file-upload"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) alert(`File selected: ${f.name} (${(f.size / 1024).toFixed(1)} KB)`); }} />
-            <label htmlFor="file-upload" className="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors cursor-pointer inline-block">
-              Choose File
-            </label>
-          </div>
-
-          <div>
-            <label className={labelCls}>Import Type</label>
-            <div className="grid grid-cols-2 gap-2">
-              {[{ icon: FileText, label: "Journal Entries" }, { icon: BookOpen, label: "Chart of Accounts" }, { icon: DollarSign, label: "Bank Statements" }, { icon: Receipt, label: "Invoices" }].map(({ icon: Icon, label }) => (
-                <label key={label} className="flex items-center gap-2.5 p-3 border border-gray-200 rounded-xl hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer transition-all">
-                  <input type="radio" name="importType" className="w-4 h-4 accent-emerald-600" />
-                  <Icon className="w-4 h-4 text-emerald-600" />
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-            <p className="text-xs font-semibold text-blue-700 mb-1 flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> Tips</p>
-            <ul className="text-xs text-blue-600 space-y-0.5">
-              <li>CSV headers: Date, Description, Debit Account, Debit Amount, Credit Account, Credit Amount</li>
-              <li>Amounts in GBP (£) · Dates in DD/MM/YYYY</li>
-            </ul>
-          </div>
-
-          <div className="flex gap-3 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
-            <button onClick={() => setShowImportModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
-            <button onClick={() => {
-              const fi = document.getElementById("file-upload") as HTMLInputElement;
-              if (fi?.files?.[0]) { alert(`Importing ${fi.files[0].name}…\nSuccess! ${Math.floor(Math.random()*50+10)} records imported.`); setShowImportModal(false); }
-              else alert("Please select a file first");
-            }} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
-              <Upload className="w-4 h-4" /> Start Import
-            </button>
-          </div>
-        </ModalShell>
-      )}
 
       {/* Export */}
       {showExportModal && (
@@ -1384,45 +1717,87 @@ export default function AccountingPage() {
       )}
 
       {/* Report Generation */}
-      {showReportModal && selectedReport && (
-        <ModalShell onClose={() => setShowReportModal(false)} title={selectedReport} icon={BarChart3}>
-          <p className="text-sm text-gray-500">Choose a download format for this report.</p>
-          <div className="grid grid-cols-3 gap-2">
-            {(["CSV","Excel","PDF"] as const).map((fmt) => (
-              <button key={fmt} onClick={() => setSelectedExportFormat(fmt)}
-                className={`p-3 border-2 rounded-xl text-center cursor-pointer transition-all ${selectedExportFormat === fmt ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
-                <FileText className={`w-5 h-5 mx-auto mb-1 ${selectedExportFormat === fmt ? "text-blue-600" : "text-gray-400"}`} />
-                <p className={`text-xs font-bold ${selectedExportFormat === fmt ? "text-blue-900" : "text-gray-700"}`}>{fmt}</p>
+      {showReportModal && selectedReport && (() => {
+        const previewReport = computeReportDocument(selectedReport);
+        return (
+          <ModalShell onClose={() => setShowReportModal(false)} title={selectedReport} icon={BarChart3}>
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+              {previewReport.sections.map((section) => (
+                <div key={section.heading} className="bg-gray-50 rounded-xl p-3">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{section.heading}</p>
+                  {section.rows.length === 0 ? (
+                    <p className="text-xs text-gray-400 italic">No accounts of this type yet</p>
+                  ) : (
+                    <div className="space-y-1">
+                      {section.rows.map((r) => (
+                        <div key={r.label} className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">{r.label}</span>
+                          <span className="font-medium text-gray-900">£{r.amount.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-sm font-bold text-gray-900 mt-2 pt-2 border-t border-gray-200">
+                    <span>{section.totalLabel}</span>
+                    <span>£{section.total.toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 space-y-1">
+                {previewReport.summaryLines.map((l) => (
+                  <div key={l.label} className="flex items-center justify-between text-sm font-bold text-blue-900">
+                    <span>{l.label}</span>
+                    <span>£{l.amount.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+              {previewReport.note && <p className="text-[11px] text-gray-400 italic">{previewReport.note}</p>}
+            </div>
+
+            <p className="text-sm text-gray-500">Choose a download format for this report.</p>
+            <div className="grid grid-cols-3 gap-2">
+              {(["CSV","Excel","PDF"] as const).map((fmt) => (
+                <button key={fmt} onClick={() => setSelectedExportFormat(fmt)}
+                  className={`p-3 border-2 rounded-xl text-center cursor-pointer transition-all ${selectedExportFormat === fmt ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                  <FileText className={`w-5 h-5 mx-auto mb-1 ${selectedExportFormat === fmt ? "text-blue-600" : "text-gray-400"}`} />
+                  <p className={`text-xs font-bold ${selectedExportFormat === fmt ? "text-blue-900" : "text-gray-700"}`}>{fmt}</p>
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.25rem)] sm:pb-0">
+              <button onClick={() => setShowReportModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+              <button onClick={() => handleDownloadReport(selectedExportFormat)}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                <Download className="w-4 h-4" /> Download
               </button>
-            ))}
-          </div>
-          <div className="flex gap-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.25rem)] sm:pb-0">
-            <button onClick={() => setShowReportModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
-            <button onClick={() => handleDownloadReport(selectedExportFormat)}
-              className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
-              <Download className="w-4 h-4" /> Download
-            </button>
-          </div>
-        </ModalShell>
-      )}
+            </div>
+          </ModalShell>
+        );
+      })()}
 
       {/* Year-End */}
       {showYearEndModal && (
         <ModalShell onClose={() => setShowYearEndModal(false)} title="Year-End Process" icon={Calendar} iconColor="text-indigo-600">
           <p className="text-sm text-gray-500">
-            Generate your complete year-end accounts package including all required statements for HMRC and Companies House.
+            Generate a year-end accounts pack summarising your Profit &amp; Loss, Balance Sheet, and Trial Balance from your current ledger.
           </p>
           <div className="space-y-2">
-            {["Profit & Loss Statement","Balance Sheet","Trial Balance Report","Corporation Tax Computation"].map((item) => (
+            {["Profit & Loss Summary","Balance Sheet Summary","Trial Balance"].map((item) => (
               <div key={item} className="flex items-center gap-2.5 p-2.5 bg-gray-50 rounded-xl">
-                <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                <FileCheck className="w-4 h-4 text-indigo-500 shrink-0" />
                 <span className="text-sm text-gray-700">{item}</span>
               </div>
             ))}
           </div>
+          {!trialBalanceIsBalanced && (
+            <div className="flex items-center gap-2.5 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+              <p className="text-xs font-medium text-red-700">Your Trial Balance is currently out of balance — the generated pack will flag this, but you may want to fix it first.</p>
+            </div>
+          )}
           <div className="flex gap-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.25rem)] sm:pb-0">
             <button onClick={() => setShowYearEndModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
-            <button onClick={() => { setShowYearEndModal(false); showToastMsg("Year-end accounts generated successfully"); }}
+            <button onClick={() => { handleGenerateYearEnd(); setShowYearEndModal(false); showToastMsg("Year-end accounts pack downloaded"); }}
               className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
               <FileCheck className="w-4 h-4" /> Generate
             </button>
@@ -1434,8 +1809,10 @@ export default function AccountingPage() {
       {toast && (
         <div className="fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-200 pointer-events-none w-[calc(100%-2rem)] sm:w-auto max-w-sm">
           <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-            <p className="text-sm font-medium">{toast}</p>
+            {toast.type === "error"
+              ? <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+              : <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />}
+            <p className="text-sm font-medium">{toast.message}</p>
           </div>
         </div>
       )}

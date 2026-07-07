@@ -7,6 +7,9 @@ import {
   Zap, User, Loader2, ChevronDown
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import WritingAssistButton from '@/components/ai/WritingAssistButton';
+import TourProvider from '@/components/tours/TourProvider';
+import { helpdeskTourSteps } from './tour-steps';
 
 interface TicketComment {
   id: string;
@@ -33,6 +36,8 @@ interface Ticket {
 }
 
 const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
+const labelCls = 'block text-xs font-semibold text-gray-600 mb-1';
+const modalHeaderCls = 'px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100';
 
 const ModalHandle = () => (
   <div className="flex justify-center pt-2 pb-0 sm:hidden shrink-0">
@@ -194,6 +199,7 @@ export default function HelpdeskPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <TourProvider moduleId="helpdesk" steps={helpdeskTourSteps} />
 
       {/* Mobile FAB */}
       <button
@@ -215,6 +221,7 @@ export default function HelpdeskPage() {
             <p className="text-xs text-gray-500 hidden sm:block">Manage support tickets and customer requests</p>
           </div>
           <button
+            id="tour-helpdesk-new-button"
             type="button"
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0"
@@ -229,7 +236,7 @@ export default function HelpdeskPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-helpdesk-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Tickets', value: stats.total,      icon: MessageSquare, bg: 'bg-indigo-100', ic: 'text-indigo-600', val: 'text-indigo-700' },
             { label: 'Open',          value: stats.open,        icon: AlertCircle,   bg: 'bg-blue-100',   ic: 'text-blue-600',   val: 'text-blue-700' },
@@ -247,7 +254,7 @@ export default function HelpdeskPage() {
         </div>
 
         {/* Search + filters */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+        <div id="tour-helpdesk-search" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
@@ -388,38 +395,39 @@ export default function HelpdeskPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className="bg-linear-to-r from-indigo-600 to-violet-700 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-                <Plus className="w-4 h-4" /> New Ticket
-              </h2>
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">New ticket</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Log a new support request</p>
+              </div>
               <button type="button" onClick={() => { setShowCreateModal(false); setNewTicket(blankTicket()); }}
-                className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5 space-y-2 sm:space-y-4">
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Subject *</label>
+                <label className={labelCls}>Subject *</label>
                 <input type="text" value={newTicket.subject}
                   onChange={e => setNewTicket({ ...newTicket, subject: e.target.value })}
                   className={inputCls} placeholder="e.g. Login not working" />
               </div>
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Customer *</label>
+                  <label className={labelCls}>Customer *</label>
                   <input type="text" value={newTicket.customer}
                     onChange={e => setNewTicket({ ...newTicket, customer: e.target.value })}
                     className={inputCls} placeholder="Customer name" />
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Email *</label>
+                  <label className={labelCls}>Email *</label>
                   <input type="email" value={newTicket.email}
                     onChange={e => setNewTicket({ ...newTicket, email: e.target.value })}
                     className={inputCls} placeholder="customer@email.com" />
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Priority</label>
+                  <label className={labelCls}>Priority</label>
                   <select value={newTicket.priority}
                     onChange={e => setNewTicket({ ...newTicket, priority: e.target.value as Ticket['priority'] })}
                     className={`${inputCls} appearance-none cursor-pointer`}>
@@ -430,7 +438,7 @@ export default function HelpdeskPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                  <label className={labelCls}>Category</label>
                   <select value={newTicket.category}
                     onChange={e => setNewTicket({ ...newTicket, category: e.target.value })}
                     className={`${inputCls} appearance-none cursor-pointer`}>
@@ -443,7 +451,13 @@ export default function HelpdeskPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Description</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className={`${labelCls} mb-0`}>Description</label>
+                  <WritingAssistButton
+                    text={newTicket.description}
+                    onResult={(result) => setNewTicket({ ...newTicket, description: result })}
+                  />
+                </div>
                 <textarea value={newTicket.description}
                   onChange={e => setNewTicket({ ...newTicket, description: e.target.value })}
                   className={`${inputCls} h-16 sm:h-24 resize-none`}
@@ -470,25 +484,23 @@ export default function HelpdeskPage() {
             <ModalHandle />
 
             {/* Header */}
-            <div className="bg-linear-to-r from-indigo-600 to-violet-700 px-5 sm:px-6 py-2 sm:py-5 shrink-0 shadow-lg">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full uppercase tracking-wide">
-                      #{selectedTicket.id.slice(-6).toUpperCase()}
-                    </span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusCfg[selectedTicket.status]?.badge ?? 'bg-gray-100 text-gray-600'}`}>
-                      {statusCfg[selectedTicket.status]?.label ?? selectedTicket.status}
-                    </span>
-                  </div>
-                  <h2 className="text-sm sm:text-base font-bold text-white leading-snug tracking-tight">{selectedTicket.subject}</h2>
-                  <p className="text-indigo-100 text-[10px] sm:text-xs mt-0.5">{selectedTicket.customer} · {selectedTicket.email}</p>
+            <div className={`${modalHeaderCls} items-start`}>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full tracking-wide">
+                    #{selectedTicket.id.slice(-6).toUpperCase()}
+                  </span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusCfg[selectedTicket.status]?.badge ?? 'bg-gray-100 text-gray-600'}`}>
+                    {statusCfg[selectedTicket.status]?.label ?? selectedTicket.status}
+                  </span>
                 </div>
-                <button type="button" onClick={() => { setShowDetailModal(false); setReplyMessage(''); }}
-                  className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white shrink-0">
-                  <X className="w-5 h-5 text-white" />
-                </button>
+                <h2 className="text-sm sm:text-base font-bold text-gray-900 leading-snug tracking-tight">{selectedTicket.subject}</h2>
+                <p className="text-gray-500 text-[10px] sm:text-xs mt-0.5">{selectedTicket.customer} · {selectedTicket.email}</p>
               </div>
+              <button type="button" onClick={() => { setShowDetailModal(false); setReplyMessage(''); }}
+                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600 shrink-0">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Conversation thread */}
@@ -564,19 +576,20 @@ export default function HelpdeskPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full sm:max-w-md flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className="bg-linear-to-r from-amber-500 to-orange-600 px-5 sm:px-6 py-2 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
-              <h2 className="text-sm sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-                <Edit className="w-4 h-4" /> Edit Ticket
-              </h2>
+            <div className={modalHeaderCls}>
+              <div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Edit ticket</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Update status, priority and assignment</p>
+              </div>
               <button type="button" onClick={() => { setShowEditModal(false); setEditTicket(null); }}
-                className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
-                <X className="w-5 h-5 text-white" />
+                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5 space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+                <label className={labelCls}>Status</label>
                 <select value={editTicket.status}
                   onChange={e => setEditTicket({ ...editTicket, status: e.target.value as Ticket['status'] })}
                   className={`${inputCls} appearance-none cursor-pointer`}>
@@ -588,7 +601,7 @@ export default function HelpdeskPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Priority</label>
+                <label className={labelCls}>Priority</label>
                 <select value={editTicket.priority}
                   onChange={e => setEditTicket({ ...editTicket, priority: e.target.value as Ticket['priority'] })}
                   className={`${inputCls} appearance-none cursor-pointer`}>
@@ -599,7 +612,7 @@ export default function HelpdeskPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase mb-1">Assigned To</label>
+                <label className={labelCls}>Assigned to</label>
                 <input type="text" value={editTicket.assignedTo || ''}
                   onChange={e => setEditTicket({ ...editTicket, assignedTo: e.target.value })}
                   className={inputCls} placeholder="Agent name" />

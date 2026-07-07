@@ -9,10 +9,15 @@ import {
   Trash2, MoreVertical, MessageSquare,
   RefreshCw, Grid, List, X, Check,
   Handshake, Factory, Box, Info,
-  ShieldCheck, Package, Zap, Settings,
+  ShieldCheck, Package,
   Wrench, Monitor, TrendingUp, Users, Scale, LifeBuoy
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+
+const labelCls = "block text-xs font-semibold text-gray-600 mb-1.5";
+const inputCls = "w-full px-3.5 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm outline-none placeholder:text-gray-400";
+const selectCls = "w-full px-3.5 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer text-sm outline-none";
+const modalHeaderCls = "px-5 sm:px-6 py-4 flex items-center justify-between shrink-0 border-b border-gray-100";
 
 interface Supplier {
   id: string;
@@ -68,12 +73,10 @@ export default function SuppliersPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSyncing, setIsSyncing] = useState(false);
   const [showAddSupplier, setShowAddSupplier] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showConfigModal, setShowConfigModal] = useState(false);
   const [deletingSupplier, setDeletingSupplier] = useState<Supplier | null>(null);
   const [messageSubject, setMessageSubject] = useState('');
   const [messageBody, setMessageBody] = useState('');
@@ -81,6 +84,8 @@ export default function SuppliersPage() {
   const [isOrdering, setIsOrdering] = useState(false);
   const [orderQuantity, setOrderQuantity] = useState('');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | Supplier['status']>('all');
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
@@ -200,7 +205,8 @@ export default function SuppliersPage() {
       supplier.contactPerson.toLowerCase().includes(searchQuery.toLowerCase()) ||
       supplier.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || supplier.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesStatus = statusFilter === 'all' || supplier.status === statusFilter;
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
   const getStatusConfig = (status: string) => {
@@ -252,43 +258,29 @@ export default function SuppliersPage() {
     <div className="max-w-5xl mx-auto space-y-5 pb-24 md:pb-10">
 
       {/* ── Hero Header ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 via-blue-700 to-teal-700 p-6 sm:p-8 text-white shadow-xl shadow-blue-200/40">
-        <div className="absolute -top-16 -right-16 w-56 h-56 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 left-12 w-40 h-40 bg-teal-400/20 rounded-full blur-xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 bg-white/15 rounded-lg">
-                <Handshake className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-blue-200 text-[10px] font-black uppercase tracking-widest">Supplier Network</span>
+      <div className="bg-white border border-gray-100 rounded-2xl p-5 sm:p-7 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+              <Handshake className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-1">
-              Suppliers
-            </h1>
-            <p className="text-blue-300 text-sm font-medium">Strategic partnership management</p>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none">
+                Suppliers
+              </h1>
+              <p className="text-gray-500 text-xs sm:text-sm font-medium mt-1.5">Strategic partnership management</p>
+            </div>
           </div>
 
           <div className="flex flex-col gap-2.5 sm:items-end">
             <div className="flex items-center gap-1.5 self-start sm:self-auto">
-              <button
-                onClick={() => { setIsSyncing(true); showNotify('Syncing suppliers…'); setTimeout(() => setIsSyncing(false), 2000); }}
-                className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/20 cursor-pointer"
-                title="Sync"
-              >
-                <RefreshCw className={`w-4 h-4 text-white ${isSyncing ? 'animate-spin' : ''}`} />
-              </button>
-              <button onClick={handleExport} className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/20 cursor-pointer" title="Export">
-                <Download className="w-4 h-4 text-white" />
-              </button>
-              <button onClick={() => setShowConfigModal(true)} className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/20 cursor-pointer" title="Settings">
-                <Settings className="w-4 h-4 text-white" />
+              <button onClick={handleExport} className="p-2.5 bg-white hover:bg-gray-50 rounded-xl transition-all border border-gray-200 cursor-pointer" title="Export">
+                <Download className="w-4 h-4 text-gray-500" />
               </button>
             </div>
             <button
               onClick={() => setShowAddSupplier(true)}
-              className="flex items-center justify-center gap-2 bg-white text-blue-700 font-black text-sm rounded-xl px-5 py-2.5 shadow-lg hover:bg-blue-50 active:scale-95 transition-all w-full sm:w-auto cursor-pointer"
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl px-5 py-2.5 active:scale-95 transition-all w-full sm:w-auto cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Add Supplier
@@ -310,8 +302,8 @@ export default function SuppliersPage() {
               <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">{stat.label}</p>
-              <p className="text-xl font-black text-gray-900 leading-tight">{stat.value}</p>
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider truncate">{stat.label}</p>
+              <p className="text-xl font-bold text-gray-900 leading-tight">{stat.value}</p>
               <p className="text-[10px] text-gray-400 truncate">{stat.sub}</p>
             </div>
           </div>
@@ -330,10 +322,33 @@ export default function SuppliersPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
           />
         </div>
-        <button className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-[11px] font-black text-gray-600 hover:bg-gray-50 transition-all cursor-pointer shrink-0">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <span className="hidden sm:inline">Filter</span>
-        </button>
+        <div className="relative shrink-0">
+          <button
+            onClick={() => setShowFilterMenu(v => !v)}
+            className={`flex items-center gap-2 px-3.5 py-2.5 border rounded-xl text-[11px] font-black transition-all cursor-pointer ${
+              statusFilter !== 'all' ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <Filter className={`w-4 h-4 ${statusFilter !== 'all' ? 'text-blue-500' : 'text-gray-400'}`} />
+            <span className="hidden sm:inline">{statusFilter === 'all' ? 'Filter' : getStatusConfig(statusFilter).label}</span>
+          </button>
+          {showFilterMenu && (
+            <>
+              <div className="fixed inset-0 z-60" onClick={() => setShowFilterMenu(false)} />
+              <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 z-70 animate-in fade-in zoom-in duration-200">
+                {(['all', 'active', 'inactive', 'pending', 'suspended'] as const).map(s => (
+                  <button
+                    key={s}
+                    onClick={() => { setStatusFilter(s); setShowFilterMenu(false); }}
+                    className={`w-full px-3.5 py-2.5 text-left text-[11px] font-black flex items-center gap-2.5 hover:bg-gray-50 transition-colors cursor-pointer ${statusFilter === s ? 'text-blue-600' : 'text-gray-700'}`}
+                  >
+                    {s === 'all' ? 'All statuses' : getStatusConfig(s).label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
         <div className="flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shrink-0">
           {[{ id: 'grid', icon: Grid }, { id: 'list', icon: List }].map(mode => (
             <button
@@ -774,135 +789,91 @@ export default function SuppliersPage() {
       {showAddSupplier && (
         <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowAddSupplier(false)} />
-          <div className="relative w-full sm:max-w-2xl bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92dvh]">
-            {/* Sidebar — desktop only */}
-            <div className="hidden md:flex w-64 bg-gray-950 p-7 text-white flex-col justify-between shrink-0">
+          <div className="relative w-full sm:max-w-lg bg-white sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+            <div className={modalHeaderCls}>
               <div>
-                <h2 className="text-2xl font-black tracking-tight mb-3 leading-tight">Add Supplier</h2>
-                <p className="text-xs text-gray-400 leading-relaxed mb-6">Register a new supplier in your network.</p>
-                <div className="space-y-2.5">
-                  {[
-                    { icon: Building2, label: 'Company Info', sub: 'Name and category' },
-                    { icon: MessageSquare, label: 'Contact Details', sub: 'Person and email' },
-                    { icon: ShoppingCart, label: 'Terms', sub: 'Payment and lead time' },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl">
-                      <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
-                        <item.icon className="w-4 h-4 text-blue-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-black text-white">{item.label}</p>
-                        <p className="text-[10px] text-gray-500">{item.sub}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Add supplier</h2>
+                <p className="text-[11px] text-gray-500 font-medium">Register a new supplier in your network</p>
               </div>
-              <div className="p-3 bg-white/5 rounded-2xl">
-                <p className="text-[10px] text-gray-400 leading-relaxed">All starred fields are required.</p>
-              </div>
+              <button onClick={() => setShowAddSupplier(false)} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Form */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
+              <div>
+                <label className={labelCls}>Company name *</label>
+                <input type="text" value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} placeholder="e.g. Acme Supplies Ltd" className={inputCls} />
               </div>
-              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-0.5">New Supplier</p>
-                  <h2 className="text-lg font-black text-gray-900">Add Supplier</h2>
+                  <label className={labelCls}>Category</label>
+                  <select value={newSupplierCategory} onChange={(e) => setNewSupplierCategory(e.target.value)} className={selectCls}>
+                    <option value="">Select</option>
+                    {categoryConfigs.filter(c => c.id !== 'all').map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
                 </div>
-                <button onClick={() => setShowAddSupplier(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
+                <div>
+                  <label className={labelCls}>Contact person *</label>
+                  <input type="text" value={newSupplierContact} onChange={(e) => setNewSupplierContact(e.target.value)} placeholder="Full name" className={inputCls} />
+                </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Company Name *</label>
-                  <input type="text" value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} placeholder="e.g. Acme Supplies Ltd" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
-                </div>
+              <div>
+                <label className={labelCls}>Email *</label>
+                <input type="email" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} placeholder="contact@supplier.com" className={inputCls} />
+              </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Phone</label>
+                  <input type="tel" value={newSupplierPhone} onChange={(e) => setNewSupplierPhone(e.target.value)} placeholder="+44 7000 000000" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Website</label>
+                  <input type="url" value={newSupplierWebsite} onChange={(e) => setNewSupplierWebsite(e.target.value)} placeholder="https://" className={inputCls} />
+                </div>
+              </div>
+
+              <div className="pt-1">
+                <p className="text-xs font-semibold text-gray-600 mb-2.5 flex items-center gap-1.5">
+                  <ShoppingCart className="w-3.5 h-3.5 text-gray-400" /> Order terms
+                </p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Category</label>
-                    <select value={newSupplierCategory} onChange={(e) => setNewSupplierCategory(e.target.value)} className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all">
-                      <option value="">Select</option>
-                      {categoryConfigs.filter(c => c.id !== 'all').map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
+                  <div>
+                    <label className={labelCls}>Payment terms</label>
+                    <select value={newSupplierPaymentTerms} onChange={(e) => setNewSupplierPaymentTerms(e.target.value)} className={selectCls}>
+                      <option value="net30">Net 30</option>
+                      <option value="net60">Net 60</option>
+                      <option value="net90">Net 90</option>
+                      <option value="prepay">Prepayment</option>
                     </select>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Contact Person *</label>
-                    <input type="text" value={newSupplierContact} onChange={(e) => setNewSupplierContact(e.target.value)} placeholder="Full name" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+                  <div>
+                    <label className={labelCls}>Lead time</label>
+                    <input type="text" value={newSupplierLeadTime} onChange={(e) => setNewSupplierLeadTime(e.target.value)} placeholder="e.g. 7-10 days" className={inputCls} />
                   </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Email *</label>
-                  <input type="email" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} placeholder="contact@supplier.com" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Phone</label>
-                    <input type="tel" value={newSupplierPhone} onChange={(e) => setNewSupplierPhone(e.target.value)} placeholder="+44 7000 000000" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Website</label>
-                    <input type="url" value={newSupplierWebsite} onChange={(e) => setNewSupplierWebsite(e.target.value)} placeholder="https://" className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
-                  </div>
-                </div>
-
-                <div className="p-4 bg-gray-900 rounded-2xl">
-                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <ShoppingCart className="w-3 h-3" /> Order Terms
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Payment Terms</label>
-                      <select value={newSupplierPaymentTerms} onChange={(e) => setNewSupplierPaymentTerms(e.target.value)} className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-blue-500 transition-all">
-                        <option value="net30" className="text-gray-900 bg-white">Net 30</option>
-                        <option value="net60" className="text-gray-900 bg-white">Net 60</option>
-                        <option value="net90" className="text-gray-900 bg-white">Net 90</option>
-                        <option value="prepay" className="text-gray-900 bg-white">Prepayment</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Lead Time</label>
-                      <input type="text" value={newSupplierLeadTime} onChange={(e) => setNewSupplierLeadTime(e.target.value)} placeholder="e.g. 7-10 days" className="w-full px-3.5 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-all" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mobile-only buttons inside scroll — extended scroll space */}
-                <div className="flex items-center justify-end gap-3 pt-2 pb-32 sm:hidden">
-                  <button onClick={() => setShowAddSupplier(false)} className="px-5 py-2.5 text-[11px] font-black text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors cursor-pointer">
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleAddSupplier}
-                    className="px-6 py-2.5 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer active:scale-95"
-                  >
-                    Add Supplier
-                  </button>
                 </div>
               </div>
 
-              {/* Desktop sticky footer */}
-              <div className="hidden sm:flex px-5 sm:px-6 py-4 border-t border-gray-100 items-center justify-end gap-3 shrink-0">
-                <button onClick={() => setShowAddSupplier(false)} className="px-5 py-2.5 text-[11px] font-black text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors cursor-pointer">
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddSupplier}
-                  className="px-6 py-2.5 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer active:scale-95"
-                >
-                  Add Supplier
-                </button>
-              </div>
+              <p className="text-[11px] text-gray-400">Fields marked * are required.</p>
+            </div>
+
+            <div className="shrink-0 bg-white border-t border-gray-100 px-5 sm:px-6 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+              <button type="button" onClick={() => setShowAddSupplier(false)}
+                className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
+                Cancel
+              </button>
+              <button type="button" onClick={handleAddSupplier}
+                className="flex-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
+                <Plus className="w-4 h-4" /> Add supplier
+              </button>
             </div>
           </div>
         </div>
@@ -1172,96 +1143,6 @@ export default function SuppliersPage() {
               >
                 {isOrdering ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
                 {isOrdering ? 'Sending PO…' : 'Place Order'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Config Modal ── */}
-      {showConfigModal && (
-        <div className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 sm:pl-0 md:pl-64">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowConfigModal(false)} />
-          <div className="relative w-full sm:max-w-lg bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
-            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
-              <div className="w-10 h-1 bg-gray-200 rounded-full" />
-            </div>
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
-              <div>
-                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-0.5">Preferences</p>
-                <h2 className="text-lg font-black text-gray-900">Settings</h2>
-              </div>
-              <button onClick={() => setShowConfigModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
-                <X className="w-5 h-5 text-gray-400" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-5">
-              {/* Auto-Sync */}
-              <div>
-                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <RefreshCw className="w-3.5 h-3.5" /> Auto-Sync
-                </p>
-                <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
-                  {[
-                    { label: 'Real-time Inventory Sync', sub: 'Update stock every 15 minutes', enabled: true },
-                    { label: 'Price Monitor', sub: 'Alert on >5% rate deviation', enabled: false },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-black text-gray-900">{item.label}</p>
-                        <p className="text-[10px] text-gray-500">{item.sub}</p>
-                      </div>
-                      <div className={`w-11 h-6 rounded-full relative cursor-pointer shrink-0 transition-colors ${item.enabled ? 'bg-blue-500' : 'bg-gray-200'}`}>
-                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${item.enabled ? 'right-1' : 'left-1'}`} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Notifications */}
-              <div>
-                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Zap className="w-3.5 h-3.5" /> Notifications
-                </p>
-                <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
-                  {['Shipment Delays', 'Quality Flags', 'Contract Renewals', 'New Catalogues'].map((item, i) => (
-                    <label key={i} className="flex items-center gap-3 cursor-pointer">
-                      <div className="w-5 h-5 rounded-md border-2 border-blue-400 bg-blue-50 flex items-center justify-center shrink-0">
-                        <Check className="w-3 h-3 text-blue-600" />
-                      </div>
-                      <span className="text-sm font-bold text-gray-700">{item}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* API */}
-              <div>
-                <p className="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Globe className="w-3.5 h-3.5" /> API Integration
-                </p>
-                <div className="bg-gray-900 rounded-2xl p-4">
-                  <p className="text-[10px] font-bold text-gray-400 mb-2">API Key</p>
-                  <div className="flex items-center gap-2 bg-gray-800 rounded-xl p-3 border border-gray-700">
-                    <code className="text-xs font-mono text-emerald-400 flex-1 truncate">sk_live_51Msz…92xS</code>
-                    <button className="p-1.5 hover:bg-gray-700 rounded-lg transition-all cursor-pointer shrink-0" title="Copy">
-                      <Download className="w-3.5 h-3.5 text-gray-400" />
-                    </button>
-                  </div>
-                  <p className="text-[9px] text-gray-500 mt-2">Admin access only.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-5 sm:px-6 py-4 border-t border-gray-100 shrink-0">
-              <button
-                onClick={() => { showNotify('Settings saved'); setShowConfigModal(false); }}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-blue-700 transition-all cursor-pointer"
-              >
-                <Check className="w-4 h-4" />
-                Save Settings
               </button>
             </div>
           </div>

@@ -11,12 +11,15 @@ import {
   CheckSquare, Sparkles, FileEdit, BarChart3, Package,
   Truck, UserCheck, PenTool, Globe, Shield, X, Inbox,
   LogOut, Settings, Building2, CreditCard,
-  LifeBuoy, Rocket, BookOpen, Bell, Cpu, UsersRound, AtSign
+  LifeBuoy, Rocket, BookOpen, Bell, Cpu, UsersRound, AtSign, FolderKanban
 } from 'lucide-react';
 
 import WelcomeGuideModal from '@/components/WelcomeGuideModal';
 import IncomingCallModal from '@/components/collaboration/IncomingCallModal';
 import MobileBottomNav from '@/components/navigation/MobileBottomNav';
+import { REPLAY_TOUR_EVENT } from '@/components/tours/TourProvider';
+import { moduleHasTour } from '@/components/tours/pilot-modules';
+import { Compass } from 'lucide-react';
 
 interface UserData {
   firstName: string;
@@ -447,11 +450,17 @@ export default function DashboardLayout({
                       { id: 'kpi-dashboard', href: '/dashboard/kpi-dashboard', icon: BarChart3, label: 'KPI Dashboard' },
                     ].filter(m => finalModules.includes(m.id));
 
-                    if (productivityModules.length === 0) return null;
+                    // Projects is new cross-module infrastructure (not yet a toggleable
+                    // billed module), so it's always shown rather than gated by enabledModules.
+                    const allModules = [
+                      ...productivityModules,
+                      { id: 'projects', href: '/dashboard/projects', icon: FolderKanban, label: 'Projects' },
+                    ];
+
                     return (
                       <div className="pt-4">
                         <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Productivity</p>
-                        {productivityModules.map(m => (
+                        {allModules.map(m => (
                           <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
                             <m.icon className="w-5 h-5" /> {m.label}
                           </Link>
@@ -498,13 +507,31 @@ export default function DashboardLayout({
             <Rocket className="w-5 h-5" />
             <span>Quick Start Guide</span>
           </button>
-          <Link href="/guide" target="_blank" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
+          {moduleHasTour(pathname?.split('/')[2]) && (
+            <button
+              onClick={() => {
+                const moduleId = pathname?.split('/')[2];
+                if (moduleId) {
+                  window.dispatchEvent(new CustomEvent(REPLAY_TOUR_EVENT, { detail: { moduleId } }));
+                }
+              }}
+              className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors w-full text-left cursor-pointer"
+            >
+              <Compass className="w-5 h-5" />
+              <span>Replay Tour</span>
+            </button>
+          )}
+          <Link href="/dashboard/guides" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
             <BookOpen className="w-5 h-5" />
             <span>User Guide</span>
           </Link>
           <Link href="/dashboard/support" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
             <LifeBuoy className="w-5 h-5" />
             <span>Support</span>
+          </Link>
+          <Link href="/dashboard/settings?tab=billing" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
+            <CreditCard className="w-5 h-5" />
+            <span>Billing &amp; Plan</span>
           </Link>
           <Link href="/dashboard/settings" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
             <Settings className="w-5 h-5" />

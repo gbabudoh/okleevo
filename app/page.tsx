@@ -93,7 +93,7 @@ export default function Home() {
                   "name": "What modules are included in the all-in-one platform?",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Okleevo includes 20 integrated business modules, covering Invoicing, CRM, booking calendar, campaigns, tasks, suppliers, inventory, e-signature, video collaboration, and AI tools."
+                    "text": "Okleevo includes 23 integrated business modules, covering Invoicing, CRM, booking calendar, campaigns, tasks, suppliers, inventory, e-signature, video collaboration, staff collaboration, a built-in Mail Engine for sending and receiving email without external providers, and AI tools."
                   }
                 }
               ]

@@ -31,13 +31,11 @@ interface AIModel {
   description: string;
 }
 
+// The only two LLM providers configured on the platform
+// (GROQ_MODEL / GEMINI_MODEL in .env.local) — not a general model catalog.
 const availableModels: AIModel[] = [
-  { id: 'mistral-saba-24b',              name: 'Mistral Saba',     provider: 'Groq',   description: 'Fast, efficient 24B parameter model' },
-  { id: 'gemma2-9b-it',                  name: 'Gemma 2',          provider: 'Groq',   description: "Google's lightweight instruction-tuned model" },
-  { id: 'qwen-qwq-32b',                  name: 'Qwen QwQ',         provider: 'Groq',   description: 'Advanced model from Alibaba Cloud' },
-  { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1',      provider: 'Groq',   description: 'Reasoning-focused model' },
-  { id: 'gemini-1.5-pro',                name: 'Gemini 1.5 Pro',   provider: 'Gemini', description: "Google's most capable multimodal model" },
-  { id: 'gemini-1.5-flash',              name: 'Gemini 1.5 Flash', provider: 'Gemini', description: 'Fast and cost-efficient multimodal model' },
+  { id: 'llama-3.1-70b-versatile', name: 'Groq',   provider: 'Groq',   description: 'Fast, high-throughput inference via Groq' },
+  { id: 'gemini-1.5-flash',        name: 'Gemini', provider: 'Gemini', description: "Google's multimodal model" },
 ];
 
 const NOTE_TYPES = [
@@ -51,7 +49,8 @@ const NOTE_TYPES = [
 
 const getType = (id: string) => NOTE_TYPES.find(t => t.id === id) ?? NOTE_TYPES[0];
 
-const inputCls = "w-full min-h-[44px] px-4 py-3 bg-slate-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-400 focus:bg-white transition-all outline-none text-sm font-medium text-gray-900 placeholder:text-gray-400";
+const inputCls = "w-full min-h-[44px] px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-400 transition-all outline-none text-sm font-medium text-gray-900 placeholder:text-gray-400";
+const labelCls = "block text-xs font-semibold text-gray-600";
 
 export default function AINotesPage() {
   const [notes, setNotes]                   = useState<Note[]>([]);
@@ -68,6 +67,8 @@ export default function AINotesPage() {
   const [newTitle, setNewTitle]             = useState('');
   const [newContent, setNewContent]         = useState('');
   const [newTags, setNewTags]               = useState('');
+  const [creatingNote, setCreatingNote]      = useState(false);
+  const [assistError, setAssistError]       = useState<string | null>(null);
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -125,20 +126,45 @@ export default function AINotesPage() {
 
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
+    setCreatingNote(true);
+    setAssistError(null);
+
+    let aiSummary: string | null = null;
+    let actionItems: string[] = [];
+
+    if (showAIAssist) {
+      try {
+        const assistRes = await fetch('/api/ai-notes/assist', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: newTitle.trim(), content: newContent.trim(), provider: selectedModel.provider }),
+        });
+        if (assistRes.ok) {
+          const assist = await assistRes.json();
+          aiSummary = assist.summary;
+          actionItems = assist.actionItems;
+        } else {
+          const err = await assistRes.json().catch(() => ({}));
+          setAssistError(err.error || 'AI Assist failed — note will be saved without it.');
+        }
+      } catch {
+        setAssistError('AI Assist failed — note will be saved without it.');
+      }
+    }
+
     const res = await fetch('/api/ai-notes', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title: newTitle.trim(), content: newContent.trim(), type: newNoteType,
         tags: newTags.split(',').map(t => t.trim()).filter(Boolean),
-        aiSummary: showAIAssist ? `AI summary for ${newTitle}` : null,
-        actionItems: showAIAssist ? ['Action item 1', 'Action item 2'] : [],
+        aiSummary, actionItems,
       }),
     });
+    setCreatingNote(false);
     if (res.ok) {
       const c: Omit<Note, 'date'> & { date: string } = await res.json();
       setNotes(prev => [{ ...c, date: new Date(c.date) }, ...prev]);
       setShowNewModal(false);
-      setNewTitle(''); setNewContent(''); setNewTags(''); setShowAIAssist(false);
+      setNewTitle(''); setNewContent(''); setNewTags(''); setShowAIAssist(false); setAssistError(null);
     }
   };
 
@@ -259,21 +285,17 @@ export default function AINotesPage() {
       <div className="relative z-10 max-w-7xl mx-auto space-y-4 pb-24 sm:pb-10">
 
         {/* ── Hero header ── */}
-        <div className="bg-white/60 backdrop-blur-xl border border-white/60 rounded-3xl p-5 sm:p-8 shadow-xl shadow-indigo-500/5">
+        <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-8 shadow-sm">
           <div className="flex items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <FileText className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+              <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-indigo-600 flex items-center justify-center">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full mb-1.5">
-                  <Sparkles className="w-3 h-3 text-indigo-500" />
-                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">AI Intelligence</span>
-                </div>
-                <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight leading-none">
-                  Notes <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Studio</span>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none">
+                  Notes Studio
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1 hidden sm:block">
+                <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1.5 hidden sm:block">
                   Smart note-taking with AI summaries and action items.
                 </p>
               </div>
@@ -302,8 +324,8 @@ export default function AINotesPage() {
                 <Icon className={`w-4 h-4 ${color}`} />
               </div>
               <div>
-                <div className="text-lg sm:text-xl font-black text-gray-900 leading-none">{value}</div>
-                <div className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{label}</div>
+                <div className="text-lg sm:text-xl font-bold text-gray-900 leading-none">{value}</div>
+                <div className="text-[9px] sm:text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">{label}</div>
               </div>
             </div>
           ))}
@@ -329,7 +351,7 @@ export default function AINotesPage() {
         <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
           <button
             onClick={() => setSelectedType('all')}
-            className={`shrink-0 px-4 py-2 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all cursor-pointer border ${selectedType === 'all' ? 'bg-gray-900 text-white border-gray-900 shadow-lg' : 'bg-white text-gray-500 border-gray-100 hover:border-indigo-200 hover:text-indigo-600'}`}
+            className={`shrink-0 px-4 py-2 rounded-xl font-semibold text-xs transition-all cursor-pointer border ${selectedType === 'all' ? 'bg-gray-900 text-white border-gray-900 shadow-sm' : 'bg-white text-gray-500 border-gray-100 hover:border-indigo-200 hover:text-indigo-600'}`}
           >
             All
           </button>
@@ -340,7 +362,7 @@ export default function AINotesPage() {
               <button
                 key={t.id}
                 onClick={() => setSelectedType(t.id)}
-                className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all cursor-pointer border ${active ? 'bg-gray-900 text-white border-gray-900 shadow-lg' : 'bg-white text-gray-500 border-gray-100 hover:border-indigo-200 hover:text-indigo-600'}`}
+                className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs transition-all cursor-pointer border ${active ? 'bg-gray-900 text-white border-gray-900 shadow-sm' : 'bg-white text-gray-500 border-gray-100 hover:border-indigo-200 hover:text-indigo-600'}`}
               >
                 <Icon className="w-3 h-3" />
                 {t.name}
@@ -416,50 +438,44 @@ export default function AINotesPage() {
             </div>
 
             {/* Modal header */}
-            <div className="shrink-0 flex items-center justify-between px-5 py-6 border-b border-gray-100">
+            <div className="shrink-0 flex items-center justify-between px-5 py-5 border-b border-gray-100">
               <div>
-                <h3 className="text-2xl font-black text-gray-900 leading-none">
-                  New <span className="text-indigo-600">Note</span>
+                <h3 className="text-lg font-bold text-gray-900 leading-none">
+                  New <span className="text-indigo-600">note</span>
                 </h3>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-2">FILL IN THE DETAILS BELOW</p>
+                <p className="text-xs text-gray-500 font-medium mt-1.5">Fill in the details below</p>
               </div>
               <button
                 onClick={() => setShowNewModal(false)}
-                className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-gray-600 transition-all cursor-pointer"
+                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all cursor-pointer"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal body */}
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
               {/* Note type pills */}
-              <div className="space-y-4">
-                <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                  {NOTE_TYPES.map(t => {
-                    const Icon = t.icon;
-                    const sel = newNoteType === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => setNewNoteType(t.id)}
-                        className={`shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${sel ? 'bg-[#5145fa] text-white shadow-lg' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
-                      >
-                        <Icon className="w-4 h-4" />
-                        {t.name.toUpperCase()}
-                      </button>
-                    );
-                  })}
-                </div>
-                {/* Visual scrollbar matching the image */}
-                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full w-2/3 bg-[#94a3b8] rounded-full" />
-                </div>
+              <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {NOTE_TYPES.map(t => {
+                  const Icon = t.icon;
+                  const sel = newNoteType === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => setNewNoteType(t.id)}
+                      className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${sel ? 'bg-[#5145fa] text-white shadow-sm' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {t.name}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Title */}
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">TITLE</label>
+              <div className="space-y-1.5">
+                <label className={labelCls}>Title</label>
                 <input
                   type="text" placeholder="Give your note a clear title"
                   value={newTitle} onChange={e => setNewTitle(e.target.value)}
@@ -468,8 +484,8 @@ export default function AINotesPage() {
               </div>
 
               {/* Content */}
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">CONTENT</label>
+              <div className="space-y-1.5">
+                <label className={labelCls}>Content</label>
                 <textarea
                   placeholder="Write your notes here…" rows={5}
                   value={newContent} onChange={e => setNewContent(e.target.value)}
@@ -479,20 +495,20 @@ export default function AINotesPage() {
 
               {/* Tags + Model */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">TAGS</label>
+                <div className="space-y-1.5">
+                  <label className={labelCls}>Tags</label>
                   <input
                     type="text" placeholder="strategy, Q4…"
                     value={newTags} onChange={e => setNewTags(e.target.value)}
                     className={inputCls}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">AI MODEL</label>
+                <div className="space-y-1.5">
+                  <label className={labelCls}>AI model</label>
                   <select
                     value={selectedModel.id}
                     onChange={e => { const m = availableModels.find(m => m.id === e.target.value); if (m) setSelectedModel(m); }}
-                    className={`${inputCls} cursor-pointer appearance-none bg-slate-50`}
+                    className={`${inputCls} cursor-pointer appearance-none`}
                   >
                     {availableModels.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                   </select>
@@ -501,37 +517,48 @@ export default function AINotesPage() {
 
               {/* AI assist + Media */}
               <div className="flex items-center gap-3">
-                <div className="flex-1 flex items-center justify-between px-5 py-4 bg-[#f8faff] border border-blue-50 rounded-[2rem] shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setShowAIAssist(v => !v)}
+                  className="flex-1 flex items-center justify-between px-5 py-3.5 bg-[#f8faff] border border-blue-50 rounded-2xl cursor-pointer"
+                >
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-[#5145fa]" />
-                    <span className="text-[11px] font-black text-[#1e1b4b] uppercase tracking-widest">AI ASSIST</span>
+                    <Sparkles className="w-4 h-4 text-[#5145fa]" />
+                    <span className="text-sm font-semibold text-gray-800">AI Assist</span>
                   </div>
-                  <div className="px-4 py-2 bg-white border border-gray-100 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest shadow-sm">
-                    {showAIAssist ? 'ON' : 'OFF'}
+                  <div className={`px-3 py-1 border rounded-full text-[11px] font-semibold transition-colors ${
+                    showAIAssist ? 'bg-[#5145fa] border-[#5145fa] text-white' : 'bg-white border-gray-100 text-gray-500'
+                  }`}>
+                    {showAIAssist ? 'On' : 'Off'}
                   </div>
-                </div>
-                <button className="w-14 h-14 flex items-center justify-center bg-white border border-gray-50 rounded-[1.5rem] text-gray-400 shadow-sm hover:bg-gray-50 transition-all cursor-pointer">
-                  <Mic className="w-6 h-6" />
                 </button>
-                <button className="w-14 h-14 flex items-center justify-center bg-white border border-gray-50 rounded-[1.5rem] text-gray-400 shadow-sm hover:bg-gray-50 transition-all cursor-pointer">
-                  <Video className="w-6 h-6" />
+                <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:bg-gray-50 transition-all cursor-pointer">
+                  <Mic className="w-5 h-5" />
+                </button>
+                <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:bg-gray-50 transition-all cursor-pointer">
+                  <Video className="w-5 h-5" />
                 </button>
               </div>
+
+              {assistError && (
+                <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">{assistError}</p>
+              )}
+
               {/* Action Buttons moved inside scrollable body with extended scroll space */}
               <div className="flex gap-3 pt-6 border-t border-gray-50 pb-32 sm:pb-12">
                 <button
                   onClick={() => setShowNewModal(false)}
-                  className="px-6 py-2.5 border border-gray-200 rounded-2xl text-sm font-black text-gray-500 hover:bg-gray-50 transition-all cursor-pointer"
+                  className="px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleCreate}
-                  disabled={!newTitle.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#94a3b8] text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-600 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-lg active:scale-[0.98]"
+                  disabled={!newTitle.trim() || creatingNote}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#5145fa] text-white font-semibold text-sm rounded-xl hover:bg-indigo-700 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
                 >
-                  <Plus className="w-4 h-4" />
-                  CREATE NOTE
+                  {creatingNote ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {creatingNote ? (showAIAssist ? 'Generating…' : 'Creating…') : 'Create Note'}
                 </button>
               </div>
             </div>

@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import TourProvider from '@/components/tours/TourProvider';
+import { cashflowTourSteps } from './tour-steps';
 
 interface Transaction {
   id: string;
@@ -91,6 +93,9 @@ export default function CashflowPage() {
     category: 'Sales'
   });
 
+  const [savingTransaction, setSavingTransaction] = useState(false);
+  const [originalTransactionType, setOriginalTransactionType] = useState<'income' | 'expense' | null>(null);
+  const [updatingTransaction, setUpdatingTransaction] = useState(false);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
@@ -152,6 +157,7 @@ export default function CashflowPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-white pb-24 sm:pb-8">
+      <TourProvider moduleId="cashflow" steps={cashflowTourSteps} />
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
@@ -167,6 +173,7 @@ export default function CashflowPage() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <select
+              id="tour-cashflow-time-range"
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
               className="hidden sm:block px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer"
@@ -199,6 +206,7 @@ export default function CashflowPage() {
               <Download className="w-5 h-5" />
             </button>
             <button
+              id="tour-cashflow-new-entry"
               type="button"
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
@@ -434,7 +442,7 @@ export default function CashflowPage() {
                   </div>
                   <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={(e) => { e.stopPropagation(); setEditingTransaction(transaction); setShowEditModal(true); }}
+                      onClick={(e) => { e.stopPropagation(); setEditingTransaction({ ...transaction, date: transaction.date.split('T')[0] }); setOriginalTransactionType(transaction.type); setShowEditModal(true); }}
                       className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                     >
                       <Edit className="w-3.5 h-3.5" />
@@ -454,7 +462,7 @@ export default function CashflowPage() {
       </div>
 
       {/* Financial Insights */}
-      <div className="px-4 sm:px-6 pt-4">
+      <div id="tour-cashflow-insights" className="px-4 sm:px-6 pt-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { title: 'Cash Runway', val: loading ? '—' : (avgMonthlyExpenses > 0 ? `${Math.min(12, Math.floor(100000 / avgMonthlyExpenses))} mo` : 'N/A'), icon: Calendar, bg: 'bg-blue-100', text: 'text-blue-600', sub: 'Est. from cash reserves', trend: 'Healthy' },
@@ -479,19 +487,19 @@ export default function CashflowPage() {
       {/* Add Transaction Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-2xl w-full sm:max-w-xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
+          <div className="bg-white rounded-2xl w-full sm:max-w-xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-xl border border-gray-200 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className="bg-linear-to-r from-indigo-600 to-violet-600 px-4 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
+            <div className="px-4 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-md border border-white/20">
-                  <Plus className="w-5 h-5 text-white" />
+                <div className="p-2.5 bg-indigo-50 rounded-xl">
+                  <Plus className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div>
-                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">New Transaction</h2>
-                  <p className="text-[11px] text-indigo-100 font-medium opacity-90">Add your income or expenses</p>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight">New Transaction</h2>
+                  <p className="text-[11px] text-gray-500 font-medium">Add your income or expenses</p>
                 </div>
               </div>
-              <button onClick={() => { setShowAddModal(false); resetNewTransaction(); }} className="p-2.5 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
+              <button onClick={() => { setShowAddModal(false); resetNewTransaction(); }} className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -577,17 +585,36 @@ export default function CashflowPage() {
               <CancelBtn onClick={() => { setShowAddModal(false); resetNewTransaction(); }} />
               <button
                 type="button"
-                onClick={() => {
-                  if (newTransaction.description && newTransaction.amount) {
-                    alert('Transaction added (Simulation)');
+                onClick={async () => {
+                  if (!newTransaction.description || !newTransaction.amount) return;
+                  setSavingTransaction(true);
+                  try {
+                    const res = await fetch('/api/cashflow/transactions', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        type: newTransaction.type,
+                        description: newTransaction.description,
+                        amount: parseFloat(newTransaction.amount),
+                        date: newTransaction.date,
+                        category: newTransaction.category,
+                      }),
+                    });
+                    if (!res.ok) throw new Error('Failed to save transaction');
                     setShowAddModal(false);
                     resetNewTransaction();
+                    await fetchCashflowData();
+                  } catch (error) {
+                    console.error('Error saving transaction:', error);
+                    alert('Failed to save transaction. Please try again.');
+                  } finally {
+                    setSavingTransaction(false);
                   }
                 }}
-                disabled={!newTransaction.description || !newTransaction.amount}
+                disabled={!newTransaction.description || !newTransaction.amount || savingTransaction}
                 className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                Save Entry
+                {savingTransaction ? 'Saving...' : 'Save Entry'}
               </button>
             </ModalFooter>
           </div>
@@ -654,7 +681,8 @@ export default function CashflowPage() {
                 type="button"
                 onClick={() => {
                   setShowViewModal(false);
-                  setEditingTransaction(viewingTransaction);
+                  setEditingTransaction({ ...viewingTransaction, date: viewingTransaction.date.split('T')[0] });
+                  setOriginalTransactionType(viewingTransaction.type);
                   setViewingTransaction(null);
                   setShowEditModal(true);
                 }}
@@ -767,14 +795,38 @@ export default function CashflowPage() {
               <CancelBtn onClick={() => { setShowEditModal(false); setEditingTransaction(null); }} />
               <button
                 type="button"
-                onClick={() => {
-                  alert('Transaction updated (Simulation)');
-                  setShowEditModal(false);
-                  setEditingTransaction(null);
+                onClick={async () => {
+                  if (!editingTransaction || !originalTransactionType) return;
+                  setUpdatingTransaction(true);
+                  try {
+                    const res = await fetch(`/api/cashflow/transactions/${editingTransaction.id}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        originalType: originalTransactionType,
+                        type: editingTransaction.type,
+                        description: editingTransaction.description,
+                        amount: editingTransaction.amount,
+                        date: editingTransaction.date,
+                        category: editingTransaction.category,
+                      }),
+                    });
+                    if (!res.ok) throw new Error('Failed to update transaction');
+                    setShowEditModal(false);
+                    setEditingTransaction(null);
+                    setOriginalTransactionType(null);
+                    await fetchCashflowData();
+                  } catch (error) {
+                    console.error('Error updating transaction:', error);
+                    alert('Failed to update transaction. Please try again.');
+                  } finally {
+                    setUpdatingTransaction(false);
+                  }
                 }}
-                className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer"
+                disabled={updatingTransaction}
+                className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                Update
+                {updatingTransaction ? 'Updating...' : 'Update'}
               </button>
             </ModalFooter>
           </div>
@@ -786,10 +838,21 @@ export default function CashflowPage() {
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
           onClose={() => { setShowDeleteModal(false); setDeletingTransaction(null); }}
-          onConfirm={() => {
-            alert('✓ Transaction deleted successfully!');
-            setShowDeleteModal(false);
-            setDeletingTransaction(null);
+          onConfirm={async () => {
+            if (!deletingTransaction) return;
+            try {
+              const res = await fetch(`/api/cashflow/transactions/${deletingTransaction.id}?type=${deletingTransaction.type}`, {
+                method: 'DELETE',
+              });
+              if (!res.ok) throw new Error('Failed to delete transaction');
+              await fetchCashflowData();
+            } catch (error) {
+              console.error('Error deleting transaction:', error);
+              alert('Failed to delete transaction. Please try again.');
+            } finally {
+              setShowDeleteModal(false);
+              setDeletingTransaction(null);
+            }
           }}
           title="Delete Transaction"
           itemName={deletingTransaction.description || 'Transaction'}

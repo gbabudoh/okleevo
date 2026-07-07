@@ -52,7 +52,9 @@ Requirements:
     const genAI = getGeminiClient();
     if (genAI) {
       try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        // gemini-1.5-flash was retired; gemini-2.5-flash is the current
+        // stable equivalent (verified against the live models list).
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
         const result = await model.generateContent(prompt);
         const content = result.response.text();
         if (content) return NextResponse.json({ content });

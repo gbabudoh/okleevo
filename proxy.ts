@@ -16,6 +16,10 @@ const publicRoutes = [
   '/auth/forgot-password',
   '/auth/reset-password',
   '/api/webhooks',  // Stripe webhook must be public (no session)
+  '/api/cron',      // Vercel Cron has no session; routes self-gate on CRON_SECRET
+  '/unsubscribe',     // Campaign recipients aren't logged in; gated by unsubscribeToken
+  '/api/unsubscribe',
+  '/api/integrations/shopify/callback', // Shopify's redirect mid-OAuth-flow; gated by HMAC + signed state, not a session
   '/forms',
   '/api/public',
   '/support',

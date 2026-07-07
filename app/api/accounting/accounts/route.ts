@@ -33,7 +33,7 @@ export const GET = withMultiTenancy(async (req, { user }) => {
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body = await req.json();
-    const { code, name, type, category, description, openingBalance } = body;
+    const { code, name, type, category, description, openingBalance, isCashAccount } = body;
     const upperType = (type as string).toUpperCase();
 
     const account = await prisma.ledgerAccount.create({
@@ -43,6 +43,7 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         type: upperType as any,
         category: category || upperType,
         description,
+        isCashAccount: Boolean(isCashAccount),
         businessId: user.businessId,
       },
     });

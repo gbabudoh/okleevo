@@ -162,7 +162,7 @@ const contentTemplates: ContentTemplate[] = [
 
 const CATEGORIES = ['All', 'Content', 'Social', 'Email', 'Ads', 'Video', 'E-commerce', 'SEO', 'PR', 'Branding'];
 
-const fieldCls = "w-full min-h-[48px] px-4 py-3 bg-slate-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-400 focus:bg-white transition-all outline-none text-sm font-medium text-gray-900 placeholder:text-gray-400";
+const fieldCls = "w-full min-h-[48px] px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-400 transition-all outline-none text-sm font-medium text-gray-900 placeholder:text-gray-400";
 
 export default function AIContentPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
@@ -232,34 +232,27 @@ export default function AIContentPage() {
 
         <div className="relative z-10 max-w-7xl mx-auto space-y-5 pb-24 sm:pb-10">
           {/* ── Hero header ── */}
-          <div className="bg-white/60 backdrop-blur-xl border border-white/60 rounded-3xl p-5 sm:p-8 shadow-xl shadow-purple-500/5">
+          <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-8 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center gap-5">
               {/* Icon */}
-              <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+              <div className="shrink-0 w-12 h-12 rounded-xl bg-purple-600 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
 
               {/* Text */}
               <div className="flex-1 min-w-0">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full mb-2">
-                  <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em]">AI Powered</span>
-                </div>
-                <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight leading-none">
-                  Content <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Studio</span>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-none">
+                  Content Studio
                 </h1>
-                <p className="text-sm text-gray-500 font-medium mt-1">
+                <p className="text-sm text-gray-500 font-medium mt-1.5">
                   Generate professional content in seconds with AI.
                 </p>
               </div>
 
-              {/* Stat pill */}
-              <div className="flex items-center gap-3 px-4 py-3 bg-purple-50 border border-purple-100 rounded-2xl shrink-0 self-start sm:self-auto">
-                <Zap className="w-5 h-5 text-purple-600 shrink-0" />
-                <div>
-                  <div className="text-xl font-black text-gray-900 leading-none">{history.length}</div>
-                  <div className="text-[9px] font-black text-gray-500 uppercase tracking-wider mt-0.5">Generated</div>
-                </div>
+              {/* Stat */}
+              <div className="shrink-0 self-start sm:self-auto sm:text-right">
+                <div className="text-xl font-bold text-gray-900 leading-none">{history.length}</div>
+                <div className="text-xs text-gray-400 font-medium mt-0.5">Generated</div>
               </div>
             </div>
           </div>
@@ -367,13 +360,13 @@ export default function AIContentPage() {
             <span className="hidden sm:inline">Back</span>
           </button>
 
-          <div className={`flex items-center gap-3 flex-1 bg-gradient-to-r ${selectedTemplate.gradient} p-3 sm:p-4 rounded-2xl shadow-lg`}>
-            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-3 flex-1 bg-white border border-gray-100 shadow-sm p-3 sm:p-4 rounded-2xl">
+            <div className={`w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br ${selectedTemplate.gradient} rounded-xl flex items-center justify-center shrink-0`}>
               <TemplateIcon className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm sm:text-lg font-black text-white leading-none truncate">{selectedTemplate.name}</h2>
-              <p className="text-[10px] text-white/70 font-bold uppercase tracking-wider mt-0.5">{selectedTemplate.category}</p>
+              <h2 className="text-sm sm:text-lg font-black text-gray-900 leading-none truncate">{selectedTemplate.name}</h2>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{selectedTemplate.category}</p>
             </div>
           </div>
         </div>
@@ -399,7 +392,7 @@ export default function AIContentPage() {
             <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-4">
               {selectedTemplate.fields.map(field => (
                 <div key={field.name}>
-                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">
                     {field.label}
                   </label>
                   {field.type === 'text' && (
