@@ -57,6 +57,8 @@ export async function GET() {
       role: user.role,
       status: user.status,
       avatar: user.avatar ?? user.image ?? null,
+      timezone: user.timezone,
+      notificationPreferences: user.notificationPreferences,
       business: user.business,
     });
   } catch (error: unknown) {
@@ -69,7 +71,7 @@ export async function GET() {
 }
 
 /**
- * PATCH /api/user/profile — Update avatar URL (or other profile fields)
+ * PATCH /api/user/profile — Update avatar, name, or phone
  */
 export async function PATCH(request: NextRequest) {
   try {
@@ -79,19 +81,56 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { avatar } = body as { avatar?: string };
+    const { avatar, firstName, lastName, phone, timezone, notificationPreferences } = body as {
+      avatar?: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      timezone?: string;
+      notificationPreferences?: Record<string, boolean>;
+    };
 
-    if (!avatar) {
-      return NextResponse.json({ error: 'No avatar URL provided' }, { status: 400 });
+    if (
+      (firstName !== undefined && firstName.trim() === '') ||
+      (lastName !== undefined && lastName.trim() === '')
+    ) {
+      return NextResponse.json({ error: 'First and last name cannot be empty' }, { status: 400 });
+    }
+
+    const data: {
+      avatar?: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      timezone?: string;
+      notificationPreferences?: Record<string, boolean>;
+    } = {};
+    if (avatar !== undefined) data.avatar = avatar;
+    if (firstName !== undefined) data.firstName = firstName.trim();
+    if (lastName !== undefined) data.lastName = lastName.trim();
+    if (phone !== undefined) data.phone = phone;
+    if (timezone !== undefined) data.timezone = timezone;
+    if (notificationPreferences !== undefined) data.notificationPreferences = notificationPreferences;
+
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
     const updated = await prisma.user.update({
       where: { id: session.user.id },
-      data: { avatar },
-      select: { id: true, avatar: true },
+      data,
+      select: {
+        id: true,
+        avatar: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        timezone: true,
+        notificationPreferences: true,
+      },
     });
 
-    return NextResponse.json({ success: true, avatar: updated.avatar });
+    return NextResponse.json({ success: true, ...updated });
   } catch (error: unknown) {
     console.error('Profile update error:', error);
     return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
