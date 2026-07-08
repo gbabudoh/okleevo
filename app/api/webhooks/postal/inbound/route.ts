@@ -112,6 +112,30 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(`[Postal Inbound] ✅ Saved message ${message.id} → ${folder} for business ${businessId}`);
+
+    // Notify the team — the mailbox is shared at the business level (no
+    // per-user ownership on inbound mail), so every active user gets pinged.
+    // Spam is deliberately excluded.
+    if (folder === 'INBOX') {
+      const fromDisplay = from.split(' <')[0].trim() || from;
+      const recipients = await prisma.user.findMany({
+        where: { businessId, status: 'ACTIVE' },
+        select: { id: true },
+      });
+      if (recipients.length > 0) {
+        await prisma.notification.createMany({
+          data: recipients.map(u => ({
+            userId: u.id,
+            businessId,
+            title: 'New Email',
+            message: `New email from ${fromDisplay}: ${subject}`,
+            type: 'info',
+            link: '/dashboard/mailbox',
+          })),
+        });
+      }
+    }
+
     return NextResponse.json({ status: 'success', id: message.id, folder }, { status: 200 });
 
   } catch (error: unknown) {
