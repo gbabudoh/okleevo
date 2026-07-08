@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
+import { prisma } from '@/lib/prisma';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://okleevo.com';
 
   const routes: { path: string; priority: number; freq: 'daily' | 'weekly' }[] = [
@@ -19,5 +20,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority,
   }));
 
-  return mapped;
+  const microPages = await prisma.microPage.findMany({
+    where: { status: 'PUBLISHED' },
+    select: { slug: true, updatedAt: true },
+  });
+
+  const mappedMicroPages = microPages.map(({ slug, updatedAt }) => ({
+    url: `${baseUrl}/p/${slug}`,
+    lastModified: updatedAt.toISOString(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.6,
+  }));
+
+  return [...mapped, ...mappedMicroPages];
 }
