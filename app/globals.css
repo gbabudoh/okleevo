@@ -127,3 +127,33 @@
 .safe-area-bottom {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility pl-safe {
+  padding-left: env(safe-area-inset-left);
+}
+@utility pr-safe {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Native-app feel: lock the viewport, kill pull-to-refresh/overscroll bounce */
+html,
+body {
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+}
+
+/* Prevent the system text-selection/long-press callout menu on UI chrome
+   (buttons, nav bars) without blocking selection of real content */
+button,
+[role="button"],
+.no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
