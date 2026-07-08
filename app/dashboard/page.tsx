@@ -682,65 +682,28 @@ export default function DashboardPage() {
 
       {/* Performance Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-        {/* Revenue Chart */}
-        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-blue-100 text-sm mb-1">Monthly Revenue</p>
-              <p className="text-2xl sm:text-3xl font-bold">{stats[0]?.value || '£0'}</p>
+        {[
+          { label: 'Monthly Revenue', value: stats[0]?.value || '£0', change: stats[0]?.change || '0%', sub: 'vs last month', icon: LineChart },
+          { label: 'Customer Growth', value: stats[1]?.change || '0%', change: stats[1]?.value || '0', sub: 'new customers', icon: Users },
+          { label: 'Conversion Rate', value: stats[2]?.value || '0', change: stats[2]?.change || '0%', sub: 'improvement', icon: Target },
+        ].map(({ label, value, change, sub, icon: Icon }) => (
+          <div key={label} className="bg-white rounded-xl p-5 sm:p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
+              <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <Icon className="w-5 h-5 text-gray-500" />
+              </div>
             </div>
-            <div className="p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl">
-              <LineChart className="w-6 h-6" />
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <div className="flex items-center gap-1 bg-white bg-opacity-20 px-2 py-1 rounded-lg">
-              <TrendingUp className="w-4 h-4" />
-              <span>{stats[0]?.change || '0%'}</span>
-            </div>
-            <span className="text-blue-100">vs last month</span>
-          </div>
-        </div>
-
-        {/* Customer Growth */}
-        <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-6 text-white shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-purple-100 text-sm mb-1">Customer Growth</p>
-              <p className="text-2xl sm:text-3xl font-bold">{stats[1]?.change || '0%'}</p>
-            </div>
-            <div className="p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl">
-              <Users className="w-6 h-6" />
+            <p className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-3">{value}</p>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-1.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+                <TrendingUp className="w-3 h-3" />
+                {change}
+              </span>
+              <span className="text-sm text-gray-500">{sub}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <div className="flex items-center gap-1 bg-white bg-opacity-20 px-2 py-1 rounded-lg">
-              <TrendingUp className="w-4 h-4" />
-              <span>{stats[1]?.value || '0'}</span>
-            </div>
-            <span className="text-purple-100">new customers</span>
-          </div>
-        </div>
-
-        {/* Conversion Rate */}
-        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 text-white shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-green-100 text-sm mb-1">Conversion Rate</p>
-              <p className="text-2xl sm:text-3xl font-bold">{stats[2]?.value || '0'}</p>
-            </div>
-            <div className="p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl">
-              <Target className="w-6 h-6" />
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <div className="flex items-center gap-1 bg-white bg-opacity-20 px-2 py-1 rounded-lg">
-              <TrendingUp className="w-4 h-4" />
-              <span>{stats[2]?.change || '0%'}</span>
-            </div>
-            <span className="text-green-100">improvement</span>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Bottom Section */}
