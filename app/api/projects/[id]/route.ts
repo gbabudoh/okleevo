@@ -33,7 +33,7 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, contactId, status } = body;
+    const { name, contactId, status, budget, dueDate } = body;
 
     const existing = await prisma.project.findFirst({
       where: { id: id as string, businessId: user.businessId },
@@ -49,6 +49,8 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
         name: name?.trim(),
         contactId: contactId !== undefined ? contactId || null : undefined,
         status: status ? (status.toUpperCase() as ProjectStatus) : undefined,
+        budget: budget !== undefined ? (budget === null || budget === '' ? null : Number(budget)) : undefined,
+        dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : undefined,
       },
     });
 

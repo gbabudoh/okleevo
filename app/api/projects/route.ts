@@ -24,7 +24,7 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body = await req.json();
-    const { name, contactId, status } = body;
+    const { name, contactId, status, budget, dueDate } = body;
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Project name is required' }, { status: 400 });
@@ -35,6 +35,8 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         name: name.trim(),
         contactId: contactId || null,
         status: (status?.toUpperCase() as ProjectStatus) || 'ACTIVE',
+        budget: budget !== undefined && budget !== null && budget !== '' ? Number(budget) : null,
+        dueDate: dueDate ? new Date(dueDate) : null,
         businessId: user.businessId,
       },
     });
