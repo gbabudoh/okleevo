@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status'); // SENT | FAILED | QUEUED
     const search = searchParams.get('search');
 
-    const where: Record<string, unknown> = { businessId };
+    const where: Record<string, unknown> = { businessId, archived: false };
 
     if (status) {
       where.status = status;
@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
           to: true,
           cc: true,
           subject: true,
+          body: true,
           status: true,
           messageId: true,
           errorMessage: true,

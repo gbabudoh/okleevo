@@ -6,9 +6,10 @@ import {
   Plus, Search, Mail, PoundSterling,
   Users, TrendingUp, Star, Edit, Trash2, X, Tag, AlertCircle,
   ChevronDown, Sparkles, LayoutGrid, List, Loader2,
-  Clock, Send as SendIcon, Inbox as InboxIcon, ArrowLeft
+  Clock, Send as SendIcon, Inbox as InboxIcon, ArrowLeft, Eye, Archive
 } from 'lucide-react';
 import StatusModal from '@/components/StatusModal';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import TourProvider from '@/components/tours/TourProvider';
 import { crmTourSteps } from './tour-steps';
 
@@ -72,6 +73,7 @@ interface ReceivedEmail {
   date: string;
   from: string;
   to: string;
+  folder?: string;
 }
 
 const labelCls = "block text-xs font-semibold text-gray-600 mb-1 sm:mb-1.5";
@@ -137,12 +139,18 @@ export default function CRMPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commFilter, setCommFilter] = useState<'all' | 'SENT' | 'RECEIVED'>('all');
+  const [globalCommFilter, setGlobalCommFilter] = useState<'all' | 'SENT' | 'RECEIVED'>('all');
   const [globalTimeline, setGlobalTimeline] = useState<TimelineItem[]>([]);
   const [loadingGlobal, setLoadingGlobal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deletingClient, setDeletingClient] = useState<Client | null>(null);
   const [emailTimeline, setEmailTimeline] = useState<TimelineItem[]>([]);
   const [loadingTimeline, setLoadingTimeline] = useState(false);
+  const [viewingEmailItem, setViewingEmailItem] = useState<TimelineItem | null>(null);
+  const [showEmailViewModal, setShowEmailViewModal] = useState(false);
+  const [deletingEmailItem, setDeletingEmailItem] = useState<TimelineItem | null>(null);
+  const [showEmailDeleteModal, setShowEmailDeleteModal] = useState(false);
+  const [archivingEmailId, setArchivingEmailId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'communication' | 'notes'>('info');
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info';
@@ -207,7 +215,7 @@ export default function CRMPage() {
           id: item.id, type: 'SENT' as const, subject: item.subject,
           body: item.body, date: item.createdAt, from: 'You', to: item.to
         })),
-        ...(Array.isArray(receivedData) ? receivedData : []).map((item: ReceivedEmail) => ({
+        ...(Array.isArray(receivedData) ? receivedData : []).filter((item: ReceivedEmail) => item.folder !== 'ARCHIVED').map((item: ReceivedEmail) => ({
           id: item.id, type: 'RECEIVED' as const, subject: item.subject,
           body: item.body || item.html || '', date: item.date, from: item.from, to: item.to
         }))
@@ -219,6 +227,42 @@ export default function CRMPage() {
       setLoadingGlobal(false);
     }
   }, []);
+
+  const handleArchiveEmailItem = async (item: TimelineItem) => {
+    setArchivingEmailId(item.id);
+    try {
+      const endpoint = item.type === 'SENT' ? `/api/email/history/${item.id}` : `/api/email/inbox/${item.id}`;
+      const body = item.type === 'SENT' ? { archived: true } : { folder: 'ARCHIVED' };
+      const res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('Failed to archive email');
+      setGlobalTimeline(prev => prev.filter(t => t.id !== item.id));
+    } catch (err) {
+      console.error('Failed to archive email item:', err);
+      setStatusModal({ isOpen: true, title: 'Archive Failed', message: 'Could not archive this item. Please try again.', type: 'error' });
+    } finally {
+      setArchivingEmailId(null);
+    }
+  };
+
+  const handleDeleteEmailItem = async () => {
+    if (!deletingEmailItem) return;
+    try {
+      const endpoint = deletingEmailItem.type === 'SENT' ? `/api/email/history/${deletingEmailItem.id}` : `/api/email/inbox/${deletingEmailItem.id}`;
+      const res = await fetch(endpoint, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete email');
+      setGlobalTimeline(prev => prev.filter(t => t.id !== deletingEmailItem.id));
+    } catch (err) {
+      console.error('Failed to delete email item:', err);
+      setStatusModal({ isOpen: true, title: 'Delete Failed', message: 'Could not delete this item. Please try again.', type: 'error' });
+    } finally {
+      setShowEmailDeleteModal(false);
+      setDeletingEmailItem(null);
+    }
+  };
 
   useEffect(() => { fetchContacts(); fetchGlobalTimeline(); }, [fetchContacts, fetchGlobalTimeline]);
   useEffect(() => { if (selectedClient?.email) fetchEmailTimeline(selectedClient.email); }, [selectedClient, fetchEmailTimeline]);
@@ -340,7 +384,7 @@ export default function CRMPage() {
             {loadingTimeline ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
                 <Loader2 className="w-7 h-7 text-blue-600 animate-spin" />
-                <p className="text-[11px] text-blue-100 font-medium opacity-90">Loading emails...</p>
+                <p className="text-[11px] text-gray-400 font-medium">Loading emails...</p>
               </div>
             ) : emailTimeline.length === 0 ? (
               <div className="text-center py-12">
@@ -410,7 +454,7 @@ export default function CRMPage() {
                 </div>
                 {emailTimeline.find(e => e.type === 'SENT')
                   ? <p className="text-xs font-semibold text-gray-900">{new Date(emailTimeline.find(e => e.type === 'SENT')!.date).toLocaleDateString()}</p>
-                  : <p className="text-[11px] text-blue-100 font-medium opacity-90">None</p>}
+                  : <p className="text-[11px] text-gray-400 font-medium">None</p>}
               </div>
               <div className="p-3 bg-white rounded-xl border border-gray-100">
                 <div className="flex items-center gap-1.5 mb-1.5">
@@ -419,7 +463,7 @@ export default function CRMPage() {
                 </div>
                 {emailTimeline.find(e => e.type === 'RECEIVED')
                   ? <p className="text-xs font-semibold text-gray-900">{new Date(emailTimeline.find(e => e.type === 'RECEIVED')!.date).toLocaleDateString()}</p>
-                  : <p className="text-[11px] text-blue-100 font-medium opacity-90">None</p>}
+                  : <p className="text-[11px] text-gray-400 font-medium">None</p>}
               </div>
             </div>
           </div>
@@ -520,7 +564,7 @@ export default function CRMPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-gray-900 truncate">{client.name}</p>
-                  <p className="text-[11px] text-blue-100 font-medium opacity-90 truncate">{client.email}</p>
+                  <p className="text-[11px] text-gray-400 font-medium truncate">{client.email}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${getStatusColor(client.status)}`}>
@@ -581,14 +625,26 @@ export default function CRMPage() {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-            <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Total Sent</p>
-            <p className="text-xl font-bold text-blue-900">{globalTimeline.filter(e => e.type === 'SENT').length}</p>
-          </div>
-          <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
-            <p className="text-[10px] font-bold text-indigo-600 uppercase mb-1">Received</p>
-            <p className="text-xl font-bold text-indigo-900">{globalTimeline.filter(e => e.type === 'RECEIVED').length}</p>
-          </div>
+          <button
+            type="button"
+            onClick={() => setGlobalCommFilter(prev => prev === 'SENT' ? 'all' : 'SENT')}
+            className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+              globalCommFilter === 'SENT' ? 'bg-blue-600 border-blue-600' : 'bg-blue-50 border-blue-100 hover:border-blue-200'
+            }`}
+          >
+            <p className={`text-[10px] font-bold uppercase mb-1 ${globalCommFilter === 'SENT' ? 'text-blue-100' : 'text-blue-600'}`}>Total Sent</p>
+            <p className={`text-xl font-bold ${globalCommFilter === 'SENT' ? 'text-white' : 'text-blue-900'}`}>{globalTimeline.filter(e => e.type === 'SENT').length}</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => setGlobalCommFilter(prev => prev === 'RECEIVED' ? 'all' : 'RECEIVED')}
+            className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+              globalCommFilter === 'RECEIVED' ? 'bg-indigo-600 border-indigo-600' : 'bg-indigo-50 border-indigo-100 hover:border-indigo-200'
+            }`}
+          >
+            <p className={`text-[10px] font-bold uppercase mb-1 ${globalCommFilter === 'RECEIVED' ? 'text-indigo-100' : 'text-indigo-600'}`}>Received</p>
+            <p className={`text-xl font-bold ${globalCommFilter === 'RECEIVED' ? 'text-white' : 'text-indigo-900'}`}>{globalTimeline.filter(e => e.type === 'RECEIVED').length}</p>
+          </button>
         </div>
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
@@ -597,29 +653,60 @@ export default function CRMPage() {
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
             <p className="text-sm text-gray-400">Loading feed...</p>
           </div>
-        ) : globalTimeline.length === 0 ? (
+        ) : globalTimeline.filter(item => globalCommFilter === 'all' || item.type === globalCommFilter).length === 0 ? (
           <div className="text-center py-12">
             <Sparkles className="w-8 h-8 text-gray-200 mx-auto mb-3" />
-            <p className="text-sm font-semibold text-gray-400">No recent interactions</p>
+            <p className="text-sm font-semibold text-gray-400">
+              {globalTimeline.length === 0 ? 'No recent interactions' : `No ${globalCommFilter === 'SENT' ? 'sent' : 'received'} interactions`}
+            </p>
           </div>
-        ) : globalTimeline.map((item) => (
+        ) : globalTimeline.filter(item => globalCommFilter === 'all' || item.type === globalCommFilter).map((item) => (
           <div key={item.id} onClick={() => {
             const clientEmail = item.type === 'RECEIVED' ? item.from.match(/<(.+)>/)?.[1] || item.from : item.to;
             const client = clients.find(c => c.email === clientEmail);
             if (client) setSelectedClient(client);
           }}
-            className={`p-3.5 rounded-xl border cursor-pointer transition-all hover:shadow-sm ${
+            className={`group relative p-3.5 rounded-xl border cursor-pointer transition-all hover:shadow-sm ${
               item.type === 'SENT' ? 'bg-blue-50 border-blue-100 hover:border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'
             }`}>
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className={`p-1 rounded-lg ${item.type === 'SENT' ? 'bg-blue-600' : 'bg-indigo-600'}`}>
-                {item.type === 'SENT' ? <SendIcon className="w-3 h-3 text-white" /> : <InboxIcon className="w-3 h-3 text-white" />}
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`p-1 rounded-lg shrink-0 ${item.type === 'SENT' ? 'bg-blue-600' : 'bg-indigo-600'}`}>
+                  {item.type === 'SENT' ? <SendIcon className="w-3 h-3 text-white" /> : <InboxIcon className="w-3 h-3 text-white" />}
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold text-gray-700 block truncate">
+                    {item.type === 'SENT' ? `To: ${item.to}` : `From: ${item.from.split(' <')[0]}`}
+                  </span>
+                  <span className="text-[9px] text-gray-400">{new Date(item.date).toLocaleString()}</span>
+                </div>
               </div>
-              <div className="min-w-0">
-                <span className="text-[10px] font-bold text-gray-700 block truncate">
-                  {item.type === 'SENT' ? `To: ${item.to}` : `From: ${item.from.split(' <')[0]}`}
-                </span>
-                <span className="text-[9px] text-gray-400">{new Date(item.date).toLocaleString()}</span>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  title="View"
+                  onClick={(e) => { e.stopPropagation(); setViewingEmailItem(item); setShowEmailViewModal(true); }}
+                  className="p-1.5 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-gray-700 hover:border-gray-300 transition-colors cursor-pointer"
+                >
+                  <Eye className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  title="Archive"
+                  disabled={archivingEmailId === item.id}
+                  onClick={(e) => { e.stopPropagation(); handleArchiveEmailItem(item); }}
+                  className="p-1.5 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-gray-700 hover:border-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <Archive className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  title="Delete"
+                  onClick={(e) => { e.stopPropagation(); setDeletingEmailItem(item); setShowEmailDeleteModal(true); }}
+                  className="p-1.5 bg-white border border-gray-200 rounded-lg text-rose-500 hover:text-rose-600 hover:border-rose-200 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
               </div>
             </div>
             <h4 className="text-xs font-bold text-gray-900 mb-1 truncate">{item.subject}</h4>
@@ -643,7 +730,7 @@ export default function CRMPage() {
             </div>
             <div className="min-w-0">
               <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">CRM</h1>
-              <p className="text-[11px] text-blue-100 font-medium opacity-90 hidden sm:block">Manage relationships & track pipeline</p>
+              <p className="text-[11px] text-gray-400 font-medium hidden sm:block">Manage relationships & track pipeline</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -967,36 +1054,36 @@ export default function CRMPage() {
 
       {/* Email Compose Modal */}
       {showEmailModal && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-gray-200 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-orange-500 shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-white/20 rounded-xl"><Mail className="w-4 h-4 text-white" /></div>
+            <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200"><Mail className="w-5 h-5 text-gray-500" /></div>
                 <div>
-                  <h2 className="text-base font-bold text-white">Compose Email</h2>
-                  <p className="text-orange-100 text-xs">Send to your clients</p>
+                  <h2 className="text-base font-semibold text-gray-900">Compose Email</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">Send to your clients</p>
                 </div>
               </div>
-              <button type="button" onClick={() => setShowEmailModal(false)} className="p-2 hover:bg-white/20 rounded-xl cursor-pointer">
-                <X className="w-5 h-5 text-white" />
+              <button type="button" onClick={() => setShowEmailModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+                <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto px-5 py-1.5 sm:py-6 space-y-2 sm:space-y-5">
+            <div className="flex-1 min-h-0 overflow-y-auto px-5 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-5">
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">To:</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">To</label>
                 <div className="relative">
                   <input type="text" value={emailData.to} onChange={(e) => setEmailData({...emailData, to: e.target.value})}
                     placeholder="client@email.com, another@email.com"
-                    className="w-full px-3 pr-20 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-lg">
+                    className="w-full px-4 pr-16 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-md border border-gray-200">
                     {emailData.to.split(',').filter(e => e.trim()).length} rcpt
                   </span>
                 </div>
               </div>
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-                <p className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600" /> Quick Templates
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3.5">
+                <p className="text-xs font-medium text-gray-600 mb-2 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-gray-400" /> Quick Templates
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {[
@@ -1005,31 +1092,31 @@ export default function CRMPage() {
                     { label: 'Follow-up', subject: 'Follow-up on our conversation', message: 'Dear valued client,\n\nI wanted to follow up on our recent conversation.\n\nBest regards,\nYour Company' },
                   ].map(t => (
                     <button key={t.label} type="button" onClick={() => setEmailData({...emailData, subject: t.subject, message: t.message})}
-                      className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-50 transition-colors cursor-pointer">
+                      className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-medium rounded-md hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer">
                       {t.label}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5 flex items-center gap-1.5">
-                  <Tag className="w-3.5 h-3.5" /> Subject:
+                <label className="block text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5" /> Subject
                 </label>
                 <input type="text" value={emailData.subject} onChange={(e) => setEmailData({...emailData, subject: e.target.value})}
                   placeholder="Email subject"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:bg-white bg-gray-50 transition-all text-sm outline-none" />
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition" />
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-0.5 sm:mb-1.5">Message:</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Message</label>
                 <textarea value={emailData.message} onChange={(e) => setEmailData({...emailData, message: e.target.value})}
                   placeholder="Type your message..." rows={5}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:bg-white bg-gray-50 transition-all resize-none text-sm outline-none" />
-                <p className="text-[11px] text-blue-100 font-medium opacity-90 mt-1">{emailData.message.length} chars</p>
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition resize-none" />
+                <p className="text-[11px] text-gray-400 mt-1">{emailData.message.length} chars</p>
               </div>
             </div>
-            <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+            <div className="shrink-0 bg-white border-t border-gray-200 px-5 sm:px-6 py-3 sm:py-4 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-4">
               <button type="button" onClick={() => setShowEmailModal(false)}
-                className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
+                className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">
                 Cancel
               </button>
               <button
@@ -1052,7 +1139,7 @@ export default function CRMPage() {
                     setStatusModal({ isOpen: true, title: 'Send Failed', message: error instanceof Error ? error.message : 'Could not send email.', type: 'error' });
                   } finally { setSendingEmail(false); }
                 }}
-                className="flex-2 py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="flex-2 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {sendingEmail ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : <><Mail className="w-4 h-4" /> Send Email</>}
               </button>
@@ -1084,7 +1171,7 @@ export default function CRMPage() {
                 <div>
                   <h3 className="font-bold text-gray-900 text-sm">{deletingClient.name}</h3>
                   <p className="text-xs text-gray-500">{deletingClient.company}</p>
-                  <p className="text-[11px] text-blue-100 font-medium opacity-90">{deletingClient.email}</p>
+                  <p className="text-[11px] text-gray-400 font-medium">{deletingClient.email}</p>
                 </div>
               </div>
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
@@ -1118,6 +1205,69 @@ export default function CRMPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Email View Modal */}
+      {showEmailViewModal && viewingEmailItem && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full sm:max-w-lg max-h-[85dvh] flex flex-col border border-gray-200">
+            <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200 shrink-0">
+                  {viewingEmailItem.type === 'SENT' ? <SendIcon className="w-5 h-5 text-gray-500" /> : <InboxIcon className="w-5 h-5 text-gray-500" />}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-base font-semibold text-gray-900 truncate">{viewingEmailItem.subject}</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">{new Date(viewingEmailItem.date).toLocaleString()}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowEmailViewModal(false); setViewingEmailItem(null); }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer shrink-0"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">From</p>
+                  <p className="text-gray-900 font-medium truncate">{viewingEmailItem.type === 'SENT' ? 'You' : viewingEmailItem.from}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">To</p>
+                  <p className="text-gray-900 font-medium truncate">{viewingEmailItem.to}</p>
+                </div>
+              </div>
+              <div className="pt-4 border-t border-gray-100">
+                <div className="text-sm text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(viewingEmailItem.body) }} />
+              </div>
+            </div>
+            <div className="border-t border-gray-200 px-6 py-4 flex justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => { setShowEmailViewModal(false); setViewingEmailItem(null); }}
+                className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Delete Confirmation Modal */}
+      {deletingEmailItem && (
+        <DeleteConfirmationModal
+          isOpen={showEmailDeleteModal}
+          onClose={() => { setShowEmailDeleteModal(false); setDeletingEmailItem(null); }}
+          onConfirm={handleDeleteEmailItem}
+          title="Delete Email"
+          itemName={deletingEmailItem.subject}
+          itemDetails={`${deletingEmailItem.type === 'SENT' ? 'To' : 'From'}: ${deletingEmailItem.type === 'SENT' ? deletingEmailItem.to : deletingEmailItem.from}`}
+          warningMessage="This will permanently remove this email from your records."
+        />
       )}
     </div>
   );
