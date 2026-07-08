@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 import { sendClientEmail } from '@/lib/services/email';
+import { generateInvoicePdf, generateInvoiceCsv } from '@/lib/services/invoice-documents';
 
 export const POST = withMultiTenancy(async (req, { params, dataFilter, business }) => {
   const resolvedParams = await params;
@@ -24,12 +25,32 @@ export const POST = withMultiTenancy(async (req, { params, dataFilter, business 
       .map((line: string) => `<p style="margin:0 0 12px;">${line || '&nbsp;'}</p>`)
       .join('');
 
+    const items = Array.isArray(invoice.items)
+      ? (invoice.items as { description: string; quantity: number; rate: number }[])
+      : [];
+
+    const docData = {
+      number: invoice.number,
+      clientName: invoice.clientName,
+      clientEmail: invoice.clientEmail,
+      amount: invoice.amount,
+      status: invoice.status,
+      createdAt: invoice.createdAt,
+      dueDate: invoice.dueDate,
+      items,
+      businessName: business.name,
+    };
+
     const result = await sendClientEmail({
       to,
       subject,
       html,
       text: message,
       businessName: business.name,
+      attachments: [
+        { filename: `${invoice.number}.pdf`, content: generateInvoicePdf(docData), contentType: 'application/pdf' },
+        { filename: `${invoice.number}.csv`, content: generateInvoiceCsv(docData), contentType: 'text/csv' },
+      ],
     });
 
     if (!result.success) {
