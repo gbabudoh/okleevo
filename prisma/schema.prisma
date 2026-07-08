@@ -36,9 +36,10 @@ model User {
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   // User Preferences
-  timezone                String  @default("Europe/London")
+  timezone                String   @default("Europe/London")
   avatar                  String?
   notificationPreferences Json? // Store notification settings
+  seenTours               String[] @default([]) // Module ids whose onboarding tour has been completed/skipped
 
   // Timestamps
   createdAt   DateTime  @default(now())

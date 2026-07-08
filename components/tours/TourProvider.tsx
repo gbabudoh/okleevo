@@ -4,25 +4,39 @@ import { useEffect, useState, useCallback } from 'react';
 import { Joyride, STATUS, type EventData, type Step } from 'react-joyride';
 
 interface TourProviderProps {
-  /** Matches the module id in lib/module-catalogue.ts — used for the localStorage key and the replay-tour event. */
+  /** Matches the module id in lib/module-catalogue.ts — used for the server-side seen-tours record and the replay-tour event. */
   moduleId: string;
   steps: Step[];
 }
-
-const storageKey = (moduleId: string) => `okleevo_tour_seen_${moduleId}`;
 
 export const REPLAY_TOUR_EVENT = 'okleevo:replay-tour';
 
 export default function TourProvider({ moduleId, steps }: TourProviderProps) {
   const [run, setRun] = useState(false);
 
-  // Auto-start on first visit to this module (per browser).
+  // Auto-start on first visit to this module, once ever per account —
+  // seen state lives on the user record so it doesn't repeat across devices/logins.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const seen = window.localStorage.getItem(storageKey(moduleId));
-    if (seen) return;
-    const timer = setTimeout(() => setRun(true), 600);
-    return () => clearTimeout(timer);
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    fetch('/api/user/tours')
+      .then(res => (res.ok ? res.json() : { seenTours: [] }))
+      .then((data: { seenTours?: string[] }) => {
+        if (cancelled) return;
+        const seen = data.seenTours?.includes(moduleId);
+        if (!seen) {
+          timer = setTimeout(() => {
+            if (!cancelled) setRun(true);
+          }, 600);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [moduleId]);
 
   // Manual "Replay tour" trigger from the sidebar, dispatched as a window event
@@ -39,9 +53,11 @@ export default function TourProvider({ moduleId, steps }: TourProviderProps) {
   const handleEvent = useCallback((data: EventData) => {
     if (data.status === STATUS.FINISHED || data.status === STATUS.SKIPPED) {
       setRun(false);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(storageKey(moduleId), 'true');
-      }
+      fetch('/api/user/tours', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moduleId }),
+      }).catch(() => {});
     }
   }, [moduleId]);
 
