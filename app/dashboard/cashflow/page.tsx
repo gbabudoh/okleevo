@@ -156,19 +156,19 @@ export default function CashflowPage() {
   });
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-white pb-24 sm:pb-8">
+    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
       <TourProvider moduleId="cashflow" steps={cashflowTourSteps} />
 
       {/* Sticky Header */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-2 bg-indigo-600 rounded-xl shrink-0">
-              <Activity className="w-5 h-5 text-white" />
+            <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200 shrink-0">
+              <Activity className="w-5 h-5 text-gray-500" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Cashflow</h1>
-              <p className="text-xs text-gray-400 hidden sm:block">Real-time financial health tracking</p>
+              <h1 className="text-base sm:text-lg font-semibold text-gray-900 leading-tight">Cashflow</h1>
+              <p className="text-xs text-gray-500 hidden sm:block">Real-time financial health tracking</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -176,7 +176,7 @@ export default function CashflowPage() {
               id="tour-cashflow-time-range"
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="hidden sm:block px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer"
+              className="hidden sm:block px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition cursor-pointer"
             >
               <option value="week">This Week</option>
               <option value="month">This Month</option>
@@ -201,7 +201,7 @@ export default function CashflowPage() {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
               }}
-              className="p-2 bg-white border border-gray-200 rounded-xl text-gray-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-colors cursor-pointer"
+              className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors cursor-pointer"
             >
               <Download className="w-5 h-5" />
             </button>
@@ -209,7 +209,7 @@ export default function CashflowPage() {
               id="tour-cashflow-new-entry"
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">New Entry</span>
@@ -217,12 +217,12 @@ export default function CashflowPage() {
             </button>
           </div>
         </div>
-      
+
       {/* Mobile Floating Action Button */}
       <button
         type="button"
         onClick={() => setShowAddModal(true)}
-        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:bg-indigo-700"
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-gray-900 text-white rounded-full shadow-lg flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:bg-gray-800"
       >
         <Plus className="w-8 h-8" />
       </button>
@@ -232,22 +232,22 @@ export default function CashflowPage() {
       <div className="px-4 sm:px-6 pt-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Income', value: `£${avgMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingUp, bg: 'bg-green-100', text: 'text-green-600', trend: '+12.5%', up: true },
-            { label: 'Total Expenses', value: `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingDown, bg: 'bg-rose-100', text: 'text-rose-600', trend: '+8.3%', up: false },
-            { label: 'Net Cashflow', value: `£${netCashflow.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: DollarSign, bg: 'bg-blue-100', text: 'text-blue-600', trend: '+14.2%', up: true },
-            { label: 'Profit Margin', value: `${isNaN(profitMargin) ? '0.0' : profitMargin.toFixed(1)}%`, sub: 'Above target', icon: Wallet, bg: 'bg-violet-100', text: 'text-violet-600', trend: 'Healthy', up: true },
-          ].map(({ label, value, sub, icon: Icon, bg, text, trend, up }) => (
-            <div key={label} className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-              <div className="flex items-center justify-between mb-1.5.5">
-                <div className={`p-2 ${bg} rounded-xl`}>
-                  <Icon className={`w-4 h-4 ${text}`} />
+            { label: 'Total Income', value: `£${avgMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingUp, trend: '+12.5%', up: true },
+            { label: 'Total Expenses', value: `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingDown, trend: '+8.3%', up: false },
+            { label: 'Net Cashflow', value: `£${netCashflow.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: DollarSign, trend: '+14.2%', up: true },
+            { label: 'Profit Margin', value: `${isNaN(profitMargin) ? '0.0' : profitMargin.toFixed(1)}%`, sub: 'Above target', icon: Wallet, trend: 'Healthy', up: true },
+          ].map(({ label, value, sub, icon: Icon, trend, up }) => (
+            <div key={label} className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+                  <Icon className="w-4 h-4 text-gray-500" />
                 </div>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${up ? 'bg-green-50 text-green-600' : 'bg-rose-50 text-rose-600'}`}>
+                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${up ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
                   {trend}
                 </span>
               </div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
-              <p className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">{loading ? '—' : value}</p>
+              <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-0.5">{label}</p>
+              <p className="text-lg sm:text-xl font-semibold text-gray-900 leading-tight">{loading ? '—' : value}</p>
               <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>
             </div>
           ))}
@@ -259,29 +259,29 @@ export default function CashflowPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
           {/* Bar Chart */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <div className="p-1.5 bg-blue-100 rounded-lg">
-                  <BarChart3 className="w-4 h-4 text-blue-600" />
+              <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <div className="p-1.5 bg-gray-50 rounded-lg border border-gray-200">
+                  <BarChart3 className="w-4 h-4 text-gray-500" />
                 </div>
                 Income vs Expenses
               </h3>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                  <span className="text-[11px] font-semibold text-gray-500">Income</span>
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                  <span className="text-[11px] font-medium text-gray-500">Income</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                  <span className="text-[11px] font-semibold text-gray-500">Expenses</span>
+                  <span className="text-[11px] font-medium text-gray-500">Expenses</span>
                 </div>
               </div>
             </div>
             <div className="relative h-48 sm:h-64">
               {loading ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                  <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
                   <p className="text-sm text-gray-400">Loading cashflow data...</p>
                 </div>
               ) : monthlyData.length === 0 ? (
@@ -298,22 +298,22 @@ export default function CashflowPage() {
                       onMouseLeave={() => setHoveredBar(null)}
                     >
                       {hoveredBar === i && (
-                        <div className="absolute -top-28 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded-xl p-3 shadow-xl z-20 whitespace-nowrap">
-                          <p className="font-bold mb-1.5.5 text-center border-b border-white/10 pb-1.5">{data.month}</p>
-                          <p className="text-green-400 flex justify-between gap-3">
+                        <div className="absolute -top-28 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-20 whitespace-nowrap">
+                          <p className="font-semibold mb-1.5 text-center border-b border-white/10 pb-1.5">{data.month}</p>
+                          <p className="text-emerald-400 flex justify-between gap-3">
                             <span>Income</span><span>£{data.income.toLocaleString()}</span>
                           </p>
                           <p className="text-rose-400 flex justify-between gap-3">
                             <span>Expenses</span><span>£{data.expenses.toLocaleString()}</span>
                           </p>
-                          <p className="text-blue-300 flex justify-between gap-3 font-bold pt-1 border-t border-white/10 mt-1">
+                          <p className="text-gray-300 flex justify-between gap-3 font-semibold pt-1 border-t border-white/10 mt-1">
                             <span>Net</span><span>£{data.net.toLocaleString()}</span>
                           </p>
                         </div>
                       )}
                       <div className="w-full flex gap-0.5 items-end h-40 sm:h-56">
                         <div
-                          className="flex-1 bg-green-500 hover:bg-green-400 rounded-t-md transition-colors cursor-pointer"
+                          className="flex-1 bg-emerald-500 hover:bg-emerald-400 rounded-t-md transition-colors cursor-pointer"
                           style={{ height: `${(data.income / maxValue) * 100}%` }}
                         />
                         <div
@@ -321,7 +321,7 @@ export default function CashflowPage() {
                           style={{ height: `${(data.expenses / maxValue) * 100}%` }}
                         />
                       </div>
-                      <span className="text-[9px] font-semibold text-gray-400 uppercase">{data.month.slice(0, 3)}</span>
+                      <span className="text-[9px] font-medium text-gray-400 uppercase">{data.month.slice(0, 3)}</span>
                     </div>
                   ))}
                 </div>
@@ -331,34 +331,34 @@ export default function CashflowPage() {
 
           {/* Breakdown Sidebar */}
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
-              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4">
-                <div className="p-1.5 bg-purple-100 rounded-lg">
-                  <PieChart className="w-4 h-4 text-purple-600" />
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+              <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                <div className="p-1.5 bg-gray-50 rounded-lg border border-gray-200">
+                  <PieChart className="w-4 h-4 text-gray-500" />
                 </div>
                 Top Expenses
               </h3>
               <div className="space-y-2.5">
                 {loading ? (
                   <div className="flex justify-center py-4">
-                    <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+                    <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
                   </div>
                 ) : expenseCategories.length === 0 ? (
                   <p className="text-xs text-gray-400 text-center py-4">No expense data available</p>
                 ) : expenseCategories.map((category, index) => {
                   const Icon = category.icon;
                   return (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
                       <div className="flex items-center gap-2.5">
-                        <div className="p-1.5 bg-indigo-100 rounded-lg">
-                          <Icon className="w-3.5 h-3.5 text-indigo-600" />
+                        <div className="p-1.5 bg-white rounded-lg border border-gray-200">
+                          <Icon className="w-3.5 h-3.5 text-gray-500" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-gray-900">{category.name}</p>
+                          <p className="text-xs font-semibold text-gray-900">{category.name}</p>
                           <p className="text-[10px] text-gray-400">{category.percentage}%</p>
                         </div>
                       </div>
-                      <span className="text-sm font-bold text-gray-900">£{category.amount.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-900">£{category.amount.toLocaleString()}</span>
                     </div>
                   );
                 })}
@@ -366,21 +366,21 @@ export default function CashflowPage() {
             </div>
 
             {/* Tax Reserve */}
-            <div className="bg-indigo-600 rounded-2xl p-4 sm:p-5 text-white">
-              <h4 className="text-xs font-bold text-indigo-200 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <Building2 className="w-3.5 h-3.5" />
                 Tax Reserve
               </h4>
               <div className="space-y-2.5">
-                <div className="flex justify-between items-center pb-2.5 border-b border-white/20">
-                  <span className="text-sm text-indigo-100">Est. Corp Tax (25%)</span>
-                  <span className="font-bold">£{(netCashflow * 0.25).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                <div className="flex justify-between items-center pb-2.5 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Est. Corp Tax (25%)</span>
+                  <span className="font-semibold text-gray-900">£{(netCashflow * 0.25).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-indigo-100">Est. VAT Liability</span>
-                  <span className="font-bold">£{(avgMonthlyIncome * 0.2 - avgMonthlyExpenses * 0.2).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="text-sm text-gray-500">Est. VAT Liability</span>
+                  <span className="font-semibold text-gray-900">£{(avgMonthlyIncome * 0.2 - avgMonthlyExpenses * 0.2).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                 </div>
-                <p className="text-[10px] text-indigo-300 pt-1">*Projections based on monthly averages. Consult your accountant.</p>
+                <p className="text-[10px] text-gray-400 pt-1">*Projections based on monthly averages. Consult your accountant.</p>
               </div>
             </div>
           </div>
@@ -389,33 +389,33 @@ export default function CashflowPage() {
 
       {/* Recent Transactions */}
       <div className="px-4 sm:px-6 pt-4">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <div className="p-1.5 bg-indigo-100 rounded-lg">
-                <Activity className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <div className="p-1.5 bg-gray-50 rounded-lg border border-gray-200">
+                <Activity className="w-4 h-4 text-gray-500" />
               </div>
               Recent Activity
             </h3>
-            <button className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 cursor-pointer">
+            <button className="text-xs font-medium text-gray-500 hover:text-gray-700 flex items-center gap-1 cursor-pointer">
               View All <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           <div className="space-y-2">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+                <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
               </div>
             ) : recentTransactions.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-8">No transactions yet</p>
             ) : recentTransactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all cursor-pointer group"
+                className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all cursor-pointer group"
                 onClick={() => { setViewingTransaction(transaction); setShowViewModal(true); }}
               >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                  transaction.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-rose-100 text-rose-600'
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border ${
+                  transaction.type === 'income' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'
                 }`}>
                   {transaction.type === 'income' ? <ArrowDownRight className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
                 </div>
@@ -426,17 +426,17 @@ export default function CashflowPage() {
                       <Calendar className="w-3 h-3" />
                       {new Date(transaction.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                     </span>
-                    <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
                       {transaction.category}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="text-right">
-                    <p className={`text-sm font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>
+                    <p className={`text-sm font-semibold ${transaction.type === 'income' ? 'text-emerald-600' : 'text-gray-900'}`}>
                       {transaction.type === 'income' ? '+' : '-'}£{Math.abs(transaction.amount).toLocaleString()}
                     </p>
-                    <p className={`text-[10px] font-semibold uppercase ${transaction.type === 'income' ? 'text-green-500' : 'text-gray-400'}`}>
+                    <p className={`text-[10px] font-medium uppercase ${transaction.type === 'income' ? 'text-emerald-500' : 'text-gray-400'}`}>
                       {transaction.type === 'income' ? 'Received' : 'Paid'}
                     </p>
                   </div>
@@ -465,19 +465,19 @@ export default function CashflowPage() {
       <div id="tour-cashflow-insights" className="px-4 sm:px-6 pt-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { title: 'Cash Runway', val: loading ? '—' : (avgMonthlyExpenses > 0 ? `${Math.min(12, Math.floor(100000 / avgMonthlyExpenses))} mo` : 'N/A'), icon: Calendar, bg: 'bg-blue-100', text: 'text-blue-600', sub: 'Est. from cash reserves', trend: 'Healthy' },
-            { title: 'Savings Rate', val: loading ? '—' : (avgMonthlyIncome > 0 ? `${Math.round(((avgMonthlyIncome - avgMonthlyExpenses) / avgMonthlyIncome) * 100)}%` : '0%'), icon: Sparkles, bg: 'bg-purple-100', text: 'text-purple-600', sub: 'vs last period', trend: '+5.2%' },
-            { title: 'Burn Rate', val: loading ? '—' : `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, icon: Zap, bg: 'bg-orange-100', text: 'text-orange-600', sub: 'per month', trend: '-2.1%' }
+            { title: 'Cash Runway', val: loading ? '—' : (avgMonthlyExpenses > 0 ? `${Math.min(12, Math.floor(100000 / avgMonthlyExpenses))} mo` : 'N/A'), icon: Calendar, sub: 'Est. from cash reserves', trend: 'Healthy' },
+            { title: 'Savings Rate', val: loading ? '—' : (avgMonthlyIncome > 0 ? `${Math.round(((avgMonthlyIncome - avgMonthlyExpenses) / avgMonthlyIncome) * 100)}%` : '0%'), icon: Sparkles, sub: 'vs last period', trend: '+5.2%' },
+            { title: 'Burn Rate', val: loading ? '—' : `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, icon: Zap, sub: 'per month', trend: '-2.1%' }
           ].map((item) => (
-            <div key={item.title} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
-              <div className="flex items-center justify-between mb-1.5.5">
-                <div className={`p-2 ${item.bg} rounded-xl`}>
-                  <item.icon className={`w-4 h-4 ${item.text}`} />
+            <div key={item.title} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+                  <item.icon className="w-4 h-4 text-gray-500" />
                 </div>
-                <span className="text-xs font-semibold text-gray-500">{item.trend}</span>
+                <span className="text-xs font-medium text-gray-500">{item.trend}</span>
               </div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{item.title}</p>
-              <p className="text-xl font-bold text-gray-900 mt-0.5">{item.val}</p>
+              <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{item.title}</p>
+              <p className="text-xl font-semibold text-gray-900 mt-0.5">{item.val}</p>
               <p className="text-[11px] text-gray-400 mt-0.5">{item.sub}</p>
             </div>
           ))}

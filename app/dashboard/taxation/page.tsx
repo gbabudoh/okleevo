@@ -753,50 +753,52 @@ export default function TaxationPage() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <button className="p-6 bg-white rounded-xl border border-gray-200 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
-              <div className="p-3 bg-blue-500 rounded-lg w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
-                <Calculator className="w-6 h-6 text-white" />
+            <button className="p-5 sm:p-6 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 transition-colors text-left cursor-pointer">
+              <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200 w-fit mb-3">
+                <Calculator className="w-5 h-5 text-gray-500" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-1">Calculate Corporation Tax</h3>
-              <p className="text-sm text-gray-600">Estimate your CT liability for the year</p>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Calculate Corporation Tax</h3>
+              <p className="text-xs text-gray-500">Estimate your CT liability for the year</p>
             </button>
 
-            <button onClick={() => setActiveTab('vat')} className="p-6 bg-white rounded-xl border border-gray-200 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
-              <div className="p-3 bg-green-500 rounded-lg w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
-                <Receipt className="w-6 h-6 text-white" />
+            <button onClick={() => setActiveTab('vat')} className="p-5 sm:p-6 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 transition-colors text-left cursor-pointer">
+              <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200 w-fit mb-3">
+                <Receipt className="w-5 h-5 text-gray-500" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-1">Prepare VAT Return</h3>
-              <p className="text-sm text-gray-600">Calculate &amp; download for your accountant</p>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Prepare VAT Return</h3>
+              <p className="text-xs text-gray-500">Calculate &amp; download for your accountant</p>
             </button>
 
-            <button onClick={() => setActiveTab('paye')} className="p-6 bg-white rounded-xl border border-gray-200 hover:bg-white/80 hover:shadow-xl transition-all text-left cursor-pointer group">
-              <div className="p-3 bg-purple-500 rounded-lg w-fit mb-3 shadow-lg group-hover:scale-110 transition-transform">
-                <Users className="w-6 h-6 text-white" />
+            <button onClick={() => setActiveTab('paye')} className="p-5 sm:p-6 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 transition-colors text-left cursor-pointer">
+              <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200 w-fit mb-3">
+                <Users className="w-5 h-5 text-gray-500" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-1">Prepare PAYE Report</h3>
-              <p className="text-sm text-gray-600">Calculate PAYE/NI &amp; download for accountant</p>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Prepare PAYE Report</h3>
+              <p className="text-xs text-gray-500">Calculate PAYE/NI &amp; download for accountant</p>
             </button>
           </div>
 
           {/* Accountant Handoff Banner */}
-          <div className="bg-linear-to-br from-indigo-500 to-purple-500 rounded-xl p-5 sm:p-8 text-white">
-            <div className="flex items-center gap-3 mb-4">
-              <Download className="w-8 h-8" />
+          <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-8">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <Download className="w-5 h-5 text-gray-500" />
+              </div>
               <div>
-                <h2 className="text-lg sm:text-2xl font-bold">Download &amp; Share with Your Accountant</h2>
-                <p className="text-indigo-100">Okleevo prepares your figures — your accountant files them with HMRC</p>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Download &amp; Share with Your Accountant</h2>
+                <p className="text-sm text-gray-500">Okleevo prepares your figures — your accountant files them with HMRC</p>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
               <button
                 onClick={() => setShowDownloadModal(true)}
-                className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 hover:shadow-lg transition-all cursor-pointer"
+                className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
               >
                 Download Tax Reports
               </button>
               <button
                 onClick={() => setShowMTDLearnMoreModal(true)}
-                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 hover:shadow-lg transition-all cursor-pointer"
+                className="px-5 py-2.5 bg-gray-100 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
               >
                 About MTD Requirements
               </button>
@@ -2489,39 +2491,39 @@ export default function TaxationPage() {
       {/* New Return Modal */}
       {showNewReturnModal && (
         <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4 sm:p-4 pb-12 sm:pb-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[85dvh] flex flex-col border border-white/50 transform animate-in slide-in-from-bottom-10 duration-300">
+          <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full sm:max-w-2xl max-h-[85dvh] flex flex-col border border-gray-200 transform animate-in slide-in-from-bottom-10 duration-300">
             {/* Modal Header */}
-            <div className="bg-linear-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl sticky top-0 z-10 shadow-lg">
+            <div className="px-6 py-5 border-b border-gray-200 sticky top-0 z-10 bg-white rounded-t-2xl sm:rounded-t-xl">
               <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                      <Plus className="w-6 h-6" />
-                    </div>
-                    Create New Tax Return
-                  </h2>
-                  <p className="text-green-50 text-sm mt-1 font-medium italic opacity-90">Step {newReturnStep} of 4: {
-                    newReturnStep === 1 ? 'Select Return Type' :
-                    newReturnStep === 2 ? 'Period & Reference' :
-                    newReturnStep === 3 ? 'Financial Details' :
-                    'Review & Submit'
-                  }</p>
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                    <Plus className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold text-gray-900">Create New Tax Return</h2>
+                    <p className="text-xs text-gray-500 mt-0.5">Step {newReturnStep} of 4 — {
+                      newReturnStep === 1 ? 'Select Return Type' :
+                      newReturnStep === 2 ? 'Period & Reference' :
+                      newReturnStep === 3 ? 'Financial Details' :
+                      'Review & Submit'
+                    }</p>
+                  </div>
                 </div>
-                <button 
+                <button
                   onClick={() => {
                     setShowNewReturnModal(false);
                     setNewReturnStep(1);
                   }}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
 
               {/* Progress Bar */}
-              <div className="mt-4 w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
-                <div 
-                  className="bg-white h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+              <div className="mt-4 w-full bg-gray-100 rounded-full h-1 overflow-hidden">
+                <div
+                  className="bg-gray-900 h-full transition-all duration-500 ease-out"
                   style={{ width: `${(newReturnStep / 4) * 100}%` }}
                 />
               </div>
@@ -2531,12 +2533,12 @@ export default function TaxationPage() {
               {/* Step 1: Select Type */}
               {newReturnStep === 1 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {[
-                      { id: 'corporation', name: 'Corporation Tax', icon: Building2, desc: 'Annual CT600 return', color: 'blue' },
-                      { id: 'vat', name: 'VAT Return', icon: Receipt, desc: 'Quarterly VAT submission', color: 'purple' },
-                      { id: 'paye', name: 'PAYE & NI', icon: Users, desc: 'Monthly employer taxes', color: 'green' },
-                      { id: 'self-assessment', name: 'Self Assessment', icon: User, desc: 'Individual tax return', color: 'orange' },
+                      { id: 'corporation', name: 'Corporation Tax', icon: Building2, desc: 'Annual CT600 return' },
+                      { id: 'vat', name: 'VAT Return', icon: Receipt, desc: 'Quarterly VAT submission' },
+                      { id: 'paye', name: 'PAYE & NI', icon: Users, desc: 'Monthly employer taxes' },
+                      { id: 'self-assessment', name: 'Self Assessment', icon: User, desc: 'Individual tax return' },
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -2544,18 +2546,18 @@ export default function TaxationPage() {
                           setNewReturnData({ ...newReturnData, type: item.name });
                           setNewReturnStep(2);
                         }}
-                        className={`p-4 sm:p-6 border-2 rounded-2xl text-left transition-all cursor-pointer group flex items-start gap-3 sm:gap-4 ${
-                          newReturnData.type === item.name 
-                            ? `border-${item.color}-500 bg-${item.color}-50/50` 
-                            : 'border-white/50 bg-white/40 hover:border-gray-300 hover:bg-white'
+                        className={`p-4 sm:p-5 border rounded-xl text-left transition-colors cursor-pointer flex items-start gap-3 sm:gap-4 ${
+                          newReturnData.type === item.name
+                            ? 'border-gray-900 bg-gray-50'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50'
                         }`}
                       >
-                        <div className={`p-3 rounded-xl bg-${item.color}-100 group-hover:scale-110 transition-transform`}>
-                          <item.icon className={`w-6 h-6 text-${item.color}-600`} />
+                        <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+                          <item.icon className="w-5 h-5 text-gray-500" />
                         </div>
                         <div>
-                          <p className={`font-bold text-gray-900 ${newReturnData.type === item.name ? `text-${item.color}-900` : ''}`}>{item.name}</p>
-                          <p className="text-sm text-gray-600 mt-1">{item.desc}</p>
+                          <p className="font-semibold text-gray-900 text-sm">{item.name}</p>
+                          <p className="text-xs text-gray-500 mt-1">{item.desc}</p>
                         </div>
                       </button>
                     ))}
@@ -2565,80 +2567,78 @@ export default function TaxationPage() {
 
               {/* Step 2: Period & Reference */}
               {newReturnStep === 2 && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Selected Tax Type</label>
-                      <div className="px-4 py-3 bg-gray-100 rounded-xl font-medium text-gray-900 border border-gray-200">
-                        {newReturnData.type}
-                      </div>
+                <div className="space-y-5 animate-in fade-in slide-in-from-right-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Selected Tax Type</label>
+                    <div className="px-4 py-2.5 bg-gray-50 rounded-lg font-medium text-sm text-gray-900 border border-gray-200">
+                      {newReturnData.type}
                     </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Accounting Period</label>
-                      <select 
-                        value={newReturnData.period}
-                        onChange={(e) => setNewReturnData({ ...newReturnData, period: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/50 border border-white/50 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-pointer"
-                      >
-                        <option>{calQuarterLabel}</option>
-                        <option>{prevCalQuarterLabel}</option>
-                        <option>{`FY ${taxYearOptions[0].year}`}</option>
-                        <option>{`FY ${taxYearOptions[1].year}`}</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Reference Number</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. TAX-2025-001"
-                        value={newReturnData.reference}
-                        onChange={(e) => setNewReturnData({ ...newReturnData, reference: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/50 border border-white/50 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      />
-                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Accounting Period</label>
+                    <select
+                      value={newReturnData.period}
+                      onChange={(e) => setNewReturnData({ ...newReturnData, period: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition cursor-pointer"
+                    >
+                      <option>{calQuarterLabel}</option>
+                      <option>{prevCalQuarterLabel}</option>
+                      <option>{`FY ${taxYearOptions[0].year}`}</option>
+                      <option>{`FY ${taxYearOptions[1].year}`}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Reference Number</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. TAX-2025-001"
+                      value={newReturnData.reference}
+                      onChange={(e) => setNewReturnData({ ...newReturnData, reference: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition"
+                    />
                   </div>
                 </div>
               )}
 
               {/* Step 3: Financials */}
               {newReturnStep === 3 && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-5 animate-in fade-in slide-in-from-right-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Total Turnover (£)</label>
+                      <label className="block text-xs font-medium text-gray-500 mb-1.5">Total Turnover (£)</label>
                       <input
                         type="number"
                         placeholder="0.00"
                         value={newReturnData.turnover}
                         onChange={(e) => setNewReturnData({ ...newReturnData, turnover: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/50 border border-white/50 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg font-semibold"
+                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Total Expenses (£)</label>
+                      <label className="block text-xs font-medium text-gray-500 mb-1.5">Total Expenses (£)</label>
                       <input
                         type="number"
                         placeholder="0.00"
                         value={newReturnData.expenses}
                         onChange={(e) => setNewReturnData({ ...newReturnData, expenses: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/50 border border-white/50 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg font-semibold"
+                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Notes / Comments</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Notes / Comments</label>
                     <textarea
                       placeholder="Enter any additional information..."
                       rows={3}
                       value={newReturnData.notes}
                       onChange={(e) => setNewReturnData({ ...newReturnData, notes: e.target.value })}
-                      className="w-full px-4 py-3 bg-white/50 border border-white/50 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition resize-none"
                     ></textarea>
                   </div>
-                  <div className="p-4 bg-green-50 rounded-xl border border-green-100">
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex items-center justify-between">
-                      <span className="text-green-800 font-medium">Estimated Taxable Profit:</span>
-                      <span className="text-xl font-bold text-green-900">
+                      <span className="text-sm font-medium text-gray-600">Estimated Taxable Profit</span>
+                      <span className="text-lg font-semibold text-gray-900">
                         £{(Number(newReturnData.turnover) - Number(newReturnData.expenses)).toLocaleString()}
                       </span>
                     </div>
@@ -2648,43 +2648,43 @@ export default function TaxationPage() {
 
               {/* Step 4: Review */}
               {newReturnStep === 4 && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                  <div className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden backdrop-blur-sm shadow-sm">
-                    <div className="bg-gray-50 border-b border-gray-100 px-5 sm:px-6 py-4">
-                      <h3 className="font-bold text-gray-900">Report Summary</h3>
+                <div className="space-y-5 animate-in fade-in slide-in-from-right-4">
+                  <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div className="border-b border-gray-200 px-5 sm:px-6 py-3.5">
+                      <h3 className="text-sm font-semibold text-gray-900">Report Summary</h3>
                     </div>
-                    <div className="p-5 sm:p-6 space-y-4">
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Tax Type</span>
-                        <span className="font-bold text-gray-900">{newReturnData.type}</span>
+                    <div className="p-5 sm:p-6 space-y-3.5">
+                      <div className="flex justify-between items-center py-1.5 border-b border-gray-100 text-sm">
+                        <span className="text-gray-500">Tax Type</span>
+                        <span className="font-semibold text-gray-900">{newReturnData.type}</span>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Period</span>
-                        <span className="font-bold text-gray-900">{newReturnData.period}</span>
+                      <div className="flex justify-between items-center py-1.5 border-b border-gray-100 text-sm">
+                        <span className="text-gray-500">Period</span>
+                        <span className="font-semibold text-gray-900">{newReturnData.period}</span>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Reference</span>
-                        <span className="font-bold text-gray-900">{newReturnData.reference || 'N/A'}</span>
+                      <div className="flex justify-between items-center py-1.5 border-b border-gray-100 text-sm">
+                        <span className="text-gray-500">Reference</span>
+                        <span className="font-semibold text-gray-900">{newReturnData.reference || 'N/A'}</span>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Turnover</span>
-                        <span className="font-bold text-gray-900">£{Number(newReturnData.turnover).toLocaleString()}</span>
+                      <div className="flex justify-between items-center py-1.5 border-b border-gray-100 text-sm">
+                        <span className="text-gray-500">Turnover</span>
+                        <span className="font-semibold text-gray-900">£{Number(newReturnData.turnover).toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Expenses</span>
-                        <span className="font-bold text-gray-900">£{Number(newReturnData.expenses).toLocaleString()}</span>
+                      <div className="flex justify-between items-center py-1.5 border-b border-gray-100 text-sm">
+                        <span className="text-gray-500">Expenses</span>
+                        <span className="font-semibold text-gray-900">£{Number(newReturnData.expenses).toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between items-center py-3 bg-green-50 -mx-5 sm:-mx-6 px-5 sm:px-6">
-                        <span className="text-green-800 font-bold">Total Liability (Estimated)</span>
-                        <span className="text-xl sm:text-2xl font-black text-green-900">
+                      <div className="flex justify-between items-center py-3 bg-gray-50 -mx-5 sm:-mx-6 px-5 sm:px-6 rounded-b-xl">
+                        <span className="text-sm font-semibold text-gray-900">Total Liability (Estimated)</span>
+                        <span className="text-xl font-semibold text-gray-900">
                           £{(Math.max(0, Number(newReturnData.turnover) - Number(newReturnData.expenses)) * 0.19).toLocaleString()}
                         </span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                    <Shield className="w-5 h-5 text-blue-600 shrink-0" />
-                    <p className="text-xs text-blue-800">
+                  <div className="flex gap-2.5 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <Shield className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                    <p className="text-xs text-gray-500">
                       By downloading this report, you confirm that all figures provided are accurate to the best of your knowledge. Share this with your accountant for HMRC submission.
                     </p>
                   </div>
@@ -2694,7 +2694,7 @@ export default function TaxationPage() {
             </div>
 
             {/* Modal Footer — sticky so always visible */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 sm:px-8 py-4 flex items-center justify-between gap-3 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-5 sm:px-8 py-4 flex items-center justify-between gap-3 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6">
                 <button
                   onClick={() => {
                     if (newReturnStep === 1) {
@@ -2703,7 +2703,7 @@ export default function TaxationPage() {
                       setNewReturnStep(newReturnStep - 1);
                     }
                   }}
-                  className="flex-1 sm:flex-none px-6 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="flex-1 sm:flex-none px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   {newReturnStep === 1 ? 'Cancel' : 'Back'}
                 </button>
@@ -2735,7 +2735,7 @@ export default function TaxationPage() {
                       setShowSuccessModal(true);
                     }
                   }}
-                  className={`flex-1 sm:flex-none px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`flex-1 sm:flex-none px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer ${
                     newReturnStep === 1 && !newReturnData.type ? 'opacity-50 pointer-events-none' : ''
                   }`}
                 >
