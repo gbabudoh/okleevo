@@ -214,12 +214,40 @@ export default function InvoicingPage() {
     projectId: '',
   });
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  const [creatingProject, setCreatingProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [savingNewProject, setSavingNewProject] = useState(false);
 
-  useEffect(() => {
+  const fetchProjects = () => {
     fetch('/api/projects')
       .then(res => res.json())
       .then(data => setProjects(Array.isArray(data) ? data : []))
       .catch(() => setProjects([]));
+  };
+
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) return;
+    setSavingNewProject(true);
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newProjectName.trim() }),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setProjects(prev => [...prev, { id: created.id, name: created.name }]);
+        setNewInvoice(prev => ({ ...prev, projectId: created.id }));
+        setNewProjectName('');
+        setCreatingProject(false);
+      }
+    } finally {
+      setSavingNewProject(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
   }, []);
 
   /* ── Data ──────────────────────────────────────────────────────── */
@@ -752,12 +780,38 @@ export default function InvoicingPage() {
                 </div>
                 <div className="sm:col-span-4">
                   <label className={labelCls}>Project</label>
-                  <select value={newInvoice.projectId}
-                    onChange={e => setNewInvoice({ ...newInvoice, projectId: e.target.value })}
-                    className={`${inputCls} appearance-none cursor-pointer`}>
-                    <option value="">No project</option>
-                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
+                  {creatingProject ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        autoFocus
+                        value={newProjectName}
+                        onChange={e => setNewProjectName(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateProject(); } if (e.key === 'Escape') { setCreatingProject(false); setNewProjectName(''); } }}
+                        placeholder="New project name"
+                        className={inputCls}
+                      />
+                      <button type="button" onClick={handleCreateProject} disabled={savingNewProject || !newProjectName.trim()}
+                        className="shrink-0 h-[38px] px-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold cursor-pointer transition-colors flex items-center justify-center">
+                        {savingNewProject ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create'}
+                      </button>
+                      <button type="button" onClick={() => { setCreatingProject(false); setNewProjectName(''); }}
+                        className="shrink-0 h-[38px] w-[38px] rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 cursor-pointer transition-colors flex items-center justify-center">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <select value={newInvoice.projectId}
+                      onChange={e => {
+                        if (e.target.value === '__new__') { setCreatingProject(true); return; }
+                        setNewInvoice({ ...newInvoice, projectId: e.target.value });
+                      }}
+                      className={`${inputCls} appearance-none cursor-pointer`}>
+                      <option value="">No project</option>
+                      {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      <option value="__new__">+ New project…</option>
+                    </select>
+                  )}
                 </div>
               </div>
             </div>
