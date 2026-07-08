@@ -179,6 +179,7 @@ model Business {
   replyTokens     ReplyToken[]
   projects        Project[]
   timeEntries     TimeEntry[]
+  microPages      MicroPage[]
   shopifyConnection ShopifyConnection?
   enabledModules  String[]         @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
 
@@ -896,6 +897,9 @@ model Project {
   name   String
   status ProjectStatus @default(ACTIVE)
 
+  budget  Float?
+  dueDate DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -913,6 +917,45 @@ enum ProjectStatus {
   ACTIVE
   ON_HOLD
   COMPLETED
+  ARCHIVED
+}
+
+// =============================================================================
+// Micro Pages Module (hosted landing pages)
+// =============================================================================
+
+model MicroPage {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  title    String
+  slug     String          @unique
+  template String
+  status   MicroPageStatus @default(DRAFT)
+
+  seoTitle       String?
+  seoDescription String?
+
+  // Per-block content, keyed by block name (e.g. "Hero", "Gallery").
+  // Shape: Record<string, { heading?, body?, imageKey?, imageKeys?, buttonText?, buttonLink? }>
+  content Json?
+
+  views       Int @default(0)
+  conversions Int @default(0)
+
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([businessId])
+  @@index([status])
+}
+
+enum MicroPageStatus {
+  DRAFT
+  PUBLISHED
   ARCHIVED
 }
 
@@ -1141,6 +1184,7 @@ model EmailLog {
   status       EmailStatus @default(SENT)
   errorMessage String?
   messageId    String? // SMTP message ID
+  archived     Boolean     @default(false)
 
   createdAt DateTime @default(now())
 
@@ -1283,6 +1327,7 @@ enum MailFolder {
   DRAFTS
   TRASH
   SPAM
+  ARCHIVED
 }
 
 enum MailStatus {
