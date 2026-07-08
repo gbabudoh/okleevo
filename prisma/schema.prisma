@@ -248,7 +248,7 @@ model ShopifyConnection {
 
 model Invoice {
   id     String @id @default(cuid())
-  number String @unique
+  number String
 
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
@@ -282,6 +282,7 @@ model Invoice {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
+  @@unique([businessId, number])
   @@index([businessId])
   @@index([userId])
   @@index([status])

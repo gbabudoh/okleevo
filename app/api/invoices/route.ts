@@ -55,11 +55,19 @@ export const POST = withMultiTenancy(async (req, { user }) => {
     const body = await req.json();
     const { clientName, clientEmail, amount, items, dueDate, projectId } = body;
 
-    // Generate invoice number
-    const invoiceCount = await prisma.invoice.count({
+    // Generate invoice number from the highest existing number for this business
+    // (not a count, since a deleted invoice would otherwise make the count collide
+    // with a still-existing number)
+    const businessInvoices = await prisma.invoice.findMany({
       where: { businessId: user.businessId },
+      select: { number: true },
     });
-    const invoiceNumber = `INV-${String(invoiceCount + 1).padStart(4, '0')}`;
+    const maxNumber = businessInvoices.reduce((max, inv) => {
+      const match = inv.number.match(/(\d+)$/);
+      const n = match ? parseInt(match[1], 10) : 0;
+      return Math.max(max, n);
+    }, 0);
+    const invoiceNumber = `INV-${String(maxNumber + 1).padStart(4, '0')}`;
 
     const invoice = await prisma.invoice.create({
       data: {
