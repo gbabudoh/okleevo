@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Globe, Plus, Search, Eye, Edit3,
   Trash2, Copy, BarChart3, Settings, Link, ExternalLink,
@@ -9,9 +9,12 @@ import {
   CheckCircle, XCircle, AlertCircle, MoreVertical,
   ShoppingCart, Calendar,
   Grid, List, X, Sparkles, Target, Award,
-  Rocket, MousePointer, ChevronRight
+  Rocket, ChevronRight, Loader2
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import BlockContentEditor from '@/components/micro-pages/BlockContentEditor';
+import { MICRO_PAGE_TEMPLATES } from '@/lib/micro-page-templates';
+import type { MicroPageContent, MicroPageBlockContent } from '@/lib/micro-page-content';
 
 interface MicroPage {
   id: string;
@@ -25,11 +28,9 @@ interface MicroPage {
   conversionRate: number;
   createdDate: Date;
   lastModified: Date;
-  thumbnail?: string;
-  description?: string;
-  components: string[];
   seoTitle?: string;
   seoDescription?: string;
+  content: MicroPageContent;
 }
 
 interface Template {
@@ -42,62 +43,20 @@ interface Template {
   components: string[];
 }
 
-const templates: Template[] = [
-  {
-    id: 'product-launch',
-    name: 'Product Launch',
-    description: 'Hero section, features, and CTA for new product announcements',
-    category: 'Marketing',
-    icon: Rocket,
-    gradient: 'from-blue-500 to-cyan-500',
-    components: ['Hero', 'Features', 'CTA', 'Footer'],
-  },
-  {
-    id: 'event-landing',
-    name: 'Event Landing',
-    description: 'Countdown timer, schedule, and registration form',
-    category: 'Events',
-    icon: Calendar,
-    gradient: 'from-purple-500 to-pink-500',
-    components: ['Hero', 'Countdown', 'Schedule', 'Registration'],
-  },
-  {
-    id: 'lead-capture',
-    name: 'Lead Capture',
-    description: 'High-converting page focused on collecting leads',
-    category: 'Marketing',
-    icon: Target,
-    gradient: 'from-green-500 to-emerald-500',
-    components: ['Hero', 'Benefits', 'Form', 'Testimonials'],
-  },
-  {
-    id: 'portfolio',
-    name: 'Portfolio',
-    description: 'Elegant gallery and project showcase',
-    category: 'Personal',
-    icon: Award,
-    gradient: 'from-orange-500 to-red-500',
-    components: ['Hero', 'Gallery', 'About', 'Contact'],
-  },
-  {
-    id: 'coming-soon',
-    name: 'Coming Soon',
-    description: 'Build anticipation with countdown and email signup',
-    category: 'Marketing',
-    icon: Clock,
-    gradient: 'from-indigo-500 to-purple-500',
-    components: ['Hero', 'Countdown', 'Email Form'],
-  },
-  {
-    id: 'pricing',
-    name: 'Pricing Page',
-    description: 'Clear pricing tiers with feature comparison',
-    category: 'Sales',
-    icon: ShoppingCart,
-    gradient: 'from-pink-500 to-rose-500',
-    components: ['Hero', 'Pricing Cards', 'FAQ', 'CTA'],
-  },
-];
+const templateVisuals: Record<string, { icon: React.ElementType; gradient: string }> = {
+  'product-launch': { icon: Rocket, gradient: 'from-blue-500 to-cyan-500' },
+  'event-landing': { icon: Calendar, gradient: 'from-purple-500 to-pink-500' },
+  'lead-capture': { icon: Target, gradient: 'from-green-500 to-emerald-500' },
+  portfolio: { icon: Award, gradient: 'from-orange-500 to-red-500' },
+  'coming-soon': { icon: Clock, gradient: 'from-indigo-500 to-purple-500' },
+  pricing: { icon: ShoppingCart, gradient: 'from-pink-500 to-rose-500' },
+};
+
+const templates: Template[] = MICRO_PAGE_TEMPLATES.map(t => ({
+  ...t,
+  icon: templateVisuals[t.id]?.icon || Globe,
+  gradient: templateVisuals[t.id]?.gradient || 'from-gray-500 to-gray-600',
+}));
 
 const categoryConfigs = [
   { id: 'all', name: 'All' },
@@ -106,6 +65,38 @@ const categoryConfigs = [
   { id: 'sales', name: 'Sales' },
   { id: 'personal', name: 'Personal' },
 ];
+
+interface ApiMicroPage {
+  id: string;
+  title: string;
+  slug: string;
+  template: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  views: number;
+  conversions: number;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  content?: MicroPageContent | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const mapApiPage = (p: ApiMicroPage): MicroPage => ({
+  id: p.id,
+  title: p.title,
+  slug: p.slug,
+  url: `${window.location.origin}/p/${p.slug}`,
+  template: p.template,
+  status: p.status.toLowerCase() as 'draft' | 'published' | 'archived',
+  views: p.views,
+  conversions: p.conversions,
+  conversionRate: p.views > 0 ? (p.conversions / p.views) * 100 : 0,
+  createdDate: new Date(p.createdAt),
+  lastModified: new Date(p.updatedAt),
+  seoTitle: p.seoTitle || undefined,
+  seoDescription: p.seoDescription || undefined,
+  content: p.content || {},
+});
 
 export default function MicroPagesPage() {
   const [pages, setPages] = useState<MicroPage[]>([]);
@@ -117,6 +108,7 @@ export default function MicroPagesPage() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingPage, setEditingPage] = useState<MicroPage | null>(null);
+  const [openBlock, setOpenBlock] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingPage, setDeletingPage] = useState<MicroPage | null>(null);
   const [showCopyModal, setShowCopyModal] = useState(false);
@@ -126,17 +118,59 @@ export default function MicroPagesPage() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [settingsPage, setSettingsPage] = useState<MicroPage | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleSave = () => {
+  const fetchPages = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/micro-pages');
+      const data = await res.json();
+      setPages(Array.isArray(data) ? data.map(mapApiPage) : []);
+    } catch {
+      showNotify('Failed to load pages', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchPages(); }, [fetchPages]);
+  useEffect(() => { setOpenBlock(null); }, [editingPage?.id]);
+
+  const handleSave = async () => {
     if (!editingPage) return;
-    setPages(prev => prev.map(p => p.id === editingPage.id ? editingPage : p));
-    showNotify('Changes saved successfully', 'success');
-    setShowEditModal(false);
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/micro-pages/${editingPage.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editingPage.title,
+          slug: editingPage.slug,
+          status: editingPage.status,
+          seoTitle: editingPage.seoTitle,
+          seoDescription: editingPage.seoDescription,
+          content: editingPage.content,
+        }),
+      });
+      if (res.ok) {
+        await fetchPages();
+        showNotify(editingPage.status === 'published' ? 'Page published — live now' : 'Changes saved successfully', 'success');
+        setShowEditModal(false);
+      } else {
+        const err = await res.json();
+        showNotify(err.error || 'Failed to save changes', 'error');
+      }
+    } catch {
+      showNotify('Failed to save changes', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const filteredPages = pages.filter(page => {
@@ -267,8 +301,15 @@ export default function MicroPagesPage() {
         </div>
       </div>
 
+      {/* ── Loading State ── */}
+      {loading && (
+        <div className="flex items-center justify-center py-20 text-gray-400">
+          <Loader2 className="w-6 h-6 animate-spin" />
+        </div>
+      )}
+
       {/* ── Empty State ── */}
-      {filteredPages.length === 0 && (
+      {!loading && filteredPages.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-white/50 py-16 px-6 text-center">
           <div className="mb-4 rounded-2xl bg-blue-50 p-5">
             <Globe className="h-8 w-8 text-blue-500" />
@@ -358,7 +399,7 @@ export default function MicroPagesPage() {
 
                   {activeDropdown === page.id && (
                     <div className="absolute right-0 bottom-full mb-2 w-48 rounded-2xl border border-gray-100 bg-white/95 backdrop-blur-xl shadow-2xl p-2 z-50 flex flex-col gap-0.5 animate-in fade-in slide-in-from-bottom-2">
-                      <button onClick={e => { e.stopPropagation(); setCopyingPage(page); setShowCopyModal(true); setActiveDropdown(null); }} className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[12px] font-bold text-gray-600 hover:bg-blue-50 transition">
+                      <button onClick={e => { e.stopPropagation(); navigator.clipboard.writeText(page.url).catch(() => {}); setCopyingPage(page); setShowCopyModal(true); setActiveDropdown(null); }} className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[12px] font-bold text-gray-600 hover:bg-blue-50 transition">
                         <Copy className="h-3.5 w-3.5" /> Copy URL
                       </button>
                       <button onClick={e => { e.stopPropagation(); setAnalyticsPage(page); setShowAnalyticsModal(true); setActiveDropdown(null); }} className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[12px] font-bold text-gray-600 hover:bg-purple-50 transition">
@@ -506,29 +547,31 @@ export default function MicroPagesPage() {
                   return (
                     <button
                       key={template.id}
-                      onClick={() => {
-                        const newPage: MicroPage = {
-                          id: Math.random().toString(36).substring(2, 11),
-                          title: `${template.name} Draft`,
-                          slug: `${template.id}-${Date.now()}`,
-                          url: `https://yourdomain.com/${template.id}-${Date.now()}`,
-                          template: template.id,
-                          status: 'draft',
-                          views: 0,
-                          conversions: 0,
-                          conversionRate: 0,
-                          createdDate: new Date(),
-                          lastModified: new Date(),
-                          description: template.description,
-                          components: template.components,
-                          seoTitle: `New ${template.name} Page`,
-                          seoDescription: 'Enter your page description here...',
-                        };
-                        setPages([newPage, ...pages]);
-                        setEditingPage(newPage);
+                      onClick={async () => {
                         setShowTemplates(false);
-                        setShowEditModal(true);
-                        showNotify('New page created from template', 'success');
+                        try {
+                          const res = await fetch('/api/micro-pages', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              title: `${template.name} Draft`,
+                              template: template.id,
+                              seoTitle: `New ${template.name} Page`,
+                              seoDescription: 'Enter your page description here...',
+                            }),
+                          });
+                          if (res.ok) {
+                            const created = await res.json();
+                            await fetchPages();
+                            setEditingPage(mapApiPage(created));
+                            setShowEditModal(true);
+                            showNotify('New page created from template', 'success');
+                          } else {
+                            showNotify('Failed to create page', 'error');
+                          }
+                        } catch {
+                          showNotify('Failed to create page', 'error');
+                        }
                       }}
                       className="group flex gap-3 rounded-2xl border border-gray-100 bg-white p-3 text-left shadow-sm hover:shadow-md hover:border-blue-200 transition active:scale-[0.98] cursor-pointer"
                     >
@@ -684,15 +727,35 @@ export default function MicroPagesPage() {
                 <h3 className="text-sm font-black text-gray-900 flex items-center gap-2">
                   <Layout className="h-4 w-4 text-emerald-500" /> Page Sections
                 </h3>
-                {editingPage.components.map((comp, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-3 hover:border-blue-300 transition cursor-move">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-gray-700">{comp}</span>
-                    <MousePointer className="h-3.5 w-3.5 text-gray-300" />
-                  </div>
-                ))}
-                <button className="w-full rounded-xl border-2 border-dashed border-gray-200 py-3 text-[10px] font-black uppercase tracking-wider text-gray-400 hover:border-blue-500 hover:text-blue-500 transition cursor-pointer">
-                  + Add Section
-                </button>
+                {(templates.find(t => t.id === editingPage.template)?.components || []).map((comp, i) => {
+                  const blockContent: MicroPageBlockContent = editingPage.content[comp] || {};
+                  const isOpen = openBlock === comp;
+                  return (
+                    <div key={i} className="rounded-xl border border-gray-100 bg-white overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setOpenBlock(isOpen ? null : comp)}
+                        className="w-full flex items-center justify-between px-4 py-3 cursor-pointer"
+                      >
+                        <span className="text-[11px] font-black uppercase tracking-wider text-gray-700">{comp}</span>
+                        <ChevronRight className={`h-3.5 w-3.5 text-gray-300 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                      </button>
+                      {isOpen && (
+                        <div className="px-4 pb-4 pt-1 border-t border-gray-100">
+                          <BlockContentEditor
+                            blockName={comp}
+                            content={blockContent}
+                            onChange={(next) => setEditingPage({
+                              ...editingPage,
+                              content: { ...editingPage.content, [comp]: next },
+                            })}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                <p className="text-[10px] text-gray-400 px-1">Fill in a section to replace its placeholder on the live page. Empty sections keep showing a generic placeholder.</p>
               </section>
             </div>
 
@@ -706,9 +769,11 @@ export default function MicroPagesPage() {
               </button>
               <button
                 onClick={handleSave}
-                className="flex-2 rounded-xl bg-blue-600 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition active:scale-95 cursor-pointer"
+                disabled={saving}
+                className="flex-2 flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition active:scale-95 cursor-pointer disabled:opacity-60"
               >
-                Save & Deploy
+                {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                {saving ? 'Saving…' : 'Save & Deploy'}
               </button>
             </div>
           </div>
@@ -772,18 +837,19 @@ export default function MicroPagesPage() {
             </div>
             <div className="px-6 pt-12 pb-5 space-y-3">
               {['Enable Analytics Tracking', 'Search Engine Indexing'].map((label, i) => (
-                <label key={i} className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3.5 cursor-pointer hover:border-blue-300 transition">
-                  <span className="text-sm font-bold text-gray-700">{label}</span>
-                  <input type="checkbox" defaultChecked className="h-4 w-4 accent-blue-600" />
-                </label>
+                <div key={i} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3.5 opacity-60">
+                  <span className="text-sm font-bold text-gray-500">{label}</span>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-gray-400 bg-white border border-gray-200 rounded-full px-2 py-1">Coming soon</span>
+                </div>
               ))}
+              <p className="text-xs text-gray-400 px-1">Views are always tracked automatically once a page is published; per-page controls aren&rsquo;t available yet.</p>
             </div>
             <div className="px-6 pb-32 sm:pb-6 pt-2">
               <button
-                onClick={() => { showNotify('Settings saved', 'success'); setShowSettingsModal(false); }}
+                onClick={() => setShowSettingsModal(false)}
                 className="w-full rounded-xl bg-gray-900 py-3.5 text-[11px] font-black uppercase tracking-widest text-white hover:bg-black transition cursor-pointer"
               >
-                Save Settings
+                Close
               </button>
             </div>
           </div>
@@ -811,9 +877,18 @@ export default function MicroPagesPage() {
         <DeleteConfirmationModal
           isOpen={showDeleteModal}
           onClose={() => { setShowDeleteModal(false); setDeletingPage(null); }}
-          onConfirm={() => {
-            setPages(pages.filter(p => p.id !== deletingPage.id));
-            showNotify('Page deleted permanently', 'info');
+          onConfirm={async () => {
+            try {
+              const res = await fetch(`/api/micro-pages/${deletingPage.id}`, { method: 'DELETE' });
+              if (res.ok) {
+                setPages(pages.filter(p => p.id !== deletingPage.id));
+                showNotify('Page deleted permanently', 'info');
+              } else {
+                showNotify('Failed to delete page', 'error');
+              }
+            } catch {
+              showNotify('Failed to delete page', 'error');
+            }
           }}
           title="Delete Page"
           itemName={deletingPage.title}

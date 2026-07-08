@@ -22,6 +22,7 @@ const publicRoutes = [
   '/api/integrations/shopify/callback', // Shopify's redirect mid-OAuth-flow; gated by HMAC + signed state, not a session
   '/forms',
   '/api/public',
+  '/p',              // Hosted micro-pages are public landing pages, no session required
   '/support',
   '/guide',
   '/sitemap.xml',
