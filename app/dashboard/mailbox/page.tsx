@@ -595,7 +595,7 @@ export default function MailboxPage() {
                 {selectedFolder !== 'SENT' && (
                   <button
                     onClick={handleReply}
-                    className="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3.5 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer shadow-sm"
                   >
                     <Reply className="w-4 h-4" /> Reply
                   </button>
@@ -609,14 +609,29 @@ export default function MailboxPage() {
                 <div className="relative">
                   <button
                     onClick={() => setShowMessageMenu(v => !v)}
-                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-400 transition-colors cursor-pointer"
+                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
                   >
                     <MoreVertical className="w-4 h-4" />
                   </button>
                   {showMessageMenu && (
                     <>
                       <div className="fixed inset-0 z-10" onClick={() => setShowMessageMenu(false)} />
-                      <div className="absolute right-0 top-10 z-20 w-44 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden">
+                      <div className="absolute right-0 top-10 z-20 w-48 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden py-1">
+                        {selectedFolder !== 'SENT' && (
+                          <button
+                            onClick={() => { handleReply(); setShowMessageMenu(false); }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                          >
+                            <Reply className="w-4 h-4 text-indigo-600" /> Reply to Sender
+                          </button>
+                        )}
+                        <button
+                          onClick={() => { handleForward(); setShowMessageMenu(false); }}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                        >
+                          <Forward className="w-4 h-4 text-gray-500" /> Forward Message
+                        </button>
+                        <div className="h-px bg-gray-100 my-1" />
                         <button
                           onClick={handleMoveToSpam}
                           className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
