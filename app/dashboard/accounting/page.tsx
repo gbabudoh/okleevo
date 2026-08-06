@@ -1495,63 +1495,115 @@ export default function AccountingPage() {
 
         {/* YEAR-END */}
         {activeTab === "year-end" && (
-          <div className="space-y-4">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-sm font-bold text-gray-900 mb-0.5">Year-End Accounts for HMRC</h2>
-                  <p className="text-xs text-gray-400">Prepare annual accounts for Companies House & HMRC submission</p>
+          <div className="space-y-5">
+            {/* Executive Year-End Header */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <Landmark className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    Year-End Statutory Accounts
+                  </h2>
+                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold rounded-full border border-emerald-200/60">
+                    UK SME GAAP Compliant ✓
+                  </span>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button onClick={() => setShowYearEndModal(true)}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap">
-                    Generate
-                  </button>
-                  <button onClick={() => setShowYearEndModal(true)}
-                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap">
-                    Checklist
-                  </button>
-                </div>
+                <p className="text-xs text-gray-400">Prepare annual statutory financial packs for Companies House &amp; HMRC CT600 filing</p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                <button
+                  onClick={() => setShowYearEndModal(true)}
+                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Download className="w-4 h-4" />
+                  Generate Year-End Pack (PDF)
+                </button>
+                <button
+                  onClick={() => setShowYearEndModal(true)}
+                  className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <FileCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  Closing Audit Checklist
+                </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileCheck className="w-4 h-4 text-indigo-600" /> Documents Required for Filing
-                </h3>
-                <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Statutory Documents Grid */}
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xs p-5 sm:p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <FileCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    Statutory Filing Documents
+                  </h3>
+                  <span className="text-[11px] font-extrabold text-gray-400">6 Required</span>
+                </div>
+
+                <div className="space-y-2.5">
                   {[
-                    { doc: "Profit & Loss Statement", included: true },
-                    { doc: "Balance Sheet", included: true },
-                    { doc: "Trial Balance", included: true },
-                    { doc: "Directors Report", included: false },
-                    { doc: "Notes to Accounts", included: false },
-                    { doc: "Corporation Tax Computation", included: false },
-                  ].map(({ doc, included }) => (
-                    <div key={doc} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl">
-                      <span className="text-xs font-medium text-gray-700">{doc}</span>
-                      {included
-                        ? <span className="text-[10px] font-semibold text-indigo-600 shrink-0">In generated pack</span>
-                        : <span className="text-[10px] font-medium text-gray-400 shrink-0">Prepare separately</span>}
+                    { doc: "Profit & Loss Statement", tag: "Included in Pack ✓", badgeCls: "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300" },
+                    { doc: "Balance Sheet", tag: "Included in Pack ✓", badgeCls: "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300" },
+                    { doc: "Trial Balance Ledger", tag: "Included in Pack ✓", badgeCls: "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300" },
+                    { doc: "Corporation Tax Computation", tag: "Auto-Calculated (19%/25%)", badgeCls: "bg-blue-50 text-blue-700 border-blue-200/60 dark:bg-blue-950/60 dark:text-blue-300" },
+                    { doc: "Directors Report", tag: "Optional Add-On", badgeCls: "bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-950/60 dark:text-purple-300" },
+                    { doc: "Notes to Financial Statements", tag: "Optional Add-On", badgeCls: "bg-amber-50 text-amber-800 border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-300" },
+                  ].map(({ doc, tag, badgeCls }) => (
+                    <div key={doc} className="flex items-center justify-between p-3 bg-gray-50/80 dark:bg-slate-800/60 rounded-2xl border border-gray-100/80 dark:border-slate-800">
+                      <span className="text-xs font-bold text-gray-900 dark:text-white">{doc}</span>
+                      <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${badgeCls} shrink-0`}>
+                        {tag}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-blue-600" /> Important Deadlines
-                </h3>
-                <div className="space-y-2">
+              {/* Statutory Tax Deadlines Timeline */}
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xs p-5 sm:p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    HMRC &amp; Companies House Statutory Deadlines
+                  </h3>
+                  <span className="text-[11px] font-extrabold text-gray-400">UK Law</span>
+                </div>
+
+                <div className="space-y-3">
                   {[
-                    { label: "Companies House Filing",   detail: "9 months after year-end",        bg: "bg-red-50",    border: "border-red-100",    text: "text-red-800",    sub: "text-red-500" },
-                    { label: "Corporation Tax Return",   detail: "12 months after year-end",       bg: "bg-orange-50", border: "border-orange-100",  text: "text-orange-800", sub: "text-orange-500" },
-                    { label: "Corporation Tax Payment",  detail: "9 months + 1 day after year-end", bg: "bg-blue-50",   border: "border-blue-100",    text: "text-blue-800",   sub: "text-blue-500" },
-                  ].map(({ label, detail, bg, border, text, sub }) => (
-                    <div key={label} className={`p-3 ${bg} border ${border} rounded-xl`}>
-                      <p className={`text-xs font-semibold ${text}`}>{label}</p>
-                      <p className={`text-[11px] ${sub} mt-0.5`}>{detail}</p>
+                    {
+                      label: "Companies House Statutory Filing",
+                      detail: "Annual accounts submission required within 9 months of financial year-end",
+                      badge: "9 Months Limit",
+                      cardCls: "bg-rose-50/70 border-rose-100 dark:bg-rose-950/40 dark:border-rose-900/60",
+                      titleCls: "text-rose-950 dark:text-rose-200",
+                      badgeCls: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/80 dark:text-rose-300",
+                    },
+                    {
+                      label: "HMRC Corporation Tax Return (CT600)",
+                      detail: "Company tax return submission required within 12 months of accounting period end",
+                      badge: "12 Months Limit",
+                      cardCls: "bg-amber-50/70 border-amber-100 dark:bg-amber-950/40 dark:border-amber-900/60",
+                      titleCls: "text-amber-950 dark:text-amber-200",
+                      badgeCls: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/80 dark:text-amber-300",
+                    },
+                    {
+                      label: "HMRC Corporation Tax Payment",
+                      detail: "Payment due 9 months and 1 day after end of accounting period",
+                      badge: "9 Months + 1 Day",
+                      cardCls: "bg-blue-50/70 border-blue-100 dark:bg-blue-950/40 dark:border-blue-900/60",
+                      titleCls: "text-blue-950 dark:text-blue-200",
+                      badgeCls: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/80 dark:text-blue-300",
+                    },
+                  ].map(({ label, detail, badge, cardCls, titleCls, badgeCls }) => (
+                    <div key={label} className={`p-4 ${cardCls} border rounded-2xl space-y-1`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className={`text-xs font-extrabold ${titleCls}`}>{label}</p>
+                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${badgeCls} shrink-0`}>
+                          {badge}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">{detail}</p>
                     </div>
                   ))}
                 </div>
