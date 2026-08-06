@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Phone, Video, X, PhoneIncoming } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { startIncomingRingtone, stopIncomingRingtone } from '@/lib/audio/ringtone';
 
 interface CallNotification {
   id: string;
@@ -26,6 +27,18 @@ export default function IncomingCallModal() {
   // Keep ref in sync with state
   useEffect(() => {
     callRef.current = call;
+  }, [call]);
+
+  // Manage incoming call ringtone audio
+  useEffect(() => {
+    if (call) {
+      startIncomingRingtone();
+    } else {
+      stopIncomingRingtone();
+    }
+    return () => {
+      stopIncomingRingtone();
+    };
   }, [call]);
 
   useEffect(() => {
@@ -105,6 +118,7 @@ export default function IncomingCallModal() {
   if (!call) return null;
 
   const handleAccept = async () => {
+    stopIncomingRingtone();
     // Mark as read
     await fetch('/api/notifications', {
       method: 'PATCH',
@@ -120,6 +134,7 @@ export default function IncomingCallModal() {
   };
 
   const handleDecline = async () => {
+    stopIncomingRingtone();
     // Just mark as read/dismissed
     await fetch('/api/notifications', {
       method: 'PATCH',

@@ -10,6 +10,7 @@ import {
   Loader2, ShieldCheck, UsersRound, Lock, Send, X
 } from 'lucide-react';
 import MeetingRoom from '@/components/collaboration/MeetingRoom';
+import { startOutgoingRingtone, stopOutgoingRingtone } from '@/lib/audio/ringtone';
 
 interface TeamMember {
   userId: string;
@@ -162,6 +163,9 @@ function CollaborationHubInner() {
 
   const startMeeting = async (roomName: string, video = true, audio = true) => {
     try {
+      if (roomName.startsWith('call_')) {
+        startOutgoingRingtone();
+      }
       const res = await fetch(`/api/livekit/token?room=${roomName}`);
       if (res.ok) {
         const data = await res.json();
@@ -173,9 +177,13 @@ function CollaborationHubInner() {
             body: JSON.stringify({ targetUserId, roomName, type: video ? 'video' : 'voice' }),
           });
         }
+        stopOutgoingRingtone();
         setActiveMeeting({ token: data.token, wsUrl: data.wsUrl, room: data.room, video, audio });
+      } else {
+        stopOutgoingRingtone();
       }
     } catch (err) {
+      stopOutgoingRingtone();
       console.error('Failed to start meeting:', err);
     }
   };
@@ -188,7 +196,10 @@ function CollaborationHubInner() {
           wsUrl={activeMeeting.wsUrl}
           video={activeMeeting.video}
           audio={activeMeeting.audio}
-          onLeave={() => setActiveMeeting(null)}
+          onLeave={() => {
+            stopOutgoingRingtone();
+            setActiveMeeting(null);
+          }}
         />
       </div>
     );
