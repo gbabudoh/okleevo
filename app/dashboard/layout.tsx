@@ -10,8 +10,8 @@ import {
   TrendingUp, FormInput, Calendar, MessageSquare, Mail,
   CheckSquare, Sparkles, FileEdit, BarChart3, Package,
   Truck, UserCheck, PenTool, Globe, Shield, X, Inbox,
-  LogOut, Settings, Building2, CreditCard,
-  LifeBuoy, Rocket, BookOpen, Bell, Cpu, UsersRound, AtSign, FolderKanban
+  LogOut, Settings, Building2, CreditCard, HelpCircle, ChevronUp,
+  LifeBuoy, Rocket, BookOpen, Bell, Cpu, UsersRound, AtSign, FolderKanban, Compass
 } from 'lucide-react';
 
 import WelcomeGuideModal from '@/components/WelcomeGuideModal';
@@ -19,7 +19,6 @@ import IncomingCallModal from '@/components/collaboration/IncomingCallModal';
 import MobileBottomNav from '@/components/navigation/MobileBottomNav';
 import { REPLAY_TOUR_EVENT } from '@/components/tours/TourProvider';
 import { moduleHasTour } from '@/components/tours/pilot-modules';
-import { Compass } from 'lucide-react';
 
 interface UserData {
   firstName: string;
@@ -69,6 +68,7 @@ export default function DashboardLayout({
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
+  const [showHelpMenu, setShowHelpMenu] = useState(false);
   const [activeChatToast, setActiveChatToast] = useState<ChatToastInfo | null>(null);
   const lastSeenChatMsgIdRef = useRef<string | null>(null);
   const [subInfo, setSubInfo] = useState<SubInfo | null>(null);
@@ -499,62 +499,88 @@ export default function DashboardLayout({
         </nav>
 
         {/* Bottom Actions */}
-        <div className="p-4 border-t border-white/20 bg-white/60 backdrop-blur-xl space-y-2">
-          <button
-            onClick={() => setShowWelcomeGuide(true)}
-            className="flex items-center gap-3 px-4 py-2 rounded-lg text-indigo-600 font-bold hover:bg-white/50 transition-colors w-full text-left cursor-pointer"
-          >
-            <Rocket className="w-5 h-5" />
-            <span>Quick Start Guide</span>
-          </button>
-          {moduleHasTour(pathname?.split('/')[2]) && (
+        <div className="p-3 border-t border-gray-100 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl space-y-1 relative">
+          <div className="relative">
             <button
-              onClick={() => {
-                const moduleId = pathname?.split('/')[2];
-                if (moduleId) {
-                  window.dispatchEvent(new CustomEvent(REPLAY_TOUR_EVENT, { detail: { moduleId } }));
-                }
-              }}
-              className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors w-full text-left cursor-pointer"
+              onClick={() => setShowHelpMenu(v => !v)}
+              className="flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl text-indigo-600 dark:text-indigo-400 font-bold hover:bg-indigo-50/80 dark:hover:bg-indigo-950/50 transition-all w-full text-left cursor-pointer"
             >
-              <Compass className="w-5 h-5" />
-              <span>Module Guide</span>
+              <div className="flex items-center gap-2.5">
+                <div className="p-1 bg-indigo-100 dark:bg-indigo-900/60 rounded-lg text-indigo-600 dark:text-indigo-300">
+                  <HelpCircle className="w-4 h-4" />
+                </div>
+                <span className="text-xs">Help &amp; Guides</span>
+              </div>
+              <ChevronUp className={`w-3.5 h-3.5 transition-transform ${showHelpMenu ? 'rotate-180' : ''}`} />
             </button>
-          )}
-          <Link href="/dashboard/guides" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-            <BookOpen className="w-5 h-5" />
-            <span>User Guide</span>
-          </Link>
-          <Link href="/dashboard/support" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-            <LifeBuoy className="w-5 h-5" />
-            <span>Support</span>
-          </Link>
-          <Link href="/dashboard/settings?tab=billing" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-            <CreditCard className="w-5 h-5" />
+
+            {showHelpMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowHelpMenu(false)} />
+                <div className="absolute bottom-12 left-0 right-0 z-20 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-2xl p-2 space-y-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <button
+                    onClick={() => { setShowWelcomeGuide(true); setShowHelpMenu(false); }}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors w-full text-left cursor-pointer"
+                  >
+                    <Rocket className="w-4 h-4 text-indigo-600" />
+                    <span>Quick Start Guide</span>
+                  </button>
+                  {moduleHasTour(pathname?.split('/')[2]) && (
+                    <button
+                      onClick={() => {
+                        const moduleId = pathname?.split('/')[2];
+                        if (moduleId) {
+                          window.dispatchEvent(new CustomEvent(REPLAY_TOUR_EVENT, { detail: { moduleId } }));
+                        }
+                        setShowHelpMenu(false);
+                      }}
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors w-full text-left cursor-pointer"
+                    >
+                      <Compass className="w-4 h-4 text-emerald-600" />
+                      <span>Module Guide</span>
+                    </button>
+                  )}
+                  <Link
+                    href="/dashboard/guides"
+                    onClick={() => setShowHelpMenu(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <BookOpen className="w-4 h-4 text-blue-600" />
+                    <span>User Manual &amp; Docs</span>
+                  </Link>
+                  <Link
+                    href="/dashboard/support"
+                    onClick={() => setShowHelpMenu(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <LifeBuoy className="w-4 h-4 text-amber-600" />
+                    <span>Live Support &amp; Ticket</span>
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+
+          <Link href="/dashboard/settings?tab=billing" className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100/60 dark:hover:bg-slate-800/60 transition-colors">
+            <CreditCard className="w-4 h-4 text-gray-500" />
             <span>Billing &amp; Plan</span>
           </Link>
-          <Link href="/dashboard/settings" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-            <Settings className="w-5 h-5" />
+          <Link href="/dashboard/settings" className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100/60 dark:hover:bg-slate-800/60 transition-colors">
+            <Settings className="w-4 h-4 text-gray-500" />
             <span>Settings</span>
           </Link>
           <button
             onClick={async () => {
-              // Delete session from database before signing out
               try {
-                await fetch('/api/auth/logout-session', {
-                  method: 'POST',
-                  credentials: 'include',
-                });
-                // Continue with logout even if session deletion fails
+                await fetch('/api/auth/logout-session', { method: 'POST', credentials: 'include' });
               } catch (error) {
                 console.error('Error deleting session:', error);
               }
-              // Sign out and redirect to homepage
               await signOut({ callbackUrl: '/' });
             }}
-            className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors w-full text-left cursor-pointer"
+            className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors w-full text-left cursor-pointer"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4" />
             {sidebarOpen && <span>Sign Out</span>}
           </button>
         </div>
