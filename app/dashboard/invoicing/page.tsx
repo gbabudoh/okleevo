@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Plus, Search, Filter, Download, Eye, Edit, Send, Trash2,
-  DollarSign, Clock, CheckCircle, AlertCircle, MoreVertical, X,
+  DollarSign, PoundSterling, Clock, CheckCircle, AlertCircle, MoreVertical, X,
   Calendar, Mail, FileText,
   ChevronDown, Loader2, TableProperties, ArrowUpRight,
 } from 'lucide-react';
@@ -446,23 +446,23 @@ export default function InvoicingPage() {
       <div className="px-4 sm:px-6 py-5 space-y-4 sm:space-y-5">
 
         {/* ── STATS ─────────────────────────────────────────────────── */}
-        <div id="tour-invoicing-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div id="tour-invoicing-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
           {[
-            { label: 'Total Revenue', value: stats.total,   sub: `${invoices.length} invoices`,                                              Icon: DollarSign,  iconBg: 'bg-blue-600',    valCls: 'text-gray-900'     },
-            { label: 'Paid',          value: stats.paid,    sub: `${invoices.filter(i => i.status === 'paid').length} paid`,                  Icon: CheckCircle, iconBg: 'bg-emerald-500', valCls: 'text-emerald-600'  },
-            { label: 'Pending',       value: stats.pending, sub: `${invoices.filter(i => i.status === 'sent').length} awaiting`,              Icon: Clock,       iconBg: 'bg-amber-500',   valCls: 'text-amber-600'    },
-            { label: 'Overdue',       value: stats.overdue, sub: `${invoices.filter(i => i.status === 'overdue').length} need attention`,     Icon: AlertCircle, iconBg: 'bg-red-500',     valCls: 'text-red-600'      },
+            { label: 'Total Revenue', value: stats.total,   sub: `${invoices.length} invoices`,                                              Icon: PoundSterling, iconBg: 'bg-gradient-to-br from-indigo-500 to-blue-600 shadow-md shadow-indigo-100',    valCls: 'text-slate-900'     },
+            { label: 'Paid',          value: stats.paid,    sub: `${invoices.filter(i => i.status === 'paid').length} paid`,                  Icon: CheckCircle, iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md shadow-emerald-100', valCls: 'text-emerald-600'  },
+            { label: 'Pending',       value: stats.pending, sub: `${invoices.filter(i => i.status === 'sent').length} awaiting`,              Icon: Clock,       iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-md shadow-amber-100',   valCls: 'text-amber-600'    },
+            { label: 'Overdue',       value: stats.overdue, sub: `${invoices.filter(i => i.status === 'overdue').length} need attention`,     Icon: AlertCircle, iconBg: 'bg-gradient-to-br from-rose-500 to-red-600 shadow-md shadow-rose-100',     valCls: 'text-rose-600'      },
           ].map(({ label, value, sub, Icon, iconBg, valCls }) => (
-            <div key={label} className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+            <div key={label} className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all group">
               <div className="flex items-center justify-between mb-3">
-                <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center`}>
-                  <Icon className="w-4 h-4 text-white" />
+                <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center`}>
+                  <Icon className="w-5 h-5 text-white" />
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-gray-300" />
+                <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 transition-colors" />
               </div>
-              <p className="text-xs text-gray-400 font-medium mb-1">{label}</p>
-              <p className={`text-xl sm:text-2xl font-bold ${valCls} mb-0.5 leading-tight`}>£{value.toLocaleString()}</p>
-              <p className="text-[11px] text-gray-400">{sub}</p>
+              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">{label}</p>
+              <p className={`text-2xl sm:text-3xl font-extrabold ${valCls} mb-1 leading-tight tracking-tight`}>£{value.toLocaleString()}</p>
+              <p className="text-[11px] text-gray-400 font-medium">{sub}</p>
             </div>
           ))}
         </div>
