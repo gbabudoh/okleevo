@@ -13,9 +13,9 @@ export const GET = withMultiTenancy(async (req, { user }) => {
   // CRITICAL: Scope the room name to the business ID for isolation
   const scopedRoom = `biz_${user.businessId}_${room}`;
 
-  const apiKey = process.env.LIVEKIT_API_KEY;
-  const apiSecret = process.env.LIVEKIT_API_SECRET;
-  const wsUrl = process.env.LIVEKIT_URL;
+  const apiKey = (process.env.LIVEKIT_API_KEY || '').replace(/^key=/, '').trim();
+  const apiSecret = (process.env.LIVEKIT_API_SECRET || '').trim();
+  const wsUrl = (process.env.LIVEKIT_URL || '').trim();
 
   if (!apiKey || !apiSecret || !wsUrl) {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
