@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   FileText, Plus, Download, Calculator, Calendar, DollarSign, TrendingUp, AlertCircle, CheckCircle,
   Clock, Building2, User, Users, Briefcase, BarChart3, Shield, Send, X, Receipt, Home, History,
-  ShieldCheck, Globe, ExternalLink, Loader2
+  ShieldCheck, Globe, ExternalLink, Loader2, ArrowUpRight
 } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
@@ -650,30 +650,62 @@ export default function TaxationPage() {
 
       {/* ── Stats ──────────────────────────────────────────────────── */}
       <div className="px-4 sm:px-6 pt-4">
-        <div id="tour-taxation-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-taxation-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Corporation Tax', value: `£${taxSummary.corporationTax.toLocaleString()}`, icon: Building2,   bg: 'bg-blue-500'    },
-            { label: 'VAT Liability',   value: `£${taxSummary.vatLiability.toLocaleString()}`,   icon: Receipt,      bg: 'bg-purple-500'  },
-            { label: 'PAYE & NI',       value: `£${taxSummary.payeNI.toLocaleString()}`,          icon: Users,        bg: 'bg-emerald-500' },
-            { label: 'Outstanding',     value: `£${taxSummary.taxOutstanding.toLocaleString()}`,  icon: AlertCircle,  bg: 'bg-orange-500'  },
-          ].map(({ label, value, icon: Icon, bg }) => (
-            <div key={label} className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-              <div className={`p-2 ${bg} rounded-xl w-fit mb-2`}>
-                <Icon className="w-4 h-4 text-white" />
+            {
+              label: 'Corporation Tax',
+              value: `£${taxSummary.corporationTax.toLocaleString()}`,
+              icon: Building2,
+              bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600 shadow-md shadow-indigo-100 dark:shadow-none',
+            },
+            {
+              label: 'VAT Liability',
+              value: `£${taxSummary.vatLiability.toLocaleString()}`,
+              icon: Receipt,
+              bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600 shadow-md shadow-purple-100 dark:shadow-none',
+            },
+            {
+              label: 'PAYE & NI',
+              value: `£${taxSummary.payeNI.toLocaleString()}`,
+              icon: Users,
+              bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md shadow-emerald-100 dark:shadow-none',
+            },
+            {
+              label: 'Outstanding',
+              value: `£${taxSummary.taxOutstanding.toLocaleString()}`,
+              icon: AlertCircle,
+              bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-md shadow-amber-100 dark:shadow-none',
+            },
+          ].map(({ label, value, icon: Icon, bgGrad }) => (
+            <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className={`p-2.5 ${bgGrad} rounded-xl w-fit mb-3 group-hover:scale-105 transition-transform`}>
+                <Icon className="w-4.5 h-4.5 text-white" />
               </div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
-              <p className="text-lg sm:text-xl font-bold text-gray-900 leading-tight mt-0.5">{value}</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{value}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── HMRC Disclaimer Banner ── */}
-      <div id="tour-taxation-disclaimer" className="mx-4 sm:mx-6 mt-3 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-800 leading-relaxed">
-          <strong>Okleevo is not directly connected to HMRC.</strong> This tool helps you calculate and prepare your tax figures. Download your reports and share them with your accountant for official submission to HMRC.
-        </p>
+      <div id="tour-taxation-disclaimer" className="mx-4 sm:mx-6 mt-3.5 bg-gradient-to-r from-amber-50/90 via-orange-50/50 to-amber-50/90 dark:from-slate-800/80 dark:to-slate-800/40 border border-amber-200/80 dark:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-start gap-3">
+          <div className="p-2 bg-amber-100 dark:bg-amber-900/60 rounded-xl text-amber-700 dark:text-amber-300 shrink-0 mt-0.5">
+            <AlertCircle className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <p className="text-xs font-extrabold text-amber-950 dark:text-amber-200">UK HMRC Compliance Notice</p>
+              <span className="px-2 py-0.2 bg-amber-100 text-amber-800 dark:bg-amber-900/80 dark:text-amber-200 text-[9px] font-bold rounded-full border border-amber-300/60">
+                ℹ️ Accountant &amp; HMRC Ready
+              </span>
+            </div>
+            <p className="text-xs text-amber-900/80 dark:text-gray-300 leading-relaxed">
+              Okleevo calculates statutory tax figures for your UK SME. Download your generated tax packs and share with your chartered accountant for official HMRC submission.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* ── Tab Bar ──────────────────────────────────────────────────── */}
@@ -709,56 +741,71 @@ export default function TaxationPage() {
           {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Upcoming Tax Obligations */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-              {loading ? 'Loading...' : 'Upcoming Tax Obligations'}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs">
+            <h2 className="text-lg font-extrabold text-gray-900 dark:text-white mb-5 flex items-center gap-2 tracking-tight">
+              <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              {loading ? 'Loading Obligations...' : 'Upcoming UK Statutory Tax Obligations'}
             </h2>
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 gap-4">
-                <Loader2 className="w-10 h-10 text-green-600 animate-spin" />
-                <p className="text-gray-500 font-medium">Calculating your tax position...</p>
+                <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+                <p className="text-gray-500 font-medium text-xs">Calculating your tax position...</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {taxObligations.length === 0 ? (
-                  <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                    <p className="text-gray-500">No upcoming tax obligations found.</p>
+                  <div className="text-center py-10 bg-gray-50 dark:bg-slate-800/60 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
+                    <p className="text-gray-500 text-xs font-medium">No upcoming tax obligations found.</p>
                   </div>
                 ) : (
-                  taxObligations.map((obligation) => (
-                    <div key={obligation.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 hover:shadow-lg transition-all cursor-pointer">
-                      <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-lg ${
-                          obligation.status === 'paid' ? 'bg-green-100' :
-                          obligation.status === 'overdue' ? 'bg-red-100' : 'bg-orange-100'
-                        }`}>
-                          <FileText className={`w-5 h-5 ${
-                            obligation.status === 'paid' ? 'text-green-600' :
-                            obligation.status === 'overdue' ? 'text-red-600' : 'text-orange-600'
-                          }`} />
+                  taxObligations.map((obligation) => {
+                    const isCT = obligation.type.toLowerCase().includes('corporation');
+                    const isVAT = obligation.type.toLowerCase().includes('vat');
+                    const Icon = isCT ? Building2 : isVAT ? Receipt : Users;
+                    const iconBg = isCT ? 'from-blue-500 to-indigo-600' : isVAT ? 'from-purple-500 to-indigo-600' : 'from-emerald-500 to-teal-600';
+                    const targetTab = isCT ? 'corporation-tax' : isVAT ? 'vat' : 'paye';
+
+                    return (
+                      <div
+                        key={obligation.id}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50/80 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-800 rounded-2xl hover:bg-gray-100/80 dark:hover:bg-slate-800 transition-all group"
+                      >
+                        <div className="flex items-center gap-3.5">
+                          <div className={`p-3 bg-gradient-to-br ${iconBg} rounded-xl text-white shadow-xs group-hover:scale-105 transition-transform`}>
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-extrabold text-sm text-gray-900 dark:text-white tracking-tight">{obligation.type}</p>
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                                obligation.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300' :
+                                obligation.status === 'overdue' ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300' :
+                                'bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300'
+                              }`}>
+                                {obligation.status}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{obligation.description}</p>
+                            <p className="text-[11px] font-medium text-gray-400 flex items-center gap-1 mt-1">
+                              <Clock className="w-3 h-3 text-indigo-500" />
+                              Due: <span className="font-semibold text-gray-700 dark:text-gray-300">{obligation.dueDate.toLocaleDateString('en-GB')}</span> • {obligation.period}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">{obligation.type}</p>
-                          <p className="text-sm text-gray-600">{obligation.description}</p>
-                          <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                            <Clock className="w-3 h-3" />
-                            Due: {obligation.dueDate.toLocaleDateString()} • {obligation.period}
-                          </p>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-200/60 dark:border-slate-700">
+                          <p className="text-lg font-black text-gray-900 dark:text-white tracking-tight">£{obligation.amount.toLocaleString()}</p>
+                          <button
+                            onClick={() => setActiveTab(targetTab)}
+                            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition-all shadow-2xs flex items-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap"
+                          >
+                            <span>Manage</span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between sm:justify-end sm:text-right">
-                        <p className="text-lg font-bold text-gray-900">£{obligation.amount.toLocaleString()}</p>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          obligation.status === 'paid' ? 'bg-green-100 text-green-700' :
-                          obligation.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                          'bg-orange-100 text-orange-700'
-                        }`}>
-                          {obligation.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             )}
