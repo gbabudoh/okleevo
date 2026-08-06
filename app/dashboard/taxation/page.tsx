@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   FileText, Plus, Download, Calculator, Calendar, DollarSign, TrendingUp, AlertCircle, CheckCircle,
   Clock, Building2, User, Users, Briefcase, BarChart3, Shield, Send, X, Receipt, Home, History,
-  ShieldCheck, Globe, ExternalLink, Loader2, ArrowUpRight
+  ShieldCheck, Globe, ExternalLink, Loader2, ArrowUpRight, FileCheck
 } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
@@ -868,78 +868,192 @@ export default function TaxationPage() {
       )}
 
       {activeTab === 'corporation-tax' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Corporation Tax Calculator</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-5">
+          {/* Executive Calculator Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Accounting Period</label>
-                <select
-                  value={ctPeriod}
-                  onChange={(e) => setCtPeriod(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-colors cursor-pointer"
-                >
-                  {ctPeriodOptions.map((opt) => <option key={opt}>{opt}</option>)}
-                </select>
+                <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  UK Corporation Tax (CT600) Calculator
+                </h2>
+                <p className="text-xs text-gray-400 mt-0.5">Calculate UK limited company tax liability and marginal relief post-April 2023</p>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Taxable Profit (£)</label>
-                <input
-                  type="number"
-                  placeholder="50000"
-                  value={ctProfit}
-                  onChange={(e) => setCtProfit(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-colors"
-                />
+              <span className="px-3 py-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 text-xs font-extrabold rounded-full border border-indigo-200/60 w-fit">
+                FY {currentCtFinancialYear} Rules
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-wider">Accounting Period</label>
+                  <select
+                    value={ctPeriod}
+                    onChange={(e) => setCtPeriod(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors cursor-pointer"
+                  >
+                    {ctPeriodOptions.map((opt) => <option key={opt}>{opt}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Taxable Company Profit (£)</label>
+                    <div className="flex items-center gap-1">
+                      {[10000, 50000, 100000, 250000].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setCtProfit(preset.toString())}
+                          className="px-2 py-0.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                        >
+                          £{(preset / 1000).toFixed(0)}k
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input
+                    type="number"
+                    placeholder="50000"
+                    value={ctProfit}
+                    onChange={(e) => setCtProfit(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-extrabold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Statutory Deadlines Summary */}
+              <div className="bg-gray-50/90 dark:bg-slate-800/60 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 space-y-3 flex flex-col justify-between">
+                <div>
+                  <p className="text-xs font-extrabold text-gray-900 dark:text-white flex items-center gap-1.5 mb-2">
+                    <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    Statutory UK CT Deadlines
+                  </p>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                      <span className="text-gray-500 dark:text-gray-400 font-medium">HMRC Tax Payment Due (9m + 1d):</span>
+                      <span className="font-extrabold text-indigo-600 dark:text-indigo-400">{ctPaymentDeadline}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                      <span className="text-gray-500 dark:text-gray-400 font-medium">CT600 Return Filing Due (12m):</span>
+                      <span className="font-extrabold text-gray-900 dark:text-white">{ctFilingDeadline}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-gray-400 leading-tight">
+                  Rate applied: <strong className="text-gray-700 dark:text-gray-200">{ctRateLabel}</strong>
+                </p>
               </div>
             </div>
-            <div className="mt-6 p-6 bg-green-50 rounded-xl border border-green-100">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <p className="text-sm text-green-700 font-medium mb-1">Estimated Corporation Tax</p>
-                  <p className="text-2xl sm:text-4xl font-bold text-green-900">£{ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                  <p className="text-xs text-green-700 mt-1">At {ctRateLabel}</p>
-                </div>
-                <button
-                  onClick={() => setShowCT600Modal(true)}
-                  className="w-full sm:w-auto px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors cursor-pointer text-center"
-                >
-                  Generate CT600
-                </button>
+
+            {/* Estimated Tax Result Banner */}
+            <div className="bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-700 rounded-2xl p-5 sm:p-6 text-white shadow-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold text-indigo-100 uppercase tracking-wider mb-1">Estimated Corporation Tax Liability</p>
+                <p className="text-3xl sm:text-4xl font-black tracking-tight">£{ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                <p className="text-xs text-indigo-200 mt-1">Effective Rate: {ctRateLabel}</p>
               </div>
+
+              <button
+                onClick={() => setShowCT600Modal(true)}
+                className="px-6 py-3 bg-white hover:bg-gray-100 text-indigo-950 font-extrabold text-xs rounded-xl transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap"
+              >
+                <FileCheck className="w-4 h-4 text-indigo-600" />
+                Generate CT600 Computation (PDF)
+              </button>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-bold text-gray-900 mb-4">Corporation Tax Rates {currentCtFinancialYear}</h3>
+          {/* Dynamic HMRC Tax Bracket Visualizer */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
+            <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+              <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              UK Corporation Tax Rate Brackets ({currentCtFinancialYear})
+            </h3>
+
             <div className="space-y-3">
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 hover:border-blue-200 transition-colors cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-blue-900">Small Profits Rate</p>
-                    <p className="text-sm text-blue-700">Profits up to £50,000</p>
+              {/* Small Profits Rate */}
+              {(() => {
+                const isMatch = ctProfitNumber > 0 && ctProfitNumber <= 50000;
+                return (
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    isMatch
+                      ? "bg-emerald-50/90 border-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-700 shadow-xs"
+                      : "bg-blue-50/50 border-blue-100/80 dark:bg-slate-800/40 dark:border-slate-800"
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-extrabold text-sm text-gray-900 dark:text-white">Small Profits Rate</p>
+                          {isMatch && (
+                            <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-extrabold rounded-full">
+                              YOUR BRACKET ✓
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Profits up to £50,000</p>
+                      </div>
+                      <span className="text-2xl font-black text-blue-600 dark:text-blue-400">19%</span>
+                    </div>
                   </div>
-                  <span className="text-2xl font-bold text-blue-900">19%</span>
-                </div>
-              </div>
-              <div className="p-4 bg-purple-50 rounded-lg border border-purple-100 hover:border-purple-200 transition-colors cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-purple-900">Marginal Relief</p>
-                    <p className="text-sm text-purple-700">Profits £50,001 - £250,000</p>
+                );
+              })()}
+
+              {/* Marginal Relief */}
+              {(() => {
+                const isMatch = ctProfitNumber > 50000 && ctProfitNumber < 250000;
+                return (
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    isMatch
+                      ? "bg-purple-50/90 border-purple-300 dark:bg-purple-950/60 dark:border-purple-700 shadow-xs"
+                      : "bg-purple-50/40 border-purple-100/80 dark:bg-slate-800/40 dark:border-slate-800"
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-extrabold text-sm text-gray-900 dark:text-white">Marginal Relief Taper</p>
+                          {isMatch && (
+                            <span className="px-2 py-0.5 bg-purple-600 text-white text-[10px] font-extrabold rounded-full">
+                              YOUR BRACKET ✓
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Profits between £50,001 and £250,000 (Tapered 19% - 25%)</p>
+                      </div>
+                      <span className="text-2xl font-black text-purple-600 dark:text-purple-400">19-25%</span>
+                    </div>
                   </div>
-                  <span className="text-2xl font-bold text-purple-900">19-25%</span>
-                </div>
-              </div>
-              <div className="p-4 bg-red-50 rounded-lg border border-red-100 hover:border-red-200 transition-colors cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-red-900">Main Rate</p>
-                    <p className="text-sm text-red-700">Profits over £250,000</p>
+                );
+              })()}
+
+              {/* Main Rate */}
+              {(() => {
+                const isMatch = ctProfitNumber >= 250000;
+                return (
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    isMatch
+                      ? "bg-rose-50/90 border-rose-300 dark:bg-rose-950/60 dark:border-rose-700 shadow-xs"
+                      : "bg-rose-50/40 border-rose-100/80 dark:bg-slate-800/40 dark:border-slate-800"
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-extrabold text-sm text-gray-900 dark:text-white">Main Rate</p>
+                          {isMatch && (
+                            <span className="px-2 py-0.5 bg-rose-600 text-white text-[10px] font-extrabold rounded-full">
+                              YOUR BRACKET ✓
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Profits over £250,000</p>
+                      </div>
+                      <span className="text-2xl font-black text-rose-600 dark:text-rose-400">25%</span>
+                    </div>
                   </div>
-                  <span className="text-2xl font-bold text-red-900">25%</span>
-                </div>
-              </div>
+                );
+              })()}
             </div>
           </div>
         </div>
