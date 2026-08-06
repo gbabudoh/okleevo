@@ -1107,79 +1107,84 @@ export default function AccountingPage() {
         {/* JOURNAL */}
         {activeTab === "journal" && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-4 sm:px-5 py-4 border-b border-gray-100">
+            <div className="px-4 sm:px-5 py-4 border-b border-gray-100 dark:border-slate-800">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-bold text-gray-900">Journal Entries</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">Double-entry bookkeeping ledger</p>
+                  <h2 className="text-sm font-extrabold text-gray-900 dark:text-white">Journal Entries</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Double-entry bookkeeping audit trail</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="relative hidden sm:block">
                     <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
-                      placeholder="Search…"
+                      placeholder="Search entries…"
                       value={journalSearchQuery}
                       onChange={(e) => setJournalSearchQuery(e.target.value)}
-                      className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none w-40 transition-all"
+                      className="pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none w-44 transition-all text-gray-900 dark:text-white"
                     />
                   </div>
                   <div className="relative">
                     <button
                       onClick={() => setShowJournalFilterMenu((v) => !v)}
-                      className={`p-2 sm:px-3 sm:py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium ${
-                        journalStatusFilter !== "all" ? "bg-blue-50 text-blue-700" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                      className={`p-2 sm:px-3 sm:py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-xs font-bold ${
+                        journalStatusFilter !== "all" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300" : "bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300"
                       }`}
                     >
                       <Filter className="w-4 h-4" />
-                      <span className="hidden sm:inline capitalize">{journalStatusFilter === "all" ? "Filter" : journalStatusFilter}</span>
+                      <span className="hidden sm:inline capitalize">{journalStatusFilter === "all" ? "Status Filter" : journalStatusFilter}</span>
                     </button>
                     {showJournalFilterMenu && (
                       <>
                         <div className="fixed inset-0 z-40" onClick={() => setShowJournalFilterMenu(false)} />
-                        <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 overflow-hidden">
+                        <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 py-1 z-50 overflow-hidden">
                           {(["all", "draft", "pending", "posted", "void"] as const).map((s) => (
                             <button
                               key={s}
                               onClick={() => { setJournalStatusFilter(s); setShowJournalFilterMenu(false); }}
-                              className={`w-full px-4 py-2 text-left text-sm capitalize cursor-pointer transition-colors ${journalStatusFilter === s ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
+                              className={`w-full px-4 py-2 text-left text-xs capitalize cursor-pointer transition-colors ${journalStatusFilter === s ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 font-bold" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800"}`}
                             >
-                              {s === "all" ? "All statuses" : s}
+                              {s === "all" ? "All Statuses" : s}
                             </button>
                           ))}
                         </div>
                       </>
                     )}
                   </div>
-                  <button onClick={() => setShowNewEntryModal(true)}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer">
-                    <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline">New Entry</span>
-                    <span className="sm:hidden">Add</span>
-                  </button>
                 </div>
               </div>
             </div>
 
             {filteredJournalEntries.length === 0 ? (
-              <div className="text-center py-16 px-4">
-                <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <FileText className="w-7 h-7 text-gray-400" />
-                </div>
+              <div className="py-12 px-4">
                 {recentTransactions.length === 0 ? (
-                  <>
-                    <h3 className="text-sm font-bold text-gray-900 mb-1">No Journal Entries Yet</h3>
-                    <p className="text-xs text-gray-400 mb-5">Start recording transactions with double-entry bookkeeping</p>
-                    <button onClick={() => setShowNewEntryModal(true)}
-                      className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center gap-2 cursor-pointer">
-                      <Plus className="w-4 h-4" /> Create First Entry
-                    </button>
-                  </>
+                  <div className="bg-gradient-to-br from-indigo-50/90 via-blue-50/50 to-indigo-50/90 dark:from-slate-800/80 dark:to-slate-800/40 border border-indigo-100 dark:border-slate-700 rounded-3xl p-6 sm:p-8 max-w-xl mx-auto text-center space-y-4 shadow-2xs">
+                    <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/60 rounded-2xl flex items-center justify-center mx-auto text-indigo-600 dark:text-indigo-400">
+                      <FileText className="w-7 h-7" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">No Journal Entries Posted Yet</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Record balanced debits &amp; credits for UK SME double-entry accounting.
+                      </p>
+                    </div>
+                    <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <button
+                        onClick={() => setShowNewEntryModal(true)}
+                        className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                      >
+                        <Plus className="w-4 h-4" /> Create First Entry
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  <>
-                    <h3 className="text-sm font-bold text-gray-900 mb-1">No matching entries</h3>
-                    <p className="text-xs text-gray-400">Try a different search term or status filter</p>
-                  </>
+                  <div className="text-center py-10">
+                    <div className="w-12 h-12 bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <FileText className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">No matching journal entries</h3>
+                    <p className="text-xs text-gray-400">Try adjusting your search terms or status filter</p>
+                  </div>
                 )}
               </div>
             ) : (
