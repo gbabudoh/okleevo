@@ -12,6 +12,9 @@ import {
   X, Send as SendActionIcon, PenSquare, Upload,
   UserPlus, Receipt, LifeBuoy, Tag, Check
 } from 'lucide-react';
+import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
+import { mailboxTourSteps } from './tour-steps';
 
 const MAIL_LABELS = [
   { color: 'bg-pink-500', bgSoft: 'bg-pink-50', text: 'text-pink-600', label: 'Marketing' },
@@ -273,9 +276,10 @@ export default function MailboxPage() {
       className="flex flex-col bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm"
       style={{ height: 'calc(100vh - 120px)' }}
     >
+      <TourProvider moduleId="mailbox" steps={mailboxTourSteps} />
 
       {/* Header */}
-      <div className="shrink-0 border-b border-gray-100 bg-white px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
+      <div id="tour-mailbox-header" className="shrink-0 border-b border-gray-100 bg-white px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           {selectedMessage ? (
             <button
@@ -289,9 +293,21 @@ export default function MailboxPage() {
               <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
                 <Mail className="w-5 h-5 text-white" />
               </div>
-              <div className="min-w-0">
-                <h1 className="text-base font-bold text-gray-900 leading-tight">Okleevo Mail Engine</h1>
-                <p className="text-xs text-gray-400 hidden sm:block">Your business email, all in one place</p>
+              <div className="min-w-0 flex items-center gap-3">
+                <div>
+                  <h1 className="text-base font-bold text-gray-900 leading-tight">Okleevo Mail Engine</h1>
+                  <p className="text-xs text-gray-400 hidden sm:block">Your business email, all in one place</p>
+                </div>
+                <ModuleGuideBanner
+                  moduleId="mailbox"
+                  moduleName="Mailbox Engine"
+                  summary="Send, receive, track, and organize inbound and outbound business emails securely."
+                  tips={[
+                    "Compose rich emails with attachments & verified Postal server domains",
+                    "Organize mail by Inbox, Sent, Drafts, Archived, and Spam",
+                    "Track real-time delivery status and open notifications"
+                  ]}
+                />
               </div>
             </>
           )}
@@ -316,6 +332,7 @@ export default function MailboxPage() {
             <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
           </button>
           <button
+            id="tour-mailbox-compose"
             onClick={() => { setComposeData({ to: '', subject: '', content: '' }); setComposeAttachments([]); setShowCompose(true); }}
             className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
           >
@@ -381,7 +398,7 @@ export default function MailboxPage() {
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* Desktop Sidebar */}
-        <div className="hidden lg:flex w-52 border-r border-gray-100 bg-gray-50/40 flex-col p-3 gap-0.5 shrink-0">
+        <div id="tour-mailbox-folders" className="hidden lg:flex w-52 border-r border-gray-100 bg-gray-50/40 flex-col p-3 gap-0.5 shrink-0">
           {folders.map((folder) => {
             const Icon = folder.icon;
             const isActive = selectedFolder === folder.id;
