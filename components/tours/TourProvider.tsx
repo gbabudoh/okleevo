@@ -73,14 +73,13 @@ export default function TourProvider({ moduleId, steps }: TourProviderProps) {
       scrollToFirstStep
       onEvent={handleEvent}
       tooltipComponent={SleekTooltip}
-      spotlightClicks={true}
+      options={{
+        hideOverlay: true,
+        blockTargetInteraction: false,
+        primaryColor: '#fc6813',
+        zIndex: 10000,
+      }}
       styles={{
-        options: {
-          disableOverlay: true,
-          showProgress: true,
-          primaryColor: '#fc6813',
-          zIndex: 10000,
-        },
         overlay: {
           display: 'none',
         },
