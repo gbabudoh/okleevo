@@ -750,11 +750,17 @@ export default function InvoicingPage() {
           <ModalHandle />
           {/* Header */}
           <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-            <div>
-              <h2 className="font-bold text-gray-900 flex items-center gap-2 text-base">
-                <Plus className="w-5 h-5 text-blue-600" /> New Invoice
-              </h2>
-              <p className="text-xs text-gray-400 mt-0.5">Fill in the details below</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-950/60 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-extrabold text-gray-900 text-base">New Invoice</h2>
+                  <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold uppercase tracking-wider">Drafting</span>
+                </div>
+                <p className="text-xs text-gray-400">Fill in client details and line items below</p>
+              </div>
             </div>
             <button onClick={closeNewModal} className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
               <X className="w-4 h-4 text-gray-500" />
@@ -762,16 +768,16 @@ export default function InvoicingPage() {
           </div>
 
           {/* Body */}
-          <div className="overflow-y-visible sm:overflow-y-auto sm:flex-1 p-3 pb-12 sm:p-4 space-y-3 bg-gray-50/40">
+          <div className="overflow-y-visible sm:overflow-y-auto sm:flex-1 p-4 sm:p-6 space-y-4 bg-gray-50/40">
             {/* Client details */}
-            <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-100">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Client Details</p>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 space-y-4 shadow-2xs">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Client &amp; Date Details</p>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
                 <div className="sm:col-span-2">
                   <label className={labelCls}>Client Name *</label>
                   <input type="text" value={newInvoice.client}
                     onChange={e => setNewInvoice({ ...newInvoice, client: e.target.value })}
-                    className={inputCls} placeholder="Acme Corp" />
+                    className={inputCls} placeholder="e.g. Acme Corp or John Doe" />
                 </div>
                 <div className="sm:col-span-2">
                   <label className={labelCls}>Client Email</label>
@@ -792,7 +798,7 @@ export default function InvoicingPage() {
                     className={inputCls} />
                 </div>
                 <div className="sm:col-span-4">
-                  <label className={labelCls}>Project</label>
+                  <label className={labelCls}>Associated Project</label>
                   {creatingProject ? (
                     <div className="flex items-center gap-2">
                       <input
@@ -805,7 +811,7 @@ export default function InvoicingPage() {
                         className={inputCls}
                       />
                       <button type="button" onClick={handleCreateProject} disabled={savingNewProject || !newProjectName.trim()}
-                        className="shrink-0 h-[38px] px-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold cursor-pointer transition-colors flex items-center justify-center">
+                        className="shrink-0 h-[38px] px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold cursor-pointer transition-colors flex items-center justify-center">
                         {savingNewProject ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create'}
                       </button>
                       <button type="button" onClick={() => { setCreatingProject(false); setNewProjectName(''); }}
@@ -820,9 +826,9 @@ export default function InvoicingPage() {
                         setNewInvoice({ ...newInvoice, projectId: e.target.value });
                       }}
                       className={`${inputCls} appearance-none cursor-pointer`}>
-                      <option value="">No project</option>
+                      <option value="">No project (General Invoice)</option>
                       {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                      <option value="__new__">+ New project…</option>
+                      <option value="__new__">+ Create new project…</option>
                     </select>
                   )}
                 </div>
@@ -830,23 +836,23 @@ export default function InvoicingPage() {
             </div>
 
             {/* Line items */}
-            <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Line Items</p>
+            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 space-y-4 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Line Items</p>
                 <button
                   onClick={() => setNewInvoice({ ...newInvoice, items: [...newInvoice.items, { description: '', quantity: 1, rate: 0 }] })}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-xl text-xs font-semibold hover:bg-blue-100 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Item
                 </button>
               </div>
 
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {newInvoice.items.map((item, idx) => (
-                  <div key={idx} className="p-2.5 bg-gray-50 rounded-xl border border-gray-100 space-y-2 sm:space-y-0 sm:flex sm:items-end sm:gap-3">
+                  <div key={idx} className="p-3 bg-gray-50/70 rounded-2xl border border-gray-100 space-y-2.5 sm:space-y-0 sm:flex sm:items-end sm:gap-3">
                     {/* Description */}
                     <div className="flex-1 min-w-0">
-                      <label className="block text-xs text-gray-400 mb-1">Description</label>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">Description</label>
                       <input
                         type="text"
                         value={item.description}
@@ -858,7 +864,7 @@ export default function InvoicingPage() {
                     {/* Qty / Rate / Total / Remove */}
                     <div className="grid grid-cols-3 gap-2 items-end sm:flex sm:items-end sm:gap-3 sm:flex-initial">
                       <div className="sm:w-16">
-                        <label className="block text-xs text-gray-400 mb-1">Qty</label>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">Qty</label>
                         <input
                           type="number" min="1"
                           value={item.quantity}
@@ -867,7 +873,7 @@ export default function InvoicingPage() {
                         />
                       </div>
                       <div className="sm:w-24">
-                        <label className="block text-xs text-gray-400 mb-1">Rate (£)</label>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">Rate (£)</label>
                         <input
                           type="number" min="0" step="0.01"
                           value={item.rate}
@@ -877,17 +883,17 @@ export default function InvoicingPage() {
                       </div>
                       <div className="flex items-end gap-2 col-span-1 sm:col-auto sm:w-36">
                         <div className="flex-1">
-                          <label className="block text-xs text-gray-400 mb-1">Total</label>
-                          <div className="w-full bg-gray-100 border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold text-gray-700 h-[38px] flex items-center">
+                          <label className="block text-xs font-medium text-gray-400 mb-1">Subtotal</label>
+                          <div className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold text-gray-800 h-[38px] flex items-center">
                             £{(item.quantity * item.rate).toFixed(2)}
                           </div>
                         </div>
                         {newInvoice.items.length > 1 && (
                           <button
                             onClick={() => setNewInvoice({ ...newInvoice, items: newInvoice.items.filter((_, i) => i !== idx) })}
-                            className="w-9 h-9 flex items-center justify-center hover:bg-red-50 rounded-xl transition-colors cursor-pointer shrink-0"
+                            className="w-9 h-9 flex items-center justify-center bg-rose-50 hover:bg-rose-100 rounded-xl text-rose-500 transition-colors cursor-pointer shrink-0"
                           >
-                            <Trash2 className="w-4 h-4 text-red-400" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                       </div>
@@ -897,9 +903,9 @@ export default function InvoicingPage() {
               </div>
 
               {/* Total */}
-              <div className="mt-3 flex items-center justify-between px-3.5 py-2 bg-blue-50 border border-blue-100 rounded-xl">
-                <span className="text-sm font-semibold text-gray-700">Invoice Total</span>
-                <span className="text-2xl font-bold text-blue-600">£{newInvoiceTotal.toFixed(2)}</span>
+              <div className="mt-4 flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-indigo-50/80 border border-indigo-100 rounded-2xl">
+                <span className="text-sm font-bold text-gray-700">Invoice Total</span>
+                <span className="text-2xl font-black text-indigo-600 tracking-tight">£{newInvoiceTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -909,7 +915,7 @@ export default function InvoicingPage() {
             <CancelBtn onClick={closeNewModal} />
             <button
               onClick={handleCreateInvoice}
-              className="flex-[2] py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
+              className="flex-[2] py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
             >
               <FileText className="w-4 h-4" /> Create Invoice
             </button>
