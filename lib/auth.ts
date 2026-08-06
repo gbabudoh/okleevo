@@ -158,19 +158,8 @@ const config = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
-  cookies: {
-    sessionToken: {
-      name: `authjs.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 30 * 24 * 60 * 60, // 30 days
-      },
-    },
-  },
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "tz1wswwlybqHRgqrUp97A1SYKmLAqIIpjovNlBr87b4=",
+  trustHost: true,
 } satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
