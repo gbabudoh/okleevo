@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Joyride, STATUS, type EventData, type Step } from 'react-joyride';
 
+import { SleekTooltip } from './SleekTooltip';
+
 interface TourProviderProps {
   /** Matches the module id in lib/module-catalogue.ts — used for the server-side seen-tours record and the replay-tour event. */
   moduleId: string;
@@ -70,10 +72,18 @@ export default function TourProvider({ moduleId, steps }: TourProviderProps) {
       continuous
       scrollToFirstStep
       onEvent={handleEvent}
-      options={{
-        showProgress: true,
-        primaryColor: '#4f46e5',
-        zIndex: 10000,
+      tooltipComponent={SleekTooltip}
+      spotlightClicks={true}
+      styles={{
+        options: {
+          disableOverlay: true,
+          showProgress: true,
+          primaryColor: '#fc6813',
+          zIndex: 10000,
+        },
+        overlay: {
+          display: 'none',
+        },
       }}
     />
   );

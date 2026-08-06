@@ -10,6 +10,7 @@ import {
 import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
 import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { taxationTourSteps } from './tour-steps';
 
 interface TaxObligation {
@@ -608,9 +609,21 @@ export default function TaxationPage() {
             <div className="p-2 bg-emerald-600 rounded-xl shrink-0">
               <FileText className="w-5 h-5 text-white" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">UK Taxation</h1>
-              <p className="text-xs text-gray-400 hidden sm:block">Prepare &amp; download tax reports for your accountant</p>
+            <div className="min-w-0 flex items-center gap-3">
+              <div>
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">UK Taxation</h1>
+                <p className="text-xs text-gray-400 hidden sm:block">Prepare &amp; download tax reports for your accountant</p>
+              </div>
+              <ModuleGuideBanner
+                moduleId="taxation"
+                moduleName="UK Taxation"
+                summary="Manage Corporation Tax, Self Assessment, PAYE & NI, VAT, and Tax Deadlines."
+                tips={[
+                  "Export Self Assessment & Corporation Tax computation reports",
+                  "Track HMRC filing deadlines in the Tax Calendar",
+                  "Prepare digital records for Making Tax Digital (MTD)"
+                ]}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">

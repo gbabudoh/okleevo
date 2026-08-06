@@ -11,6 +11,7 @@ import { jsPDF } from 'jspdf';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { invoicingTourSteps } from './tour-steps';
 
 /* ── Interfaces ──────────────────────────────────────────────────── */
@@ -377,9 +378,21 @@ export default function InvoicingPage() {
             <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
               <FileText className="w-5 h-5 text-white" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Invoicing</h1>
-              <p className="text-[11px] text-gray-400 hidden sm:block">Create, manage and track invoices</p>
+            <div className="min-w-0 flex items-center gap-3">
+              <div>
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Invoicing</h1>
+                <p className="text-[11px] text-gray-400 hidden sm:block">Create, manage and track invoices</p>
+              </div>
+              <ModuleGuideBanner
+                moduleId="invoicing"
+                moduleName="Invoicing"
+                summary="Track revenue, manage client invoices, and handle payments effortlessly."
+                tips={[
+                  "Quick search by client or invoice number",
+                  "Filter invoices by status (Paid, Sent, Overdue)",
+                  "Export reports to PDF or CSV instantly"
+                ]}
+              />
             </div>
           </div>
 

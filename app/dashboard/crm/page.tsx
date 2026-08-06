@@ -11,6 +11,7 @@ import {
 import StatusModal from '@/components/StatusModal';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { crmTourSteps } from './tour-steps';
 
 interface Client {
@@ -728,9 +729,21 @@ export default function CRMPage() {
             <div className="p-2 bg-blue-600 rounded-xl shrink-0">
               <Users className="w-5 h-5 text-white" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">CRM</h1>
-              <p className="text-[11px] text-gray-400 font-medium hidden sm:block">Manage relationships & track pipeline</p>
+            <div className="min-w-0 flex items-center gap-3">
+              <div>
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">CRM</h1>
+                <p className="text-[11px] text-gray-400 font-medium hidden sm:block">Manage relationships & track pipeline</p>
+              </div>
+              <ModuleGuideBanner
+                moduleId="crm"
+                moduleName="CRM & Pipeline"
+                summary="Track deals, manage client communications, and build lasting customer relationships."
+                tips={[
+                  "Toggle between Contacts list and Pipeline Deal stages",
+                  "Send individual or bulk emails directly",
+                  "Filter by Lead, Active, or Customer status"
+                ]}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">

@@ -518,7 +518,7 @@ export default function DashboardLayout({
               className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors w-full text-left cursor-pointer"
             >
               <Compass className="w-5 h-5" />
-              <span>Replay Tour</span>
+              <span>Module Guide</span>
             </button>
           )}
           <Link href="/dashboard/guides" className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
