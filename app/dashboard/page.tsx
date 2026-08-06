@@ -9,7 +9,7 @@ import {
   Sparkles, Plus, BarChart3, Activity, Target,
   Zap, Award, Bell, Mail,
   Shield, Briefcase, AlertCircle, X,
-  Building2, UsersRound, AtSign, Cpu, Circle, LineChart
+  Building2, UsersRound, AtSign, Cpu, Circle, LineChart, Settings
 } from 'lucide-react';
 import { usePresence } from '@/components/hooks/use-presence';
 
@@ -353,7 +353,7 @@ export default function DashboardPage() {
     }
   ];
 
-  // Helper to render company info
+  // Helper to render company info in executive style
   const renderCompanyInfo = (
     companyName: string,
     industry: string,
@@ -361,34 +361,58 @@ export default function DashboardPage() {
     maxSeats: number,
     email: string
   ) => (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
       {/* Company Name with Icon */}
       <div className="flex items-center gap-4">
-        <Building2 className="w-7 h-7 text-white" />
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813 0%, #ff8a47 100%)' }}>
+          {companyName.charAt(0).toUpperCase()}
+        </div>
         <div>
-          <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Company</p>
-          <h2 className="text-2xl md:text-3xl font-bold text-white">{companyName}</h2>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">ORGANISATION</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Active Workspace</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{companyName}</h2>
         </div>
       </div>
 
-      {/* Info Pills */}
-      <div className="flex flex-wrap items-center gap-4">
+      {/* Info Pills & Actions */}
+      <div className="flex flex-wrap items-center gap-2.5">
         {/* Industry */}
-        <div className="flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-emerald-300" />
-          <span className="text-sm font-medium text-white capitalize">{industry}</span>
-        </div>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold">
+          <Cpu className="w-3.5 h-3.5" />
+          <span className="capitalize">{industry}</span>
+        </span>
 
         {/* Employees */}
-        <div className="flex items-center gap-2">
-          <UsersRound className="w-4 h-4 text-blue-300" />
-          <span className="text-sm font-medium text-white">{seatCount} / {maxSeats} employees</span>
-        </div>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-semibold">
+          <UsersRound className="w-3.5 h-3.5" />
+          <span>{seatCount} / {maxSeats} Seats Used</span>
+        </span>
 
         {/* Email */}
-        <div className="flex items-center gap-2">
-          <AtSign className="w-4 h-4 text-amber-300" />
-          <span className="text-sm font-medium text-white truncate max-w-[160px] sm:max-w-none">{email}</span>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 rounded-full text-xs font-medium truncate max-w-[200px] sm:max-w-none">
+          <AtSign className="w-3.5 h-3.5 text-gray-400" />
+          <span>{email}</span>
+        </span>
+
+        {/* Action Triggers */}
+        <div className="flex items-center gap-2 pl-2">
+          <button
+            onClick={() => router.push('/dashboard/collaboration')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+          >
+            <UsersRound className="w-3.5 h-3.5" />
+            <span>Team Hub</span>
+          </button>
+          <button
+            onClick={() => router.push('/dashboard/settings')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+          >
+            <Settings className="w-3.5 h-3.5 text-gray-500" />
+            <span>Settings</span>
+          </button>
         </div>
       </div>
     </div>
@@ -397,19 +421,15 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4 sm:space-y-8 pb-8">
       {/* Company Header */}
-      {/* Company Header */}
-      <div className="rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-lg overflow-hidden relative bg-gradient-to-r from-slate-800/90 via-slate-700/90 to-slate-800/90 backdrop-blur-md border border-white/20">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-white rounded-full -mr-36 -mt-36"></div>
-          <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-white rounded-full -mb-24"></div>
-        </div>
+      <div className="rounded-3xl p-5 sm:p-6 md:p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-gray-100 dark:border-slate-800 shadow-sm relative overflow-hidden">
+        {/* Decorative background glow */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
         
         <div className="relative z-10">
           {loading ? (
             <div className="flex items-center gap-3 py-4">
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-slate-300 text-base">Loading...</p>
+              <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-gray-500 text-base">Loading workspace details…</p>
             </div>
           ) : userData && userData.business ? (
             renderCompanyInfo(
@@ -433,38 +453,38 @@ export default function DashboardPage() {
 
       {/* Team Collaboration Widget */}
       {presence && presence.presence && presence.presence.length > 0 && (
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Users className="w-5 h-5 text-indigo-600" />
-              Team Collaboration
+              Team Presence
             </h2>
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-gray-100 dark:border-slate-700">
               <Circle className={`w-2 h-2 ${presence.onlineCount > 0 ? 'fill-green-500 text-green-500' : 'fill-gray-400 text-gray-400'}`} />
               <span>{presence.onlineCount} of {presence.totalCount} online</span>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
             {presence.presence.map((member) => (
               <div
                 key={member.userId}
-                className="flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:shadow-md transition-all"
+                className="flex flex-col items-center p-3.5 rounded-2xl bg-gray-50/50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all"
               >
                 <div className="relative mb-2">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-base shadow-sm">
                     {member.firstName.charAt(0)}{member.lastName.charAt(0)}
                   </div>
                   {member.isOnline && (
-                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
                   )}
                 </div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white text-center">
+                <p className="text-xs font-bold text-gray-900 dark:text-white text-center truncate w-full">
                   {member.firstName} {member.lastName.charAt(0)}.
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 text-center mt-0.5">
                   {member.isOnline ? (
-                    <span className="text-green-600 font-medium">● Online</span>
+                    <span className="text-green-600 dark:text-green-400 font-semibold">● Online</span>
                   ) : (
                     <span className="text-gray-400">Offline</span>
                   )}
@@ -473,15 +493,16 @@ export default function DashboardPage() {
             ))}
           </div>
           
-          <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center justify-between">
-            <p className="text-sm text-indigo-800 dark:text-indigo-300">
-              <strong>Collaboration Enabled:</strong> All team members can see and share business data within {userData?.business?.name || 'your organization'}.
+          <div className="mt-4 p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-xs text-indigo-900 dark:text-indigo-200 font-medium">
+              <strong>Collaboration Hub:</strong> Team data, HD video calls, and voice channels are active for {userData?.business?.name || 'your organisation'}.
             </p>
             <button 
               onClick={() => router.push('/dashboard/collaboration')}
-              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-200 active:scale-95 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
             >
-              collab
+              <UsersRound className="w-3.5 h-3.5" />
+              <span>Open Collaboration Hub</span>
             </button>
           </div>
         </div>
@@ -491,32 +512,37 @@ export default function DashboardPage() {
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           const TrendIcon = stat.trend === 'up' ? ArrowUpRight : ArrowDownRight;
+          const isZeroChange = stat.change === '+0%' || stat.change === '0%';
           const isHydrating = loading && (stat.value === '£0' || stat.value === '0');
           
           return (
             <div
               key={index}
-              className={`relative bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-3 sm:p-4 md:p-6 border border-white/50 hover:shadow-xl hover:scale-105 transition-all cursor-pointer overflow-hidden group backdrop-blur-sm ${isHydrating ? 'opacity-70' : 'opacity-100'}`}
+              className={`relative bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 md:p-6 border border-gray-100 dark:border-slate-800 hover:shadow-lg transition-all cursor-pointer overflow-hidden group ${isHydrating ? 'opacity-70' : 'opacity-100'}`}
             >
                 {/* Background decoration */}
-                <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full group-hover:scale-150 transition-transform`} />
+                <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-5 rounded-full group-hover:scale-150 transition-transform`} />
                 
-                <div className="relative">
+                <div className="relative z-10">
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2 sm:p-3 rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg`}>
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    <div className={`p-2.5 rounded-2xl bg-gradient-to-br ${stat.gradient} shadow-md`}>
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
-                    <div className={`flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg ${
-                      stat.trend === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
+                      isZeroChange 
+                        ? 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400' 
+                        : stat.trend === 'up' 
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60' 
+                          : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/60'
                     }`}>
-                      <TrendIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="text-xs sm:text-sm font-bold">{stat.change}</span>
+                      {!isZeroChange && <TrendIcon className="w-3.5 h-3.5" />}
+                      <span>{isZeroChange ? 'No change' : stat.change}</span>
                     </div>
                   </div>
                   
-                  <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">{stat.title}</p>
-                  <p className="text-xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{stat.period}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-1 uppercase tracking-wider">{stat.title}</p>
+                  <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-1.5 tracking-tight">{stat.value}</p>
+                  <p className="text-[11px] text-gray-400 font-medium">{stat.period}</p>
                 </div>
               </div>
             );
