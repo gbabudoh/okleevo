@@ -7,6 +7,9 @@ import {
   CheckCircle, ChevronRight, Trash2
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
+import { campaignsTourSteps } from './tour-steps';
 
 interface Campaign {
   id: string;
@@ -154,11 +157,24 @@ export default function CampaignsPage() {
           <div className="p-2 bg-blue-600 rounded-xl shrink-0">
             <BarChart3 className="w-5 h-5 text-white" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Campaigns</h1>
-            <p className="text-xs text-gray-500 hidden sm:block">Manage email campaigns and track performance</p>
+          <div className="flex-1 min-w-0 flex items-center gap-3">
+            <div>
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Okleevo Mail Engine</h1>
+              <p className="text-xs text-gray-500 hidden sm:block">Manage email campaigns and track performance</p>
+            </div>
+            <ModuleGuideBanner
+              moduleId="campaigns"
+              moduleName="Mail Engine"
+              summary="Compose, schedule, and send broadcast email campaigns to your audience lists."
+              tips={[
+                "Track open rates, click engagement, and reach",
+                "Segment contacts by promotional, newsletter, or announcements",
+                "Automate email delivery with real-time tracking"
+              ]}
+            />
           </div>
           <button
+            id="tour-campaigns-new-button"
             type="button"
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0"
@@ -173,7 +189,7 @@ export default function CampaignsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-campaigns-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Active',      value: activeCount.toString(),                     icon: Rocket,        bg: 'bg-blue-100',    ic: 'text-blue-600',    val: 'text-blue-700' },
             { label: 'Total Reach', value: (totalSent / 1000).toFixed(1) + 'k',        icon: Users,         bg: 'bg-emerald-100', ic: 'text-emerald-600', val: 'text-emerald-700' },

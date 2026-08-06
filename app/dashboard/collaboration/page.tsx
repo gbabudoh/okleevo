@@ -11,6 +11,9 @@ import {
 } from 'lucide-react';
 import MeetingRoom from '@/components/collaboration/MeetingRoom';
 import { startOutgoingRingtone, stopOutgoingRingtone } from '@/lib/audio/ringtone';
+import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
+import { collaborationTourSteps } from './tour-steps';
 
 interface TeamMember {
   userId: string;
@@ -209,9 +212,10 @@ function CollaborationHubInner() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-5 pb-24 md:pb-10">
+      <TourProvider moduleId="collaboration" steps={collaborationTourSteps} />
 
       {/* ── Hero Header ── */}
-      <div className="rounded-2xl bg-white border border-gray-200 p-5 sm:p-8">
+      <div id="tour-collaboration-header" className="rounded-2xl bg-white border border-gray-200 p-5 sm:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-indigo-50 rounded-xl shrink-0">
@@ -219,9 +223,21 @@ function CollaborationHubInner() {
             </div>
             <div>
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">No Slack. No Zoom. No Extra Login.</p>
-              <h1 className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight leading-tight">
-                Team Collaboration
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight leading-tight">
+                  Team Collaboration
+                </h1>
+                <ModuleGuideBanner
+                  moduleId="collaboration"
+                  moduleName="Collaboration Hub"
+                  summary="Connect with team members in real-time via HD video calls, voice, or direct messaging."
+                  tips={[
+                    "Click Video/Voice to initiate direct team calls",
+                    "Real-time incoming call alerts with audio ringtone",
+                    "Business-scoped room security with instant joining"
+                  ]}
+                />
+              </div>
               <p className="text-gray-500 text-sm">Video-call and message your team without ever leaving Okleevo</p>
             </div>
           </div>
@@ -254,7 +270,7 @@ function CollaborationHubInner() {
       </div>
 
       {/* ── Team Grid ── */}
-      <div>
+      <div id="tour-collaboration-team">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Your Team</h2>
           <span className="text-xs font-medium text-gray-400">{team.length} member{team.length !== 1 ? 's' : ''}</span>

@@ -2,7 +2,7 @@
 // modules get their own tour-steps.ts file.
 export const TOUR_MODULE_IDS = [
   'invoicing', 'taxation', 'crm', 'expenses', 'helpdesk',
-  'accounting', 'cashflow', 'vat-tools',
+  'accounting', 'cashflow', 'vat-tools', 'campaigns', 'collaboration',
 ] as const;
 
 export function moduleHasTour(moduleId: string | null | undefined): boolean {
