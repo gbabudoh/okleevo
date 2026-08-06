@@ -3,12 +3,14 @@ import * as Minio from 'minio';
 // ─── MinIO S3-Compatible Storage Client ─────────────────────────────────────
 // Docs: https://min.io/docs/minio/linux/developers/javascript/API.html
 
-const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT || '127.0.0.1';
-const MINIO_PORT     = parseInt(process.env.MINIO_PORT || '9000', 10);
-const MINIO_ACCESS   = process.env.MINIO_ACCESS_KEY || '';
-const MINIO_SECRET   = process.env.MINIO_SECRET_KEY || '';
-const MINIO_USE_SSL  = process.env.MINIO_USE_SSL === 'true';
-const DEFAULT_BUCKET = process.env.MINIO_BUCKET || 'okleevo-uploads';
+const rawEndpoint = process.env.S3_ENDPOINT || process.env.MINIO_ENDPOINT || '127.0.0.1';
+const MINIO_ENDPOINT = rawEndpoint.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+const isHttps = rawEndpoint.startsWith('https://') || process.env.S3_USE_SSL === 'true' || process.env.MINIO_USE_SSL === 'true';
+const MINIO_USE_SSL  = isHttps;
+const MINIO_PORT     = process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : (isHttps ? 443 : 9000);
+const MINIO_ACCESS   = process.env.S3_ACCESS_KEY || process.env.MINIO_ACCESS_KEY || '';
+const MINIO_SECRET   = process.env.S3_SECRET_KEY || process.env.MINIO_SECRET_KEY || '';
+const DEFAULT_BUCKET = process.env.S3_BUCKET || process.env.MINIO_BUCKET || 'okleevo-uploads';
 
 // Singleton client
 let _client: Minio.Client | null = null;
@@ -17,7 +19,7 @@ export function getMinioClient(): Minio.Client {
   if (!_client) {
     if (!MINIO_ACCESS || !MINIO_SECRET) {
       throw new Error(
-        'MinIO not configured. Set MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY env vars.'
+        'MinIO/S3 storage not configured. Set S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY (or MINIO_...) env vars.'
       );
     }
     _client = new Minio.Client({
@@ -77,7 +79,8 @@ export function getPublicUrl(
   bucket: string = DEFAULT_BUCKET,
 ): string {
   const protocol = MINIO_USE_SSL ? 'https' : 'http';
-  return `${protocol}://${MINIO_ENDPOINT}:${MINIO_PORT}/${bucket}/${objectName}`;
+  const portSuffix = (MINIO_PORT === 443 || MINIO_PORT === 80) ? '' : `:${MINIO_PORT}`;
+  return `${protocol}://${MINIO_ENDPOINT}${portSuffix}/${bucket}/${objectName}`;
 }
 
 /** Delete a single object */

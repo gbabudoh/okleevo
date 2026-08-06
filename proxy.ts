@@ -44,9 +44,19 @@ export async function proxy(request: NextRequest) {
 
   const sessionToken =
     request.cookies.get('authjs.session-token')?.value ||
-    request.cookies.get('__Secure-authjs.session-token')?.value;
+    request.cookies.get('__Secure-authjs.session-token')?.value ||
+    request.cookies.get('next-auth.session-token')?.value ||
+    request.cookies.get('__Secure-next-auth.session-token')?.value;
 
   if (!sessionToken) {
+    // Return 401 JSON for API requests instead of redirecting to HTML access page
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const callbackUrl = pathname + (request.nextUrl.search || '');
     const url = request.nextUrl.clone();
     url.pathname = '/access';
