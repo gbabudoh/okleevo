@@ -76,6 +76,8 @@ export async function POST(request: NextRequest) {
     }
     const routedReplyTo = replyTo || `reply+${replyToken.token}@${replyDomain}`;
 
+    const senderUserName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : undefined;
+
     // Send the email
     const result = await sendClientEmail({
       to,
@@ -86,6 +88,7 @@ export async function POST(request: NextRequest) {
       bcc,
       replyTo: routedReplyTo,
       attachments,
+      userName: senderUserName,
       businessName: business?.name || 'Your Business',
       businessEmail: user?.email,
     });

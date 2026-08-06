@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { sendClientEmail } from '@/lib/services/email';
 import { generateInvoicePdf, generateInvoiceCsv } from '@/lib/services/invoice-documents';
 
-export const POST = withMultiTenancy(async (req, { params, dataFilter, business }) => {
+export const POST = withMultiTenancy(async (req, { params, dataFilter, business, user }) => {
   const resolvedParams = await params;
   const id = resolvedParams.id as string;
   try {
@@ -41,11 +41,14 @@ export const POST = withMultiTenancy(async (req, { params, dataFilter, business 
       businessName: business.name,
     };
 
+    const senderUserName = user ? `${user.firstName} ${user.lastName}`.trim() : undefined;
+
     const result = await sendClientEmail({
       to,
       subject,
       html,
       text: message,
+      userName: senderUserName,
       businessName: business.name,
       attachments: [
         { filename: `${invoice.number}.pdf`, content: generateInvoicePdf(docData), contentType: 'application/pdf' },

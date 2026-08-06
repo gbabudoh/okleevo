@@ -18,6 +18,9 @@ export interface EmailOptions {
   cc?: string | string[];
   bcc?: string | string[];
   attachments?: EmailAttachment[];
+  senderName?: string;    // Explicit custom sender name e.g. "John Doe - Egobas Limited"
+  userName?: string;      // User's name e.g. "John Doe"
+  businessName?: string;  // SME Business name e.g. "Egobas Limited"
 }
 
 export interface ClientEmailOptions {
@@ -31,12 +34,38 @@ export interface ClientEmailOptions {
   attachments?: EmailAttachment[];
   businessName?: string;
   businessEmail?: string;
+  userName?: string;
+  senderName?: string;
 }
 
 export interface EmailResult {
   success: boolean;
   messageId?: string;
   error?: string;
+}
+
+/**
+ * Format Option 2: "User Name - Business Name" or "Business Name" or custom sender name
+ */
+function getFormattedSenderName(options: EmailOptions): string {
+  if (options.senderName && options.senderName.trim()) {
+    return options.senderName.trim();
+  }
+
+  const uName = options.userName?.trim();
+  const bName = options.businessName?.trim();
+
+  if (uName && bName) {
+    return `${uName} - ${bName}`;
+  }
+  if (bName) {
+    return bName;
+  }
+  if (uName) {
+    return uName;
+  }
+
+  return process.env.POSTAL_FROM_NAME || process.env.EMAIL_FROM_NAME || 'Okleevo';
 }
 
 // ─── Transporter ─────────────────────────────────────────────────────────────
@@ -82,7 +111,7 @@ async function sendViaPostal(options: EmailOptions): Promise<EmailResult> {
   }
 
   const fromEmail = process.env.POSTAL_FROM_EMAIL || process.env.EMAIL_FROM || 'noreply@okleevo.com';
-  const fromName = process.env.POSTAL_FROM_NAME || process.env.EMAIL_FROM_NAME || 'Okleevo';
+  const fromName = getFormattedSenderName(options);
 
   // Format attachments for Postal (requires base64 data)
   const postalAttachments: { name: string; content_type: string; data: string }[] = [];
@@ -147,7 +176,7 @@ async function sendViaPostal(options: EmailOptions): Promise<EmailResult> {
     const data = await response.json();
 
     if (data.status === 'success') {
-      console.log('✅ Email sent via Postal HTTP API to:', options.to, '| MessageID:', data.data.message_id);
+      console.log('✅ Email sent via Postal HTTP API to:', options.to, '| Sender:', fromName, '| MessageID:', data.data.message_id);
       return { success: true, messageId: data.data.message_id };
     } else {
       console.error('❌ Postal API Error:', data.data.message || data.data.code);
@@ -179,7 +208,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
     }
 
     const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@okleevo.com';
-    const fromName = process.env.EMAIL_FROM_NAME || 'Okleevo';
+    const fromName = getFormattedSenderName(options);
 
     const mailOptions: Record<string, unknown> = {
       from: `"${fromName}" <${fromEmail}>`,
@@ -203,7 +232,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
     }
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully via SMTP to:', options.to, '| MessageID:', info.messageId);
+    console.log('✅ Email sent successfully via SMTP to:', options.to, '| Sender:', fromName, '| MessageID:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -254,6 +283,9 @@ export async function sendClientEmail(options: ClientEmailOptions): Promise<Emai
     cc: options.cc,
     bcc: options.bcc,
     attachments: options.attachments,
+    senderName: options.senderName,
+    userName: options.userName,
+    businessName: options.businessName,
   });
 }
 

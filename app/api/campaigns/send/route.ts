@@ -86,11 +86,14 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         const htmlBody = `${campaign.content.replace(/\n/g, '<br/>')}<hr/><p style="font-size:12px;color:#888;">Don't want these emails? <a href="${unsubscribeUrl}">Unsubscribe</a></p>`;
         const textBody = `${campaign.content}\n\nUnsubscribe: ${unsubscribeUrl}`;
 
+        const senderUserName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || undefined;
+
         const result = await sendClientEmail({
           to: contact.email,
           subject: campaign.subject,
           html: htmlBody,
           text: textBody,
+          userName: senderUserName,
           businessName: business?.name || 'Your Business',
           businessEmail: user.email,
         });
