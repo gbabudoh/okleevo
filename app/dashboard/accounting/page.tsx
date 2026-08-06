@@ -24,6 +24,9 @@ import {
   FileCheck,
   Search,
   Filter,
+  Users,
+  Building2,
+  Landmark,
 } from "lucide-react";
 import useSWR, { mutate as globalMutate } from "swr";
 import accounting from "accounting";
@@ -1363,28 +1366,128 @@ export default function AccountingPage() {
 
         {/* REPORTS */}
         {activeTab === "reports" && (
-          <div className="space-y-4">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4">
-              <h2 className="text-sm font-bold text-gray-900 mb-0.5">Financial Reports</h2>
-              <p className="text-xs text-gray-400">Generate comprehensive statements for your business</p>
+          <div className="space-y-5">
+            {/* Header Card with Format Selector */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                  <PieChart className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  Financial Reports Suite
+                </h2>
+                <p className="text-xs text-gray-400 mt-0.5">Generate compliant UK SME statements, tax summaries, and audit ledgers</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-400 mr-1 hidden sm:inline">Default Format:</span>
+                {(["CSV", "Excel", "PDF"] as const).map((fmt) => (
+                  <button
+                    key={fmt}
+                    onClick={() => setSelectedExportFormat(fmt)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedExportFormat === fmt
+                        ? "bg-indigo-600 text-white shadow-xs"
+                        : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    {fmt}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+            {/* 6 Executive Report Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { type: "Profit & Loss Statement", Icon: BarChart3,  bg: "bg-blue-50",   ic: "text-blue-600",   link: "text-blue-600",   desc: "Income vs expenses at a glance" },
-                { type: "Balance Sheet",           Icon: PieChart,   bg: "bg-green-50",  ic: "text-green-600",  link: "text-green-600",  desc: "Assets, liabilities, equity snapshot" },
-                { type: "Cash Flow Statement",     Icon: TrendingUp, bg: "bg-orange-50", ic: "text-orange-600", link: "text-orange-600", desc: "Operating, investing & financing flows" },
-              ].map(({ type, Icon, bg, ic, link, desc }) => (
-                <button key={type} onClick={() => handleGenerateReport(type)}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md hover:border-gray-200 transition-all text-left cursor-pointer group">
-                  <div className={`p-2.5 ${bg} rounded-xl w-fit mb-3 group-hover:scale-105 transition-transform`}>
-                    <Icon className={`w-5 h-5 ${ic}`} />
+                {
+                  type: "Profit & Loss Statement",
+                  Icon: BarChart3,
+                  bgGrad: "from-blue-500 to-indigo-600",
+                  desc: "Income vs expenses, gross margin & net profit at a glance",
+                  metricLabel: "Current Net Profit",
+                  metricVal: `£${financialSummary.netProfit.toLocaleString()}`,
+                  metricCls: financialSummary.netProfit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400",
+                },
+                {
+                  type: "Balance Sheet",
+                  Icon: PieChart,
+                  bgGrad: "from-emerald-500 to-teal-600",
+                  desc: "Snapshot of total assets, liabilities & owner equity balance",
+                  metricLabel: "Net Worth (Assets - Liab)",
+                  metricVal: `£${(financialSummary.totalAssets - financialSummary.totalLiabilities).toLocaleString()}`,
+                  metricCls: "text-indigo-600 dark:text-indigo-400",
+                },
+                {
+                  type: "Cash Flow Statement",
+                  Icon: TrendingUp,
+                  bgGrad: "from-amber-500 to-orange-600",
+                  desc: "Tracking operating, investing & financing liquidity flows",
+                  metricLabel: "Total Cash & Assets",
+                  metricVal: `£${financialSummary.totalAssets.toLocaleString()}`,
+                  metricCls: "text-blue-600 dark:text-blue-400",
+                },
+                {
+                  type: "Aged Receivables (Debtors)",
+                  Icon: Users,
+                  bgGrad: "from-purple-500 to-indigo-600",
+                  desc: "Outstanding customer invoice aging breakdown (30/60/90+ days)",
+                  metricLabel: "Total Outstanding Sales",
+                  metricVal: `£${financialSummary.totalRevenue.toLocaleString()}`,
+                  metricCls: "text-purple-600 dark:text-purple-400",
+                },
+                {
+                  type: "Aged Payables (Creditors)",
+                  Icon: Building2,
+                  bgGrad: "from-rose-500 to-red-600",
+                  desc: "Vendor bills & supplier payment schedules due",
+                  metricLabel: "Total Outstanding Bills",
+                  metricVal: `£${financialSummary.totalLiabilities.toLocaleString()}`,
+                  metricCls: "text-rose-600 dark:text-rose-400",
+                },
+                {
+                  type: "UK HMRC VAT Summary",
+                  Icon: Landmark,
+                  bgGrad: "from-teal-500 to-emerald-600",
+                  desc: "Estimated Output vs Input VAT tax breakdown for HMRC returns",
+                  metricLabel: "Est. VAT Liability (20%)",
+                  metricVal: `£${(financialSummary.totalRevenue * 0.2).toLocaleString()}`,
+                  metricCls: "text-teal-600 dark:text-teal-400",
+                },
+              ].map(({ type, Icon, bgGrad, desc, metricLabel, metricVal, metricCls }) => (
+                <div
+                  key={type}
+                  className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className={`p-3 bg-gradient-to-br ${bgGrad} rounded-2xl text-white shadow-sm group-hover:scale-105 transition-transform`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-gray-400 px-2.5 py-1 bg-gray-100 dark:bg-slate-800 rounded-full">
+                        {selectedExportFormat} Ready
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">{type}</h3>
+                      <p className="text-xs text-gray-400 leading-relaxed mt-1">{desc}</p>
+                    </div>
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-1">{type}</h3>
-                  <p className="text-xs text-gray-400 mb-3">{desc}</p>
-                  <span className={`text-xs font-semibold ${link} flex items-center gap-1`}>
-                    Generate <ArrowUpRight className="w-3.5 h-3.5" />
-                  </span>
-                </button>
+
+                  <div className="pt-4 border-t border-gray-100 dark:border-slate-800 mt-4 space-y-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-400 font-medium">{metricLabel}:</span>
+                      <span className={`font-black text-sm ${metricCls}`}>{metricVal}</span>
+                    </div>
+
+                    <button
+                      onClick={() => handleGenerateReport(type)}
+                      className="w-full py-2.5 bg-gray-900 hover:bg-black dark:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs"
+                    >
+                      Generate &amp; Download ({selectedExportFormat})
+                      <ArrowUpRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
