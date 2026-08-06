@@ -1249,82 +1249,112 @@ export default function AccountingPage() {
 
         {/* TRIAL BALANCE */}
         {activeTab === "trial-balance" && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-4 sm:px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-bold text-gray-900">Trial Balance</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Total debits must equal total credits</p>
+          <div className="space-y-4">
+            {/* Top KPI Audit Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Total Debits</p>
+                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">£{trialBalanceDebitTotal.toLocaleString()}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => window.print()}
-                  className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
-                  <Printer className="w-4 h-4" />
-                  <span className="hidden sm:inline">Print</span>
-                </button>
-                <button onClick={() => setShowExportModal(true)}
-                  className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
-                  <Download className="w-4 h-4" />
-                  <span className="hidden sm:inline">Export</span>
-                </button>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Total Credits</p>
+                <p className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">£{trialBalanceCreditTotal.toLocaleString()}</p>
+              </div>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Reconciliation Status</p>
+                {accounts.length === 0 ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold mt-1">
+                    No Accounts Setup
+                  </span>
+                ) : trialBalanceIsBalanced ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-xs font-bold mt-1">
+                    <CheckCircle className="w-3.5 h-3.5" /> Balanced ✓
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200/60 rounded-full text-xs font-bold mt-1">
+                    <AlertCircle className="w-3.5 h-3.5" /> Unbalanced (£{Math.abs(trialBalanceDebitTotal - trialBalanceCreditTotal).toLocaleString()})
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[440px]">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className="px-4 sm:px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Code</th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Account Name</th>
-                    <th className="px-4 sm:px-6 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wide">Debit £</th>
-                    <th className="px-4 sm:px-6 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wide">Credit £</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {accounts.map((a) => (
-                    <tr key={a.id} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-4 sm:px-6 py-3 font-mono text-xs font-semibold text-gray-500">{a.code}</td>
-                      <td className="px-4 sm:px-6 py-3 text-sm text-gray-800">{a.name}</td>
-                      <td className="px-4 sm:px-6 py-3 text-right text-sm font-semibold text-emerald-700">
-                        {["asset", "expense"].includes(a.type) ? `£${a.balance.toLocaleString()}` : "—"}
-                      </td>
-                      <td className="px-4 sm:px-6 py-3 text-right text-sm font-semibold text-rose-700">
-                        {["liability", "equity", "revenue"].includes(a.type) ? `£${a.balance.toLocaleString()}` : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-50 border-t-2 border-gray-200">
-                  <tr>
-                    <td colSpan={2} className="px-4 sm:px-6 py-4 text-sm font-bold text-gray-900">TOTALS</td>
-                    <td className="px-4 sm:px-6 py-4 text-right text-sm font-bold text-emerald-800">
-                      £{trialBalanceDebitTotal.toLocaleString()}
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 text-right text-sm font-bold text-rose-800">
-                      £{trialBalanceCreditTotal.toLocaleString()}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-extrabold text-gray-900 dark:text-white">Trial Balance Report</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Double-entry audit verification (Debits must equal Credits)</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => window.print()}
+                    className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-200">
+                    <Printer className="w-4 h-4" />
+                    <span className="hidden sm:inline">Print Report</span>
+                  </button>
+                  <button onClick={() => setShowExportModal(true)}
+                    className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-200">
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">Export</span>
+                  </button>
+                </div>
+              </div>
 
-            <div className="px-4 sm:px-5 py-4 border-t border-gray-100">
-              {trialBalanceIsBalanced ? (
-                <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                  <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-emerald-900">Trial Balance is Balanced</p>
-                    <p className="text-xs text-emerald-600 mt-0.5">Total Debits = Total Credits — books are in order</p>
+              {accounts.length === 0 ? (
+                <div className="bg-gradient-to-br from-indigo-50/90 via-blue-50/50 to-indigo-50/90 dark:from-slate-800/80 dark:to-slate-800/40 p-6 sm:p-8 text-center space-y-4">
+                  <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/60 rounded-2xl flex items-center justify-center mx-auto text-indigo-600 dark:text-indigo-400">
+                    <Calculator className="w-7 h-7" />
+                  </div>
+                  <div className="max-w-md mx-auto space-y-1">
+                    <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">No Ledger Accounts Configured</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Configure your chart of accounts or load default UK GAAP ledger codes to view debit &amp; credit trial balances.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => setActiveTab("chart-of-accounts")}
+                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition-all shadow-sm cursor-pointer inline-flex items-center gap-2 active:scale-95"
+                    >
+                      <BookOpen className="w-4 h-4" /> Go to Chart of Accounts
+                    </button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-xl">
-                  <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-red-900">Trial Balance is Out of Balance</p>
-                    <p className="text-xs text-red-600 mt-0.5">
-                      Debits (£{trialBalanceDebitTotal.toLocaleString()}) do not equal Credits (£{trialBalanceCreditTotal.toLocaleString()}) — difference of £{Math.abs(trialBalanceDebitTotal - trialBalanceCreditTotal).toLocaleString()}
-                    </p>
-                  </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[440px]">
+                    <thead className="bg-gray-50/80 dark:bg-slate-800/80 border-b border-gray-100 dark:border-slate-800">
+                      <tr>
+                        <th className="px-5 py-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Code</th>
+                        <th className="px-5 py-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Account Name</th>
+                        <th className="px-5 py-3 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider">Debit (£)</th>
+                        <th className="px-5 py-3 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider">Credit (£)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                      {accounts.map((a) => (
+                        <tr key={a.id} className="hover:bg-gray-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                          <td className="px-5 py-3 font-mono text-xs font-bold text-gray-900 dark:text-white">{a.code}</td>
+                          <td className="px-5 py-3 text-sm font-semibold text-gray-900 dark:text-white">{a.name}</td>
+                          <td className="px-5 py-3 text-right text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+                            {["asset", "expense"].includes(a.type) ? `£${a.balance.toLocaleString()}` : "—"}
+                          </td>
+                          <td className="px-5 py-3 text-right text-sm font-extrabold text-rose-600 dark:text-rose-400">
+                            {["liability", "equity", "revenue"].includes(a.type) ? `£${a.balance.toLocaleString()}` : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-gray-50 dark:bg-slate-800/90 border-t-2 border-gray-200 dark:border-slate-700">
+                      <tr>
+                        <td colSpan={2} className="px-5 py-4 text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-wider">Total Ledger Balances</td>
+                        <td className="px-5 py-4 text-right text-sm font-black text-emerald-600 dark:text-emerald-400">
+                          £{trialBalanceDebitTotal.toLocaleString()}
+                        </td>
+                        <td className="px-5 py-4 text-right text-sm font-black text-rose-600 dark:text-rose-400">
+                          £{trialBalanceCreditTotal.toLocaleString()}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
                 </div>
               )}
             </div>
