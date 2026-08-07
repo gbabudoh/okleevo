@@ -5,14 +5,17 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import {
   Plus, Search, Mail, PoundSterling,
   Users, TrendingUp, Star, Edit, Trash2, X, Tag, AlertCircle,
-  ChevronDown, Sparkles, LayoutGrid, List, Loader2,
-  Clock, Send as SendIcon, Inbox as InboxIcon, ArrowLeft, Eye, Archive
+  ChevronDown, Sparkles, LayoutGrid, List, Loader2, Kanban,
+  Clock, Send as SendIcon, Inbox as InboxIcon, ArrowLeft, Eye, Archive,
+  Trophy, Wallet, ArrowUp, ArrowDown, ArrowUpDown, CheckSquare, Square,
+  Building2, BarChart3, Contact, Download, ChevronLeft, ChevronRight, CalendarDays
 } from 'lucide-react';
 import StatusModal from '@/components/StatusModal';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import TourProvider from '@/components/tours/TourProvider';
 import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { crmTourSteps } from './tour-steps';
+import { PipelineBoard } from '@/modules/crm/PipelineBoard';
 
 interface Client {
   id: string;
@@ -127,12 +130,46 @@ function TagInput({ value, onChange, placeholder }: {
   );
 }
 
+function ReportBar({ label, valueLabel, subLabel, pct, colorClass }: {
+  label: string; valueLabel: string; subLabel?: string; pct: number; colorClass: string;
+}) {
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onFocus={() => setHover(true)}
+      onBlur={() => setHover(false)}
+      tabIndex={0}
+    >
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 capitalize truncate max-w-[60%]">{label}</span>
+        <span className="text-xs font-bold text-gray-900 dark:text-white">
+          {valueLabel}{subLabel && <span className="text-gray-400 font-medium"> · {subLabel}</span>}
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-gray-100 dark:bg-slate-800 overflow-hidden cursor-default">
+        <div
+          className={`h-full rounded-full ${colorClass} transition-all duration-200 ${hover ? 'brightness-110 shadow-[0_0_0_2px_rgba(0,0,0,0.04)]' : ''}`}
+          style={{ width: `${Math.max(pct, 2)}%` }}
+        />
+      </div>
+      {hover && (
+        <div className="absolute -top-8 left-0 z-20 px-2.5 py-1.5 rounded-lg bg-gray-900 dark:bg-slate-700 text-white text-[11px] font-semibold whitespace-nowrap shadow-lg pointer-events-none animate-in fade-in zoom-in-95 duration-100">
+          <span className="capitalize">{label}</span>: {valueLabel}{subLabel ? ` (${subLabel})` : ''}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CRMPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'board' | 'grid' | 'list'>('board');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -156,6 +193,15 @@ export default function CRMPage() {
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info';
   }>({ isOpen: false, title: '', message: '', type: 'success' });
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sortKey, setSortKey] = useState<'name' | 'company' | 'pipelineStage' | 'status' | 'revenue'>('name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [bulkWorking, setBulkWorking] = useState(false);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
+  const [crmSection, setCrmSection] = useState<'contacts' | 'companies' | 'reports' | 'calendar'>('contacts');
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
 
   const [emailData, setEmailData] = useState({ to: '', subject: '', message: '' });
 
@@ -267,6 +313,7 @@ export default function CRMPage() {
 
   useEffect(() => { fetchContacts(); fetchGlobalTimeline(); }, [fetchContacts, fetchGlobalTimeline]);
   useEffect(() => { if (selectedClient?.email) fetchEmailTimeline(selectedClient.email); }, [selectedClient, fetchEmailTimeline]);
+  useEffect(() => { setNoteDraft(selectedClient?.notes || ''); }, [selectedClient?.id, selectedClient?.notes]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -326,6 +373,46 @@ export default function CRMPage() {
     }
   };
 
+  const handleStageChange = async (clientId: string, pipelineStage: Client['pipelineStage']) => {
+    const previous = clients;
+    setClients(cs => cs.map(c => c.id === clientId ? { ...c, pipelineStage } : c));
+    try {
+      const response = await fetch('/api/crm', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: clientId, pipelineStage }),
+      });
+      if (!response.ok) throw new Error('Failed to update stage');
+    } catch (error) {
+      console.error('Error updating pipeline stage:', error);
+      setClients(previous);
+      setStatusModal({ isOpen: true, title: 'Update Failed', message: 'Could not move the deal. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleAddToStage = (pipelineStage: Client['pipelineStage']) => {
+    setNewClient(prev => ({ ...prev, pipelineStage }));
+    setShowAddModal(true);
+  };
+
+  const handleSaveNote = async (clientId: string) => {
+    setSavingNote(true);
+    try {
+      const response = await fetch('/api/crm', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: clientId, notes: noteDraft }),
+      });
+      if (!response.ok) throw new Error('Failed to save note');
+      setClients(cs => cs.map(c => c.id === clientId ? { ...c, notes: noteDraft } : c));
+      setSelectedClient(c => c && c.id === clientId ? { ...c, notes: noteDraft } : c);
+      setStatusModal({ isOpen: true, title: 'Note Saved', message: 'Client notes have been updated.', type: 'success' });
+    } catch (error) {
+      console.error('Error saving note:', error);
+      setStatusModal({ isOpen: true, title: 'Save Failed', message: 'Could not save the note. Please try again.', type: 'error' });
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
   const filteredClients = clients.filter(client => {
     const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.company.toLowerCase().includes(searchTerm.toLowerCase());
@@ -333,45 +420,183 @@ export default function CRMPage() {
     return matchesSearch && matchesFilter;
   });
 
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    const dir = sortDir === 'asc' ? 1 : -1;
+    if (sortKey === 'revenue') return (a.revenue - b.revenue) * dir;
+    return a[sortKey].localeCompare(b[sortKey]) * dir;
+  });
+
+  const handleSort = (key: typeof sortKey) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('asc'); }
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds(prev =>
+      prev.size === filteredClients.length ? new Set() : new Set(filteredClients.map(c => c.id))
+    );
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkStatusChange = async (status: 'active' | 'lead' | 'inactive') => {
+    setBulkWorking(true);
+    const ids = Array.from(selectedIds);
+    try {
+      await Promise.all(ids.map(id => fetch('/api/crm', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      })));
+      await fetchContacts();
+      setSelectedIds(new Set());
+      setStatusModal({ isOpen: true, title: 'Clients Updated', message: `${ids.length} client(s) updated to "${status}".`, type: 'success' });
+    } catch (error) {
+      console.error('Bulk status update failed:', error);
+      setStatusModal({ isOpen: true, title: 'Update Failed', message: 'Some clients could not be updated. Please try again.', type: 'error' });
+    } finally {
+      setBulkWorking(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setBulkWorking(true);
+    const ids = Array.from(selectedIds);
+    try {
+      await Promise.all(ids.map(id => fetch(`/api/crm?id=${id}`, { method: 'DELETE' })));
+      setClients(prev => prev.filter(c => !selectedIds.has(c.id)));
+      setSelectedIds(new Set());
+      setStatusModal({ isOpen: true, title: 'Clients Deleted', message: `${ids.length} client(s) removed.`, type: 'success' });
+    } catch (error) {
+      console.error('Bulk delete failed:', error);
+      setStatusModal({ isOpen: true, title: 'Delete Failed', message: 'Some clients could not be deleted. Please try again.', type: 'error' });
+    } finally {
+      setBulkWorking(false);
+    }
+  };
+
+  const handleBulkEmail = () => {
+    const emails = clients.filter(c => selectedIds.has(c.id)).map(c => c.email).join(', ');
+    setEmailData({ to: emails, subject: '', message: '' });
+    setShowEmailModal(true);
+  };
+
   const totalRevenue = clients.reduce((sum, client) => sum + client.revenue, 0);
   const activeClients = clients.filter(c => c.status === 'active').length;
   const leadClients = clients.filter(c => c.status === 'lead').length;
+  const pipelineValue = clients
+    .filter(c => c.pipelineStage !== 'closed-won' && c.pipelineStage !== 'closed-lost')
+    .reduce((sum, c) => sum + c.revenue, 0);
+  const wonCount = clients.filter(c => c.pipelineStage === 'closed-won').length;
+  const lostCount = clients.filter(c => c.pipelineStage === 'closed-lost').length;
+  const winRate = wonCount + lostCount === 0 ? 0 : Math.round((wonCount / (wonCount + lostCount)) * 100);
+
+  const companyStats = Object.values(
+    clients.reduce((acc, c) => {
+      const key = c.company || 'Unknown';
+      if (!acc[key]) acc[key] = { company: key, count: 0, revenue: 0 };
+      acc[key].count += 1;
+      acc[key].revenue += c.revenue;
+      return acc;
+    }, {} as Record<string, { company: string; count: number; revenue: number }>)
+  ).sort((a, b) => b.revenue - a.revenue);
+
+  const STAGE_ORDER: Client['pipelineStage'][] = ['new', 'contacted', 'proposal', 'negotiation', 'closed-won', 'closed-lost'];
+  const stageStats = STAGE_ORDER.map(stage => ({
+    stage,
+    label: stage.replace('-', ' '),
+    count: clients.filter(c => c.pipelineStage === stage).length,
+    revenue: clients.filter(c => c.pipelineStage === stage).reduce((sum, c) => sum + c.revenue, 0),
+  }));
+
+  const STATUS_ORDER: Client['status'][] = ['active', 'lead', 'customer', 'inactive'];
+  const statusBarColor: Record<Client['status'], string> = {
+    active: 'bg-emerald-500', lead: 'bg-blue-500', customer: 'bg-indigo-500', inactive: 'bg-gray-400',
+  };
+  const statusStats = STATUS_ORDER.map(status => ({
+    status,
+    count: clients.filter(c => c.status === status).length,
+  }));
+
+  const topCompanies = companyStats.slice(0, 6);
+  const maxCompanyRevenue = Math.max(1, ...topCompanies.map(c => c.revenue));
+  const maxStageRevenue = Math.max(1, ...stageStats.map(s => s.revenue));
+  const maxStatusCount = Math.max(1, ...statusStats.map(s => s.count));
+
+  const calendarCells = (() => {
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const firstOfMonth = new Date(year, month, 1);
+    const gridStart = new Date(year, month, 1 - firstOfMonth.getDay());
+    return Array.from({ length: 42 }, (_, i) => {
+      const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i);
+      const dayClients = clients.filter(c => c.lastContact && new Date(c.lastContact).toDateString() === date.toDateString());
+      return { date, inMonth: date.getMonth() === month, dayClients };
+    });
+  })();
+
+  const handleExportReports = () => {
+    let csv = 'CRM Report\n';
+    csv += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+    csv += 'Pipeline by Stage\n';
+    csv += 'Stage,Deal Count,Revenue\n';
+    csv += stageStats.map(s => `"${s.label}",${s.count},${s.revenue}`).join('\n');
+    csv += '\n\nStatus Breakdown\n';
+    csv += 'Status,Count\n';
+    csv += statusStats.map(s => `"${s.status}",${s.count}`).join('\n');
+    csv += '\n\nCompanies by Revenue\n';
+    csv += 'Company,Contacts,Revenue\n';
+    csv += companyStats.map(c => `"${c.company}",${c.count},${c.revenue}`).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `crm-report-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatusModal({ isOpen: true, title: 'Export Complete', message: 'Your CRM report has been exported to CSV.', type: 'success' });
+  };
 
   const DetailPanel = ({ client }: { client: Client }) => (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-blue-50/50 shrink-0">
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-blue-50/50 dark:bg-blue-950/20 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-base shrink-0">
             {client.name[0]}
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-gray-900 leading-tight truncate">{client.name}</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight truncate">{client.name}</h3>
             <p className="text-[11px] text-gray-400 truncate">{client.company}</p>
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button onClick={() => { setEditingClient(client); setShowEditModal(true); setSelectedClient(null); }}
-            className="p-2 hover:bg-blue-100 rounded-lg transition-colors text-blue-500 cursor-pointer">
+            className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-colors text-blue-500 cursor-pointer">
             <Edit className="w-4 h-4" />
           </button>
           <button onClick={() => { setDeletingClient(client); setShowDeleteModal(true); setSelectedClient(null); }}
-            className="p-2 hover:bg-rose-100 rounded-lg transition-colors text-rose-400 cursor-pointer">
+            className="p-2 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors text-rose-400 cursor-pointer">
             <Trash2 className="w-4 h-4" />
           </button>
           <button onClick={() => setSelectedClient(null)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 cursor-pointer">
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-gray-400 cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-100 bg-white shrink-0">
+      <div className="flex border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
         {(['communication', 'info', 'notes'] as const).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`flex-1 py-2.5 text-[11px] font-bold uppercase tracking-wide transition-colors border-b-2 cursor-pointer ${
-              activeTab === tab ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'
+              activeTab === tab ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
             }`}>
             {tab}
           </button>
@@ -389,22 +614,22 @@ export default function CRMPage() {
               </div>
             ) : emailTimeline.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <Mail className="w-6 h-6 text-gray-300" />
+                <div className="w-12 h-12 bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Mail className="w-6 h-6 text-gray-300 dark:text-slate-600" />
                 </div>
                 <p className="text-sm font-semibold text-gray-400">No emails found</p>
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl w-fit mb-3">
+                <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-slate-800 rounded-xl w-fit mb-3">
                   {[{ id: 'all', label: 'All', icon: Clock }, { id: 'RECEIVED', label: 'Inbox', icon: InboxIcon }, { id: 'SENT', label: 'Sent', icon: SendIcon }].map((item) => (
                     <button key={item.id} onClick={() => setCommFilter(item.id as 'all' | 'SENT' | 'RECEIVED')}
                       className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all cursor-pointer ${
-                        commFilter === item.id ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                        commFilter === item.id ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                       }`}>
                       <item.icon className="w-3 h-3" />
                       {item.label}
-                      <span className={`px-1 rounded text-[9px] ${commFilter === item.id ? 'bg-blue-50 text-blue-600' : 'bg-gray-200 text-gray-500'}`}>
+                      <span className={`px-1 rounded text-[9px] ${commFilter === item.id ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400' : 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-gray-400'}`}>
                         {item.id === 'all' ? emailTimeline.length : emailTimeline.filter(e => e.type === item.id).length}
                       </span>
                     </button>
@@ -413,7 +638,7 @@ export default function CRMPage() {
                 <div className="space-y-2.5">
                   {emailTimeline.filter(item => commFilter === 'all' || item.type === commFilter).map((item) => (
                     <div key={item.id} className={`p-3.5 rounded-xl border ${
-                      item.type === 'SENT' ? 'bg-blue-50 border-blue-100' : 'bg-white border-gray-100 shadow-sm'
+                      item.type === 'SENT' ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/40' : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 shadow-sm'
                     }`}>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
@@ -423,8 +648,8 @@ export default function CRMPage() {
                         </span>
                         <span className="text-[10px] text-gray-400">{new Date(item.date).toLocaleDateString()}</span>
                       </div>
-                      <h4 className="text-xs font-bold text-gray-900 mb-1">{item.subject}</h4>
-                      <div className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body) }} />
+                      <h4 className="text-xs font-bold text-gray-900 dark:text-white mb-1">{item.subject}</h4>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body) }} />
                     </div>
                   ))}
                 </div>
@@ -435,35 +660,60 @@ export default function CRMPage() {
 
         {activeTab === 'info' && (
           <div className="space-y-3">
-            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
+              <p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Pipeline Stage</p>
+              <select
+                value={client.pipelineStage}
+                onChange={(e) => handleStageChange(client.id, e.target.value as Client['pipelineStage'])}
+                className="w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-gray-900 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="proposal">Proposal</option>
+                <option value="negotiation">Negotiation</option>
+                <option value="closed-won">Closed Won</option>
+                <option value="closed-lost">Closed Lost</option>
+              </select>
+            </div>
+            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
               <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Email</p>
-              <p className="text-sm font-semibold text-gray-900 break-all">{client.email}</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white break-all">{client.email}</p>
             </div>
-            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
               <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Phone</p>
-              <p className="text-sm font-semibold text-gray-900">{client.phone || 'N/A'}</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">{client.phone || 'N/A'}</p>
             </div>
+            {client.tags && client.tags.length > 0 && (
+              <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
+                <p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Tags</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {client.tags.map(tag => (
+                    <span key={tag} className="px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[11px] font-semibold">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="p-4 bg-emerald-600 rounded-xl text-white">
               <p className="text-[10px] font-bold uppercase opacity-80 mb-1">Revenue Value</p>
               <p className="text-2xl font-bold">£{client.revenue.toLocaleString()}</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div className="p-3 bg-white rounded-xl border border-gray-100">
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <div className="p-1 bg-blue-100 rounded"><SendIcon className="w-3 h-3 text-blue-600" /></div>
+                  <div className="p-1 bg-blue-100 dark:bg-blue-950 rounded"><SendIcon className="w-3 h-3 text-blue-600 dark:text-blue-400" /></div>
                   <span className="text-[9px] font-bold uppercase text-gray-400">Last Sent</span>
                 </div>
                 {emailTimeline.find(e => e.type === 'SENT')
-                  ? <p className="text-xs font-semibold text-gray-900">{new Date(emailTimeline.find(e => e.type === 'SENT')!.date).toLocaleDateString()}</p>
+                  ? <p className="text-xs font-semibold text-gray-900 dark:text-white">{new Date(emailTimeline.find(e => e.type === 'SENT')!.date).toLocaleDateString()}</p>
                   : <p className="text-[11px] text-gray-400 font-medium">None</p>}
               </div>
-              <div className="p-3 bg-white rounded-xl border border-gray-100">
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <div className="p-1 bg-indigo-100 rounded"><InboxIcon className="w-3 h-3 text-indigo-600" /></div>
+                  <div className="p-1 bg-indigo-100 dark:bg-indigo-950 rounded"><InboxIcon className="w-3 h-3 text-indigo-600 dark:text-indigo-400" /></div>
                   <span className="text-[9px] font-bold uppercase text-gray-400">Last Rcvd</span>
                 </div>
                 {emailTimeline.find(e => e.type === 'RECEIVED')
-                  ? <p className="text-xs font-semibold text-gray-900">{new Date(emailTimeline.find(e => e.type === 'RECEIVED')!.date).toLocaleDateString()}</p>
+                  ? <p className="text-xs font-semibold text-gray-900 dark:text-white">{new Date(emailTimeline.find(e => e.type === 'RECEIVED')!.date).toLocaleDateString()}</p>
                   : <p className="text-[11px] text-gray-400 font-medium">None</p>}
               </div>
             </div>
@@ -471,15 +721,28 @@ export default function CRMPage() {
         )}
 
         {activeTab === 'notes' && (
-          <div className="py-12 text-center">
-            <Edit className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-            <p className="text-sm font-semibold text-gray-400">No notes yet</p>
+          <div className="space-y-3">
+            <textarea
+              value={noteDraft}
+              onChange={(e) => setNoteDraft(e.target.value)}
+              placeholder="Add notes about this client…"
+              rows={10}
+              className="w-full px-3.5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-900 transition-all resize-none"
+            />
+            <button
+              type="button"
+              disabled={savingNote || noteDraft === (client.notes || '')}
+              onClick={() => handleSaveNote(client.id)}
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
+            >
+              {savingNote ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save Notes'}
+            </button>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-gray-100 shrink-0">
+      <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-800 shrink-0">
         <button
           onClick={() => { setEmailData(prev => ({ ...prev, to: client.email })); setShowEmailModal(true); }}
           className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
@@ -508,7 +771,7 @@ export default function CRMPage() {
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {filteredClients.map((client) => (
+          {sortedClients.map((client) => (
             <div
               key={client.id}
               onClick={() => setSelectedClient(client)}
@@ -555,7 +818,7 @@ export default function CRMPage() {
         <>
           {/* Mobile list */}
           <div className="sm:hidden space-y-2">
-            {filteredClients.map((client) => (
+            {sortedClients.map((client) => (
               <div key={client.id} onClick={() => setSelectedClient(client)}
                 className={`bg-white rounded-xl p-3 border flex items-center gap-3 cursor-pointer transition-all ${
                   selectedClient?.id === client.id ? 'border-blue-500 shadow-sm' : 'border-gray-100 shadow-sm'
@@ -576,33 +839,89 @@ export default function CRMPage() {
               </div>
             ))}
           </div>
+
+          {/* Bulk action bar */}
+          {selectedIds.size > 0 && (
+            <div className="hidden sm:flex items-center justify-between gap-3 bg-blue-600 text-white rounded-2xl px-4 py-2.5 mb-2.5">
+              <span className="text-sm font-bold">{selectedIds.size} selected</span>
+              <div className="flex items-center gap-2">
+                <button type="button" disabled={bulkWorking} onClick={handleBulkEmail}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 transition-colors">
+                  <Mail className="w-3.5 h-3.5" /> Email
+                </button>
+                <select disabled={bulkWorking} onChange={(e) => { if (e.target.value) handleBulkStatusChange(e.target.value as 'active' | 'lead' | 'inactive'); e.target.value = ''; }}
+                  defaultValue=""
+                  className="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 outline-none border-none">
+                  <option value="" disabled>Set status…</option>
+                  <option value="active" className="text-gray-900">Active</option>
+                  <option value="lead" className="text-gray-900">Lead</option>
+                  <option value="inactive" className="text-gray-900">Inactive</option>
+                </select>
+                <button type="button" disabled={bulkWorking} onClick={() => setShowBulkDeleteModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/90 hover:bg-rose-500 rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 transition-colors">
+                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                </button>
+                <button type="button" onClick={() => setSelectedIds(new Set())}
+                  className="p-1.5 hover:bg-white/15 rounded-lg cursor-pointer">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Desktop table */}
-          <div className="hidden sm:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="hidden sm:block bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Client</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide">Email</th>
-                  <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wide">Revenue</th>
+                <tr className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/60">
+                  <th className="w-10 px-4 py-3">
+                    <button type="button" onClick={toggleSelectAll} className="flex items-center cursor-pointer text-gray-400 hover:text-blue-600">
+                      {selectedIds.size === filteredClients.length && filteredClients.length > 0
+                        ? <CheckSquare className="w-4 h-4 text-blue-600" /> : <Square className="w-4 h-4" />}
+                    </button>
+                  </th>
+                  {([
+                    ['name', 'Client'], ['company', 'Company'], ['pipelineStage', 'Stage'], ['status', 'Status'], ['revenue', 'Revenue'],
+                  ] as const).map(([key, label]) => (
+                    <th key={key} className={`px-4 py-3 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide ${key === 'revenue' ? 'text-right' : 'text-left'}`}>
+                      <button type="button" onClick={() => handleSort(key)} className="inline-flex items-center gap-1 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300">
+                        {label}
+                        {sortKey === key ? (sortDir === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                      </button>
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredClients.map((client) => (
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                {sortedClients.map((client) => (
                   <tr key={client.id} onClick={() => setSelectedClient(client)}
-                    className={`cursor-pointer transition-colors ${selectedClient?.id === client.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
+                    className={`cursor-pointer transition-colors ${selectedClient?.id === client.id ? 'bg-blue-50 dark:bg-blue-950/30' : 'hover:bg-gray-50 dark:hover:bg-slate-800/40'}`}>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <button type="button" onClick={() => toggleSelectOne(client.id)} className="flex items-center cursor-pointer text-gray-400 hover:text-blue-600">
+                        {selectedIds.has(client.id) ? <CheckSquare className="w-4 h-4 text-blue-600" /> : <Square className="w-4 h-4" />}
+                      </button>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs shrink-0">
                           {client.name[0]}
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">{client.name}</p>
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${getStatusColor(client.status)}`}>{client.status}</span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{client.name}</p>
+                          <p className="text-[11px] text-gray-400 truncate max-w-[160px]">{client.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 max-w-[180px] truncate">{client.email}</td>
-                    <td className="px-4 py-3 text-right text-sm font-bold text-gray-900">£{client.revenue.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 max-w-[160px] truncate">{client.company}</td>
+                    <td className="px-4 py-3">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 capitalize">
+                        {client.pipelineStage.replace('-', ' ')}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${getStatusColor(client.status)}`}>{client.status}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm font-bold text-gray-900 dark:text-white">£{client.revenue.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -780,12 +1099,33 @@ export default function CRMPage() {
         <Plus className="w-8 h-8" />
       </button>
 
-      <div className="px-4 sm:px-6 space-y-4 pt-4">        {/* Stats */}
-        <div id="tour-crm-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+      <div className="px-4 sm:px-6 space-y-4 pt-4">
+        {/* CRM Section Tabs */}
+        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-1.5 w-fit">
+          {([
+            ['contacts', 'Contacts', Contact],
+            ['companies', 'Companies', Building2],
+            ['reports', 'Reports', BarChart3],
+            ['calendar', 'Calendar', CalendarDays],
+          ] as const).map(([id, label, Icon]) => (
+            <button key={id} type="button" onClick={() => setCrmSection(id)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                crmSection === id ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'
+              }`}>
+              <Icon className="w-3.5 h-3.5" /> {label}
+            </button>
+          ))}
+        </div>
+
+        {crmSection === 'contacts' && (<>
+        {/* Stats */}
+        <div id="tour-crm-stats" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {[
             { label: 'All Clients', value: clients.length, sub: 'Total database', icon: Users, bgGrad: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
             { label: 'Active', value: activeClients, sub: 'Currently engaged', icon: Star, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
             { label: 'New Leads', value: leadClients, sub: 'Opportunities', icon: TrendingUp, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
+            { label: 'Pipeline Value', value: `£${(pipelineValue / 1000).toFixed(1)}k`, sub: 'Open deals', icon: Wallet, bgGrad: 'bg-gradient-to-br from-cyan-500 to-blue-600' },
+            { label: 'Win Rate', value: `${winRate}%`, sub: `${wonCount} won · ${lostCount} lost`, icon: Trophy, bgGrad: 'bg-gradient-to-br from-rose-500 to-pink-600' },
             { label: 'Total Revenue', value: `£${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Lifetime value', icon: PoundSterling, bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
           ].map(({ label, value, sub, icon: Icon, bgGrad }) => (
             <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
@@ -814,13 +1154,17 @@ export default function CRMPage() {
             />
           </div>
           <div className="flex gap-2">
-            <div className="flex bg-gray-100 p-1 rounded-xl">
-              <button onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
+            <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
+              <button onClick={() => setViewMode('board')} title="Pipeline board"
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'board' ? 'bg-white dark:bg-slate-900 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600'}`}>
+                <Kanban className="w-4 h-4" />
+              </button>
+              <button onClick={() => setViewMode('grid')} title="Card grid"
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white dark:bg-slate-900 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600'}`}>
                 <LayoutGrid className="w-4 h-4" />
               </button>
-              <button onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
+              <button onClick={() => setViewMode('list')} title="Table"
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white dark:bg-slate-900 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600'}`}>
                 <List className="w-4 h-4" />
               </button>
             </div>
@@ -840,7 +1184,15 @@ export default function CRMPage() {
           </div>
         </div>
         {/* Main Content Area */}
-        {selectedClient ? (
+        {viewMode === 'board' ? (
+          <PipelineBoard
+            clients={filteredClients}
+            loading={loading}
+            onSelect={setSelectedClient}
+            onStageChange={handleStageChange}
+            onAddToStage={handleAddToStage}
+          />
+        ) : selectedClient ? (
           <div className="md:flex md:gap-4 md:items-start md:h-[calc(100vh-360px)]">
             {/* Left: Contacts List */}
             <div className="hidden md:block md:flex-[1.2] md:h-full md:overflow-y-auto md:pr-1">
@@ -876,7 +1228,168 @@ export default function CRMPage() {
             </div>
           </div>
         )}
+        </>)}
+
+        {crmSection === 'companies' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {companyStats.length === 0 ? (
+              <div className="col-span-full bg-white dark:bg-slate-900 rounded-2xl p-12 border border-gray-100 dark:border-slate-800 shadow-sm text-center">
+                <Building2 className="w-10 h-10 text-gray-200 dark:text-slate-700 mx-auto mb-3" />
+                <p className="text-sm font-semibold text-gray-400">No companies yet</p>
+              </div>
+            ) : companyStats.map((co) => (
+              <button
+                key={co.company}
+                type="button"
+                onClick={() => { setSearchTerm(co.company); setCrmSection('contacts'); setViewMode('list'); }}
+                className="text-left bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-gray-200 dark:hover:border-slate-700 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2.5 bg-gradient-to-br from-slate-500 to-slate-700 rounded-xl text-white shrink-0 group-hover:scale-105 transition-transform">
+                    <Building2 className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate">{co.company}</h3>
+                    <p className="text-[11px] text-gray-400">{co.count} contact{co.count === 1 ? '' : 's'}</p>
+                  </div>
+                </div>
+                <p className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">£{co.revenue.toLocaleString()}</p>
+                <p className="text-[11px] font-medium text-gray-400 mt-0.5">Total revenue</p>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {crmSection === 'reports' && (
+          <div className="space-y-3.5">
+            <div className="flex justify-end">
+              <button type="button" onClick={handleExportReports}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <Download className="w-3.5 h-3.5" /> Export CSV
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+              {/* Pipeline by Stage */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">Pipeline by Stage</h3>
+                <p className="text-[11px] text-gray-400 mb-4">Revenue and deal count per stage</p>
+                <div className="space-y-4">
+                  {stageStats.map((s) => (
+                    <ReportBar key={s.stage} label={s.label} valueLabel={`£${s.revenue.toLocaleString()}`} subLabel={`${s.count} deal${s.count === 1 ? '' : 's'}`}
+                      pct={(s.revenue / maxStageRevenue) * 100} colorClass="bg-blue-500" />
+                  ))}
+                </div>
+              </div>
+
+              {/* Status Breakdown */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">Status Breakdown</h3>
+                <p className="text-[11px] text-gray-400 mb-3">Clients by relationship status</p>
+                <div className="flex flex-wrap gap-3 mb-4">
+                  {statusStats.map((s) => (
+                    <span key={s.status} className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                      <span className={`w-2 h-2 rounded-full ${statusBarColor[s.status]}`} /> {s.status} ({s.count})
+                    </span>
+                  ))}
+                </div>
+                <div className="space-y-4">
+                  {statusStats.map((s) => (
+                    <ReportBar key={s.status} label={s.status} valueLabel={`${s.count}`}
+                      pct={(s.count / maxStatusCount) * 100} colorClass={statusBarColor[s.status]} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Top Companies by Revenue */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-xs lg:col-span-2">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">Top Companies by Revenue</h3>
+                <p className="text-[11px] text-gray-400 mb-4">Highest-value accounts</p>
+                {topCompanies.length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center py-6">No data yet</p>
+                ) : (
+                  <div className="space-y-4">
+                    {topCompanies.map((co) => (
+                      <ReportBar key={co.company} label={co.company} valueLabel={`£${co.revenue.toLocaleString()}`} subLabel={`${co.count} contact${co.count === 1 ? '' : 's'}`}
+                        pct={(co.revenue / maxCompanyRevenue) * 100} colorClass="bg-indigo-500" />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {crmSection === 'calendar' && (
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setCalendarMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
+                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white w-36 text-center">
+                  {calendarMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                </h3>
+                <button type="button" onClick={() => setCalendarMonth(m => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
+                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400">
+                  <span className="w-2 h-2 rounded-full bg-blue-500" /> Last contact
+                </span>
+                <button type="button" onClick={() => setCalendarMonth(new Date())}
+                  className="px-3 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 cursor-pointer transition-colors">
+                  Today
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-7 border-b border-gray-100 dark:border-slate-800">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                <div key={d} className="py-2 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wide">{d}</div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7">
+              {calendarCells.map(({ date, inMonth, dayClients }, i) => {
+                const isToday = date.toDateString() === new Date().toDateString();
+                return (
+                  <div key={i} className={`min-h-[92px] border-b border-r border-gray-50 dark:border-slate-800/60 p-1.5 ${inMonth ? '' : 'bg-gray-50/50 dark:bg-slate-950/40'}`}>
+                    <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-bold mb-1 ${
+                      isToday ? 'bg-blue-600 text-white' : inMonth ? 'text-gray-700 dark:text-gray-300' : 'text-gray-300 dark:text-slate-700'
+                    }`}>
+                      {date.getDate()}
+                    </span>
+                    <div className="space-y-0.5">
+                      {dayClients.slice(0, 2).map(c => (
+                        <button key={c.id} type="button" onClick={() => { setSelectedClient(c); setCrmSection('contacts'); setViewMode('board'); }}
+                          className="w-full text-left px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[10px] font-semibold truncate cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                          {c.name}
+                        </button>
+                      ))}
+                      {dayClients.length > 2 && (
+                        <p className="text-[9px] font-bold text-gray-400 px-1.5">+{dayClients.length - 2} more</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Board mode: slide-over detail drawer */}
+      {crmSection === 'contacts' && viewMode === 'board' && selectedClient && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setSelectedClient(null)} />
+          <div className="relative w-full sm:max-w-md h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+            <DetailPanel client={selectedClient} />
+          </div>
+        </div>
+      )}
 
       <StatusModal
         isOpen={statusModal.isOpen}
@@ -1280,6 +1793,16 @@ export default function CRMPage() {
           warningMessage="This will permanently remove this email from your records."
         />
       )}
+
+      {/* Bulk Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showBulkDeleteModal}
+        onClose={() => setShowBulkDeleteModal(false)}
+        onConfirm={handleBulkDelete}
+        title="Delete Clients"
+        itemName={`${selectedIds.size} client${selectedIds.size === 1 ? '' : 's'}`}
+        warningMessage="This will permanently remove all selected clients and their associated records."
+      />
     </div>
   );
 }
