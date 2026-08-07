@@ -177,7 +177,7 @@ export default function CampaignsPage() {
             id="tour-campaigns-new-button"
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">New Campaign</span>
@@ -189,25 +189,27 @@ export default function CampaignsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
         {/* Stats */}
-        <div id="tour-campaigns-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-campaigns-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Active',      value: activeCount.toString(),                     icon: Rocket,        bg: 'bg-blue-100',    ic: 'text-blue-600',    val: 'text-blue-700' },
-            { label: 'Total Reach', value: (totalSent / 1000).toFixed(1) + 'k',        icon: Users,         bg: 'bg-emerald-100', ic: 'text-emerald-600', val: 'text-emerald-700' },
-            { label: 'Avg Open',    value: avgEngagement.toFixed(1) + '%',              icon: MousePointer2, bg: 'bg-amber-100',   ic: 'text-amber-600',   val: 'text-amber-700' },
-            { label: 'Revenue',     value: '£' + (totalRevenue / 1000).toFixed(1) + 'k', icon: TrendingUp,  bg: 'bg-rose-100',    ic: 'text-rose-600',    val: 'text-rose-700' },
+            { label: 'Active',      value: activeCount.toString(),                     icon: Rocket,        bgGrad: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
+            { label: 'Total Reach', value: (totalSent / 1000).toFixed(1) + 'k',        icon: Users,         bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+            { label: 'Avg Open',    value: avgEngagement.toFixed(1) + '%',              icon: MousePointer2, bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
+            { label: 'Revenue',     value: '£' + (totalRevenue / 1000).toFixed(1) + 'k', icon: TrendingUp,  bgGrad: 'bg-gradient-to-br from-rose-500 to-purple-600' },
           ].map((s, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <div className={`p-2 rounded-lg ${s.bg} w-fit mb-2`}>
-                <s.icon className={`w-4 h-4 ${s.ic}`} />
+            <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2.5 ${s.bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
+                  <s.icon className="w-4.5 h-4.5" />
+                </div>
               </div>
-              <p className={`text-2xl font-bold ${s.val}`}>{s.value}</p>
-              <p className="text-xs text-gray-500 font-medium mt-0.5">{s.label}</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{s.label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{s.value}</p>
             </div>
           ))}
         </div>
 
         {/* Search + view toggle */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex gap-2 items-center">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-3 flex gap-2 items-center">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
@@ -215,21 +217,21 @@ export default function CampaignsPage() {
               placeholder="Search campaigns…"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-sm outline-none border border-gray-100 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
             />
           </div>
-          <div className="flex bg-gray-100 p-1 rounded-xl shrink-0">
+          <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl shrink-0">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white shadow text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white dark:bg-slate-900 shadow text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white shadow text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white dark:bg-slate-900 shadow text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -243,19 +245,19 @@ export default function CampaignsPage() {
             <p className="text-sm text-gray-500 font-medium">Loading campaigns…</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="w-7 h-7 text-blue-600" />
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-12 text-center">
+            <div className="w-14 h-14 bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
               {searchTerm ? 'No matching campaigns' : 'No campaigns yet'}
             </h3>
-            <p className="text-sm text-gray-500 mb-5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
               {searchTerm ? 'Try a different search term.' : 'Create your first campaign to get started.'}
             </p>
             {!searchTerm && (
               <button type="button" onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer">
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer">
                 <Plus className="w-4 h-4" /> New Campaign
               </button>
             )}
