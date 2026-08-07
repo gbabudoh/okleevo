@@ -2507,7 +2507,6 @@ export default function TaxationPage() {
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         
-        // Use the refined logic for highlights
         const taxDates = getTaxEventsForMonth(calendarYear, calendarMonth);
         
         const prevMonth = () => {
@@ -2536,189 +2535,233 @@ export default function TaxationPage() {
           setSelectedCalendarDay(today.getDate());
         };
         
-        const isToday = (dayNum: number) => 
+        const isTodayCell = (dayNum: number) => 
           dayNum === today.getDate() && 
           calendarMonth === today.getMonth() && 
           calendarYear === today.getFullYear();
         
         const selectedEvent = selectedCalendarDay ? taxDates[String(selectedCalendarDay)] : null;
         
-        return (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Visual Calendar Grid */}
-            <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
+        const COLOR_MAP: Record<string, { cellBg: string; dotBg: string; text: string; border: string; buttonBg: string; targetTab: string }> = {
+          purple: { cellBg: 'bg-purple-50/90 dark:bg-purple-950/60', dotBg: 'bg-purple-600', text: 'text-purple-950 dark:text-purple-200', border: 'border-purple-200 dark:border-purple-800', buttonBg: 'bg-purple-600 hover:bg-purple-700', targetTab: 'vat' },
+          blue: { cellBg: 'bg-blue-50/90 dark:bg-blue-950/60', dotBg: 'bg-blue-600', text: 'text-blue-950 dark:text-blue-200', border: 'border-blue-200 dark:border-blue-800', buttonBg: 'bg-blue-600 hover:bg-blue-700', targetTab: 'paye' },
+          emerald: { cellBg: 'bg-emerald-50/90 dark:bg-emerald-950/60', dotBg: 'bg-emerald-600', text: 'text-emerald-950 dark:text-emerald-200', border: 'border-emerald-200 dark:border-emerald-800', buttonBg: 'bg-emerald-600 hover:bg-emerald-700', targetTab: 'paye' },
+          red: { cellBg: 'bg-rose-50/90 dark:bg-rose-950/60', dotBg: 'bg-rose-600', text: 'text-rose-950 dark:text-rose-200', border: 'border-rose-200 dark:border-rose-800', buttonBg: 'bg-indigo-600 hover:bg-indigo-700', targetTab: 'corporation-tax' },
+        };
 
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
+        return (
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Visual Calendar Grid Pane */}
+            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <button onClick={prevMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer text-gray-700 dark:text-gray-200 font-bold">
+                  ‹ Prev
                 </button>
                 
                 <div className="text-center">
-                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">{monthNames[calendarMonth]} {calendarYear}</h2>
-                  <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mt-1">Tax Year {currentTaxYear}</p>
+                  <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight">{monthNames[calendarMonth]} {calendarYear}</h2>
+                  <p className="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mt-0.5">UK Tax Year {currentTaxYear}</p>
                 </div>
                 
-                <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                <button onClick={nextMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer text-gray-700 dark:text-gray-200 font-bold">
+                  Next ›
                 </button>
               </div>
 
-              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-1">
                 {dayNames.map(day => (
-                  <div key={day} className="text-center text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest py-1 sm:py-2">
+                  <div key={day} className="text-center text-[10px] sm:text-[11px] font-extrabold text-gray-400 uppercase tracking-wider py-1">
                     {day}
                   </div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-7 gap-1 sm:gap-2">
+              <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
                 {Array.from({ length: firstDayOfMonth }, (_, i) => (
-                  <div key={`empty-${i}`} className="h-14 sm:h-20 bg-gray-50/30 rounded-xl"></div>
+                  <div key={`empty-${i}`} className="h-14 sm:h-20 bg-gray-50/40 dark:bg-slate-800/30 rounded-2xl"></div>
                 ))}
                 
                 {Array.from({ length: daysInMonth }, (_, i) => {
                   const dayNum = i + 1;
                   const dayStr = String(dayNum);
                   const event = taxDates[dayStr];
-                  const isTodayCell = isToday(dayNum);
+                  const isToday = isTodayCell(dayNum);
                   const isSelected = selectedCalendarDay === dayNum;
-                  
+                  const colorConfig = event ? COLOR_MAP[event.color] || COLOR_MAP.purple : null;
+
                   return (
                     <div 
                       key={dayNum}
                       onClick={() => setSelectedCalendarDay(dayNum)}
-                      className={`h-14 sm:h-20 rounded-xl p-1.5 sm:p-2 transition-all cursor-pointer relative group ${
+                      className={`h-14 sm:h-20 rounded-2xl p-2 transition-all cursor-pointer relative group flex flex-col justify-between ${
                         isSelected 
-                          ? 'ring-2 ring-indigo-500 bg-white shadow-lg z-10' 
-                          : isTodayCell
-                            ? 'bg-indigo-50 border-2 border-indigo-200'
-                            : event 
-                              ? `bg-${event.color}-50 border border-${event.color}-100 hover:shadow-md`
-                              : 'bg-white hover:bg-gray-50 border border-gray-100'
+                          ? 'ring-2 ring-indigo-500 bg-white dark:bg-slate-900 shadow-md z-10' 
+                          : isToday
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60 border-2 border-indigo-300 dark:border-indigo-700'
+                            : colorConfig
+                              ? `${colorConfig.cellBg} ${colorConfig.border} border hover:shadow-sm`
+                              : 'bg-gray-50/50 dark:bg-slate-800/40 hover:bg-gray-100 dark:hover:bg-slate-800 border border-gray-100 dark:border-slate-800'
                       }`}
                     >
-                      <div className={`text-xs sm:text-sm font-black ${isTodayCell ? 'text-indigo-600' : 'text-gray-900'}`}>
-                        {dayNum}
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs sm:text-sm font-black ${isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-white'}`}>
+                          {dayNum}
+                        </span>
+                        {colorConfig && (
+                          <div className={`w-2 h-2 rounded-full ${colorConfig.dotBg} shadow-2xs`}></div>
+                        )}
                       </div>
                       
                       {event && (
-                        <div className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-${event.color}-500 mt-0.5 sm:mt-1 shadow-sm`}></div>
+                        <p className={`text-[9px] font-extrabold truncate hidden sm:block ${colorConfig?.text}`}>
+                          {event.type}
+                        </p>
                       )}
-                      
-                      {isTodayCell && (
-                        <div className="absolute bottom-1 right-1 px-1 py-0.5 bg-indigo-500 text-[6px] sm:text-[8px] font-black text-white rounded uppercase">
+
+                      {isToday && (
+                        <span className="self-end px-1.5 py-0.2 bg-indigo-600 text-[8px] font-black text-white rounded-md uppercase">
                           Today
-                        </div>
+                        </span>
                       )}
                     </div>
                   );
                 })}
               </div>
               
-              <div className="mt-8 flex justify-center">
+              <div className="mt-4 flex justify-center">
                 <button 
                   onClick={goToToday}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white text-xs font-black rounded-xl hover:bg-black transition-all cursor-pointer shadow-lg shadow-gray-200 uppercase tracking-widest"
+                  className="px-5 py-2 bg-gray-900 hover:bg-gray-800 text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer shadow-2xs uppercase tracking-wider"
                 >
-                  Return to Today
+                  Reset to Today
                 </button>
               </div>
             </div>
 
             {/* Day Details Sidebar */}
-            <div className="space-y-6">
-              <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-sm h-auto sm:h-full">
-                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Day Details</h3>
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
+              <div>
+                <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  Selected Date Details
+                </h3>
                 
                 {selectedCalendarDay ? (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                    <div className="bg-linear-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200">
-                      <p className="text-sm font-bold text-gray-500">{monthNames[calendarMonth]}</p>
-                      <h4 className="text-4xl font-black text-gray-900 mt-1">{selectedCalendarDay}</h4>
-                      <p className="text-xs font-bold text-gray-400 uppercase mt-1">{calendarYear} Tax Insight</p>
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="bg-gray-50/90 dark:bg-slate-800/60 rounded-2xl p-4 border border-gray-100 dark:border-slate-800">
+                      <p className="text-xs font-bold text-gray-400">{monthNames[calendarMonth]} {calendarYear}</p>
+                      <h4 className="text-3xl font-black text-gray-900 dark:text-white mt-0.5">Day {selectedCalendarDay}</h4>
                     </div>
 
                     {selectedEvent ? (
-                      <div className={`p-5 rounded-2xl border-2 bg-${selectedEvent.color}-50 border-${selectedEvent.color}-100`}>
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className={`p-2 bg-${selectedEvent.color}-500 rounded-lg text-white shadow-lg`}>
-                            <AlertCircle className="w-5 h-5" />
+                      (() => {
+                        const cfg = COLOR_MAP[selectedEvent.color] || COLOR_MAP.purple;
+                        return (
+                          <div className={`p-4 rounded-2xl border ${cfg.cellBg} ${cfg.border} space-y-3`}>
+                            <div className="flex items-center gap-2">
+                              <div className={`p-1.5 ${cfg.dotBg} rounded-lg text-white shadow-2xs`}>
+                                <AlertCircle className="w-4 h-4" />
+                              </div>
+                              <span className="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">{selectedEvent.type}</span>
+                            </div>
+
+                            <h5 className="text-sm font-extrabold text-gray-900 dark:text-white leading-snug">
+                              {selectedEvent.fullTask}
+                            </h5>
+
+                            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                              Mandatory statutory UK compliance deadline. Please ensure figures are computed and uploaded on time to avoid HMRC automated penalties.
+                            </p>
+
+                            <button
+                              onClick={() => setActiveTab(cfg.targetTab)}
+                              className={`w-full py-2 ${cfg.buttonBg} text-white font-extrabold text-xs rounded-xl transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95`}
+                            >
+                              <span>Open {selectedEvent.type} Module</span>
+                              <ArrowUpRight className="w-3.5 h-3.5" />
+                            </button>
                           </div>
-                          <span className={`text-xs font-black text-${selectedEvent.color}-700 uppercase`}>{selectedEvent.type}</span>
-                        </div>
-                        <h5 className={`text-lg font-black text-${selectedEvent.color}-900 leading-tight`}>
-                          {selectedEvent.fullTask}
-                        </h5>
-                        <div className="mt-4 pt-4 border-t border-white/20">
-                          <p className={`text-xs text-${selectedEvent.color}-700 font-medium leading-relaxed`}>
-                            Mandatory compliance requirement for UK limited companies and sole traders. Failure to meet this deadline may result in automated penalties.
-                          </p>
-                        </div>
-                      </div>
+                        );
+                      })()
                     ) : (
-                      <div className="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        <CheckCircle className="w-10 h-10 text-gray-300 mx-auto mb-4" />
-                        <p className="text-sm font-bold text-gray-400">No major tax deadlines for this date.</p>
+                      <div className="p-6 text-center bg-gray-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
+                        <CheckCircle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                        <p className="text-xs font-bold text-gray-400">No statutory tax deadlines scheduled for this date.</p>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-48 text-center">
-                    <div className="p-4 bg-gray-50 rounded-full mb-4">
-                      <Calendar className="w-8 h-8 text-gray-300" />
-                    </div>
-                    <p className="text-sm font-bold text-gray-400">Select a date to view tax obligations.</p>
+                  <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <Calendar className="w-8 h-8 text-gray-300 mb-2" />
+                    <p className="text-xs font-bold text-gray-400">Select any day on the calendar to inspect tax obligations.</p>
                   </div>
                 )}
-                
-                {/* Legend in Details panel */}
-                <div className="mt-10 pt-6 border-t border-gray-100 grid grid-cols-2 gap-3">
-                  {[
-                    { color: 'purple', label: 'VAT' },
-                    { color: 'blue', label: 'Payroll' },
-                    { color: 'emerald', label: 'Payment' },
-                    { color: 'red', label: 'SA/Tax' },
-                  ].map(item => (
-                    <div key={item.label} className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full bg-${item.color}-500`}></div>
-                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{item.label}</span>
-                    </div>
-                  ))}
+              </div>
+
+              {/* Legend */}
+              <div className="pt-4 border-t border-gray-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-purple-600"></div>
+                  <span className="text-[11px] font-bold text-gray-500">VAT (7th)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                  <span className="text-[11px] font-bold text-gray-500">PAYE/NI (22nd)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-600"></div>
+                  <span className="text-[11px] font-bold text-gray-500">HMRC Payment</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-600"></div>
+                  <span className="text-[11px] font-bold text-gray-500">CT600 / SA</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Upcoming List Section */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-6 shadow-sm">
-            <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-3">
-              <Clock className="w-6 h-6 text-red-500" />
-              Priority Deadline Watch
+          {/* Priority Deadline Watch Section */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
+            <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+              <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              Priority UK HMRC Statutory Deadline Watch
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
               {getUpcomingDeadlines().map((item, idx) => {
                 const daysUntil = Math.ceil((item.date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                const cfg = COLOR_MAP[item.color] || COLOR_MAP.purple;
+
                 return (
-                  <div key={idx} className="p-5 rounded-2xl border border-gray-100 bg-white hover:border-indigo-300 hover:shadow-xl transition-all group">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
-                        daysUntil <= 7 ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-500'
+                  <div key={idx} className="p-4 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 hover:border-indigo-300 transition-all flex flex-col justify-between space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                        daysUntil <= 7
+                          ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300/60'
+                          : 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60'
                       }`}>
-                        {daysUntil === 0 ? 'Today' : `${daysUntil} Days Left`}
-                      </div>
-                      <div className={`p-2 rounded-xl group-hover:scale-110 transition-transform bg-${item.color}-50 text-${item.color}-600`}>
-                        <Calendar className="w-5 h-5" />
+                        {daysUntil <= 0 ? 'Due Today' : `Due in ${daysUntil} Days`}
+                      </span>
+                      <div className={`p-2 rounded-xl text-white ${cfg.dotBg}`}>
+                        <Calendar className="w-4 h-4" />
                       </div>
                     </div>
-                    <h4 className="font-black text-gray-900 leading-tight mb-2">{item.task}</h4>
-                    <p className="text-xs font-bold text-gray-400">
-                      {item.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </p>
+
+                    <div>
+                      <h4 className="font-extrabold text-sm text-gray-900 dark:text-white leading-snug">{item.task}</h4>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Deadline: <span className="font-semibold text-gray-700 dark:text-gray-300">{item.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setActiveTab(cfg.targetTab)}
+                      className="w-full py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-gray-200 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95"
+                    >
+                      <span>Manage Task</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 );
               })}
