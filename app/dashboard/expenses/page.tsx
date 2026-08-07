@@ -5,7 +5,7 @@ import {
   Plus, Search, TrendingDown, Download, Receipt, Edit,
   Trash2, X, Upload, BarChart3, PieChart, DollarSign,
   ShoppingBag, Building2, Coffee, Car, Zap, Target,
-  Loader2, Tag, Filter, ArrowUpRight, ShieldCheck, AlertTriangle,
+  Loader2, Tag, Filter, ArrowUpRight, ShieldCheck, AlertTriangle, PoundSterling
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import StatusModal from '@/components/StatusModal';
@@ -591,7 +591,7 @@ export default function ExpensesPage() {
               <div>
                 <label className={labelCls}>Amount (£)</label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="number"
                     value={newExpense.amount}
@@ -686,12 +686,15 @@ export default function ExpensesPage() {
             <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className={labelCls}>Amount (£)</label>
-                <input
-                  type="number"
-                  value={selectedExpense.amount}
-                  onChange={(e) => setSelectedExpense({ ...selectedExpense, amount: parseFloat(e.target.value) || 0 })}
-                  className={inputCls}
-                />
+                <div className="relative">
+                  <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="number"
+                    value={selectedExpense.amount}
+                    onChange={(e) => setSelectedExpense({ ...selectedExpense, amount: parseFloat(e.target.value) || 0 })}
+                    className={`${inputCls} pl-9`}
+                  />
+                </div>
               </div>
               <div>
                 <label className={labelCls}>Date</label>
