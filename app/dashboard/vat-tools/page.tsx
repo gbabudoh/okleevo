@@ -4,7 +4,7 @@ import { useState } from 'react';
 import {
   Calculator, Plus, Minus, TrendingUp, FileText, Download, Calendar,
   Info, ArrowRight, Percent, CheckCircle, DollarSign, BarChart3,
-  Activity, Target, Zap, Trash2, Sparkles
+  Activity, Target, Zap, Trash2, Sparkles, Receipt
 } from 'lucide-react';
 import StatusModal from '@/components/StatusModal';
 import TourProvider from '@/components/tours/TourProvider';
@@ -145,23 +145,25 @@ export default function VATToolsPage() {
 
       {/* Stats Cards */}
       <div id="tour-vat-tools-stats" className="px-4 sm:px-6 pt-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Calculations', value: vatHistory.length.toString(), sub: 'Total operations', icon: Calculator, bg: 'bg-blue-100', text: 'text-blue-600', badge: 'Today' },
-            { label: 'Total VAT', value: `£${totalVATCalculated.toFixed(2)}`, sub: 'Cumulative VAT', icon: TrendingUp, bg: 'bg-emerald-100', text: 'text-emerald-600', badge: 'Total' },
-            { label: 'Average VAT', value: `£${avgVATAmount.toFixed(2)}`, sub: 'Per transaction', icon: BarChart3, bg: 'bg-purple-100', text: 'text-purple-600', badge: 'Avg' },
-            { label: 'Current Rate', value: `${activeRate}%`, sub: 'Applied VAT %', icon: Percent, bg: 'bg-amber-100', text: 'text-amber-600', badge: 'Active' },
-          ].map(({ label, value, sub, icon: Icon, bg, text, badge }) => (
-            <div key={label} className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <div className={`p-2 ${bg} rounded-xl`}>
-                  <Icon className={`w-4 h-4 ${text}`} />
+            { label: 'Calculations', value: vatHistory.length.toString(), sub: 'Total operations', icon: Calculator, bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600', badge: 'Today' },
+            { label: 'Total VAT', value: `£${totalVATCalculated.toFixed(2)}`, sub: 'Cumulative VAT', icon: TrendingUp, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600', badge: 'Total' },
+            { label: 'Average VAT', value: `£${avgVATAmount.toFixed(2)}`, sub: 'Per transaction', icon: BarChart3, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600', badge: 'Avg' },
+            { label: 'Current Rate', value: `${activeRate}%`, sub: 'Applied VAT %', icon: Percent, bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600', badge: 'Active' },
+          ].map(({ label, value, sub, icon: Icon, bgGrad, badge }) => (
+            <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2.5 ${bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
+                  <Icon className="w-4.5 h-4.5" />
                 </div>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${bg} ${text}`}>{badge}</span>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border border-gray-200/60 dark:border-slate-700">
+                  {badge}
+                </span>
               </div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
-              <p className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">{value}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{value}</p>
+              <p className="text-[11px] font-medium text-gray-400 mt-1">{sub}</p>
             </div>
           ))}
         </div>
@@ -392,7 +394,7 @@ export default function VATToolsPage() {
                         <Calendar className="w-3 h-3" /> {item.date}
                       </span>
                       <span className="text-[11px] text-gray-400 flex items-center gap-0.5">
-                        <DollarSign className="w-3 h-3" /> Base: £{item.amount.toFixed(2)}
+                        <Receipt className="w-3 h-3 text-indigo-500" /> Base: £{item.amount.toFixed(2)}
                       </span>
                     </div>
                   </div>
