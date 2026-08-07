@@ -2396,109 +2396,107 @@ export default function TaxationPage() {
       )}
 
       {activeTab === 'capital-gains' && (
-        <div className="space-y-6">
-          {/* CGT Header */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-8">
-            <div className="flex items-center gap-4 mb-5">
-              <div className="p-3 bg-orange-50 rounded-xl shrink-0">
-                <TrendingUp className="w-6 h-6 text-orange-600" />
-              </div>
+        <div className="space-y-5">
+          {/* Executive Capital Gains Header */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Capital Gains Tax</h2>
-                <p className="text-gray-500 text-sm">Calculate and report capital gains on asset disposals ({currentTaxYear})</p>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    UK Capital Gains Tax (CGT) Calculator
+                  </h2>
+                  <span className="px-2.5 py-0.5 bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 text-[10px] font-extrabold rounded-full border border-amber-200/60">
+                    FY {currentTaxYear} Rules
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">Calculate taxable capital gains on asset disposals, business shares, and UK property</p>
+              </div>
+
+              <button
+                onClick={() => setShowCGTCalculatorModal(true)}
+                className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer active:scale-95 whitespace-nowrap"
+              >
+                <Calculator className="w-4 h-4" />
+                Calculate CGT Liability
+              </button>
+            </div>
+
+            {/* Live CGT Snapshot Chips */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div className="bg-amber-50/80 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/60 rounded-2xl p-3.5 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-300">Annual Exempt Amount (AEA)</p>
+                  <p className="text-xl font-black text-amber-950 dark:text-white tracking-tight">£3,000</p>
+                </div>
+                <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+
+              <div className="bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 rounded-2xl p-3.5 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300">Sample Asset Disposal Gain</p>
+                  <p className="text-xl font-black text-blue-950 dark:text-white tracking-tight">
+                    £{Math.max(0, parseFloat(cgtDisposalValue || '0') - parseFloat(cgtAcquisitionCost || '0') - parseFloat(cgtAllowableExpenses || '0')).toLocaleString()}
+                  </p>
+                </div>
+                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+
+              <div className="bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 rounded-2xl p-3.5 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">BADR Business Rate</p>
+                  <p className="text-xl font-black text-emerald-950 dark:text-white tracking-tight">10% / 14%</p>
+                </div>
+                <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
-            <button
-              onClick={() => setShowCGTCalculatorModal(true)}
-              className="px-5 py-2.5 bg-orange-600 text-white font-medium text-sm rounded-lg hover:bg-orange-700 transition-colors cursor-pointer"
-            >
-              Calculate CGT
-            </button>
           </div>
 
-          {/* UK CGT Rates 2025/26 */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-orange-600" />
-              UK CGT Rates {currentTaxYear}
+          {/* Statutory CGT Rates & Exemptions Grid */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-5">
+            <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+              <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              UK Capital Gains Tax Rates &amp; Exemptions ({currentTaxYear})
             </h3>
 
-            {/* Annual Exempt Amount */}
-            <div className="mb-6 p-6 bg-orange-50 rounded-xl border border-orange-100">
-              <p className="text-sm text-orange-700 mb-2">Annual Exempt Amount (AEA)</p>
-              <p className="text-4xl font-bold text-orange-900">£3,000</p>
-              <p className="text-xs text-orange-700 mt-2">Reduced from £6,000 in 2024/25</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Basic Rate Taxpayer */}
-              <div className="p-4 bg-green-50 rounded-xl border border-green-100">
-                <p className="text-sm font-semibold text-green-800 mb-3">Basic Rate Taxpayers</p>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-green-700">Most assets</span>
-                    <span className="font-bold text-green-900">18%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-green-700">Residential property</span>
-                    <span className="font-bold text-green-900">18%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-green-700">Carried interest</span>
-                    <span className="font-bold text-green-900">18%</span>
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div className="p-4 bg-amber-50/80 dark:bg-slate-800/60 rounded-2xl border border-amber-100 dark:border-slate-800">
+                <p className="text-[11px] font-extrabold text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-1">Annual Exempt Amount</p>
+                <p className="text-2xl font-black text-amber-950 dark:text-white tracking-tight">£3,000</p>
+                <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-1">Tax-free allowance per individual</p>
               </div>
 
-              {/* Higher Rate Taxpayer */}
-              <div className="p-4 bg-red-50 rounded-xl border border-red-100">
-                <p className="text-sm font-semibold text-red-800 mb-3">Higher/Additional Rate Taxpayers</p>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-red-700">Most assets</span>
-                    <span className="font-bold text-red-900">24%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-red-700">Residential property</span>
-                    <span className="font-bold text-red-900">24%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-red-700">Carried interest</span>
-                    <span className="font-bold text-red-900">32%</span>
-                  </div>
-                </div>
+              <div className="p-4 bg-emerald-50/80 dark:bg-slate-800/60 rounded-2xl border border-emerald-100 dark:border-slate-800">
+                <p className="text-[11px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-1">BADR Relief</p>
+                <p className="text-2xl font-black text-emerald-950 dark:text-white tracking-tight">10% / 14%</p>
+                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">Qualifying UK SME business sales (£1m limit)</p>
               </div>
-            </div>
-          </div>
 
-          {/* Special Rates */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-bold text-gray-900 mb-4">Special CGT Rates</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
-                <p className="text-sm font-semibold text-purple-800 mb-2">Business Asset Disposal Relief (BADR)</p>
-                <p className="text-3xl font-bold text-purple-900">14%</p>
-                <p className="text-xs text-purple-700 mt-2">Lifetime limit: £1 million</p>
+              <div className="p-4 bg-blue-50/80 dark:bg-slate-800/60 rounded-2xl border border-blue-100 dark:border-slate-800">
+                <p className="text-[11px] font-extrabold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-1">Basic Rate Taxpayers</p>
+                <p className="text-2xl font-black text-blue-950 dark:text-white tracking-tight">18% / 10%</p>
+                <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">18% Residential Property • 10% Other Assets</p>
               </div>
-              <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                <p className="text-sm font-semibold text-indigo-800 mb-2">Investors&apos; Relief</p>
-                <p className="text-3xl font-bold text-indigo-900">10%</p>
-                <p className="text-xs text-indigo-700 mt-2">Lifetime limit: £10 million</p>
-              </div>
-            </div>
-          </div>
 
-          {/* Reporting Deadlines */}
-          <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertCircle className="w-6 h-6 text-yellow-600" />
-              <h3 className="font-bold text-yellow-900">Reporting Requirements</h3>
+              <div className="p-4 bg-rose-50/80 dark:bg-slate-800/60 rounded-2xl border border-rose-100 dark:border-slate-800">
+                <p className="text-[11px] font-extrabold text-rose-700 dark:text-rose-300 uppercase tracking-wider mb-1">Higher Rate Taxpayers</p>
+                <p className="text-2xl font-black text-rose-950 dark:text-white tracking-tight">24% / 20%</p>
+                <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1">24% Residential Property • 20% Other Assets</p>
+              </div>
             </div>
-            <ul className="text-sm text-yellow-800 space-y-1">
-              <li>• UK property sales: Report within <strong>60 days</strong> of completion</li>
-              <li>• Other disposals: Include in Self Assessment return</li>
-              <li>• Losses can be carried forward to offset future gains</li>
-            </ul>
+
+            {/* 60-Day UK Property Reporting Banner */}
+            <div className="pt-3 border-t border-gray-100 dark:border-slate-800 p-4 bg-gradient-to-r from-amber-50/90 via-orange-50/40 to-amber-50/90 dark:from-slate-800/80 dark:to-slate-800/40 rounded-2xl border border-amber-200/60 dark:border-slate-700 flex items-start gap-3">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 rounded-xl shrink-0 mt-0.5">
+                <AlertCircle className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-extrabold text-amber-950 dark:text-amber-200">HMRC 60-Day UK Property Reporting Rule</p>
+                <p className="text-xs text-amber-900/80 dark:text-gray-300 leading-relaxed mt-0.5">
+                  Disposals of UK residential property with taxable capital gains must be reported and paid to HMRC within <strong>60 days of completion</strong> to avoid late penalties.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
