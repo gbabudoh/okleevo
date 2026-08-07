@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { jsPDF } from 'jspdf';
 import {
   Plus, Search, Mail, PoundSterling,
   Users, TrendingUp, Star, Edit, Trash2, X, Tag, AlertCircle,
   ChevronDown, Sparkles, LayoutGrid, List, Loader2, Kanban,
   Clock, Send as SendIcon, Inbox as InboxIcon, ArrowLeft, Eye, Archive,
   Trophy, Wallet, ArrowUp, ArrowDown, ArrowUpDown, CheckSquare, Square,
-  Building2, BarChart3, Contact, Download, ChevronLeft, ChevronRight, CalendarDays
+  Building2, BarChart3, Contact, Download, ChevronLeft, ChevronRight, CalendarDays, FileText
 } from 'lucide-react';
 import StatusModal from '@/components/StatusModal';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
@@ -160,6 +161,73 @@ function ReportBar({ label, valueLabel, subLabel, pct, colorClass }: {
           <span className="capitalize">{label}</span>: {valueLabel}{subLabel ? ` (${subLabel})` : ''}
         </div>
       )}
+    </div>
+  );
+}
+
+function DonutChart({ segments, totalLabel }: {
+  segments: { label: string; value: number; colorHex: string; colorClass: string }[];
+  totalLabel: string;
+}) {
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const total = segments.reduce((sum, s) => sum + s.value, 0);
+  const r = 60;
+  const circumference = 2 * Math.PI * r;
+  let accPct = 0;
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-6">
+      <div className="relative w-[160px] h-[160px] shrink-0">
+        <svg viewBox="0 0 160 160" className="w-full h-full -rotate-90">
+          <circle cx="80" cy="80" r={r} fill="none" stroke="currentColor" className="text-gray-100 dark:text-slate-800" strokeWidth="20" />
+          {total > 0 && segments.map((s, i) => {
+            if (s.value === 0) return null;
+            const pct = (s.value / total) * 100;
+            const dash = (pct / 100) * circumference;
+            const offset = -((accPct / 100) * circumference);
+            accPct += pct;
+            const isHover = hoverIdx === i;
+            return (
+              <circle
+                key={s.label}
+                cx="80" cy="80" r={r} fill="none"
+                stroke={s.colorHex}
+                strokeWidth={isHover ? 24 : 20}
+                strokeDasharray={`${dash} ${circumference - dash}`}
+                strokeDashoffset={offset}
+                className="transition-all duration-150 cursor-pointer"
+                onMouseEnter={() => setHoverIdx(i)}
+                onMouseLeave={() => setHoverIdx(null)}
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-xl font-extrabold text-gray-900 dark:text-white">{total}</span>
+          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">{totalLabel}</span>
+        </div>
+        {hoverIdx !== null && segments[hoverIdx].value > 0 && (
+          <div className="absolute -top-9 left-1/2 -translate-x-1/2 z-20 px-2.5 py-1.5 rounded-lg bg-gray-900 dark:bg-slate-700 text-white text-[11px] font-semibold whitespace-nowrap shadow-lg pointer-events-none">
+            <span className="capitalize">{segments[hoverIdx].label}</span>: {segments[hoverIdx].value} ({Math.round((segments[hoverIdx].value / total) * 100)}%)
+          </div>
+        )}
+      </div>
+      <div className="flex-1 w-full space-y-2">
+        {segments.map((s, i) => (
+          <div key={s.label}
+            onMouseEnter={() => setHoverIdx(i)}
+            onMouseLeave={() => setHoverIdx(null)}
+            className={`flex items-center justify-between px-2 py-1.5 rounded-lg transition-colors cursor-default ${hoverIdx === i ? 'bg-gray-50 dark:bg-slate-800' : ''}`}
+          >
+            <span className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-300 capitalize">
+              <span className={`w-2.5 h-2.5 rounded-full ${s.colorClass}`} /> {s.label}
+            </span>
+            <span className="text-xs font-bold text-gray-900 dark:text-white">
+              {s.value} <span className="text-gray-400 font-medium">({total > 0 ? Math.round((s.value / total) * 100) : 0}%)</span>
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -518,6 +586,9 @@ export default function CRMPage() {
   const statusBarColor: Record<Client['status'], string> = {
     active: 'bg-emerald-500', lead: 'bg-blue-500', customer: 'bg-indigo-500', inactive: 'bg-gray-400',
   };
+  const statusHexColor: Record<Client['status'], string> = {
+    active: '#10b981', lead: '#3b82f6', customer: '#6366f1', inactive: '#9ca3af',
+  };
   const statusStats = STATUS_ORDER.map(status => ({
     status,
     count: clients.filter(c => c.status === status).length,
@@ -526,7 +597,6 @@ export default function CRMPage() {
   const topCompanies = companyStats.slice(0, 6);
   const maxCompanyRevenue = Math.max(1, ...topCompanies.map(c => c.revenue));
   const maxStageRevenue = Math.max(1, ...stageStats.map(s => s.revenue));
-  const maxStatusCount = Math.max(1, ...statusStats.map(s => s.count));
 
   const calendarCells = (() => {
     const year = calendarMonth.getFullYear();
@@ -540,7 +610,7 @@ export default function CRMPage() {
     });
   })();
 
-  const handleExportReports = () => {
+  const handleExportReportsCSV = () => {
     let csv = 'CRM Report\n';
     csv += `Generated: ${new Date().toLocaleDateString()}\n\n`;
     csv += 'Pipeline by Stage\n';
@@ -560,6 +630,101 @@ export default function CRMPage() {
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     setStatusModal({ isOpen: true, title: 'Export Complete', message: 'Your CRM report has been exported to CSV.', type: 'success' });
+  };
+
+  const handleExportReportsPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setFontSize(28);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Okleevo', 14, 25);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('CRM Performance Report', 14, 33);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Pipeline & Relationship Overview', 14, 55);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 63);
+    doc.text(`Total clients: ${clients.length}  ·  Pipeline value: £${pipelineValue.toLocaleString()}  ·  Win rate: ${winRate}%`, 14, 69);
+
+    doc.setDrawColor(230);
+    doc.line(14, 76, 196, 76);
+
+    let y = 88;
+    const drawSectionTitle = (title: string) => {
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(37, 99, 235);
+      doc.text(title, 14, y);
+      y += 8;
+    };
+    const drawTableHeader = (cols: { label: string; x: number }[]) => {
+      doc.setFillColor(245, 247, 250);
+      doc.rect(14, y - 6, 182, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(0);
+      cols.forEach(c => doc.text(c.label, c.x, y));
+      y += 9;
+      doc.setFont('helvetica', 'normal');
+    };
+    const ensureSpace = () => { if (y > 265) { doc.addPage(); y = 20; } };
+
+    drawSectionTitle('Pipeline by Stage');
+    drawTableHeader([{ label: 'STAGE', x: 16 }, { label: 'DEALS', x: 120 }, { label: 'REVENUE', x: 150 }]);
+    stageStats.forEach((s, idx) => {
+      ensureSpace();
+      if (idx % 2 === 0) { doc.setFillColor(252, 252, 252); doc.rect(14, y - 5, 182, 7, 'F'); }
+      doc.text(s.label.replace(/^\w/, c => c.toUpperCase()), 16, y);
+      doc.text(String(s.count), 120, y);
+      doc.text(`£${s.revenue.toLocaleString()}`, 150, y);
+      y += 7;
+    });
+    y += 8;
+
+    ensureSpace();
+    drawSectionTitle('Status Breakdown');
+    drawTableHeader([{ label: 'STATUS', x: 16 }, { label: 'COUNT', x: 120 }]);
+    statusStats.forEach((s, idx) => {
+      ensureSpace();
+      if (idx % 2 === 0) { doc.setFillColor(252, 252, 252); doc.rect(14, y - 5, 182, 7, 'F'); }
+      doc.text(s.status.replace(/^\w/, c => c.toUpperCase()), 16, y);
+      doc.text(String(s.count), 120, y);
+      y += 7;
+    });
+    y += 8;
+
+    ensureSpace();
+    drawSectionTitle('Companies by Revenue');
+    drawTableHeader([{ label: 'COMPANY', x: 16 }, { label: 'CONTACTS', x: 120 }, { label: 'REVENUE', x: 150 }]);
+    companyStats.forEach((co, idx) => {
+      ensureSpace();
+      if (idx % 2 === 0) { doc.setFillColor(252, 252, 252); doc.rect(14, y - 5, 182, 7, 'F'); }
+      doc.text(co.company.substring(0, 40), 16, y);
+      doc.text(String(co.count), 120, y);
+      doc.text(`£${co.revenue.toLocaleString()}`, 150, y);
+      y += 7;
+    });
+
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Okleevo | CRM Report | Page ${i} of ${pageCount}`, 105, 285, { align: 'center' });
+    }
+
+    doc.save(`crm-report-${new Date().toISOString().split('T')[0]}.pdf`);
+    setStatusModal({ isOpen: true, title: 'Export Complete', message: 'Your CRM report has been exported to PDF.', type: 'success' });
   };
 
   const DetailPanel = ({ client }: { client: Client }) => (
@@ -1262,10 +1427,14 @@ export default function CRMPage() {
 
         {crmSection === 'reports' && (
           <div className="space-y-3.5">
-            <div className="flex justify-end">
-              <button type="button" onClick={handleExportReports}
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={handleExportReportsCSV}
                 className="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                 <Download className="w-3.5 h-3.5" /> Export CSV
+              </button>
+              <button type="button" onClick={handleExportReportsPDF}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <FileText className="w-3.5 h-3.5" /> Export PDF
               </button>
             </div>
 
@@ -1285,20 +1454,13 @@ export default function CRMPage() {
               {/* Status Breakdown */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">Status Breakdown</h3>
-                <p className="text-[11px] text-gray-400 mb-3">Clients by relationship status</p>
-                <div className="flex flex-wrap gap-3 mb-4">
-                  {statusStats.map((s) => (
-                    <span key={s.status} className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
-                      <span className={`w-2 h-2 rounded-full ${statusBarColor[s.status]}`} /> {s.status} ({s.count})
-                    </span>
-                  ))}
-                </div>
-                <div className="space-y-4">
-                  {statusStats.map((s) => (
-                    <ReportBar key={s.status} label={s.status} valueLabel={`${s.count}`}
-                      pct={(s.count / maxStatusCount) * 100} colorClass={statusBarColor[s.status]} />
-                  ))}
-                </div>
+                <p className="text-[11px] text-gray-400 mb-4">Clients by relationship status</p>
+                <DonutChart
+                  totalLabel="Clients"
+                  segments={statusStats.map(s => ({
+                    label: s.status, value: s.count, colorHex: statusHexColor[s.status], colorClass: statusBarColor[s.status],
+                  }))}
+                />
               </div>
 
               {/* Top Companies by Revenue */}
