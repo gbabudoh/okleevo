@@ -320,47 +320,47 @@ export default function ExpensesPage() {
       <div className="px-4 sm:px-6 py-4 space-y-4 max-w-4xl mx-auto">
 
         {/* Stats */}
-        <div id="tour-expenses-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-expenses-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
             {
               label: 'Total Spent',
               value: `£${totalExpenses.toLocaleString()}`,
               sub:   `${filteredExpenses.length} records`,
               icon:  TrendingDown,
-              bg:    'bg-rose-500',
+              bgGrad: 'bg-gradient-to-br from-rose-500 to-red-600',
             },
             {
               label: 'Avg per Item',
               value: `£${Math.round(avgExpense).toLocaleString()}`,
               sub:   'per transaction',
               icon:  BarChart3,
-              bg:    'bg-blue-500',
+              bgGrad: 'bg-gradient-to-br from-blue-500 to-indigo-600',
             },
             {
               label: 'Categories',
               value: String(Object.keys(categoryTotals).length),
               sub:   'spending types',
               icon:  PieChart,
-              bg:    'bg-purple-500',
+              bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600',
             },
             {
               label: 'Top Category',
               value: topCategory ? topCategory[0] : '—',
               sub:   topCategory ? `£${topCategory[1].toLocaleString()}` : 'No data',
               icon:  Tag,
-              bg:    'bg-amber-500',
+              bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600',
             },
-          ].map(({ label, value, sub, icon: Icon, bg }) => (
-            <div key={label} className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <div className={`p-2 ${bg} rounded-xl`}>
-                  <Icon className="w-4 h-4 text-white" />
+          ].map(({ label, value, sub, icon: Icon, bgGrad }) => (
+            <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2.5 ${bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
+                  <Icon className="w-4.5 h-4.5" />
                 </div>
-                <ArrowUpRight className="w-3.5 h-3.5 text-gray-300" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600" />
               </div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
-              <p className="text-lg sm:text-xl font-bold text-gray-900 leading-tight truncate">{value}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight truncate">{value}</p>
+              <p className="text-[11px] font-medium text-gray-400 mt-1">{sub}</p>
             </div>
           ))}
         </div>
