@@ -487,8 +487,10 @@ export default function MailboxPage() {
                         : 'hover:bg-gray-50 border-l-transparent'
                     }`}
                   >
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold ${
-                      msg.status === 'UNREAD' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-black shadow-xs ${
+                      msg.status === 'UNREAD' 
+                        ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white ring-2 ring-indigo-200' 
+                        : 'bg-gradient-to-br from-indigo-500 to-blue-600 text-white'
                     }`}>
                       {(selectedFolder === 'SENT' ? msg.to : msg.from).charAt(0).toUpperCase()}
                     </div>
