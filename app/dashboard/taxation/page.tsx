@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   FileText, Plus, Download, Calculator, Calendar, DollarSign, TrendingUp, AlertCircle, CheckCircle,
   Clock, Building2, User, Users, Briefcase, BarChart3, Shield, Send, X, Receipt, Home, History,
-  ShieldCheck, Globe, ExternalLink, Loader2, ArrowUpRight, FileCheck
+  ShieldCheck, Globe, ExternalLink, Loader2, ArrowUpRight, FileCheck, PoundSterling
 } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
@@ -2014,97 +2014,92 @@ export default function TaxationPage() {
             </div>
           </div>
 
-          {/* UK 2025/26 Tax Rates */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-green-600" />
-              UK {currentTaxYear} Tax Rates & Thresholds
+          {/* UK 2025/26 Tax Rates & Thresholds Container */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-5">
+            <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+              <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              UK {currentTaxYear} Payroll Tax &amp; National Insurance Thresholds
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                <p className="text-xs text-blue-600 font-medium mb-1">Personal Allowance</p>
-                <p className="text-xl font-bold text-blue-900">£12,570</p>
-                <p className="text-xs text-blue-700 mt-1">Tax-free income</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div className="p-4 bg-blue-50/80 dark:bg-slate-800/60 rounded-2xl border border-blue-100 dark:border-slate-800">
+                <p className="text-[11px] font-extrabold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-1">Personal Allowance</p>
+                <p className="text-xl font-black text-blue-950 dark:text-white tracking-tight">£12,570</p>
+                <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">Tax code 1257L standard</p>
               </div>
-              <div className="p-4 bg-green-50 rounded-xl border border-green-100">
-                <p className="text-xs text-green-600 font-medium mb-1">Basic Rate (20%)</p>
-                <p className="text-xl font-bold text-green-900">£12,571 - £50,270</p>
-                <p className="text-xs text-green-700 mt-1">Standard tax band</p>
+              <div className="p-4 bg-emerald-50/80 dark:bg-slate-800/60 rounded-2xl border border-emerald-100 dark:border-slate-800">
+                <p className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-1">Basic Rate (20%)</p>
+                <p className="text-xl font-black text-emerald-950 dark:text-white tracking-tight">£12,571 - £50,270</p>
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">Standard payroll tax band</p>
               </div>
-              <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
-                <p className="text-xs text-orange-600 font-medium mb-1">Higher Rate (40%)</p>
-                <p className="text-xl font-bold text-orange-900">£50,271 - £125,140</p>
-                <p className="text-xs text-orange-700 mt-1">Higher earners</p>
+              <div className="p-4 bg-amber-50/80 dark:bg-slate-800/60 rounded-2xl border border-amber-100 dark:border-slate-800">
+                <p className="text-[11px] font-extrabold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-1">Higher Rate (40%)</p>
+                <p className="text-xl font-black text-amber-950 dark:text-white tracking-tight">£50,271 - £125,140</p>
+                <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">Higher earners threshold</p>
               </div>
-              <div className="p-4 bg-red-50 rounded-xl border border-red-100">
-                <p className="text-xs text-red-600 font-medium mb-1">Additional Rate (45%)</p>
-                <p className="text-xl font-bold text-red-900">Over £125,140</p>
-                <p className="text-xs text-red-700 mt-1">Top earners</p>
+              <div className="p-4 bg-rose-50/80 dark:bg-slate-800/60 rounded-2xl border border-rose-100 dark:border-slate-800">
+                <p className="text-[11px] font-extrabold text-rose-700 dark:text-rose-300 uppercase tracking-wider mb-1">Additional Rate (45%)</p>
+                <p className="text-xl font-black text-rose-950 dark:text-white tracking-tight">Over £125,140</p>
+                <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1">Top earners tax band</p>
               </div>
             </div>
 
             {/* NI Rates */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <h4 className="font-semibold text-gray-900 mb-3">National Insurance {currentTaxYear}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
-                  <p className="text-xs text-purple-600 font-medium">Employee NI (Class 1)</p>
-                  <p className="font-bold text-purple-900">8%</p>
-                  <p className="text-xs text-purple-700">£12,570 - £50,270</p>
+            <div className="pt-3 border-t border-gray-100 dark:border-slate-800 space-y-3">
+              <h4 className="text-xs font-extrabold text-gray-900 dark:text-white uppercase tracking-wider">Class 1 National Insurance ({currentTaxYear})</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                <div className="p-3.5 bg-purple-50/70 dark:bg-slate-800/60 rounded-2xl border border-purple-100 dark:border-slate-800 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-extrabold text-purple-800 dark:text-purple-300">Employee Primary NI</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">£12,570 – £50,270</p>
+                  </div>
+                  <span className="text-2xl font-black text-purple-900 dark:text-white">8%</span>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
-                  <p className="text-xs text-purple-600 font-medium">Employee NI (Upper)</p>
-                  <p className="font-bold text-purple-900">2%</p>
-                  <p className="text-xs text-purple-700">Over £50,270</p>
+                <div className="p-3.5 bg-purple-50/70 dark:bg-slate-800/60 rounded-2xl border border-purple-100 dark:border-slate-800 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-extrabold text-purple-800 dark:text-purple-300">Employee Upper NI</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">Over £50,270</p>
+                  </div>
+                  <span className="text-2xl font-black text-purple-900 dark:text-white">2%</span>
                 </div>
-                <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                  <p className="text-xs text-indigo-600 font-medium">Employer NI</p>
-                  <p className="font-bold text-indigo-900">15%</p>
-                  <p className="text-xs text-indigo-700">Over £9,100 (from Apr 2025)</p>
+                <div className="p-3.5 bg-indigo-50/70 dark:bg-slate-800/60 rounded-2xl border border-indigo-100 dark:border-slate-800 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-extrabold text-indigo-800 dark:text-indigo-300">Employer Secondary NI</p>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">Over £9,100 (April 2025 rule)</p>
+                  </div>
+                  <span className="text-2xl font-black text-indigo-900 dark:text-white">15%</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Employee Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all group">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                  <Users className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Employees</p>
-                  <p className="text-3xl font-bold text-gray-900">{employeeCount}</p>
-                </div>
+          {/* Executive Payroll KPI Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl w-fit mb-3 group-hover:scale-105 transition-transform text-white shadow-xs">
+                <Users className="w-4.5 h-4.5" />
               </div>
-              <p className="text-xs text-gray-600">Active on payroll</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Active Payroll Headcount</p>
+              <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">{employeeCount} Employees</p>
+              <p className="text-[11px] font-medium text-gray-400 mt-1">Active on monthly RTI payroll</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all group">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                  <DollarSign className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Monthly PAYE</p>
-                  <p className="text-3xl font-bold text-gray-900">£{currentMonthlyPAYE.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                </div>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl w-fit mb-3 group-hover:scale-105 transition-transform text-white shadow-xs">
+                <PoundSterling className="w-4.5 h-4.5" />
               </div>
-              <p className="text-xs text-gray-600">Current month liability</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Monthly PAYE Liability</p>
+              <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">£{currentMonthlyPAYE.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              <p className="text-[11px] font-medium text-gray-400 mt-1">Income tax deducted under PAYE</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all group">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
-                  <Receipt className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Monthly NI</p>
-                  <p className="text-3xl font-bold text-gray-900">£{currentMonthlyNIDue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                </div>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="p-2.5 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl w-fit mb-3 group-hover:scale-105 transition-transform text-white shadow-xs">
+                <Receipt className="w-4.5 h-4.5" />
               </div>
-              <p className="text-xs text-gray-600">Employer & Employee NI</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Monthly National Insurance</p>
+              <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">£{currentMonthlyNIDue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              <p className="text-[11px] font-medium text-gray-400 mt-1">Combined Employer &amp; Employee Class 1 NI</p>
             </div>
           </div>
 
