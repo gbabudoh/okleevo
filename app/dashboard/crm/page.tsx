@@ -780,25 +780,23 @@ export default function CRMPage() {
         <Plus className="w-8 h-8" />
       </button>
 
-      <div className="px-4 sm:px-6 space-y-4 pt-4">
-
-        {/* Stats */}
-        <div id="tour-crm-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="px-4 sm:px-6 space-y-4 pt-4">        {/* Stats */}
+        <div id="tour-crm-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'All Clients', value: clients.length, sub: 'Total database', icon: Users, bg: 'bg-blue-100', text: 'text-blue-600' },
-            { label: 'Active', value: activeClients, sub: 'Currently engaged', icon: Star, bg: 'bg-emerald-100', text: 'text-emerald-600' },
-            { label: 'New Leads', value: leadClients, sub: 'Opportunities', icon: TrendingUp, bg: 'bg-purple-100', text: 'text-purple-600' },
-            { label: 'Total Revenue', value: `£${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Lifetime value', icon: PoundSterling, bg: 'bg-amber-100', text: 'text-amber-600' },
-          ].map(({ label, value, sub, icon: Icon, bg, text }) => (
-            <div key={label} className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-              <div className="mb-2">
-                <div className={`p-2 ${bg} rounded-xl w-fit`}>
-                  <Icon className={`w-4 h-4 ${text}`} />
+            { label: 'All Clients', value: clients.length, sub: 'Total database', icon: Users, bgGrad: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
+            { label: 'Active', value: activeClients, sub: 'Currently engaged', icon: Star, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+            { label: 'New Leads', value: leadClients, sub: 'Opportunities', icon: TrendingUp, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
+            { label: 'Total Revenue', value: `£${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Lifetime value', icon: PoundSterling, bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
+          ].map(({ label, value, sub, icon: Icon, bgGrad }) => (
+            <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2.5 ${bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
+                  <Icon className="w-4.5 h-4.5" />
                 </div>
               </div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">{value}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5 hidden sm:block">{sub}</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{value}</p>
+              <p className="text-[11px] font-medium text-gray-400 mt-1">{sub}</p>
             </div>
           ))}
         </div>
