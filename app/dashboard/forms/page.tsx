@@ -245,7 +245,7 @@ export default function FormsPage() {
       {/* Sticky header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-          <div className="p-2 bg-purple-600 rounded-xl shrink-0">
+          <div className="p-2 bg-slate-900 rounded-xl shrink-0">
             <FileText className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -256,7 +256,7 @@ export default function FormsPage() {
             id="tour-forms-create"
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Create Form</span>
@@ -268,7 +268,7 @@ export default function FormsPage() {
       {/* Mobile FAB */}
       <button
         onClick={() => setShowCreateModal(true)}
-        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:from-purple-700 hover:to-indigo-700"
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:bg-slate-800"
       >
         <Plus className="w-8 h-8" />
       </button>
@@ -298,20 +298,20 @@ export default function FormsPage() {
         {/* Forms list */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="w-10 h-10 text-purple-600 animate-spin" />
+            <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
             <p className="text-sm text-gray-500 font-medium">Loading forms…</p>
           </div>
         ) : forms.length === 0 ? (
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-7 h-7 text-purple-600 dark:text-purple-400" />
+            <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-7 h-7 text-gray-600" />
             </div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">No forms yet</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">Create your first form to start collecting responses.</p>
             <button
               type="button"
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Create Your First Form
             </button>
@@ -319,38 +319,33 @@ export default function FormsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {forms.map((form) => (
-              <div key={form.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-                {/* Color strip by status */}
-                <div className={`h-1 w-full ${form.status === 'active' ? 'bg-emerald-500' : form.status === 'draft' ? 'bg-gray-300' : 'bg-red-400'}`} />
-
-                <div className="p-4 flex-1 flex flex-col gap-3">
-                  {/* Form name + status */}
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-purple-100 rounded-xl shrink-0">
-                      <FileText className="w-4 h-4 text-purple-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-sm font-bold text-gray-900 leading-snug truncate">{form.name}</h3>
-                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${statusColor(form.status)}`}>
-                          {form.status}
-                        </span>
-                      </div>
+              <div
+                key={form.id}
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-4 sm:p-5 flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-base font-bold text-gray-900 truncate leading-snug">{form.name}</h3>
                       {form.description && (
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">{form.description}</p>
+                        <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{form.description}</p>
                       )}
                     </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${statusColor(form.status)}`}>
+                      {form.status.toUpperCase()}
+                    </span>
                   </div>
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-blue-50 rounded-xl p-2.5 border border-blue-100">
-                      <p className="text-lg font-bold text-blue-800">{form.responses}</p>
-                      <p className="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">Responses</p>
+                  {/* Stats breakdown */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="bg-indigo-50 rounded-xl p-2.5 border border-indigo-100">
+                      <p className="text-lg font-bold text-indigo-900">{form.responses}</p>
+                      <p className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wide">Responses</p>
                     </div>
-                    <div className="bg-purple-50 rounded-xl p-2.5 border border-purple-100">
-                      <p className="text-lg font-bold text-purple-800">{form.fields}</p>
-                      <p className="text-[10px] font-semibold text-purple-500 uppercase tracking-wide">Fields</p>
+                    <div className="bg-gray-50 rounded-xl p-2.5 border border-gray-100">
+                      <p className="text-lg font-bold text-gray-800">{form.fields}</p>
+                      <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Fields</p>
                     </div>
                   </div>
 
@@ -374,7 +369,7 @@ export default function FormsPage() {
                     <button
                       type="button"
                       onClick={() => handleCopyLink(form.id)}
-                      className="flex items-center justify-center gap-1.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                     >
                       <LinkIcon className="w-3.5 h-3.5" /> Copy Link
                     </button>
@@ -405,17 +400,17 @@ export default function FormsPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 px-6 py-4 flex items-center justify-between shrink-0 shadow-md">
+            <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl text-white">
-                  <FileText className="w-5 h-5 text-white" />
+                <div className="p-2 bg-gray-100 rounded-xl text-gray-700">
+                  <FileText className="w-5 h-5 text-gray-700" />
                 </div>
                 <div>
-                  <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight">Create new form</h2>
-                  <p className="text-[11px] text-purple-100 font-medium">Fill in the form details</p>
+                  <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Create new form</h2>
+                  <p className="text-[11px] text-gray-500 font-medium">Fill in the form details</p>
                 </div>
               </div>
-              <button type="button" onClick={resetCreate} className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
+              <button type="button" onClick={resetCreate} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
