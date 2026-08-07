@@ -224,7 +224,7 @@ export default function HelpdeskPage() {
             id="tour-helpdesk-new-button"
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">New Ticket</span>
@@ -236,25 +236,27 @@ export default function HelpdeskPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
         {/* Stats */}
-        <div id="tour-helpdesk-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-helpdesk-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Total Tickets', value: stats.total,      icon: MessageSquare, bg: 'bg-indigo-100', ic: 'text-indigo-600', val: 'text-indigo-700' },
-            { label: 'Open',          value: stats.open,        icon: AlertCircle,   bg: 'bg-blue-100',   ic: 'text-blue-600',   val: 'text-blue-700' },
-            { label: 'Active',        value: stats.inProgress,  icon: Timer,         bg: 'bg-purple-100', ic: 'text-purple-600', val: 'text-purple-700' },
-            { label: 'Resolved',      value: stats.resolved,    icon: CheckCircle,   bg: 'bg-emerald-100',ic: 'text-emerald-600',val: 'text-emerald-700' },
+            { label: 'Total Tickets', value: stats.total,      icon: MessageSquare, bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600' },
+            { label: 'Open',          value: stats.open,        icon: AlertCircle,   bgGrad: 'bg-gradient-to-br from-rose-500 to-red-600' },
+            { label: 'Active',        value: stats.inProgress,  icon: Timer,         bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
+            { label: 'Resolved',      value: stats.resolved,    icon: CheckCircle,   bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
           ].map((s, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <div className={`p-2 rounded-lg ${s.bg} w-fit mb-2`}>
-                <s.icon className={`w-4 h-4 ${s.ic}`} />
+            <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2.5 ${s.bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
+                  <s.icon className="w-4.5 h-4.5" />
+                </div>
               </div>
-              <p className={`text-2xl font-bold ${s.val}`}>{s.value}</p>
-              <p className="text-xs text-gray-500 font-medium mt-0.5">{s.label}</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{s.label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{s.value}</p>
             </div>
           ))}
         </div>
 
         {/* Search + filters */}
-        <div id="tour-helpdesk-search" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+        <div id="tour-helpdesk-search" className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
@@ -262,13 +264,13 @@ export default function HelpdeskPage() {
               placeholder="Search tickets…"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-sm outline-none border border-gray-100 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
+              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
             />
           </div>
           <div className="flex gap-2">
             <div className="relative flex-1 sm:w-36">
               <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                className="w-full px-3 py-2.5 bg-gray-50 rounded-xl text-sm outline-none border border-gray-100 appearance-none cursor-pointer pr-8 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all">
+                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 appearance-none cursor-pointer pr-8 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all">
                 <option value="all">All Status</option>
                 <option value="open">Open</option>
                 <option value="pending">Pending</option>
@@ -280,7 +282,7 @@ export default function HelpdeskPage() {
             </div>
             <div className="relative flex-1 sm:w-36">
               <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)}
-                className="w-full px-3 py-2.5 bg-gray-50 rounded-xl text-sm outline-none border border-gray-100 appearance-none cursor-pointer pr-8 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all">
+                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 appearance-none cursor-pointer pr-8 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all">
                 <option value="all">All Priority</option>
                 <option value="urgent">Urgent</option>
                 <option value="high">High</option>
@@ -299,21 +301,21 @@ export default function HelpdeskPage() {
             <p className="text-sm text-gray-500 font-medium">Loading tickets…</p>
           </div>
         ) : filteredTickets.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="w-7 h-7 text-indigo-600" />
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-12 text-center">
+            <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
               {searchTerm || filterStatus !== 'all' || filterPriority !== 'all' ? 'No matching tickets' : 'No tickets yet'}
             </h3>
-            <p className="text-sm text-gray-500 mb-5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
               {searchTerm || filterStatus !== 'all' || filterPriority !== 'all'
                 ? 'Try adjusting your search or filters.'
                 : 'Create your first support ticket to get started.'}
             </p>
             {!searchTerm && filterStatus === 'all' && filterPriority === 'all' && (
               <button type="button" onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer">
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer">
                 <Plus className="w-4 h-4" /> New Ticket
               </button>
             )}
