@@ -6,7 +6,7 @@ import {
   ArrowUpRight, ArrowDownRight, Plus, BarChart3, PieChart,
   Wallet, Building2, ShoppingCart, Users, Zap,
   ArrowRight, CheckCircle,
-  Activity, Target, Sparkles, X, Edit, Trash2, Tag, Loader2
+  Activity, Target, Sparkles, X, Edit, Trash2, Tag, Loader2, PoundSterling
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
@@ -230,25 +230,25 @@ export default function CashflowPage() {
 
       {/* Stats Cards */}
       <div className="px-4 sm:px-6 pt-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Total Income', value: `£${avgMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingUp, trend: '+12.5%', up: true },
-            { label: 'Total Expenses', value: `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingDown, trend: '+8.3%', up: false },
-            { label: 'Net Cashflow', value: `£${netCashflow.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: DollarSign, trend: '+14.2%', up: true },
-            { label: 'Profit Margin', value: `${isNaN(profitMargin) ? '0.0' : profitMargin.toFixed(1)}%`, sub: 'Above target', icon: Wallet, trend: 'Healthy', up: true },
-          ].map(({ label, value, sub, icon: Icon, trend, up }) => (
-            <div key={label} className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-                  <Icon className="w-4 h-4 text-gray-500" />
+            { label: 'Total Income', value: `£${avgMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingUp, trend: '+12.5%', up: true, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+            { label: 'Total Expenses', value: `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingDown, trend: '+8.3%', up: false, bgGrad: 'bg-gradient-to-br from-rose-500 to-red-600' },
+            { label: 'Net Cashflow', value: `£${netCashflow.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: PoundSterling, trend: '+14.2%', up: true, bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600' },
+            { label: 'Profit Margin', value: `${isNaN(profitMargin) ? '0.0' : profitMargin.toFixed(1)}%`, sub: 'Above target', icon: Wallet, trend: 'Healthy', up: true, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
+          ].map(({ label, value, sub, icon: Icon, trend, up, bgGrad }) => (
+            <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2.5 ${bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
+                  <Icon className="w-4.5 h-4.5" />
                 </div>
-                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${up ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${up ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-300'}`}>
                   {trend}
                 </span>
               </div>
-              <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-0.5">{label}</p>
-              <p className="text-lg sm:text-xl font-semibold text-gray-900 leading-tight">{loading ? '—' : value}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{loading ? '—' : value}</p>
+              <p className="text-[11px] font-medium text-gray-400 mt-1">{sub}</p>
             </div>
           ))}
         </div>
