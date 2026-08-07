@@ -256,7 +256,7 @@ export default function FormsPage() {
             id="tour-forms-create"
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Create Form</span>
@@ -268,7 +268,7 @@ export default function FormsPage() {
       {/* Mobile FAB */}
       <button
         onClick={() => setShowCreateModal(true)}
-        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-purple-600 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:bg-purple-700"
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:from-purple-700 hover:to-indigo-700"
       >
         <Plus className="w-8 h-8" />
       </button>
@@ -276,21 +276,21 @@ export default function FormsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
         {/* Stats */}
-        <div id="tour-forms-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-forms-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Total Forms',     value: forms.length,   icon: FileText,    bg: 'bg-blue-100',    ic: 'text-blue-600',    val: 'text-blue-700' },
-            { label: 'Active Forms',    value: activeForms,    icon: CheckCircle, bg: 'bg-emerald-100', ic: 'text-emerald-600', val: 'text-emerald-700' },
-            { label: 'Total Responses', value: totalResponses, icon: MessageSquare, bg: 'bg-purple-100', ic: 'text-purple-600', val: 'text-purple-700' },
-            { label: 'Avg / Form',      value: avgResponses,   icon: BarChart3,   bg: 'bg-orange-100',  ic: 'text-orange-600',  val: 'text-orange-700' },
+            { label: 'Total Forms',     value: forms.length,   icon: FileText,    bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600' },
+            { label: 'Active Forms',    value: activeForms,    icon: CheckCircle, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+            { label: 'Total Responses', value: totalResponses, icon: MessageSquare, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
+            { label: 'Avg / Form',      value: avgResponses,   icon: BarChart3,   bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
           ].map((s, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className={`p-2 rounded-lg ${s.bg}`}>
-                  <s.icon className={`w-4 h-4 ${s.ic}`} />
+            <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2.5 ${s.bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
+                  <s.icon className="w-4.5 h-4.5" />
                 </div>
               </div>
-              <p className={`text-2xl font-bold ${s.val}`}>{s.value}</p>
-              <p className="text-xs text-gray-500 font-medium mt-0.5">{s.label}</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{s.label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{s.value}</p>
             </div>
           ))}
         </div>
@@ -302,16 +302,16 @@ export default function FormsPage() {
             <p className="text-sm text-gray-500 font-medium">Loading forms…</p>
           </div>
         ) : forms.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-7 h-7 text-purple-600" />
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-12 text-center">
+            <div className="w-14 h-14 bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-7 h-7 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">No forms yet</h3>
-            <p className="text-sm text-gray-500 mb-5">Create your first form to start collecting responses.</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">No forms yet</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">Create your first form to start collecting responses.</p>
             <button
               type="button"
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Create Your First Form
             </button>
