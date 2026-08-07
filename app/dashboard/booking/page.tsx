@@ -271,7 +271,7 @@ export default function BookingPage() {
             id="tour-booking-new"
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">New Booking</span>
@@ -283,25 +283,27 @@ export default function BookingPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 space-y-5">
 
         {/* Stats */}
-        <div id="tour-booking-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="tour-booking-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Total Bookings', value: totalBookings,  icon: CalendarCheck, bg: 'bg-blue-100',    ic: 'text-blue-600',    val: 'text-blue-700' },
-            { label: 'Confirmed',      value: confirmedCount, icon: CheckCircle,   bg: 'bg-emerald-100', ic: 'text-emerald-600', val: 'text-emerald-700' },
-            { label: 'Upcoming',       value: upcomingCount,  icon: Clock,         bg: 'bg-purple-100',  ic: 'text-purple-600',  val: 'text-purple-700' },
-            { label: 'Completed',      value: completedCount, icon: TrendingUp,    bg: 'bg-orange-100',  ic: 'text-orange-600',  val: 'text-orange-700' },
+            { label: 'Total Bookings', value: totalBookings,  icon: CalendarCheck, bgGrad: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
+            { label: 'Confirmed',      value: confirmedCount, icon: CheckCircle,   bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+            { label: 'Upcoming',       value: upcomingCount,  icon: Clock,         bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
+            { label: 'Completed',      value: completedCount, icon: TrendingUp,    bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
           ].map((s, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <div className={`p-2 rounded-lg ${s.bg} w-fit mb-2`}>
-                <s.icon className={`w-4 h-4 ${s.ic}`} />
+            <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2.5 ${s.bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
+                  <s.icon className="w-4.5 h-4.5" />
+                </div>
               </div>
-              <p className={`text-2xl font-bold ${s.val}`}>{s.value}</p>
-              <p className="text-xs text-gray-500 font-medium mt-0.5">{s.label}</p>
+              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{s.label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{s.value}</p>
             </div>
           ))}
         </div>
 
         {/* Search + Filter */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
@@ -309,14 +311,14 @@ export default function BookingPage() {
               placeholder="Search clients or services…"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-sm outline-none border border-gray-100 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
             />
           </div>
           <div className="relative sm:w-48">
             <select
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value)}
-              className="w-full px-3 py-2.5 bg-gray-50 rounded-xl text-sm outline-none border border-gray-100 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all appearance-none cursor-pointer pr-8"
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all appearance-none cursor-pointer pr-8"
             >
               <option value="all">All Statuses</option>
               <option value="confirmed">Confirmed</option>
@@ -335,14 +337,14 @@ export default function BookingPage() {
             <p className="text-sm text-gray-500 font-medium">Loading bookings…</p>
           </div>
         ) : filteredBookings.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-7 h-7 text-blue-600" />
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-12 text-center">
+            <div className="w-14 h-14 bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
               {searchTerm || filterStatus !== 'all' ? 'No matching bookings' : 'No bookings yet'}
             </h3>
-            <p className="text-sm text-gray-500 mb-5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
               {searchTerm || filterStatus !== 'all'
                 ? 'Try adjusting your search or filter.'
                 : 'Create your first booking to get started.'}
@@ -351,7 +353,7 @@ export default function BookingPage() {
               <button
                 type="button"
                 onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> New Booking
               </button>
