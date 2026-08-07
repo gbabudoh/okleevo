@@ -405,12 +405,17 @@ export default function FormsPage() {
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform -translate-y-6 sm:translate-y-0 animate-in slide-in-from-bottom-10 duration-300">
             <ModalHandle />
-            <div className={modalHeaderCls}>
-              <div>
-                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Create new form</h2>
-                <p className="text-[11px] text-gray-500 font-medium">Fill in the form details</p>
+            <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 px-6 py-4 flex items-center justify-between shrink-0 shadow-md">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl text-white">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight">Create new form</h2>
+                  <p className="text-[11px] text-purple-100 font-medium">Fill in the form details</p>
+                </div>
               </div>
-              <button type="button" onClick={resetCreate} className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+              <button type="button" onClick={resetCreate} className="p-2 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -534,7 +539,7 @@ export default function FormsPage() {
                       type="button"
                       onClick={addFieldToNew}
                       disabled={!newField.label.trim()}
-                      className="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold transition-colors flex items-center gap-1 shrink-0"
+                      className="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shrink-0 shadow-xs"
                     >
                       <Plus className="w-3 h-3" /> Add
                     </button>
@@ -549,7 +554,7 @@ export default function FormsPage() {
                 type="button"
                 onClick={handleCreateForm}
                 disabled={!newForm.name || newForm.fieldList.length === 0}
-                className="flex-2 py-2.5 px-5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="flex-2 py-3 px-5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" /> Create Form
               </button>
