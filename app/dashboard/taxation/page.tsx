@@ -1060,47 +1060,81 @@ export default function TaxationPage() {
       )}
 
       {activeTab === 'self-assessment' && (
-        <div className="space-y-6">
-          {/* Self Assessment Overview */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-8">
-            <div className="flex items-center gap-4 mb-5">
-              <div className="p-3 bg-purple-50 rounded-xl shrink-0">
-                <User className="w-6 h-6 text-purple-600" />
-              </div>
+        <div className="space-y-5">
+          {/* Executive Self Assessment Header */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Self Assessment Tax Return</h2>
-                <p className="text-gray-500 text-sm">Individual tax return for sole traders, partners, and directors</p>
+                <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                  <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  UK Self Assessment (SA100) Tax Portal
+                </h2>
+                <p className="text-xs text-gray-400 mt-0.5">Individual tax computation for UK sole traders, company directors, and property landlords</p>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={() => {
+                    setNewReturnData({ ...newReturnData, type: 'Self Assessment' });
+                    setNewReturnStep(2);
+                    setShowNewReturnModal(true);
+                  }}
+                  className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  Start New Return
+                </button>
+                <button
+                  onClick={() => setShowHistoryModal(true)}
+                  className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                >
+                  View Previous Returns
+                </button>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
-              <button
-                onClick={() => {
-                  setNewReturnData({ ...newReturnData, type: 'Self Assessment' });
-                  setNewReturnStep(2);
-                  setShowNewReturnModal(true);
-                }}
-                className="px-5 py-2.5 bg-purple-600 text-white font-medium text-sm rounded-lg hover:bg-purple-700 transition-colors cursor-pointer"
-              >
-                Start New Return
-              </button>
-              <button
-                onClick={() => setShowHistoryModal(true)}
-                className="px-5 py-2.5 border border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                View Previous Returns
-              </button>
+
+            {/* Live Personal Tax Summary Chips */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div className="bg-purple-50/80 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/60 rounded-2xl p-3.5 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-purple-700 dark:text-purple-300">Tax-Free Personal Allowance</p>
+                  <p className="text-xl font-black text-purple-950 dark:text-white tracking-tight">£12,570</p>
+                </div>
+                <ShieldCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+
+              <div className="bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 rounded-2xl p-3.5 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300">Total Taxable Income</p>
+                  <p className="text-xl font-black text-blue-950 dark:text-white tracking-tight">£{totalIncome.toLocaleString()}</p>
+                </div>
+                <Briefcase className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+
+              <div className="bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 rounded-2xl p-3.5 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Est. Tax &amp; Class 4 NI</p>
+                  <p className="text-xl font-black text-emerald-950 dark:text-white tracking-tight">
+                    £{(taxableIncomeValue * 0.20).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </p>
+                </div>
+                <Calculator className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
             </div>
           </div>
 
-          {/* Tax Year Selection */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex flex-col lg:flex-row gap-6">
-              {/* Mini Calendar */}
-              <div className="lg:w-72 shrink-0">
-                <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                  {/* Calendar Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <button 
+          {/* Tax Year Selection, Calendar & HMRC Thresholds Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {/* Column 1: Mini Datepicker Calendar */}
+              <div className="bg-gray-50/80 dark:bg-slate-800/60 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-extrabold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    Tax Calendar
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <button
                       onClick={() => {
                         if (calendarMonth === 0) {
                           setCalendarMonth(11);
@@ -1109,16 +1143,14 @@ export default function TaxationPage() {
                           setCalendarMonth(calendarMonth - 1);
                         }
                       }}
-                      className="p-1 hover:bg-gray-100 rounded transition-colors cursor-pointer"
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                     >
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
+                      ‹
                     </button>
-                    <span className="font-bold text-gray-900">
+                    <span className="text-xs font-extrabold text-gray-900 dark:text-white">
                       {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][calendarMonth]} {calendarYear}
                     </span>
-                    <button 
+                    <button
                       onClick={() => {
                         if (calendarMonth === 11) {
                           setCalendarMonth(0);
@@ -1127,98 +1159,130 @@ export default function TaxationPage() {
                           setCalendarMonth(calendarMonth + 1);
                         }
                       }}
-                      className="p-1 hover:bg-gray-100 rounded transition-colors cursor-pointer"
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                     >
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                      ›
                     </button>
                   </div>
-                  
-                  {/* Day Names */}
-                  <div className="grid grid-cols-7 gap-1 mb-1">
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                      <div key={i} className="text-center text-xs font-medium text-gray-400 py-1">{d}</div>
-                    ))}
+                </div>
+
+                {/* Day Names */}
+                <div className="grid grid-cols-7 gap-1">
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                    <div key={i} className="text-center text-[10px] font-bold text-gray-400 py-0.5">{d}</div>
+                  ))}
+                </div>
+
+                {/* Calendar Grid */}
+                <div className="grid grid-cols-7 gap-1">
+                  {Array.from({ length: new Date(calendarYear, calendarMonth, 1).getDay() }, (_, i) => (
+                    <div key={`e-${i}`} className="h-6"></div>
+                  ))}
+                  {Array.from({ length: new Date(calendarYear, calendarMonth + 1, 0).getDate() }, (_, i) => {
+                    const dayNum = i + 1;
+                    const isToday = dayNum === today.getDate() && calendarMonth === today.getMonth() && calendarYear === today.getFullYear();
+                    const isTaxDay = dayNum === 19 || dayNum === 22 || (dayNum === 31 && (calendarMonth === 0 || calendarMonth === 6));
+
+                    return (
+                      <div
+                        key={dayNum}
+                        onClick={() => setSelectedCalendarDay(dayNum)}
+                        className={`h-6 flex items-center justify-center text-[11px] rounded-lg cursor-pointer transition-colors ${
+                          isToday
+                            ? 'bg-purple-600 text-white font-black shadow-xs'
+                            : isTaxDay
+                              ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 font-extrabold'
+                              : selectedCalendarDay === dayNum
+                                ? 'bg-purple-100 text-purple-900 dark:bg-purple-900/60 dark:text-purple-200 font-bold'
+                                : 'hover:bg-gray-200/60 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 font-medium'
+                        }`}
+                      >
+                        {dayNum}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setCalendarMonth(today.getMonth());
+                    setCalendarYear(today.getFullYear());
+                    setSelectedCalendarDay(today.getDate());
+                  }}
+                  className="w-full py-1 text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer text-center"
+                >
+                  Reset to Today
+                </button>
+              </div>
+
+              {/* Column 2: UK Statutory Allowances & Bands */}
+              <div className="bg-gray-50/80 dark:bg-slate-800/60 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 space-y-3 flex flex-col justify-between">
+                <h3 className="text-xs font-extrabold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  Tax Rates &amp; Thresholds (2025/26)
+                </h3>
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                    <span className="text-gray-600 dark:text-gray-300 font-medium">Personal Allowance:</span>
+                    <span className="font-extrabold text-emerald-600 dark:text-emerald-400">Up to £12,570 (0%)</span>
                   </div>
-                  
-                  {/* Calendar Grid */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {/* Empty cells */}
-                    {Array.from({ length: new Date(calendarYear, calendarMonth, 1).getDay() }, (_, i) => (
-                      <div key={`e-${i}`} className="h-7"></div>
-                    ))}
-                    {/* Days */}
-                    {Array.from({ length: new Date(calendarYear, calendarMonth + 1, 0).getDate() }, (_, i) => {
-                      const dayNum = i + 1;
-                      const isToday = dayNum === today.getDate() && calendarMonth === today.getMonth() && calendarYear === today.getFullYear();
-                      const isTaxDay = dayNum === 19 || dayNum === 22 || (dayNum === 31 && (calendarMonth === 0 || calendarMonth === 6));
-                      
+                  <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                    <span className="text-gray-600 dark:text-gray-300 font-medium">Basic Rate (20%):</span>
+                    <span className="font-extrabold text-blue-600 dark:text-blue-400">£12,571 - £50,270</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                    <span className="text-gray-600 dark:text-gray-300 font-medium">Higher Rate (40%):</span>
+                    <span className="font-extrabold text-amber-600 dark:text-amber-400">£50,271 - £125,140</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                    <span className="text-gray-600 dark:text-gray-300 font-medium">Additional Rate (45%):</span>
+                    <span className="font-extrabold text-rose-600 dark:text-rose-400">Over £125,140</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Column 3: Tax Year Selector */}
+              <div className="space-y-3 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs font-extrabold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                    <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    Select Active Tax Year
+                  </h3>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {taxYearOptions.map((item) => {
+                      const active = saTaxYear === item.year;
                       return (
-                        <div 
-                          key={dayNum}
-                          className={`h-7 flex items-center justify-center text-xs rounded cursor-pointer transition-colors ${
-                            isToday 
-                              ? 'bg-purple-500 text-white font-bold' 
-                              : isTaxDay 
-                                ? 'bg-red-100 text-red-700 font-semibold hover:bg-red-200' 
-                                : 'hover:bg-gray-100 text-gray-700'
+                        <button
+                          key={item.year}
+                          onClick={() => {
+                            if (saTaxYear !== item.year) {
+                              setIsSwitchingYear(true);
+                              setSaTaxYear(item.year);
+                              setTimeout(() => setIsSwitchingYear(false), 400);
+                            }
+                          }}
+                          className={`p-3 border rounded-2xl text-left cursor-pointer transition-all flex items-center justify-between ${
+                            active
+                              ? 'border-purple-500 bg-purple-50/90 dark:bg-purple-950/60 shadow-xs'
+                              : 'border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 hover:border-purple-300'
                           }`}
                         >
-                          {dayNum}
-                        </div>
+                          <div>
+                            <p className={`font-black text-xs ${active ? 'text-purple-950 dark:text-white' : 'text-gray-900 dark:text-gray-200'}`}>{item.year}</p>
+                            <p className={`text-[10px] ${active ? 'text-purple-700 dark:text-purple-300 font-extrabold' : 'text-gray-400'}`}>{item.label}</p>
+                          </div>
+                          {active && (
+                            <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                          )}
+                        </button>
                       );
                     })}
                   </div>
-                  
-                  {/* Today button */}
-                  <button 
-                    onClick={() => {
-                      setCalendarMonth(today.getMonth());
-                      setCalendarYear(today.getFullYear());
-                    }}
-                    className="w-full mt-3 py-1.5 text-xs font-medium text-purple-600 hover:bg-purple-50 rounded transition-colors cursor-pointer"
-                  >
-                    Today
-                  </button>
                 </div>
-              </div>
-              
-              {/* Tax Year Selection */}
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 mb-4">Select Tax Year</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {taxYearOptions.map((item) => (
-                    <button 
-                      key={item.year}
-                      onClick={() => {
-                        if (saTaxYear !== item.year) {
-                          setIsSwitchingYear(true);
-                          setSaTaxYear(item.year);
-                          setTimeout(() => setIsSwitchingYear(false), 400);
-                        }
-                      }}
-                      className={`p-4 border rounded-xl text-center shadow-sm cursor-pointer transition-all relative overflow-hidden ${
-                        saTaxYear === item.year 
-                          ? 'border-purple-500 bg-purple-50 hover:shadow-md' 
-                          : 'border-white/50 bg-white/40 hover:border-purple-300 hover:bg-purple-50'
-                      }`}
-                    >
-                      <p className={`font-bold ${saTaxYear === item.year ? 'text-purple-900' : 'text-gray-900'}`}>{item.year}</p>
-                      <p className={`text-xs mt-1 ${saTaxYear === item.year ? 'text-purple-700' : 'text-gray-600'}`}>{item.label}</p>
-                      {saTaxYear === item.year && (
-                        <div className="absolute top-1 right-1">
-                          <CheckCircle className="w-3 h-3 text-purple-500" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-                
-                {/* Tax Year Info */}
-                <div className="mt-4 p-3 bg-purple-50/50 rounded-lg border border-purple-100">
-                  <p className="text-sm text-purple-800">
-                    <strong>Tax Year {saTaxYear}</strong>: 6 April {saTaxYear.split('/')[0]} - 5 April 20{saTaxYear.split('/')[1]}
+
+                <div className="p-3 bg-purple-50/60 dark:bg-slate-800/60 rounded-2xl border border-purple-100 dark:border-slate-800 text-[11px]">
+                  <p className="text-purple-900 dark:text-purple-200 font-bold">
+                    Period ({saTaxYear}): <span className="font-normal text-purple-700 dark:text-purple-300">6 Apr {saTaxYear.split('/')[0]} – 5 Apr 20{saTaxYear.split('/')[1]}</span>
                   </p>
                 </div>
               </div>
