@@ -7,7 +7,8 @@ import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   Video, Phone, MessageSquare,
-  Loader2, ShieldCheck, UsersRound, Lock, Send, X
+  Loader2, ShieldCheck, UsersRound, Lock, Send, X,
+  Radio, Clock, Activity, ArrowUpRight, Sparkles, CheckCircle2
 } from 'lucide-react';
 import MeetingRoom from '@/components/collaboration/MeetingRoom';
 import { startOutgoingRingtone, stopOutgoingRingtone } from '@/lib/audio/ringtone';
@@ -36,12 +37,12 @@ interface ChatMessage {
 }
 
 const AVATAR_GRADIENTS = [
-  'from-violet-500 to-indigo-600',
-  'from-rose-500 to-pink-600',
-  'from-amber-500 to-orange-600',
-  'from-emerald-500 to-teal-600',
-  'from-sky-500 to-blue-600',
-  'from-fuchsia-500 to-purple-600',
+  'from-indigo-600 to-violet-600',
+  'from-blue-600 to-cyan-600',
+  'from-purple-600 to-pink-600',
+  'from-emerald-600 to-teal-600',
+  'from-amber-600 to-orange-600',
+  'from-rose-600 to-red-600',
 ];
 
 function CollaborationHubInner() {
@@ -211,22 +212,25 @@ function CollaborationHubInner() {
   const onlineCount = team.filter(m => m.isOnline).length;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5 pb-24 md:pb-10">
+    <div className="max-w-6xl mx-auto space-y-6 pb-24 md:pb-12 text-slate-900 dark:text-slate-100">
       <TourProvider moduleId="collaboration" steps={collaborationTourSteps} />
 
-      {/* ── Hero Header ── */}
-      <div id="tour-collaboration-header" className="rounded-2xl bg-white border border-gray-200 p-5 sm:p-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-50 rounded-xl shrink-0">
-              <UsersRound className="w-6 h-6 text-indigo-600" />
+      {/* ── Enterprise Workspace Header ── */}
+      <div id="tour-collaboration-header" className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3.5 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 rounded-xl shrink-0 text-indigo-600 dark:text-indigo-400 shadow-xs">
+              <UsersRound className="w-6 h-6 stroke-[1.75]" />
             </div>
-            <div>
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">No Slack. No Zoom. No Extra Login.</p>
-              <div className="flex items-center gap-3">
-                <h1 className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight leading-tight">
-                  Team Collaboration
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  Team Collaboration Workspace
                 </h1>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  E2E Encrypted Org
+                </span>
                 <ModuleGuideBanner
                   moduleId="collaboration"
                   moduleName="Collaboration Hub"
@@ -238,114 +242,169 @@ function CollaborationHubInner() {
                   ]}
                 />
               </div>
-              <p className="text-gray-500 text-sm">Video-call and message your team without ever leaving Okleevo</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-2xl">
+                Encrypted HD video meetings, voice huddles, and persistent team chat scoped exclusively to your organization domain.
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2.5 sm:items-end">
-            <div className="inline-flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200 self-start sm:self-auto">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-              <span className="text-xs font-semibold text-gray-700">
-                {onlineCount} / {team.length} online
+          <div className="flex flex-wrap items-center gap-3 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
+              <span>{onlineCount} of {team.length} Active</span>
             </div>
+
             <button
               onClick={() => startMeeting('general_hq', true, true)}
-              className="flex items-center justify-center gap-2 bg-indigo-600 text-white font-medium text-sm rounded-lg px-5 py-2.5 hover:bg-indigo-700 transition-colors w-full sm:w-auto cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm rounded-xl transition-all shadow-sm hover:shadow-indigo-500/10 cursor-pointer"
             >
               <Video className="w-4 h-4" />
-              General Meeting
+              <span>General HQ Meeting</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── Security Banner ── */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-indigo-50 border border-indigo-100 rounded-xl">
-        <ShieldCheck className="w-4 h-4 text-indigo-500 shrink-0" />
-        <p className="text-xs font-medium text-indigo-800/80 leading-relaxed">
-          <span className="text-indigo-600 font-semibold">End-to-end encrypted.</span>{' '}
-          All communication is locked to your organisation and never shared externally.
-        </p>
+      {/* ── Active Huddle Banner Card ── */}
+      <div className="rounded-2xl bg-linear-to-r from-indigo-900 via-indigo-950 to-slate-950 p-5 text-white shadow-md border border-indigo-800/40 relative overflow-hidden">
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-indigo-500/10 to-transparent pointer-events-none" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center shrink-0">
+              <Radio className="w-5 h-5 text-indigo-400 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">HQ Live Huddle</span>
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">Ready</span>
+              </div>
+              <h3 className="text-base font-bold text-white tracking-tight mt-0.5">
+                General HQ Main Room
+              </h3>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => startMeeting('general_hq', false, true)}
+              className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <Phone className="w-3.5 h-3.5 text-indigo-300" />
+              <span>Voice Huddle</span>
+            </button>
+            <button
+              onClick={() => startMeeting('general_hq', true, true)}
+              className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+            >
+              <Video className="w-3.5 h-3.5" />
+              <span>Join Video Call</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* ── Team Grid ── */}
-      <div id="tour-collaboration-team">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Your Team</h2>
-          <span className="text-xs font-medium text-gray-400">{team.length} member{team.length !== 1 ? 's' : ''}</span>
+      {/* ── Team Section Header & Grid ── */}
+      <div id="tour-collaboration-team" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UsersRound className="w-4 h-4 text-slate-400" />
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight">
+              Organization Team Directory
+            </h2>
+          </div>
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+            {team.length} Member{team.length !== 1 ? 's' : ''}
+          </span>
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-            <p className="text-gray-400 font-semibold uppercase tracking-widest text-[10px]">Syncing Team…</p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+            <Loader2 className="w-7 h-7 text-indigo-600 animate-spin" />
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Syncing presence...</p>
           </div>
         ) : team.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white rounded-2xl border border-gray-200">
-            <UsersRound className="w-10 h-10 text-gray-200" />
-            <p className="text-sm font-semibold text-gray-400">No team members yet</p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center p-6">
+            <UsersRound className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">No team members available</h3>
+            <p className="text-xs text-slate-400 max-w-sm">Invite team members to your organization to start collaborating in real-time.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {team.map((member, idx) => {
               const gradient = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length];
               return (
                 <div
                   key={member.userId}
-                  className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-gray-300 transition-colors"
+                  className="group bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 hover:border-indigo-300 dark:hover:border-indigo-800 transition-all shadow-xs hover:shadow-md flex flex-col justify-between"
                 >
-                  {/* Card body */}
-                  <div className="flex items-center gap-4 p-4 pb-3">
-                    {/* Avatar */}
-                    <div className="relative shrink-0">
-                      <div className={`w-14 h-14 rounded-2xl bg-linear-to-br ${gradient} flex items-center justify-center text-white text-xl font-bold`}>
-                        {member.firstName.charAt(0)}{member.lastName.charAt(0)}
-                      </div>
-                      {member.isOnline && (
-                        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
-                      )}
-                    </div>
+                  <div>
+                    {/* Header: Avatar & Info */}
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Avatar */}
+                        <div className="relative shrink-0">
+                          <div className={`w-12 h-12 rounded-xl bg-linear-to-br ${gradient} flex items-center justify-center text-white text-base font-bold shadow-xs`}>
+                            {member.firstName.charAt(0)}{member.lastName.charAt(0)}
+                          </div>
+                          <span className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-slate-900 ${
+                            member.isOnline ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
+                          }`} />
+                        </div>
 
-                    {/* Identity */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-semibold text-gray-900 truncate leading-tight">
-                        {member.firstName} {member.lastName}
-                      </h3>
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide truncate mt-0.5">
-                        {member.role || 'Team Member'}
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${member.isOnline ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                        <span className={`text-[10px] font-semibold uppercase tracking-wider ${member.isOnline ? 'text-emerald-600' : 'text-gray-400'}`}>
-                          {member.isOnline ? 'Online' : 'Offline'}
-                        </span>
+                        {/* Name & Role */}
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            {member.firstName} {member.lastName}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded border border-slate-200/60 dark:border-slate-700/60 truncate">
+                              {member.role || 'Member'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Status indicator pill */}
+                      <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 ${
+                        member.isOnline
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40'
+                          : 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'
+                      }`}>
+                        {member.isOnline ? 'Online' : 'Offline'}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="grid grid-cols-3 gap-2 px-4 pb-4">
+                  {/* Refined Actions Footer */}
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 grid grid-cols-3 gap-2">
                     <button
                       onClick={() => startMeeting(`call_${member.userId}`, true, true)}
-                      className="flex flex-col items-center gap-1 py-2.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white rounded-xl transition-colors cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
+                      title="Start Video Call"
                     >
-                      <Video className="w-4 h-4" />
-                      <span className="text-[9px] font-semibold uppercase tracking-wide">Video</span>
+                      <Video className="w-3.5 h-3.5 shrink-0" />
+                      <span className="text-[11px]">Video</span>
                     </button>
+
                     <button
                       onClick={() => startMeeting(`call_${member.userId}`, false, true)}
-                      className="flex flex-col items-center gap-1 py-2.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white rounded-xl transition-colors cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
+                      title="Start Voice Call"
                     >
-                      <Phone className="w-4 h-4" />
-                      <span className="text-[9px] font-semibold uppercase tracking-wide">Voice</span>
+                      <Phone className="w-3.5 h-3.5 shrink-0" />
+                      <span className="text-[11px]">Voice</span>
                     </button>
+
                     <button
                       onClick={() => setActiveChatMember(member)}
-                      className="flex flex-col items-center gap-1 py-2.5 bg-amber-50 hover:bg-amber-500 text-amber-600 hover:text-white rounded-xl transition-colors cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white text-indigo-600 dark:text-indigo-400 font-semibold text-xs transition-colors cursor-pointer"
+                      title="Open Direct Chat"
                     >
-                      <MessageSquare className="w-4 h-4" />
-                      <span className="text-[9px] font-semibold uppercase tracking-wide">Chat</span>
+                      <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                      <span className="text-[11px]">Chat</span>
                     </button>
                   </div>
                 </div>
@@ -355,37 +414,92 @@ function CollaborationHubInner() {
         )}
       </div>
 
-      {/* ── Feature Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2">
-        <div className="bg-white border border-gray-200 rounded-2xl p-5">
-          <div className="p-2 bg-indigo-50 rounded-xl w-fit mb-3">
-            <Video className="w-5 h-5 text-indigo-600" />
+      {/* ── Functional Enterprise Panels (Replaces Marketing Cards) ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        {/* Panel 1: Live HQ Huddle Widget */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/60 rounded-xl text-indigo-600 dark:text-indigo-400">
+                <Radio className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-900/40 px-2 py-0.5 rounded">
+                Live Server
+              </span>
+            </div>
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1">HQ Huddle Room</h4>
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Instant web huddle for team syncs, live audio conversations, and high-framerate screen sharing.
+            </p>
           </div>
-          <h4 className="font-semibold mb-1 text-base text-gray-900">Instant Meetings</h4>
-          <p className="text-gray-500 text-xs leading-relaxed">HD video calls with screen sharing and encrypted audio.</p>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <button
+              onClick={() => startMeeting('general_hq', true, true)}
+              className="w-full py-2 px-3 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-600 hover:text-white text-indigo-600 dark:text-indigo-400 rounded-xl font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>Launch HQ Huddle</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-5">
-          <div className="p-2 bg-violet-50 rounded-xl w-fit mb-3">
-            <MessageSquare className="w-5 h-5 text-violet-600" />
+        {/* Panel 2: Recent Activity & Logs */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 bg-violet-50 dark:bg-violet-950/60 rounded-xl text-violet-600 dark:text-violet-400">
+                <Activity className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Real-time
+              </span>
+            </div>
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1">Presence & Call Logs</h4>
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Okleevo connections are monitored for jitter, packet health, and end-to-end latency.
+            </p>
           </div>
-          <h4 className="font-semibold mb-1 text-base text-gray-900">Encrypted Chat</h4>
-          <p className="text-gray-500 text-xs leading-relaxed">Secure team messaging with persistent history and file sharing.</p>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="font-medium text-slate-700 dark:text-slate-300">Okleevo Engine Online</span>
+            </div>
+            <span className="font-mono text-[10px] text-slate-400">100% Uptime</span>
+          </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-5">
-          <div className="p-2 bg-amber-50 rounded-xl w-fit mb-3">
-            <Lock className="w-5 h-5 text-amber-600" />
+        {/* Panel 3: Domain Isolation & Privacy Scope */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 bg-amber-50 dark:bg-amber-950/60 rounded-xl text-amber-600 dark:text-amber-400">
+                <Lock className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-900/40 px-2 py-0.5 rounded">
+                Domain Isolated
+              </span>
+            </div>
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1">Organization Privacy</h4>
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Room tokens are crypto-signed and scoped tightly to your business account session.
+            </p>
           </div>
-          <h4 className="font-semibold mb-1 text-base text-gray-900">Total Privacy</h4>
-          <p className="text-gray-500 text-xs leading-relaxed">Locked to your organisation domain and never shared externally.</p>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+              AES-256 Encrypted Session
+            </span>
+          </div>
         </div>
       </div>
 
       {/* ── Chat Drawer ── */}
       {activeChatMember && (
         <div 
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity flex items-center justify-center p-4 sm:block sm:p-0"
+          className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-40 transition-opacity flex items-center justify-center p-4 sm:block sm:p-0"
           onClick={() => setActiveChatMember(null)}
         >
           {/* Drawer container */}
@@ -502,3 +616,4 @@ export default function CollaborationHub() {
     </Suspense>
   );
 }
+
