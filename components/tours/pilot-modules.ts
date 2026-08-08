@@ -3,6 +3,7 @@
 export const TOUR_MODULE_IDS = [
   'invoicing', 'taxation', 'crm', 'expenses', 'helpdesk',
   'accounting', 'cashflow', 'vat-tools', 'campaigns', 'collaboration', 'mailbox',
+  'hr-records', 'e-signature', 'micro-pages', 'compliance', 'forms', 'kpi-dashboard', 'inventory', 'suppliers'
 ] as const;
 
 export function moduleHasTour(moduleId: string | null | undefined): boolean {

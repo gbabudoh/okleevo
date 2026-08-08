@@ -10,6 +10,7 @@ import {
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import StatusModal from '@/components/StatusModal';
 import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { expensesTourSteps } from './tour-steps';
 
 /* ── Interfaces ──────────────────────────────────────────────────── */
@@ -65,7 +66,7 @@ const ModalHandle = () => (
 );
 
 const ModalFooter = ({ children }: { children: ReactNode }) => (
-  <div className="px-4 sm:px-6 py-1.5 sm:py-4 border-t border-gray-100 bg-white flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,8px))] sm:pb-4 shrink-0">
+  <div className="px-4 sm:px-6 pt-3.5 pb-8 sm:pb-5 border-t border-gray-100 bg-white flex flex-row gap-2.5 shrink-0 mb-1.5 sm:mb-0">
     {children}
   </div>
 );
@@ -282,9 +283,21 @@ export default function ExpensesPage() {
             <div className="p-2 bg-rose-500 rounded-xl shrink-0">
               <Receipt className="w-5 h-5 text-white" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Expenses</h1>
-              <p className="text-xs text-gray-400 leading-tight hidden sm:block">Track & manage spending</p>
+            <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="min-w-0 shrink-0">
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">Expenses</h1>
+                <p className="text-xs text-gray-400 leading-tight hidden sm:block">Track &amp; manage spending</p>
+              </div>
+              <ModuleGuideBanner
+                moduleId="expenses"
+                moduleName="Expense Tracking"
+                summary="Log business expenditures, capture receipts, track VAT breakdown, and categorize spending across projects."
+                tips={[
+                  "Upload or scan receipt attachments for automated audit verification",
+                  "Categorize expenses into HMRC-compliant tax deduction categories",
+                  "Export full expense register CSV reports for bookkeeping"
+                ]}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">

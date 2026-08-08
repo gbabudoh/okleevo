@@ -10,6 +10,7 @@ import {
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import StatusModal from '@/components/StatusModal';
 import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { formsTourSteps } from './tour-steps';
 
 type FieldType = 'text' | 'email' | 'phone' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date';
@@ -67,7 +68,7 @@ const ModalHandle = () => (
 );
 
 const ModalFooter = ({ children }: { children: ReactNode }) => (
-  <div className="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+  <div className="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-2.5 mb-1.5 sm:mb-0">
     {children}
   </div>
 );
@@ -244,21 +245,35 @@ export default function FormsPage() {
 
       {/* Sticky header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-          <div className="p-2 bg-slate-900 rounded-xl shrink-0">
-            <FileText className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Form Builder</h1>
-            <p className="text-xs text-gray-500 hidden sm:block">Create and manage custom forms</p>
+        <div className="max-w-6xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <div className="p-1.5 sm:p-2 bg-slate-900 rounded-xl shrink-0 text-white">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+            </div>
+            <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+              <div className="min-w-0">
+                <h1 className="text-xs sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">Form Builder</h1>
+                <p className="text-xs text-gray-500 hidden sm:block">Create and manage custom forms</p>
+              </div>
+              <ModuleGuideBanner
+                moduleId="forms"
+                moduleName="Form Builder"
+                summary="Build custom lead generation, customer survey, and HR onboarding forms with instant response collection."
+                tips={[
+                  "Add text, dropdown, email, and date fields using the visual builder",
+                  "Share public form links or embed them on external websites",
+                  "Export submission response data directly to CSV"
+                ]}
+              />
+            </div>
           </div>
           <button
             id="tour-forms-create"
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Create Form</span>
             <span className="sm:hidden">Create</span>
           </button>

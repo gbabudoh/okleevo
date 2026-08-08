@@ -12,9 +12,10 @@ import {
   ClipboardList, ShoppingCart, Bell, FileText, RefreshCw,
   Heart, Home, Dumbbell, BookOpen, Wrench, Sparkles, Briefcase, HelpCircle,
   BarChart3, ArrowUpDown, ShieldCheck, Printer, ArrowUpRight, ArrowDownRight,
-  TrendingUp, TrendingDown, Clock, Layers, Sliders
+  TrendingUp, TrendingDown, Clock, Layers, Sliders, PoundSterling
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { jsPDF } from 'jspdf';
 
 const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all';
@@ -313,33 +314,47 @@ export default function InventoryPage() {
       )}
 
       {/* ── Enterprise Header Shell ── */}
-      <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-          <div className="flex items-start gap-4">
-            <div className="p-3.5 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shrink-0 text-white shadow-md">
-              <Package className="w-6 h-6 stroke-[2]" />
+      <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shrink-0 text-white shadow-md">
+              <Package className="w-5 h-5 stroke-[2]" />
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  Inventory & Supply Chain Hub
-                </h1>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/40">
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-                  Okleevo Supply Chain v2.0
-                </span>
-              </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Multi-warehouse asset tracking, reorder safety thresholds, and real-time valuation.
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+                Inventory &amp; Supply Chain
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Multi-warehouse asset tracking, reorder thresholds &amp; real-time valuation
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/40">
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+              Okleevo Supply Chain
+            </span>
+            <ModuleGuideBanner
+              moduleId="inventory"
+              moduleName="Inventory &amp; Supply Chain"
+              summary="Track warehouse stock levels, physical unit valuations, reorder alerts, and audit stock movements."
+              tips={[
+                "Set min stock thresholds to receive automated reorder alerts",
+                "Log stock movements for inbound shipments or outbound fulfillment",
+                "Export full inventory catalog telemetry to CSV"
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* Header Actions */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex-wrap">
+          <div className="flex items-center gap-2">
             <select
               value={currencySymbol}
               onChange={e => setCurrencySymbol(e.target.value)}
-              className="px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
+              className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
             >
               <option value="£">Currency: £ GBP</option>
               <option value="$">Currency: $ USD</option>
@@ -349,7 +364,7 @@ export default function InventoryPage() {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+              className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
               title="Refresh Inventory Telemetry"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -357,120 +372,120 @@ export default function InventoryPage() {
 
             <button
               onClick={handleExportCSV}
-              className="p-2.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+              className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
               title="Export CSV Report"
             >
               <Download className="w-4 h-4" />
             </button>
-
-            <button
-              onClick={() => setShowAddItem(true)}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>+ Add Inventory Item</span>
-            </button>
           </div>
+
+          <button
+            onClick={() => setShowAddItem(true)}
+            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Inventory Item</span>
+          </button>
         </div>
       </div>
 
       {/* ── Asset Valuation Summary Stats ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
-            <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
+            <PoundSterling className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{currencySymbol}{totalAssetValuation.toLocaleString()}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Total Gross Asset Value</p>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center shrink-0">
-            <Boxes className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <div>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{totalUnits.toLocaleString()}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Total Physical Units</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">{currencySymbol}{totalAssetValuation.toLocaleString()}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate mt-0.5">Asset Value</p>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center shrink-0">
+            <Boxes className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <div>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{alertItemsCount}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Reorder & Low Alerts</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight truncate">{totalUnits.toLocaleString()}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate mt-0.5">Physical Units</p>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 flex items-center justify-center shrink-0">
-            <Tag className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
           </div>
-          <div>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{items.length}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active Catalog SKUs</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight truncate">{alertItemsCount}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate mt-0.5">Stock Alerts</p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 flex items-center justify-center shrink-0">
+            <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight truncate">{items.length}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate mt-0.5">Active SKUs</p>
           </div>
         </div>
       </div>
 
       {/* ── Toolbar: Search, Filters, & 4-Way View Switcher ── */}
       <div className="space-y-3">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3.5 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between overflow-hidden">
           <div className="flex-1 relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search by Product Name, SKU Code, or Barcode..."
+              placeholder="Search Product, SKU, or Barcode..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs font-semibold outline-none border border-slate-200/80 dark:border-slate-700/80 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs font-semibold outline-none border border-slate-200/80 dark:border-slate-700/80 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
             />
           </div>
 
-          {/* 4-Way View Controller Bar */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
+          {/* 4-Way View Controller Bar — Responsive Scrollable Container */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shrink-0 overflow-x-auto max-w-full scrollbar-none">
             <button
               onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-xs' : 'text-slate-500'
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Product Cards Grid"
             >
-              <Grid className="w-3.5 h-3.5" />
+              <Grid className="w-3.5 h-3.5 shrink-0" />
               <span>Products Grid</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-xs' : 'text-slate-500'
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Executive Stock Table"
             >
-              <List className="w-3.5 h-3.5" />
+              <List className="w-3.5 h-3.5 shrink-0" />
               <span>Stock Table</span>
             </button>
             <button
               onClick={() => setViewMode('movements')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'movements' ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-xs' : 'text-slate-500'
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                viewMode === 'movements' ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Stock Movement Ledger Audit"
             >
-              <History className="w-3.5 h-3.5" />
+              <History className="w-3.5 h-3.5 shrink-0" />
               <span>Audit Ledger</span>
             </button>
             <button
               onClick={() => setViewMode('matrix')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'matrix' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs' : 'text-slate-500'
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                viewMode === 'matrix' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Warehouse Matrix"
             >
-              <Warehouse className="w-3.5 h-3.5" />
+              <Warehouse className="w-3.5 h-3.5 shrink-0" />
               <span>Warehouses</span>
             </button>
           </div>

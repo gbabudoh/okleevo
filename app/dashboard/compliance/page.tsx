@@ -6,13 +6,14 @@ import {
   FileText, Download, Plus, Search, Filter, Eye,
   Edit3, Trash2, X, MoreVertical, ChevronRight,
   Scale, Gavel, ClipboardCheck, Award, Lock,
-  Users, Globe, DollarSign, TrendingUp, Target,
+  Users, Globe, DollarSign, PoundSterling, TrendingUp, Target,
   AlertCircle, XCircle, Link, Share2,
   Grid, List,
   BarChart3, PieChart, Activity, FileCheck,
   Server, Workflow, FileSpreadsheet
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 
 interface ComplianceItem {
   id: string;
@@ -68,9 +69,10 @@ interface AuditLog {
   type: 'success' | 'info' | 'error' | 'warning';
 }
 
-const initialFrameworks: ComplianceFramework[] = [];
-const riskMetrics: RiskMetric[] = [];
-const auditLogs: AuditLog[] = [];
+const DEFAULT_FRAMEWORKS: ComplianceFramework[] = [];
+const DEFAULT_ITEMS: ComplianceItem[] = [];
+const DEFAULT_RISK_METRICS: RiskMetric[] = [];
+const DEFAULT_AUDIT_LOGS: AuditLog[] = [];
 
 const categoryConfigs = [
   { id: 'all', name: 'All Items', icon: Grid },
@@ -82,9 +84,12 @@ const categoryConfigs = [
   { id: 'environmental', name: 'Environmental', icon: Globe },
 ];
 
+const riskMetrics: RiskMetric[] = DEFAULT_RISK_METRICS;
+const auditLogs: AuditLog[] = DEFAULT_AUDIT_LOGS;
+
 export default function CompliancePage() {
   const [items, setItems] = useState<ComplianceItem[]>([]);
-  const [frameworksState, setFrameworksState] = useState<ComplianceFramework[]>(initialFrameworks);
+  const [frameworksState, setFrameworksState] = useState<ComplianceFramework[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,26 +129,31 @@ export default function CompliancePage() {
       const res = await fetch('/api/compliance');
       if (res.ok) {
         const data = await res.json();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped = data.map((item: any): ComplianceItem => ({
-          id: item.id,
-          title: item.title,
-          description: item.description || '',
-          category: item.category || 'operational',
-          priority: 'medium',
-          status: item.status as ComplianceItem['status'],
-          dueDate: new Date(item.dueDate),
-          completedDate: item.completedAt ? new Date(item.completedAt) : undefined,
-          assignedTo: 'General Team',
-          documents: [],
-          requirements: ['Initial review required'],
-          frequency: 'annually',
-          riskLevel: 25,
-        }));
-        setItems(mapped);
+        if (Array.isArray(data) && data.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mapped = data.map((item: any): ComplianceItem => ({
+            id: item.id,
+            title: item.title,
+            description: item.description || '',
+            category: item.category || 'operational',
+            priority: 'medium',
+            status: item.status as ComplianceItem['status'],
+            dueDate: new Date(item.dueDate),
+            completedDate: item.completedAt ? new Date(item.completedAt) : undefined,
+            assignedTo: 'General Team',
+            documents: [],
+            requirements: ['Initial review required'],
+            frequency: 'annually',
+            riskLevel: 25,
+          }));
+          setItems(mapped);
+        } else {
+          setItems([]);
+        }
       }
     } catch (error) {
       console.error('Error fetching compliance items:', error);
+      setItems([]);
     }
   }, []);
 
@@ -401,33 +411,46 @@ export default function CompliancePage() {
 
       {/* ── STICKY HEADER ── */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between gap-2 sm:gap-3">
           {/* Brand */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
-              <Shield className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight truncate">
-                Compliance Hub
-              </h1>
-              <div className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs text-green-600 font-medium">Operational</span>
+            <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+              <div className="min-w-0 shrink-0">
+                <h1 className="text-xs sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">
+                  Compliance
+                </h1>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[11px] text-green-600 font-medium whitespace-nowrap">Operational</span>
+                </div>
               </div>
+              <ModuleGuideBanner
+                moduleId="compliance"
+                moduleName="Compliance Hub"
+                summary="Automated UK/EU statutory compliance tracking, pre-configured framework checklists (GDPR, Companies House, HMRC, Cyber Essentials, AML), and PDF audit certificate generator."
+                tips={[
+                  "Track pre-loaded regulatory frameworks for GDPR, Companies House & HMRC",
+                  "Monitor statutory renewal deadlines with automated email & SMS alerts",
+                  "Export official PDF Compliance Certificates for bank loans & enterprise client audits"
+                ]}
+              />
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button onClick={() => setShowExportModal(true)}
-              className="h-9 w-9 sm:w-auto sm:px-4 flex items-center justify-center sm:gap-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
-              <Download className="w-4 h-4 text-gray-600" />
+              className="h-8 sm:h-9 w-8 sm:w-auto sm:px-4 flex items-center justify-center sm:gap-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
+              title="Export Report">
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600" />
               <span className="hidden sm:inline text-sm font-medium text-gray-700">Export</span>
             </button>
             <button onClick={() => setShowAddItem(true)}
-              className="h-9 px-4 sm:px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm flex items-center gap-2 cursor-pointer transition-colors shadow-sm active:scale-95">
-              <Plus className="w-4 h-4" />
+              className="h-8 sm:h-9 px-2.5 sm:px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 cursor-pointer transition-colors shadow-sm active:scale-95">
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">New Entry</span>
               <span className="sm:hidden">Add</span>
             </button>
@@ -519,14 +542,14 @@ export default function CompliancePage() {
               <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                    <PoundSterling className="w-5 h-5 text-emerald-600" />
                   </div>
                   <TrendingUp className="w-4 h-4 text-gray-300" />
                 </div>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Annual Cost</p>
-                <p className="text-3xl font-bold text-gray-900">${(totalCost / 1000).toFixed(0)}K</p>
+                <p className="text-3xl font-bold text-gray-900">£{(totalCost / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-gray-400 mt-1">
-                  ${items.length > 0 ? (totalCost / items.length / 1000).toFixed(1) : '0.0'}K per item
+                  £{items.length > 0 ? (totalCost / items.length / 1000).toFixed(1) : '0.0'}K per item
                 </p>
               </div>
             </div>
@@ -605,24 +628,27 @@ export default function CompliancePage() {
                     const pct = (framework.compliant / framework.requirements) * 100;
                     return (
                       <div key={framework.id} onClick={() => setSelectedFramework(framework)}
-                        className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all cursor-pointer group relative">
+                        className="p-4 bg-white rounded-xl border border-slate-200/90 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer group relative flex flex-col justify-between">
                         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu id={`ov-fw-${framework.id}`}
                             onEdit={() => handleEditFramework(framework)}
                             onShare={() => handleShareFramework(framework)}
                             onExport={() => handleExportFramework(framework)} />
                         </div>
-                        <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${framework.gradient} mb-3 shadow-sm`}>
-                          <Icon className="w-4 h-4 text-white" />
+                        <div>
+                          <div className={`inline-flex p-2.5 rounded-xl bg-gradient-to-br ${framework.gradient} mb-3 shadow-xs`}>
+                            <Icon className="w-4 h-4 text-white" />
+                          </div>
+                          <h4 className="font-bold text-slate-900 text-sm mb-1 group-hover:text-blue-600 transition-colors">{framework.name}</h4>
                         </div>
-                        <h4 className="font-semibold text-gray-900 text-sm mb-1">{framework.name}</h4>
-                        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                          <span>Progress</span><span className="font-medium">{framework.compliant}/{framework.requirements}</span>
+                        <div className="pt-2">
+                          <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5 font-medium">
+                            <span>Progress</span><span className="font-bold text-slate-800">{framework.compliant}/{framework.requirements} ({pct.toFixed(0)}%)</span>
+                          </div>
+                          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div className={`h-full bg-gradient-to-r ${framework.gradient} rounded-full`} style={{ width: `${pct}%` }} />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                          <div className={`h-full bg-gradient-to-r ${framework.gradient} rounded-full`} style={{ width: `${pct}%` }} />
-                        </div>
-                        <p className="text-xs font-medium text-gray-700 mt-1.5">{pct.toFixed(0)}%</p>
                       </div>
                     );
                   })}
@@ -695,52 +721,81 @@ export default function CompliancePage() {
                   const isOverdue = item.status === 'overdue' || (item.dueDate < new Date() && item.status !== 'compliant');
                   return (
                     <div key={item.id} onClick={() => setSelectedItem(item)}
-                      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer overflow-hidden group">
-                      {/* Status accent */}
-                      <div className={`h-1 w-full ${sc.dot.replace('bg-', 'bg-')}`} />
-                      <div className="p-5">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${sc.bg} border ${sc.border}`}>
-                            <StatusIcon className={`w-5 h-5 ${sc.text}`} />
+                      className="bg-white rounded-2xl border border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden group flex flex-col justify-between">
+                      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${sc.bg} border ${sc.border}`}>
+                              <StatusIcon className={`w-5 h-5 ${sc.text}`} />
+                            </div>
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${pc.bg} ${pc.text}`}>{pc.label}</span>
+                              <DropdownMenu id={`grid-${item.id}`}
+                                onEdit={() => handleEdit(item)} onDuplicate={() => handleDuplicate(item)}
+                                onExport={() => handleExport(item)} onShare={() => handleShare(item)}
+                                onDelete={() => handleDelete(item)} />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                            <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${pc.bg} ${pc.text}`}>{pc.label}</span>
-                            <DropdownMenu id={`grid-${item.id}`}
-                              onEdit={() => handleEdit(item)} onDuplicate={() => handleDuplicate(item)}
-                              onExport={() => handleExport(item)} onShare={() => handleShare(item)}
-                              onDelete={() => handleDelete(item)} />
-                          </div>
-                        </div>
-                        <h4 className="font-semibold text-gray-900 mb-1 text-sm sm:text-base leading-tight">{item.title}</h4>
-                        <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 mb-4">{item.description}</p>
 
-                        {/* Risk bar */}
-                        <div className="mb-4">
-                          <div className="flex items-center justify-between text-xs mb-1.5">
-                            <span className="text-gray-400 font-medium">Risk</span>
-                            <span className={`font-semibold ${(item.riskLevel || 0) > 50 ? 'text-red-600' : 'text-gray-600'}`}>{item.riskLevel || 0}%</span>
-                          </div>
-                          <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                            <div className={`h-full rounded-full ${(item.riskLevel || 0) > 70 ? 'bg-red-500' : (item.riskLevel || 0) > 40 ? 'bg-orange-400' : 'bg-blue-500'}`}
-                              style={{ width: `${item.riskLevel || 0}%` }} />
+                          <div>
+                            <h4 className="font-bold text-slate-900 mb-1 text-sm sm:text-base leading-snug group-hover:text-blue-600 transition-colors">{item.title}</h4>
+                            <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{item.description}</p>
                           </div>
                         </div>
 
-                        {/* Meta */}
-                        <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-50">
-                          <div className={`flex items-center gap-2 p-2.5 rounded-xl ${isOverdue ? 'bg-red-50' : 'bg-gray-50'}`}>
-                            <Calendar className={`w-3.5 h-3.5 shrink-0 ${isOverdue ? 'text-red-500' : 'text-blue-500'}`} />
-                            <div className="min-w-0">
-                              <p className="text-[10px] text-gray-400">Due</p>
-                              <p className={`text-xs font-medium truncate ${isOverdue ? 'text-red-600' : 'text-gray-700'}`}>{item.dueDate.toLocaleDateString()}</p>
+                        <div className="space-y-3 pt-2">
+                          {/* Risk bar */}
+                          <div>
+                            <div className="flex items-center justify-between text-xs mb-1.5">
+                              <span className="text-slate-400 font-semibold text-[11px]">Risk Level</span>
+                              <span className={`font-bold text-xs ${(item.riskLevel || 0) > 50 ? 'text-rose-600' : 'text-slate-700'}`}>{item.riskLevel || 0}%</span>
+                            </div>
+                            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                              <div className={`h-full rounded-full ${(item.riskLevel || 0) > 70 ? 'bg-rose-500' : (item.riskLevel || 0) > 40 ? 'bg-amber-500' : 'bg-blue-600'}`}
+                                style={{ width: `${item.riskLevel || 0}%` }} />
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50">
-                            <Users className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                            <div className="min-w-0">
-                              <p className="text-[10px] text-gray-400">Officer</p>
-                              <p className="text-xs font-medium text-gray-700 truncate">{item.assignedTo}</p>
+
+                          {/* Meta */}
+                          <div className="grid grid-cols-2 gap-2 text-xs bg-gray-50/80 p-2.5 rounded-xl border border-gray-200">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Calendar className={`w-3.5 h-3.5 shrink-0 ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`} />
+                              <div className="min-w-0">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Due Date</p>
+                                <p className={`text-xs font-bold truncate ${isOverdue ? 'text-rose-600' : 'text-slate-800'}`}>{item.dueDate.toLocaleDateString()}</p>
+                              </div>
                             </div>
+
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Officer</p>
+                                <p className="text-xs font-bold text-slate-800 truncate">{item.assignedTo}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              onClick={() => setSelectedItem(item)}
+                              className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                              Inspect
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const newStatus = item.status === 'compliant' ? 'pending' : 'compliant';
+                                setItems(items.map(i => i.id === item.id ? { ...i, status: newStatus } : i));
+                                showNotification(newStatus === 'compliant' ? 'Marked as Compliant' : 'Status updated to Pending');
+                              }}
+                              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                                item.status === 'compliant' ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                              }`}
+                            >
+                              {item.status === 'compliant' ? 'Compliant ✓' : 'Mark Compliant'}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -828,53 +883,63 @@ export default function CompliancePage() {
                   const daysUntilExpiry = framework.expiryDate ? Math.ceil((framework.expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
                   return (
                     <div key={framework.id} onClick={() => setSelectedFramework(framework)}
-                      className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition-all cursor-pointer relative">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`p-3 rounded-xl bg-gradient-to-br ${framework.gradient} shadow-sm`}>
-                          <Icon className="w-6 h-6 text-white" />
+                      className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all cursor-pointer relative p-5 flex flex-col justify-between group">
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className={`p-3 rounded-xl bg-gradient-to-br ${framework.gradient} shadow-sm`}>
+                            <Icon className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {pct === 100 && (
+                              <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 px-2.5 py-1 rounded-full text-[11px] font-bold">
+                                <CheckCircle className="w-3.5 h-3.5" /> Certified
+                              </div>
+                            )}
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenu id={`fw-${framework.id}`}
+                                onEdit={() => handleEditFramework(framework)}
+                                onExport={() => handleExportFramework(framework)}
+                                onShare={() => handleShareFramework(framework)} />
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {pct === 100 && (
-                            <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2.5 py-1 rounded-lg text-xs font-semibold">
-                              <CheckCircle className="w-3.5 h-3.5" /> Certified
+
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-base mb-1 group-hover:text-blue-600 transition-colors">{framework.name}</h3>
+                          <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">{framework.description}</p>
+                        </div>
+
+                        {/* Metadata Box */}
+                        <div className="bg-slate-50 border border-slate-200/70 rounded-xl p-3.5 space-y-2.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-400 font-semibold text-[11px]">Category</span>
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white border border-slate-200 text-slate-700">{framework.category.replace('-', ' ')}</span>
+                          </div>
+
+                          {framework.expiryDate && (
+                            <div className="flex items-center justify-between text-xs border-t border-slate-200/50 pt-2">
+                              <span className="text-slate-400 font-semibold text-[11px]">Expires</span>
+                              <span className={`font-bold text-xs ${daysUntilExpiry && daysUntilExpiry < 90 ? 'text-rose-600' : 'text-slate-800'}`}>
+                                {framework.expiryDate.toLocaleDateString()}
+                                {daysUntilExpiry && daysUntilExpiry < 90 && <span className="ml-1 text-rose-500 font-normal">({daysUntilExpiry}d)</span>}
+                              </span>
                             </div>
                           )}
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <DropdownMenu id={`fw-${framework.id}`}
-                              onEdit={() => handleEditFramework(framework)}
-                              onExport={() => handleExportFramework(framework)}
-                              onShare={() => handleShareFramework(framework)} />
+
+                          <div className="border-t border-slate-200/50 pt-2 space-y-1.5">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-slate-400 font-semibold text-[11px]">Compliance Progress</span>
+                              <span className="font-bold text-slate-900 text-xs">{framework.compliant}/{framework.requirements} ({pct.toFixed(0)}%)</span>
+                            </div>
+                            <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                              <div className={`h-full bg-gradient-to-r ${framework.gradient} rounded-full`} style={{ width: `${pct}%` }} />
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <h3 className="font-semibold text-gray-900 mb-1">{framework.name}</h3>
-                      <p className="text-xs text-gray-500 mb-4 line-clamp-2">{framework.description}</p>
-                      <div className="space-y-2 mb-4 text-sm">
-                        <div className="flex justify-between text-xs text-gray-500">
-                          <span>Category</span><span className="font-medium text-gray-700">{framework.category}</span>
-                        </div>
-                        {framework.expiryDate && (
-                          <div className="flex justify-between text-xs text-gray-500">
-                            <span>Expires</span>
-                            <span className={`font-medium ${daysUntilExpiry && daysUntilExpiry < 90 ? 'text-red-600' : 'text-gray-700'}`}>
-                              {framework.expiryDate.toLocaleDateString()}
-                              {daysUntilExpiry && daysUntilExpiry < 90 && <span className="ml-1">({daysUntilExpiry}d)</span>}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">Progress</span>
-                          <span className="font-semibold text-gray-900">{framework.compliant}/{framework.requirements}</span>
-                        </div>
-                        <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                          <div className={`h-full bg-gradient-to-r ${framework.gradient} rounded-full`} style={{ width: `${pct}%` }} />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-900">{pct.toFixed(0)}%</p>
-                      </div>
+
                       <button onClick={(e) => { e.stopPropagation(); setSelectedFramework(framework); }}
-                        className="mt-4 w-full py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium rounded-xl hover:shadow-md transition-all cursor-pointer">
+                        className="mt-4 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs active:scale-98">
                         View Details
                       </button>
                     </div>
@@ -887,66 +952,84 @@ export default function CompliancePage() {
 
         {/* ── RISKS TAB ── */}
         {activeTab === 'risks' && (
-          <div className="space-y-4">
-            {/* Risk overview cards */}
+          <div className="space-y-4 sm:space-y-6">
+            {/* Risk summary cards — Enterprise White Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-red-500 to-rose-500 rounded-2xl p-5 text-white shadow-md">
+              <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-white/20 rounded-xl"><AlertTriangle className="w-6 h-6" /></div>
-                  <TrendingUp className="w-5 h-5 opacity-60 rotate-180" />
+                  <div className="p-2.5 bg-rose-50 border border-rose-100 rounded-xl">
+                    <AlertTriangle className="w-5 h-5 text-rose-600" />
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200/60 text-[10px] font-bold uppercase tracking-wider">High Priority</span>
                 </div>
-                <p className="text-sm opacity-90 mb-1">High Risk</p>
-                <p className="text-4xl font-bold">{items.filter(i => (i.riskLevel || 0) > 70).length}</p>
-                <p className="text-xs opacity-70 mt-1">Require immediate attention</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">High Risk Items</p>
+                <p className="text-3xl font-bold text-slate-900">{items.filter(i => (i.riskLevel || 0) > 70).length}</p>
+                <p className="text-xs text-rose-600 font-medium mt-1">Require immediate mitigation</p>
               </div>
-              <div className="bg-gradient-to-br from-orange-500 to-yellow-500 rounded-2xl p-5 text-white shadow-md">
+
+              <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-white/20 rounded-xl"><AlertCircle className="w-6 h-6" /></div>
-                  <Activity className="w-5 h-5 opacity-60" />
+                  <div className="p-2.5 bg-amber-50 border border-amber-100 rounded-xl">
+                    <AlertCircle className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 text-[10px] font-bold uppercase tracking-wider">Moderate</span>
                 </div>
-                <p className="text-sm opacity-90 mb-1">Medium Risk</p>
-                <p className="text-4xl font-bold">{items.filter(i => (i.riskLevel || 0) > 40 && (i.riskLevel || 0) <= 70).length}</p>
-                <p className="text-xs opacity-70 mt-1">Monitor closely</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Medium Risk Items</p>
+                <p className="text-3xl font-bold text-slate-900">{items.filter(i => (i.riskLevel || 0) > 40 && (i.riskLevel || 0) <= 70).length}</p>
+                <p className="text-xs text-amber-600 font-medium mt-1">Monitor closely</p>
               </div>
-              <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl p-5 text-white shadow-md">
+
+              <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-white/20 rounded-xl"><CheckCircle className="w-6 h-6" /></div>
-                  <TrendingUp className="w-5 h-5 opacity-60" />
+                  <div className="p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl">
+                    <CheckCircle className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[10px] font-bold uppercase tracking-wider">Controlled</span>
                 </div>
-                <p className="text-sm opacity-90 mb-1">Low Risk</p>
-                <p className="text-4xl font-bold">{items.filter(i => (i.riskLevel || 0) <= 40).length}</p>
-                <p className="text-xs opacity-70 mt-1">Well managed</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Low Risk Items</p>
+                <p className="text-3xl font-bold text-slate-900">{items.filter(i => (i.riskLevel || 0) <= 40).length}</p>
+                <p className="text-xs text-emerald-600 font-medium mt-1">Well managed</p>
               </div>
             </div>
 
-            {/* Risk detail */}
+            {/* Risk detail analysis */}
             {riskMetrics.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-purple-600" /> Detailed Risk Analysis
+              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-6">
+                <h3 className="font-bold text-slate-900 mb-4 text-base flex items-center gap-2">
+                  <div className="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center border border-purple-100">
+                    <Activity className="w-4 h-4 text-purple-600" />
+                  </div>
+                  Detailed Risk Analysis
                 </h3>
                 <div className="space-y-3">
                   {riskMetrics.map((metric) => {
                     const Icon = metric.icon;
-                    const cols = { low: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200', bar: 'bg-green-500' }, medium: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200', bar: 'bg-yellow-500' }, high: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', bar: 'bg-orange-500' }, critical: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', bar: 'bg-red-500' } }[metric.severity];
+                    const cols = {
+                      low: { bg: 'bg-emerald-50 text-emerald-700 border-emerald-200', bar: 'bg-emerald-500' },
+                      medium: { bg: 'bg-amber-50 text-amber-700 border-amber-200', bar: 'bg-amber-500' },
+                      high: { bg: 'bg-rose-50 text-rose-700 border-rose-200', bar: 'bg-rose-500' },
+                      critical: { bg: 'bg-red-50 text-red-700 border-red-200', bar: 'bg-red-500' }
+                    }[metric.severity];
                     return (
-                      <div key={metric.id} className={`p-4 rounded-xl border ${cols.border} ${cols.bg}`}>
-                        <div className="flex items-center justify-between mb-2">
+                      <div key={metric.id} className="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 transition-all space-y-3">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className={`p-2 ${cols.bar} rounded-lg`}><Icon className="w-4 h-4 text-white" /></div>
+                            <div className={`p-2.5 ${cols.bar} rounded-xl shadow-xs`}><Icon className="w-4 h-4 text-white" /></div>
                             <div>
-                              <h4 className="font-semibold text-gray-900 text-sm">{metric.name}</h4>
-                              <p className={`text-xs font-medium ${cols.text} capitalize`}>{metric.severity} severity</p>
+                              <h4 className="font-bold text-slate-900 text-sm">{metric.name}</h4>
+                              <span className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${cols.bg} mt-0.5`}>
+                                {metric.severity} severity
+                              </span>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
-                            {metric.trend === 'up' && <TrendingUp className="w-4 h-4 text-red-500" />}
-                            {metric.trend === 'down' && <TrendingUp className="w-4 h-4 text-green-500 rotate-180" />}
-                            {metric.trend === 'stable' && <Activity className="w-4 h-4 text-gray-400" />}
+                            <span className="text-xl font-bold text-slate-900">{metric.value}%</span>
+                            {metric.trend === 'up' && <TrendingUp className="w-4 h-4 text-rose-500" />}
+                            {metric.trend === 'down' && <TrendingUp className="w-4 h-4 text-emerald-500 rotate-180" />}
+                            {metric.trend === 'stable' && <Activity className="w-4 h-4 text-slate-400" />}
                           </div>
                         </div>
-                        <div className="w-full bg-white/50 rounded-full h-1.5 overflow-hidden">
+                        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                           <div className={`h-full ${cols.bar} rounded-full`} style={{ width: `${metric.value}%` }} />
                         </div>
                       </div>
@@ -957,32 +1040,37 @@ export default function CompliancePage() {
             )}
 
             {/* Risk by category */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <PieChart className="w-5 h-5 text-indigo-600" /> Risk by Category
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-6">
+              <h3 className="font-bold text-slate-900 mb-4 text-base flex items-center gap-2">
+                <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100">
+                  <PieChart className="w-4 h-4 text-indigo-600" />
+                </div>
+                Risk Exposure by Category
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {categories.filter(c => c.id !== 'all').map(({ id, name, icon: Icon }) => {
                   const catItems = items.filter(i => i.category === id);
                   const avg = catItems.length > 0 ? catItems.reduce((sum, i) => sum + (i.riskLevel || 0), 0) / catItems.length : 0;
                   return (
-                    <div key={id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
+                    <div key={id} className="p-4 bg-white rounded-xl border border-slate-200/80 hover:border-slate-300 transition-all space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-slate-900 rounded-xl shadow-xs">
                           <Icon className="w-4 h-4 text-white" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900 text-sm">{name}</h4>
-                          <p className="text-xs text-gray-500">{catItems.length} items</p>
+                          <h4 className="font-bold text-slate-900 text-sm">{name}</h4>
+                          <p className="text-xs text-slate-400">{catItems.length} active items</p>
                         </div>
                       </div>
-                      <div className="flex justify-between text-xs mb-1.5">
-                        <span className="text-gray-500">Avg Risk</span>
-                        <span className="font-semibold text-gray-900">{avg.toFixed(0)}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                        <div className={`h-full rounded-full ${avg > 70 ? 'bg-red-500' : avg > 50 ? 'bg-orange-500' : avg > 30 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                          style={{ width: `${avg}%` }} />
+                      <div>
+                        <div className="flex justify-between text-xs mb-1.5">
+                          <span className="text-slate-400 font-semibold text-[11px]">Avg Risk Index</span>
+                          <span className="font-bold text-slate-900">{avg.toFixed(0)}%</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                          <div className={`h-full rounded-full ${avg > 70 ? 'bg-rose-500' : avg > 50 ? 'bg-amber-500' : avg > 30 ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                            style={{ width: `${avg}%` }} />
+                        </div>
                       </div>
                     </div>
                   );
@@ -994,45 +1082,52 @@ export default function CompliancePage() {
 
         {/* ── AUDITS TAB ── */}
         {activeTab === 'audits' && (
-          <div className="space-y-4">
+          <div className="space-y-4 sm:space-y-6">
             {/* Recent activity */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <FileCheck className="w-5 h-5 text-blue-600" /> Recent Audit Activities
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-6">
+              <h3 className="font-bold text-slate-900 mb-4 text-base flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                  <FileCheck className="w-4 h-4 text-blue-600" />
+                </div>
+                Recent Audit Trail Activities
               </h3>
               {auditLogs.length === 0 ? (
                 <div className="text-center py-8">
-                  <FileCheck className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-                  <p className="text-sm text-gray-400">No audit logs yet</p>
+                  <FileCheck className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-slate-500">No audit logs recorded</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {auditLogs.map((log, idx) => {
-                    const cfg = { success: { bg: 'bg-green-50', border: 'border-green-100', icon: CheckCircle, ic: 'text-green-600' }, error: { bg: 'bg-red-50', border: 'border-red-100', icon: AlertTriangle, ic: 'text-red-600' }, warning: { bg: 'bg-orange-50', border: 'border-orange-100', icon: AlertCircle, ic: 'text-orange-600' }, info: { bg: 'bg-blue-50', border: 'border-blue-100', icon: Clock, ic: 'text-blue-600' } }[log.type];
+                    const cfg = {
+                      success: { accent: 'border-l-emerald-500', icon: CheckCircle, ic: 'text-emerald-600 bg-emerald-50' },
+                      error: { accent: 'border-l-rose-500', icon: AlertTriangle, ic: 'text-rose-600 bg-rose-50' },
+                      warning: { accent: 'border-l-amber-500', icon: AlertCircle, ic: 'text-amber-600 bg-amber-50' },
+                      info: { accent: 'border-l-blue-500', icon: Clock, ic: 'text-blue-600 bg-blue-50' }
+                    }[log.type];
                     const LIcon = cfg.icon;
                     return (
-                      <div key={idx} className={`p-4 rounded-xl border ${cfg.border} ${cfg.bg}`}>
+                      <div key={idx} className={`p-4 rounded-xl border border-slate-200/90 border-l-4 ${cfg.accent} bg-white shadow-xs hover:shadow-md transition-all`}>
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 bg-white rounded-lg ${cfg.ic}`}><LIcon className="w-4 h-4" /></div>
+                          <div className={`p-2.5 rounded-xl border border-slate-100 ${cfg.ic}`}><LIcon className="w-4 h-4" /></div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                              <span className="font-semibold text-gray-900 text-sm">{log.action}</span>
-                              <span className="text-gray-400">·</span>
-                              <span className="text-sm text-gray-600 truncate">{log.item}</span>
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <span className="font-bold text-slate-900 text-sm leading-tight">{log.action}</span>
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">{log.item}</span>
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-gray-500">
-                              <span className="flex items-center gap-1"><Users className="w-3 h-3" />{log.user}</span>
-                              <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{log.time}</span>
+                            <div className="flex items-center gap-4 text-xs text-slate-400">
+                              <span className="flex items-center gap-1 font-medium"><Users className="w-3.5 h-3.5 text-slate-400" />{log.user}</span>
+                              <span className="flex items-center gap-1 font-medium"><Clock className="w-3.5 h-3.5 text-slate-400" />{log.time}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
-                            <button onClick={() => showNotification(`Opening: ${log.item}`)}
-                              className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors cursor-pointer">
-                              <Eye className="w-4 h-4 text-blue-600" />
+                            <button onClick={() => showNotification(`Opening Audit Log: ${log.item}`)}
+                              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5">
+                              <Eye className="w-3.5 h-3.5 text-slate-500" /> Inspect
                             </button>
                             <DropdownMenu id={`audit-${idx}`}
-                              onExport={() => showNotification(`Export: ${log.item}`)}
-                              onShare={() => showNotification(`Share: ${log.item}`)} />
+                              onExport={() => showNotification(`Export Audit Log: ${log.item}`)}
+                              onShare={() => showNotification(`Share Audit Log: ${log.item}`)} />
                           </div>
                         </div>
                       </div>
@@ -1043,31 +1138,44 @@ export default function CompliancePage() {
             </div>
 
             {/* Upcoming audits */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-purple-600" /> Upcoming Audits
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-6">
+              <h3 className="font-bold text-slate-900 mb-4 text-base flex items-center gap-2">
+                <div className="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center border border-purple-100">
+                  <Calendar className="w-4 h-4 text-purple-600" />
+                </div>
+                Upcoming Statutory Audits & Reviews
               </h3>
               {items.filter(i => i.nextReview).length === 0 ? (
                 <div className="text-center py-8">
-                  <Calendar className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-                  <p className="text-sm text-gray-400">No upcoming audits scheduled</p>
+                  <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-slate-500">No upcoming audits scheduled</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {items.filter(i => i.nextReview).slice(0, 4).map((item) => {
                     const d = item.nextReview ? Math.ceil((item.nextReview.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
                     return (
-                      <div key={item.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-sm transition-all cursor-pointer">
-                        <div className="flex items-start justify-between mb-2">
+                      <div key={item.id} className="p-4 bg-white rounded-xl border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-3">
+                        <div className="flex items-start justify-between">
                           <div>
-                            <h4 className="font-semibold text-gray-900 text-sm">{item.title}</h4>
-                            <p className="text-xs text-gray-500">{item.framework || item.category}</p>
+                            <h4 className="font-bold text-slate-900 text-sm leading-snug">{item.title}</h4>
+                            <p className="text-xs text-slate-500 font-medium">{item.framework || item.category}</p>
                           </div>
-                          <span className={`px-2 py-1 rounded-lg text-xs font-bold ${d < 30 ? 'bg-red-100 text-red-700' : d < 60 ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>{d}d</span>
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${d < 30 ? 'bg-rose-50 text-rose-700 border border-rose-200' : d < 60 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
+                            {d <= 0 ? 'Due Today' : `In ${d} days`}
+                          </span>
                         </div>
-                        <div className="flex flex-wrap gap-3 text-xs text-gray-600">
-                          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{item.nextReview?.toLocaleDateString()}</span>
-                          {item.auditor && <span className="flex items-center gap-1"><Users className="w-3 h-3" />{item.auditor}</span>}
+                        <div className="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                          <span className="flex items-center gap-1.5 text-slate-700 font-medium">
+                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                            {item.nextReview?.toLocaleDateString()}
+                          </span>
+                          {item.auditor && (
+                            <span className="flex items-center gap-1.5 text-slate-700 font-medium">
+                              <Users className="w-3.5 h-3.5 text-slate-400" />
+                              {item.auditor}
+                            </span>
+                          )}
                         </div>
                       </div>
                     );

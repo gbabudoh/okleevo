@@ -64,7 +64,7 @@ const ModalShell = ({ children, maxW = 'sm:max-w-2xl', onClose }: {
   onClose?: () => void;
 }) => (
   <div
-    className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 pb-6 sm:p-6"
     onClick={(e) => { if (e.target === e.currentTarget && onClose) onClose(); }}
   >
     <div className={`bg-white rounded-2xl w-full ${maxW} max-h-[85vh] flex flex-col shadow-2xl overflow-y-auto sm:overflow-hidden`}>
@@ -80,7 +80,7 @@ const ModalHandle = () => (
 );
 
 const ModalFooter = ({ children }: { children: React.ReactNode }) => (
-  <div className="px-4 sm:px-6 py-3 border-t border-gray-100 bg-white flex flex-row gap-2 pb-6 sm:pb-4 shrink-0">
+  <div className="px-4 sm:px-6 pt-3.5 pb-8 sm:pb-5 border-t border-gray-100 bg-white flex flex-row gap-2.5 shrink-0 mb-1.5 sm:mb-0">
     {children}
   </div>
 );
@@ -373,14 +373,14 @@ export default function InvoicingPage() {
 
       {/* ── STICKY HEADER ─────────────────────────────────────────── */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
-              <FileText className="w-5 h-5 text-white" />
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="min-w-0 flex items-center gap-3">
-              <div>
-                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Invoicing</h1>
+            <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="min-w-0 shrink-0">
+                <h1 className="text-sm sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">Invoicing</h1>
                 <p className="text-[11px] text-gray-400 hidden sm:block">Create, manage and track invoices</p>
               </div>
               <ModuleGuideBanner

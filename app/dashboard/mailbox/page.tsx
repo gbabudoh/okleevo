@@ -279,23 +279,23 @@ export default function MailboxPage() {
       <TourProvider moduleId="mailbox" steps={mailboxTourSteps} />
 
       {/* Header */}
-      <div id="tour-mailbox-header" className="shrink-0 border-b border-gray-100 bg-white px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <div id="tour-mailbox-header" className="shrink-0 border-b border-gray-100 bg-white px-3.5 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
           {selectedMessage ? (
             <button
               onClick={() => setSelectedMessage(null)}
-              className="lg:hidden flex items-center justify-center w-9 h-9 bg-gray-100 rounded-xl text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer shrink-0"
+              className="lg:hidden flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-gray-100 rounded-xl text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer shrink-0"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
           ) : (
             <>
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
-                <Mail className="w-5 h-5 text-white" />
+              <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div className="min-w-0 flex items-center gap-3">
-                <div>
-                  <h1 className="text-base font-bold text-gray-900 leading-tight">Okleevo Mail Engine</h1>
+              <div className="min-w-0 flex items-center gap-2 sm:gap-3">
+                <div className="min-w-0">
+                  <h1 className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">Mail Engine</h1>
                   <p className="text-xs text-gray-400 hidden sm:block">Your business email, all in one place</p>
                 </div>
                 <ModuleGuideBanner

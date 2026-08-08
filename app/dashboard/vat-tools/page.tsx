@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import StatusModal from '@/components/StatusModal';
 import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { vatToolsTourSteps } from './tour-steps';
 
 export default function VATToolsPage() {
@@ -115,9 +116,21 @@ export default function VATToolsPage() {
             <div className="p-2 bg-indigo-600 rounded-xl shrink-0">
               <Calculator className="w-5 h-5 text-white" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">VAT Tools</h1>
-              <p className="text-xs text-gray-400 hidden sm:block">Precision VAT calculation suite</p>
+            <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="min-w-0 shrink-0">
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">VAT Tools</h1>
+                <p className="text-xs text-gray-400 hidden sm:block">Precision VAT calculation suite</p>
+              </div>
+              <ModuleGuideBanner
+                moduleId="vat-tools"
+                moduleName="UK VAT Tools"
+                summary="Compute net, gross, and VAT amounts for UK 20% standard rate, 5% reduced rate, zero rate, or custom rates. Export calculation history."
+                tips={[
+                  "Add VAT to net prices or extract (remove) VAT from gross amounts",
+                  "Use official UK HMRC rate presets (20% standard, 5% reduced, 0% zero)",
+                  "Export your calculation history to CSV for accounting records"
+                ]}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">

@@ -149,7 +149,7 @@ const ModalHandle = () => (
 );
 
 const ModalFooter = ({ children }: { children: ReactNode }) => (
-  <div className="shrink-0 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 px-6 py-3.5 flex flex-row gap-3 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3.5">
+  <div className="shrink-0 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 px-6 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-3 mb-1.5 sm:mb-0">
     {children}
   </div>
 );

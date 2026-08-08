@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Users, Plus, Search, Filter, Download,
-  DollarSign, Award, TrendingUp, Building2,
+  DollarSign, PoundSterling, Award, TrendingUp, Building2,
   Grid, List, CheckCircle, XCircle, AlertCircle,
   MessageSquare, Trash2, X, Check,
   Laptop, Target, Shield, Activity, FileText,
@@ -13,6 +13,7 @@ import {
   CheckCircle2, ArrowUpRight
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 
 const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all';
 const labelCls = 'block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1';
@@ -453,33 +454,47 @@ export default function HRRecordsPage() {
       )}
 
       {/* ── Enterprise Header Shell ── */}
-      <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-          <div className="flex items-start gap-4">
-            <div className="p-3.5 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shrink-0 text-white shadow-md">
-              <Users className="w-6 h-6 stroke-[2]" />
+      <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shrink-0 text-white shadow-md">
+              <Users className="w-5 h-5 stroke-[2]" />
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  UK HR & People Operations Suite
-                </h1>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/40">
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-                  Okleevo UK HR OS v2.0
-                </span>
-              </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                UK employment statutory compliance, HMRC PAYE payroll, Working Time Regulations, and leave tracking.
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+                UK HR &amp; People Operations
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                UK statutory compliance, HMRC PAYE payroll &amp; leave tracking
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/40">
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+              Okleevo UK HR OS
+            </span>
+            <ModuleGuideBanner
+              moduleId="hr-records"
+              moduleName="HR & Personnel Records"
+              summary="Manage UK employee profiles, statutory payroll details (HMRC tax codes, NI numbers), right-to-work tracking, and statutory leave balances."
+              tips={[
+                "Store employee HMRC tax codes and NI numbers securely",
+                "Track UK Right to Work share codes & expiration dates",
+                "Manage annual leave entitlement and timesheet approvals"
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* Header Actions */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex-wrap">
+          <div className="flex items-center gap-2">
             <select
               value={currencySymbol}
               onChange={e => setCurrencySymbol(e.target.value)}
-              className="px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
+              className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
             >
               <option value="£">Currency: £ GBP</option>
               <option value="$">Currency: $ USD</option>
@@ -489,7 +504,7 @@ export default function HRRecordsPage() {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+              className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
               title="Refresh HR Telemetry"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -497,121 +512,123 @@ export default function HRRecordsPage() {
 
             <button
               onClick={handleExportCSV}
-              className="p-2.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+              className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
               title="Export HMRC Payroll Register CSV"
             >
               <Download className="w-4 h-4" />
             </button>
-
-            <button
-              onClick={() => setShowAddEmployee(true)}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>+ Add Employee Record</span>
-            </button>
           </div>
+
+          <button
+            onClick={() => setShowAddEmployee(true)}
+            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Employee Record</span>
+          </button>
         </div>
       </div>
 
       {/* ── Summary UK HR Metrics ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center shrink-0">
-            <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center shrink-0">
+            <Users className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <div>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{employees.length}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active Headcount</p>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
-            <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{currencySymbol}{totalGrossPayroll.toLocaleString()}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Gross Annual Payroll</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight truncate">{employees.length}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate mt-0.5">Active Headcount</p>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 flex items-center justify-center shrink-0">
-            <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
+            <PoundSterling className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">28 Days</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">UK Statutory Leave Std</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">
+              {currencySymbol}{totalGrossPayroll.toLocaleString()}
+            </p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate mt-0.5">Gross Payroll</p>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
-            <UserCheck className="w-5 h-5 text-amber-500" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 flex items-center justify-center shrink-0">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
           </div>
-          <div>
-            <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">100%</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">UK RTW & HMRC Verified</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight truncate">28 Days</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate mt-0.5">Statutory Leave</p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
+            <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight truncate">100%</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate mt-0.5">HMRC Verified</p>
           </div>
         </div>
       </div>
 
       {/* ── Toolbar: Search, Department Filters, & 4-Way View Switcher ── */}
       <div className="space-y-3">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3.5 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between overflow-hidden">
           <div className="flex-1 relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search by Employee Name, Job Title, Department, or Employee ID..."
+              placeholder="Search Employee, Title, Dept, or ID..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs font-semibold outline-none border border-slate-200/80 dark:border-slate-700/80 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs font-semibold outline-none border border-slate-200/80 dark:border-slate-700/80 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
             />
           </div>
 
-          {/* 4-Way View Controller Bar */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
+          {/* 4-Way View Controller Bar — Responsive Scrollable Container */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shrink-0 overflow-x-auto max-w-full scrollbar-none">
             <button
               onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-xs' : 'text-slate-500'
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Employee Directory Cards Grid"
             >
-              <Grid className="w-3.5 h-3.5" />
+              <Grid className="w-3.5 h-3.5 shrink-0" />
               <span>Cards Grid</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-xs' : 'text-slate-500'
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Executive Master Table"
             >
-              <List className="w-3.5 h-3.5" />
+              <List className="w-3.5 h-3.5 shrink-0" />
               <span>Master Table</span>
             </button>
             <button
               onClick={() => setViewMode('compliance')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'compliance' ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-xs' : 'text-slate-500'
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                viewMode === 'compliance' ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="UK HR Compliance & Regulations Ledger"
             >
-              <Scale className="w-3.5 h-3.5" />
+              <Scale className="w-3.5 h-3.5 shrink-0" />
               <span>UK Compliance</span>
             </button>
             <button
               onClick={() => setViewMode('timesheets')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'timesheets' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs' : 'text-slate-500'
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                viewMode === 'timesheets' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Timesheet & Leave Matrix"
             >
-              <Clock className="w-3.5 h-3.5" />
-              <span>Timesheets & Leave</span>
+              <Clock className="w-3.5 h-3.5 shrink-0" />
+              <span>Timesheets</span>
             </button>
           </div>
         </div>

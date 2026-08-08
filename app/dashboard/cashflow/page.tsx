@@ -11,6 +11,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import TourProvider from '@/components/tours/TourProvider';
+import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { cashflowTourSteps } from './tour-steps';
 
 interface Transaction {
@@ -61,7 +62,7 @@ const ModalHandle = () => (
 );
 
 const ModalFooter = ({ children }: { children: ReactNode }) => (
-  <div className="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 py-3 flex flex-row gap-2.5 pb-[calc(1.5rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+  <div className="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-2.5 mb-1.5 sm:mb-0">
     {children}
   </div>
 );
@@ -139,13 +140,15 @@ export default function CashflowPage() {
     fetchCashflowData();
   }, [fetchCashflowData]);
 
-  const maxValue = monthlyData.length > 0
+  const rawMax = monthlyData.length > 0
     ? Math.max(...monthlyData.map(d => Math.max(d.income, d.expenses)))
-    : 1000;
+    : 0;
+  const maxValue = rawMax > 0 ? rawMax : 1000;
   const avgMonthlyIncome = summary.avgMonthlyIncome;
   const avgMonthlyExpenses = summary.avgMonthlyExpenses;
   const netCashflow = avgMonthlyIncome - avgMonthlyExpenses;
   const profitMargin = avgMonthlyIncome > 0 ? (netCashflow / avgMonthlyIncome) * 100 : 0;
+  const hasData = summary.totalIncome > 0 || summary.totalExpenses > 0;
 
   const resetNewTransaction = () => setNewTransaction({
     type: 'income',
@@ -166,9 +169,21 @@ export default function CashflowPage() {
             <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200 shrink-0">
               <Activity className="w-5 h-5 text-gray-500" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-semibold text-gray-900 leading-tight">Cashflow</h1>
-              <p className="text-xs text-gray-500 hidden sm:block">Real-time financial health tracking</p>
+            <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="min-w-0 shrink-0">
+                <h1 className="text-base sm:text-lg font-semibold text-gray-900 leading-tight whitespace-nowrap">Cashflow</h1>
+                <p className="text-xs text-gray-500 hidden sm:block">Real-time financial health tracking</p>
+              </div>
+              <ModuleGuideBanner
+                moduleId="cashflow"
+                moduleName="Cashflow Telemetry"
+                summary="Monitor operating cash inflows, expense burn rates, net liquidity position, and statutory tax reserves."
+                tips={[
+                  "Real-time liquidity tracking derived from approved invoices and expense logs",
+                  "Auto-calculated Corporation Tax & VAT reserves",
+                  "Export complete cashflow statement logs to CSV"
+                ]}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -191,7 +206,7 @@ export default function CashflowPage() {
                   ...monthlyData.map(d => [d.month, d.income, d.expenses, d.net])
                 ];
                 const csv = csvData.map(row => row.join(',')).join('\n');
-                const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -201,19 +216,20 @@ export default function CashflowPage() {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
               }}
-              className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors cursor-pointer"
+              className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700"
             >
-              <Download className="w-5 h-5" />
+              <Download className="w-4 h-4 cursor-pointer" />
+              <span className="hidden sm:inline cursor-pointer">Export</span>
             </button>
             <button
               id="tour-cashflow-new-entry"
               type="button"
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
+              onClick={() => { resetNewTransaction(); setShowAddModal(true); }}
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
             >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">New Entry</span>
-              <span className="sm:hidden">Add</span>
+              <Plus className="w-4 h-4 cursor-pointer" />
+              <span className="hidden sm:inline cursor-pointer">Add Transaction</span>
+              <span className="sm:hidden cursor-pointer">Add</span>
             </button>
           </div>
         </div>
@@ -232,18 +248,18 @@ export default function CashflowPage() {
       <div className="px-4 sm:px-6 pt-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Total Income', value: `£${avgMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingUp, trend: '+12.5%', up: true, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
-            { label: 'Total Expenses', value: `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: TrendingDown, trend: '+8.3%', up: false, bgGrad: 'bg-gradient-to-br from-rose-500 to-red-600' },
-            { label: 'Net Cashflow', value: `£${netCashflow.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly avg', icon: PoundSterling, trend: '+14.2%', up: true, bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600' },
-            { label: 'Profit Margin', value: `${isNaN(profitMargin) ? '0.0' : profitMargin.toFixed(1)}%`, sub: 'Above target', icon: Wallet, trend: 'Healthy', up: true, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
-          ].map(({ label, value, sub, icon: Icon, trend, up, bgGrad }) => (
+            { label: 'Total Income', value: `£${avgMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly Average', icon: TrendingUp, badge: 'Inflow', up: true, iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600', badgeStyle: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300' },
+            { label: 'Total Expenses', value: `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly Average', icon: TrendingDown, badge: 'Outflow', up: false, iconBg: 'bg-gradient-to-br from-rose-500 to-red-600', badgeStyle: 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-300' },
+            { label: 'Net Cashflow', value: `£${netCashflow.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Net Position', icon: PoundSterling, badge: netCashflow >= 0 ? 'Surplus' : 'Deficit', up: netCashflow >= 0, iconBg: 'bg-gradient-to-br from-indigo-500 to-blue-600', badgeStyle: netCashflow >= 0 ? 'bg-indigo-50 text-indigo-700 border-indigo-200/60 dark:bg-indigo-950/60 dark:text-indigo-300' : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-300' },
+            { label: 'Profit Margin', value: `${isNaN(profitMargin) ? '0.0' : profitMargin.toFixed(1)}%`, sub: 'Operating Margin', icon: Wallet, badge: profitMargin > 0 ? 'Positive' : '0.0%', up: true, iconBg: 'bg-gradient-to-br from-purple-500 to-indigo-600', badgeStyle: 'bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-950/60 dark:text-purple-300' },
+          ].map(({ label, value, sub, icon: Icon, badge, iconBg, badgeStyle }) => (
             <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
               <div className="flex items-center justify-between mb-3">
-                <div className={`p-2.5 ${bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
+                <div className={`p-2.5 ${iconBg} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
                   <Icon className="w-4.5 h-4.5" />
                 </div>
-                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${up ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-300'}`}>
-                  {trend}
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${badgeStyle}`}>
+                  {badge}
                 </span>
               </div>
               <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{label}</p>

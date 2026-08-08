@@ -311,7 +311,7 @@ export default function DashboardLayout({
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white/60 backdrop-blur-xl border-r border-white/20 z-40 transition-all duration-300 shadow-sm flex-col">
         <div className="p-6 border-b border-white/20 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="Okleevo" width={120} height={32} className="h-8 w-auto" />
+            <Image src="/logo.png" alt="Okleevo" width={100} height={26} className="h-6 w-auto" />
           </Link>
         </div>
 
@@ -328,14 +328,20 @@ export default function DashboardLayout({
             // Show only enabled modules to the user
             const finalModules = enabledModules.length > 0 ? enabledModules : defaultModules;
 
+            const isModuleActive = (href: string) => pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
+            const isDashboardActive = pathname === '/dashboard';
+
             return (
               <>
                 <Link
                   href="/dashboard"
-                  className="flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
-                  style={{ backgroundColor: '#fc68131a', color: '#fc6813' }}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                    isDashboardActive
+                      ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
+                  }`}
                 >
-                  <LayoutDashboard className="w-5 h-5" />
+                  <LayoutDashboard className={`w-5 h-5 ${isDashboardActive ? 'text-orange-600' : ''}`} />
                   <span>Dashboard</span>
                 </Link>
 
@@ -355,18 +361,25 @@ export default function DashboardLayout({
                     return (
                       <div className="pt-4">
                         <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Finance</p>
-                        {financeModules.map(m => (
-                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                            <m.icon className="w-5 h-5" /> {m.label}
-                          </Link>
-                        ))}
+                        {financeModules.map(m => {
+                          const active = isModuleActive(m.href);
+                          return (
+                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                              active
+                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
+                            }`}>
+                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
+                            </Link>
+                          );
+                        })}
                       </div>
                     );
                   })()}
 
                   {/* Okleevo Mail Engine — always visible, never gated by enabledModules */}
                   {(() => {
-                    const mailActive = pathname === '/dashboard/mailbox';
+                    const mailActive = isModuleActive('/dashboard/mailbox');
                     return (
                       <div className="pt-4">
                         <p className="px-4 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#fc6813' }}>
@@ -413,11 +426,18 @@ export default function DashboardLayout({
                     return (
                       <div className="pt-4">
                         <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Customer</p>
-                        {customerModules.map(m => (
-                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                            <m.icon className="w-5 h-5" /> {m.label}
-                          </Link>
-                        ))}
+                        {customerModules.map(m => {
+                          const active = isModuleActive(m.href);
+                          return (
+                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                              active
+                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
+                            }`}>
+                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
+                            </Link>
+                          );
+                        })}
                       </div>
                     );
                   })()}
@@ -432,11 +452,18 @@ export default function DashboardLayout({
                     return (
                       <div className="pt-4">
                         <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Team</p>
-                        {teamModules.map(m => (
-                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                            <m.icon className="w-5 h-5" /> {m.label}
-                          </Link>
-                        ))}
+                        {teamModules.map(m => {
+                          const active = isModuleActive(m.href);
+                          return (
+                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                              active
+                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
+                            }`}>
+                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
+                            </Link>
+                          );
+                        })}
                       </div>
                     );
                   })()}
@@ -460,11 +487,18 @@ export default function DashboardLayout({
                     return (
                       <div className="pt-4">
                         <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Productivity</p>
-                        {allModules.map(m => (
-                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                            <m.icon className="w-5 h-5" /> {m.label}
-                          </Link>
-                        ))}
+                        {allModules.map(m => {
+                          const active = isModuleActive(m.href);
+                          return (
+                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                              active
+                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
+                            }`}>
+                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
+                            </Link>
+                          );
+                        })}
                       </div>
                     );
                   })()}
@@ -484,11 +518,18 @@ export default function DashboardLayout({
                     return (
                       <div className="pt-4">
                         <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Operations</p>
-                        {operationsModules.map(m => (
-                          <Link key={m.id} href={m.href} className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/50 transition-colors">
-                            <m.icon className="w-5 h-5" /> {m.label}
-                          </Link>
-                        ))}
+                        {operationsModules.map(m => {
+                          const active = isModuleActive(m.href);
+                          return (
+                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                              active
+                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
+                            }`}>
+                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
+                            </Link>
+                          );
+                        })}
                       </div>
                     );
                   })()}

@@ -1208,14 +1208,14 @@ export default function CRMPage() {
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-2 bg-blue-600 rounded-xl shrink-0">
-              <Users className="w-5 h-5 text-white" />
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+            <div className="p-1.5 sm:p-2 bg-blue-600 rounded-xl shrink-0">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="min-w-0 flex items-center gap-3">
-              <div>
-                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">CRM</h1>
+            <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="min-w-0 shrink-0">
+                <h1 className="text-sm sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">CRM</h1>
                 <p className="text-[11px] text-gray-400 font-medium hidden sm:block">Manage relationships & track pipeline</p>
               </div>
               <ModuleGuideBanner
@@ -1266,7 +1266,7 @@ export default function CRMPage() {
 
       <div className="px-4 sm:px-6 space-y-4 pt-4">
         {/* CRM Section Tabs */}
-        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-1.5 w-fit">
+        <div className="flex items-center gap-1 sm:gap-1.5 bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-1.5 max-w-full overflow-x-auto scrollbar-hide shrink-0">
           {([
             ['contacts', 'Contacts', Contact],
             ['companies', 'Companies', Building2],
@@ -1274,7 +1274,7 @@ export default function CRMPage() {
             ['calendar', 'Calendar', CalendarDays],
           ] as const).map(([id, label, Icon]) => (
             <button key={id} type="button" onClick={() => setCrmSection(id)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                 crmSection === id ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'
               }`}>
               <Icon className="w-3.5 h-3.5" /> {label}
@@ -1629,7 +1629,7 @@ export default function CRMPage() {
                 <TagInput value={newClient.tags} onChange={(tags) => setNewClient({...newClient, tags})} placeholder="Type a tag and press Enter" />
               </div>
             </div>
-            <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+            <div className="shrink-0 bg-white border-t border-gray-100 px-5 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-2.5 mb-1.5 sm:mb-0">
               <button type="button" onClick={() => setShowAddModal(false)}
                 className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
                 Cancel
@@ -1724,7 +1724,7 @@ export default function CRMPage() {
                   className={inputCls} />
               </div>
             </div>
-            <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+            <div className="shrink-0 bg-white border-t border-gray-100 px-5 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-2.5 mb-1.5 sm:mb-0">
               <button type="button" onClick={() => { setShowEditModal(false); setEditingClient(null); }}
                 className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
                 Cancel
@@ -1800,7 +1800,7 @@ export default function CRMPage() {
                 <p className="text-[11px] text-gray-400 mt-1">{emailData.message.length} chars</p>
               </div>
             </div>
-            <div className="shrink-0 bg-white border-t border-gray-200 px-5 sm:px-6 py-3 sm:py-4 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-4">
+            <div className="shrink-0 bg-white border-t border-gray-200 px-5 sm:px-6 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-2.5 mb-1.5 sm:mb-0">
               <button type="button" onClick={() => setShowEmailModal(false)}
                 className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">
                 Cancel
@@ -1872,7 +1872,7 @@ export default function CRMPage() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:bg-white bg-gray-50 text-center text-sm font-semibold outline-none transition-all" />
               </div>
             </div>
-            <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-3 flex flex-row gap-2.5 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+            <div className="shrink-0 bg-white border-t border-gray-100 px-5 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-2.5 mb-1.5 sm:mb-0">
               <button type="button" onClick={() => { setShowDeleteModal(false); setDeletingClient(null); }}
                 className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
                 Cancel

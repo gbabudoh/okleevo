@@ -33,6 +33,7 @@ import accounting from "accounting";
 import { AccountingSummary } from "@/components/dashboard/accounting/AccountingSummary";
 import TourProvider from "@/components/tours/TourProvider";
 import { accountingTourSteps } from "./tour-steps";
+import { ModuleGuideBanner } from "@/components/tours/ModuleGuideBanner";
 import { ChartOfAccounts } from "@/components/dashboard/accounting/ChartOfAccounts";
 import { JournalEntries } from "@/components/dashboard/accounting/JournalEntries";
 import { jsPDF } from "jspdf";
@@ -545,7 +546,7 @@ const EntryForm = ({ onSave, onCancel, saveLabel = "Save Entry", newEntry, setNe
         </div>
       )}
 
-      <div className="sticky bottom-0 -mx-5 px-5 pt-4 pb-[calc(2.25rem+env(safe-area-inset-bottom,0px))] bg-white border-t border-gray-100 flex flex-row gap-3 sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+      <div className="sticky bottom-0 -mx-5 px-5 pt-4 pb-8 sm:pb-6 bg-white border-t border-gray-100 flex flex-row gap-3 mb-1.5 sm:mb-0 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
         <button onClick={onCancel} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
         <button onClick={onSave} className="flex-2 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
           <Save className="w-4 h-4" /> {saveLabel}
@@ -1013,9 +1014,21 @@ export default function AccountingPage() {
             <div className="p-2 bg-blue-600 rounded-xl shrink-0">
               <Calculator className="w-5 h-5 text-white" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Accounting</h1>
-              <p className="text-[11px] text-gray-400 hidden sm:block">Double-entry bookkeeping · UK SME</p>
+            <div className="min-w-0 flex items-center gap-3">
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Accounting</h1>
+                <p className="text-[11px] text-gray-400 hidden sm:block">Double-entry bookkeeping · UK SME</p>
+              </div>
+              <ModuleGuideBanner
+                moduleId="accounting"
+                moduleName="Double-Entry Accounting & Ledger"
+                summary="Manage your Chart of Accounts, record general journal entries, reconcile cash positions, and generate statutory P&L, Balance Sheet, and Trial Balance reports."
+                tips={[
+                  "Set up your Chart of Accounts with assets, liabilities, equity, revenues, and expenses",
+                  "Record double-entry journal entries with matching debit and credit amounts",
+                  "Export statutory financial statements to PDF or Excel for HMRC tax filing"
+                ]}
+              />
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
@@ -1732,7 +1745,7 @@ export default function AccountingPage() {
             </ul>
           </div>
 
-          <div className="flex gap-3 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+          <div className="flex gap-3 pt-2 pb-7 sm:pb-3 mb-1.5 sm:mb-0">
             <button onClick={() => setShowAddAccountModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
             <button onClick={handleSaveAccount} className="flex-1 py-3 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
               <Save className="w-4 h-4" /> Save Account
@@ -1773,7 +1786,7 @@ export default function AccountingPage() {
             <p className={labelCls}>Last Transaction</p>
             <p className="text-sm text-gray-700">{selectedAccount.lastTransaction ? new Date(selectedAccount.lastTransaction).toLocaleDateString("en-GB") : "—"}</p>
           </div>
-          <div className="pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+          <div className="pt-2 pb-7 sm:pb-3 mb-1.5 sm:mb-0">
             <button onClick={() => setShowViewAccountModal(false)}
               className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors cursor-pointer">
               Close
@@ -1812,7 +1825,7 @@ export default function AccountingPage() {
               </div>
             </label>
           )}
-          <div className="flex gap-3 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+          <div className="flex gap-3 pt-2 pb-7 sm:pb-3 mb-1.5 sm:mb-0">
             <button onClick={() => setShowEditAccountModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
             <button onClick={handleSaveAccount} className="flex-1 py-3 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
               <Save className="w-4 h-4" /> Update Account
@@ -1832,7 +1845,7 @@ export default function AccountingPage() {
               </div>
               <h2 className="text-base font-bold text-gray-900 mb-1">Delete {deleteTarget.type === "account" ? "Account" : "Entry"}?</h2>
               <p className="text-sm text-gray-400 mb-5">This action cannot be undone.</p>
-              <div className="flex gap-3 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-2">
+              <div className="flex gap-3 pt-2 pb-7 sm:pb-3 mb-1.5 sm:mb-0">
                 <button onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
                 <button onClick={handleConfirmDelete} className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer">Delete</button>
               </div>

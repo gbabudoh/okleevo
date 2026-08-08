@@ -604,14 +604,14 @@ export default function TaxationPage() {
       <TourProvider moduleId="taxation" steps={taxationTourSteps} />
       {/* ── Sticky Header ────────────────────────────────────────────── */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-2 bg-emerald-600 rounded-xl shrink-0">
-              <FileText className="w-5 h-5 text-white" />
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+            <div className="p-1.5 sm:p-2 bg-emerald-600 rounded-xl shrink-0">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="min-w-0 flex items-center gap-3">
-              <div>
-                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">UK Taxation</h1>
+            <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="min-w-0 shrink-0">
+                <h1 className="text-sm sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">UK Taxation</h1>
                 <p className="text-xs text-gray-400 hidden sm:block">Prepare &amp; download tax reports for your accountant</p>
               </div>
               <ModuleGuideBanner
@@ -3014,7 +3014,7 @@ export default function TaxationPage() {
             </div>
 
             {/* Modal Footer — sticky so always visible */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-5 sm:px-8 py-4 flex items-center justify-between gap-3 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6">
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-5 sm:px-8 py-4 flex items-center justify-between gap-3 pb-8 sm:pb-6 mb-1.5 sm:mb-0">
                 <button
                   onClick={() => {
                     if (newReturnStep === 1) {
@@ -3135,7 +3135,7 @@ export default function TaxationPage() {
               </div>
 
             </div>
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-5 sm:px-8 py-4 flex gap-4 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-5 sm:px-8 py-4 flex gap-4 pb-8 sm:pb-6 mb-1.5 sm:mb-0 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
                 <button
                   onClick={() => setShowCT600Modal(false)}
                   className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
@@ -3689,7 +3689,7 @@ export default function TaxationPage() {
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-5 sm:px-8 py-4 flex gap-3 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-5 sm:px-8 py-4 flex gap-3 pb-8 sm:pb-6 mb-1.5 sm:mb-0 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
               <button
                 onClick={() => setShowRTIModal(false)}
                 className="flex-1 py-4 bg-white border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-100 hover:border-gray-300 active:scale-[0.98] transition-all cursor-pointer"
@@ -3866,7 +3866,7 @@ export default function TaxationPage() {
             </div>
 
             {/* Premium Footer Actions — sticky for mobile accessibility */}
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-5 sm:px-8 py-4 flex gap-4 pb-[calc(2.5rem+env(safe-area-inset-bottom,16px))] sm:pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-5 sm:px-8 py-4 flex gap-4 pb-8 sm:pb-6 mb-1.5 sm:mb-0 shadow-[0_-10px_20px_rgba(0,0,0,0.04)]">
               <button
                 onClick={() => setShowVATReturnModal(false)}
                 className="flex-1 py-4 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-600 hover:bg-gray-100 hover:border-gray-300 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
