@@ -27,7 +27,7 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
   try {
     const { id } = await params;
     const body = await req.json();
-    const { title, slug, status, seoTitle, seoDescription, content } = body;
+    const { title, slug, status, seoTitle, seoDescription, content, blockOrder } = body;
 
     const existing = await prisma.microPage.findFirst({
       where: { id: id as string, businessId: user.businessId },
@@ -59,6 +59,7 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
         seoTitle: seoTitle !== undefined ? (seoTitle?.trim() || null) : undefined,
         seoDescription: seoDescription !== undefined ? (seoDescription?.trim() || null) : undefined,
         content: content !== undefined ? content : undefined,
+        blockOrder: Array.isArray(blockOrder) ? blockOrder : undefined,
         publishedAt,
       },
     });

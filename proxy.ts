@@ -23,6 +23,8 @@ const publicRoutes = [
   '/forms',
   '/api/public',
   '/p',              // Hosted micro-pages are public landing pages, no session required
+  '/api/micro-pages/submit', // Public lead-capture form on hosted micro-pages, no session required
+  '/api/micro-pages/track-view', // Public view-count beacon fired from hosted micro-pages, no session required
   '/support',
   '/guide',
   '/sitemap.xml',

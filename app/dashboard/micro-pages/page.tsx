@@ -6,12 +6,21 @@ import {
   Trash2, Copy, BarChart3, Settings, Link as LinkIcon, ExternalLink,
   Zap, Clock, CheckCircle, AlertCircle, MoreVertical,
   ShoppingCart, Calendar, Grid, List, X, Sparkles, Target, Award,
-  Rocket, ChevronRight, Loader2, QrCode, Code, UserCheck, Send, Check,
-  FileText, Layers, Share2, HelpCircle
+  Rocket, ChevronRight, ChevronDown, ChevronUp, GripVertical, Loader2, QrCode, Code, UserCheck, Send, Check,
+  FileText, Layers, Share2, HelpCircle, MessageSquare, Image as ImageIcon
 } from 'lucide-react';
+import QRCode from 'qrcode';
+import {
+  DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext, verticalListSortingStrategy, useSortable, arrayMove, sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import BlockContentEditor from '@/components/micro-pages/BlockContentEditor';
-import { MICRO_PAGE_TEMPLATES } from '@/lib/micro-page-templates';
+import { MICRO_PAGE_TEMPLATES, ALL_BLOCK_TYPES } from '@/lib/micro-page-templates';
 import type { MicroPageContent, MicroPageBlockContent } from '@/lib/micro-page-content';
 import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 
@@ -30,6 +39,7 @@ interface MicroPage {
   seoTitle?: string;
   seoDescription?: string;
   content: MicroPageContent;
+  blockOrder: string[];
 }
 
 interface LeadSubmission {
@@ -42,8 +52,6 @@ interface LeadSubmission {
   date: string;
 }
 
-
-
 const templateVisuals: Record<string, { icon: React.ElementType; gradient: string; categoryLabel: string }> = {
   'product-launch': { icon: Rocket, gradient: 'from-blue-600 to-cyan-500', categoryLabel: 'Product Launch' },
   'event-landing': { icon: Calendar, gradient: 'from-purple-600 to-pink-500', categoryLabel: 'Event & Webinar' },
@@ -51,6 +59,44 @@ const templateVisuals: Record<string, { icon: React.ElementType; gradient: strin
   portfolio: { icon: Award, gradient: 'from-amber-500 to-orange-600', categoryLabel: 'Bio & Portfolio' },
   'coming-soon': { icon: Clock, gradient: 'from-indigo-600 to-purple-600', categoryLabel: 'Waitlist Page' },
   pricing: { icon: ShoppingCart, gradient: 'from-rose-600 to-pink-600', categoryLabel: 'Pricing Matrix' },
+};
+
+const blockIcons: Record<string, React.ElementType> = {
+  Hero: Sparkles,
+  Features: Zap,
+  Countdown: Clock,
+  Schedule: Calendar,
+  Registration: UserCheck,
+  Benefits: Award,
+  Form: Send,
+  Testimonials: MessageSquare,
+  Gallery: ImageIcon,
+  About: FileText,
+  Contact: Send,
+  'Email Form': Send,
+  'Pricing Cards': ShoppingCart,
+  FAQ: HelpCircle,
+  CTA: Target,
+  Footer: Layers,
+};
+
+const blockDescriptions: Record<string, string> = {
+  Hero: 'Hero headline, subtitle, action button, and cover image',
+  Features: 'Product highlights, core capabilities, or key service features',
+  Countdown: 'Real-time countdown timer for launches, webinars, and deadlines',
+  Schedule: 'Event agenda timeline, session breakdowns, or itinerary',
+  Registration: 'Intake form for event sign-ups and ticket registrations',
+  Benefits: 'Value proposition points and customer benefit highlights',
+  Form: 'Lead capture form with customized field inputs',
+  Testimonials: 'Customer quotes, reviews, star ratings, and social proof',
+  Gallery: 'Showcase photos, case study screenshots, or project portfolio',
+  About: 'Company overview, founder bio, or mission statement',
+  Contact: 'Direct customer contact and inquiry form',
+  'Email Form': 'Quick newsletter or waitlist subscription form',
+  'Pricing Cards': 'Tiered pricing cards with features and highlight badge',
+  FAQ: 'Accordion answers to frequent buyer and client questions',
+  CTA: 'High-visibility call-to-action conversion pitch',
+  Footer: 'Copyright text, terms links, and branding footer',
 };
 
 interface ApiMicroPage {
@@ -64,8 +110,19 @@ interface ApiMicroPage {
   seoTitle?: string | null;
   seoDescription?: string | null;
   content?: MicroPageContent | null;
+  blockOrder?: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+interface ApiMicroPageLead {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  message?: string | null;
+  createdAt: string;
+  microPage?: { title: string } | null;
 }
 
 const mapApiPage = (p: ApiMicroPage): MicroPage => ({
@@ -83,7 +140,106 @@ const mapApiPage = (p: ApiMicroPage): MicroPage => ({
   seoTitle: p.seoTitle || undefined,
   seoDescription: p.seoDescription || undefined,
   content: p.content || {},
+  blockOrder: p.blockOrder || [],
 });
+
+function SortableBlockRow({
+  id,
+  headingSummary,
+  isExpanded,
+  onToggleExpand,
+  onRemove,
+  children,
+}: {
+  id: string;
+  headingSummary?: string;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  onRemove: () => void;
+  children: React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+
+  const IconComp = blockIcons[id] || Layers;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border rounded-2xl transition-all duration-200 shadow-2xs overflow-hidden ${
+        isDragging
+          ? 'border-blue-500 bg-blue-50/50 shadow-lg'
+          : isExpanded
+          ? 'border-slate-300 bg-white ring-1 ring-slate-900/5'
+          : 'border-slate-200 bg-slate-50/60 hover:bg-white hover:border-slate-300'
+      }`}
+    >
+      {/* Sleek Accordion Header */}
+      <div className="flex items-center justify-between p-3 sm:px-4 sm:py-2.5 gap-2">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 touch-none shrink-0 transition"
+            title="Drag to reorder section"
+          >
+            <GripVertical className="w-4 h-4" />
+          </button>
+
+          <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100/80 text-blue-600 flex items-center justify-center shrink-0">
+            <IconComp className="w-3.5 h-3.5" />
+          </div>
+
+          <div
+            onClick={onToggleExpand}
+            className="flex items-baseline gap-2 min-w-0 cursor-pointer select-none flex-1"
+          >
+            <h5 className="font-bold text-xs text-slate-900 tracking-tight shrink-0">{id} Section</h5>
+            {headingSummary && (
+              <span className="text-[11px] text-slate-400 truncate font-normal">
+                &bull; &ldquo;{headingSummary}&rdquo;
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            className="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer flex items-center gap-1 text-[11px] font-semibold"
+            title={isExpanded ? 'Collapse section' : 'Edit section'}
+          >
+            <span>{isExpanded ? 'Collapse' : 'Edit'}</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-blue-600' : 'text-slate-400'}`} />
+          </button>
+
+          <button
+            type="button"
+            onClick={onRemove}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+            title="Remove block"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Accordion Body */}
+      {isExpanded && (
+        <div className="p-4 sm:p-5 pt-3 border-t border-slate-100 bg-white">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function MicroPagesPage() {
   const [pages, setPages] = useState<MicroPage[]>([]);
@@ -96,13 +252,33 @@ export default function MicroPagesPage() {
   // Modals & Drawers
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingPage, setEditingPage] = useState<MicroPage | null>(null);
+  const [editModalTab, setEditModalTab] = useState<'content' | 'settings'>('content');
+  const [expandedBlockIds, setExpandedBlockIds] = useState<Record<string, boolean>>({});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingPage, setDeletingPage] = useState<MicroPage | null>(null);
   const [showShareModal, setShowShareModal] = useState<MicroPage | null>(null);
   const [showLeadsModal, setShowLeadsModal] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+
+  const dndSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' | 'error' } | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!showShareModal) {
+      setQrDataUrl(null);
+      return;
+    }
+    let cancelled = false;
+    QRCode.toDataURL(showShareModal.url, { margin: 1, width: 240 })
+      .then((url) => { if (!cancelled) setQrDataUrl(url); })
+      .catch(() => { if (!cancelled) setQrDataUrl(null); });
+    return () => { cancelled = true; };
+  }, [showShareModal]);
 
   const showNotify = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
     setNotification({ message, type });
@@ -123,7 +299,33 @@ export default function MicroPagesPage() {
     }
   }, []);
 
-  useEffect(() => { fetchPages(); }, [fetchPages]);
+  const fetchLeads = useCallback(async () => {
+    try {
+      const res = await fetch('/api/micro-pages/leads');
+      if (res.ok) {
+        const data = await res.json();
+        setLeads(
+          Array.isArray(data)
+            ? data.map((row: ApiMicroPageLead) => ({
+                id: row.id,
+                pageTitle: row.microPage?.title || 'Untitled Page',
+                name: row.name,
+                email: row.email,
+                phone: row.phone || undefined,
+                message: row.message || undefined,
+                date: new Date(row.createdAt).toLocaleString(),
+              }))
+            : []
+        );
+      } else {
+        setLeads([]);
+      }
+    } catch {
+      setLeads([]);
+    }
+  }, []);
+
+  useEffect(() => { fetchPages(); fetchLeads(); }, [fetchPages, fetchLeads]);
 
   const handleSave = async () => {
     if (!editingPage) return;
@@ -139,6 +341,7 @@ export default function MicroPagesPage() {
           seoTitle: editingPage.seoTitle,
           seoDescription: editingPage.seoDescription,
           content: editingPage.content,
+          blockOrder: editingPage.blockOrder,
         }),
       });
 
@@ -159,6 +362,34 @@ export default function MicroPagesPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const openEditModal = (page: MicroPage) => {
+    setEditingPage(page);
+    setEditModalTab('content');
+    const initialExpanded: Record<string, boolean> = {};
+    page.blockOrder.forEach((b, idx) => {
+      initialExpanded[b] = idx === 0;
+    });
+    setExpandedBlockIds(initialExpanded);
+    setShowEditModal(true);
+  };
+
+  const toggleBlockExpand = (blockName: string) => {
+    setExpandedBlockIds((prev) => ({ ...prev, [blockName]: !prev[blockName] }));
+  };
+
+  const expandAllBlocks = () => {
+    if (!editingPage) return;
+    const all: Record<string, boolean> = {};
+    editingPage.blockOrder.forEach((b) => {
+      all[b] = true;
+    });
+    setExpandedBlockIds(all);
+  };
+
+  const collapseAllBlocks = () => {
+    setExpandedBlockIds({});
   };
 
   const handleCreateFromTemplate = async (tmplId: string) => {
@@ -182,7 +413,8 @@ export default function MicroPagesPage() {
           title: baseTitle,
           template: tmpl.id,
           slug,
-          content: defaultContent
+          content: defaultContent,
+          blockOrder: tmpl.components,
         }),
       });
 
@@ -190,9 +422,8 @@ export default function MicroPagesPage() {
         const created = await res.json();
         const mapped = mapApiPage(created);
         setPages([mapped, ...pages]);
-        setEditingPage(mapped);
         setShowTemplates(false);
-        setShowEditModal(true);
+        openEditModal(mapped);
         showNotify(`Created page from "${tmpl.name}" template`, 'success');
       } else {
         throw new Error('API create failed');
@@ -211,12 +442,12 @@ export default function MicroPagesPage() {
         conversionRate: 0,
         createdDate: new Date(),
         lastModified: new Date(),
-        content: defaultContent
+        content: defaultContent,
+        blockOrder: tmpl.components,
       };
       setPages([localNew, ...pages]);
-      setEditingPage(localNew);
       setShowTemplates(false);
-      setShowEditModal(true);
+      openEditModal(localNew);
       showNotify(`Created page from "${tmpl.name}" template`, 'success');
     }
   };
@@ -472,10 +703,7 @@ export default function MicroPagesPage() {
 
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => {
-                          setEditingPage(page);
-                          setShowEditModal(true);
-                        }}
+                        onClick={() => openEditModal(page)}
                         className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
                       >
                         <Edit3 className="w-3.5 h-3.5" /> Edit Builder
@@ -557,10 +785,7 @@ export default function MicroPagesPage() {
                         <td className="px-4 py-4 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
-                              onClick={() => {
-                                setEditingPage(page);
-                                setShowEditModal(true);
-                              }}
+                              onClick={() => openEditModal(page)}
                               className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                               title="Edit Page"
                             >
@@ -600,11 +825,11 @@ export default function MicroPagesPage() {
           TEMPLATE SELECTOR MODAL
       ══════════════════════════════════════════════════════════════ */}
       {showTemplates && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center p-3 pb-24 sm:p-6 overflow-hidden">
+          <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-8rem)] sm:max-h-[82vh] my-auto border border-slate-200/50">
+            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
               <div>
-                <h3 className="font-bold text-slate-900 text-lg">Select High-Converting Micro Page Template</h3>
+                <h3 className="font-bold text-slate-900 text-base sm:text-lg">Select High-Converting Micro Page Template</h3>
                 <p className="text-xs text-slate-500 mt-0.5">Pre-designed, fully responsive layouts optimized for SME lead generation.</p>
               </div>
               <button onClick={() => setShowTemplates(false)} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer">
@@ -612,8 +837,8 @@ export default function MicroPagesPage() {
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 sm:p-6 pb-12 sm:pb-8 flex-1 min-h-0 overflow-y-auto space-y-4 overscroll-contain">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-4 pb-6 sm:pb-2">
                 {MICRO_PAGE_TEMPLATES.map((tmpl) => {
                   const visual = templateVisuals[tmpl.id] || { icon: Globe, gradient: 'from-blue-600 to-indigo-600', categoryLabel: tmpl.category };
                   const IconComponent = visual.icon;
@@ -622,25 +847,25 @@ export default function MicroPagesPage() {
                     <div
                       key={tmpl.id}
                       onClick={() => handleCreateFromTemplate(tmpl.id)}
-                      className="p-5 rounded-2xl border border-slate-200/80 hover:border-blue-600 hover:shadow-md transition-all cursor-pointer space-y-3 bg-slate-50/50 hover:bg-white group"
+                      className="p-3 sm:p-5 rounded-2xl border border-slate-200/80 hover:border-blue-600 hover:shadow-md transition-all cursor-pointer space-y-2 sm:space-y-3 bg-slate-50/50 hover:bg-white group"
                     >
                       <div className="flex items-center justify-between">
-                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${visual.gradient} text-white flex items-center justify-center shadow-sm`}>
-                          <IconComponent className="w-5 h-5" />
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr ${visual.gradient} text-white flex items-center justify-center shadow-sm shrink-0`}>
+                          <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
+                        <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full truncate ml-1.5">
                           {tmpl.category}
                         </span>
                       </div>
 
                       <div>
-                        <h4 className="font-bold text-slate-900 text-base group-hover:text-blue-600 transition-colors">{tmpl.name}</h4>
-                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">{tmpl.description}</p>
+                        <h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-blue-600 transition-colors">{tmpl.name}</h4>
+                        <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">{tmpl.description}</p>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                        <span>Includes: {tmpl.components.join(', ')}</span>
-                        <ChevronRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1 text-[10px] sm:text-xs text-slate-400">
+                        <span className="truncate">Includes: {tmpl.components.join(', ')}</span>
+                        <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0" />
                       </div>
                     </div>
                   );
@@ -655,9 +880,9 @@ export default function MicroPagesPage() {
           PUBLIC LINK & SHARING DRAWER MODAL
       ══════════════════════════════════════════════════════════════ */}
       {showShareModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center p-3 pb-24 sm:p-6 overflow-hidden">
+          <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-8rem)] sm:max-h-[82vh] my-auto border border-slate-200/50">
+            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
               <div className="flex items-center gap-2.5">
                 <Share2 className="w-5 h-5 text-blue-600" />
                 <h3 className="font-bold text-slate-900 text-base">Share Micro Page</h3>
@@ -667,7 +892,7 @@ export default function MicroPagesPage() {
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 pb-8 space-y-4 flex-1 min-h-0 overflow-y-auto overscroll-contain">
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Hosted Public URL</label>
                 <div className="flex items-center gap-2">
@@ -712,6 +937,33 @@ export default function MicroPagesPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <QrCode className="w-3.5 h-3.5" /> QR Code
+                </label>
+                <div className="flex items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  {qrDataUrl ? (
+                    <img src={qrDataUrl} alt={`QR code for ${showShareModal.url}`} width={96} height={96} className="rounded-lg border border-slate-200 bg-white" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-lg border border-slate-200 bg-white flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 text-slate-300 animate-spin" />
+                    </div>
+                  )}
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] text-slate-500">Scan to open the live page, or download for print (flyers, business cards, packaging).</p>
+                    {qrDataUrl && (
+                      <a
+                        href={qrDataUrl}
+                        download={`${showShareModal.slug}-qr.png`}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:underline"
+                      >
+                        Download QR Code (PNG)
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                 <a
                   href={showShareModal.url}
@@ -731,9 +983,9 @@ export default function MicroPagesPage() {
           CAPTURED LEADS MODAL
       ══════════════════════════════════════════════════════════════ */}
       {showLeadsModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center p-3 pb-24 sm:p-6 overflow-hidden">
+          <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-8rem)] sm:max-h-[82vh] my-auto border border-slate-200/50">
+            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
               <div className="flex items-center gap-3">
                 <UserCheck className="w-6 h-6 text-emerald-600" />
                 <div>
@@ -746,7 +998,7 @@ export default function MicroPagesPage() {
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-3">
+            <div className="p-4 sm:p-6 pb-8 flex-1 min-h-0 overflow-y-auto space-y-3 overscroll-contain">
               {leads.length === 0 ? (
                 <div className="text-center py-8 space-y-2">
                   <UserCheck className="w-10 h-10 text-slate-300 mx-auto" />
@@ -770,8 +1022,8 @@ export default function MicroPagesPage() {
               )}
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-              <button onClick={() => setShowLeadsModal(false)} className="px-5 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl">
+            <div className="p-3.5 sm:p-4 border-t border-slate-200 bg-white flex justify-end shrink-0 shadow-sm z-10">
+              <button onClick={() => setShowLeadsModal(false)} className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl cursor-pointer transition">
                 Close
               </button>
             </div>
@@ -781,88 +1033,430 @@ export default function MicroPagesPage() {
 
       {/* ── EDIT PAGE & CONTENT BLOCKS MODAL ── */}
       {showEditModal && editingPage && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-slate-900 text-base">Edit Micro Page &amp; Content Blocks</h3>
-                <p className="text-xs text-slate-400">/p/{editingPage.slug}</p>
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center p-3 pb-24 sm:p-6 overflow-hidden">
+          <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-8rem)] sm:max-h-[82vh] my-auto border border-slate-200/50">
+            
+            {/* Modal Header */}
+            <div className="p-3.5 sm:p-5 border-b border-slate-100 flex items-start justify-between shrink-0 bg-white">
+              <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
+                  <Layers className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                    <h3 className="font-bold text-slate-900 text-sm sm:text-base leading-tight truncate">
+                      {editingPage.title || 'Untitled Micro Page'}
+                    </h3>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusConfig(editingPage.status).bg} ${getStatusConfig(editingPage.status).text} ${getStatusConfig(editingPage.status).border}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${getStatusConfig(editingPage.status).dot}`} />
+                      {getStatusConfig(editingPage.status).label}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs text-slate-500 flex-wrap">
+                    <span className="font-mono text-[10px] sm:text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                      /p/{editingPage.slug}
+                    </span>
+                    <span className="text-slate-300 hidden sm:inline">&bull;</span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-500 capitalize">{editingPage.template} Template</span>
+                    {editingPage.status === 'published' && (
+                      <>
+                        <span className="text-slate-300">&bull;</span>
+                        <a
+                          href={editingPage.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-blue-600 hover:underline"
+                        >
+                          <span>Live Link</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
-              <button onClick={() => setShowEditModal(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer">
+
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer shrink-0"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 overflow-y-auto">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Page Title</label>
-                <input
-                  type="text"
-                  value={editingPage.title}
-                  onChange={(e) => setEditingPage({ ...editingPage, title: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">URL Slug</label>
-                <input
-                  type="text"
-                  value={editingPage.slug}
-                  onChange={(e) => setEditingPage({ ...editingPage, slug: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Content Blocks</h4>
-                {Object.keys(editingPage.content || {}).map((blockName) => (
-                  <div key={blockName} className="border border-slate-200 rounded-2xl p-4 space-y-3 bg-slate-50/50">
-                    <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider">{blockName} Block</h5>
-                    <BlockContentEditor
-                      blockName={blockName}
-                      content={editingPage.content[blockName] || {}}
-                      onChange={(updatedBlock) => {
-                        setEditingPage({
-                          ...editingPage,
-                          content: {
-                            ...editingPage.content,
-                            [blockName]: updatedBlock,
-                          },
-                        });
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+            {/* Segmented Tab Switcher */}
+            <div className="px-3 sm:px-6 border-b border-slate-100 bg-slate-50/70 flex items-center gap-2 shrink-0">
               <button
-                onClick={() => {
-                  const newStatus = editingPage.status === 'published' ? 'draft' : 'published';
-                  setEditingPage({ ...editingPage, status: newStatus });
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer ${
-                  editingPage.status === 'published' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                type="button"
+                onClick={() => setEditModalTab('content')}
+                className={`py-2.5 sm:py-3 px-3 sm:px-3.5 text-xs font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 transition cursor-pointer ${
+                  editModalTab === 'content'
+                    ? 'border-blue-600 text-blue-600 bg-white/60'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
-                {editingPage.status === 'published' ? 'Unpublish to Draft' : 'Publish Live'}
+                <Layers className="w-3.5 h-3.5" />
+                <span>Content &amp; Blocks</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">
+                  {editingPage.blockOrder.length}
+                </span>
               </button>
 
-              <div className="flex items-center gap-2">
-                <button onClick={() => setShowEditModal(false)} className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200 cursor-pointer">
+              <button
+                type="button"
+                onClick={() => setEditModalTab('settings')}
+                className={`py-2.5 sm:py-3 px-3 sm:px-3.5 text-xs font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 transition cursor-pointer ${
+                  editModalTab === 'settings'
+                    ? 'border-blue-600 text-blue-600 bg-white/60'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span>Page Settings &amp; SEO</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-3.5 sm:p-6 pb-12 sm:pb-8 flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-5">
+              
+              {editModalTab === 'content' ? (
+                /* TAB 1: CONTENT & BLOCKS */
+                <div className="space-y-4">
+                  {/* Toolbar */}
+                  <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-100">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">Page Section Stack</h4>
+                      <p className="text-[11px] text-slate-500">Drag handles to reorder sections. Expand any block to edit copy &amp; media.</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={expandAllBlocks}
+                        className="text-[11px] font-semibold text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-2.5 py-1 rounded-lg transition cursor-pointer"
+                      >
+                        Expand All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={collapseAllBlocks}
+                        className="text-[11px] font-semibold text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-2.5 py-1 rounded-lg transition cursor-pointer"
+                      >
+                        Collapse All
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* DnD Sortable Context */}
+                  <DndContext
+                    sensors={dndSensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event: DragEndEvent) => {
+                      const { active, over } = event;
+                      if (!over || active.id === over.id) return;
+                      const oldIndex = editingPage.blockOrder.indexOf(String(active.id));
+                      const newIndex = editingPage.blockOrder.indexOf(String(over.id));
+                      if (oldIndex === -1 || newIndex === -1) return;
+                      setEditingPage({
+                        ...editingPage,
+                        blockOrder: arrayMove(editingPage.blockOrder, oldIndex, newIndex),
+                      });
+                    }}
+                  >
+                    <SortableContext items={editingPage.blockOrder} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-2.5">
+                        {editingPage.blockOrder.map((blockName) => (
+                          <SortableBlockRow
+                            key={blockName}
+                            id={blockName}
+                            headingSummary={editingPage.content[blockName]?.heading}
+                            isExpanded={!!expandedBlockIds[blockName]}
+                            onToggleExpand={() => toggleBlockExpand(blockName)}
+                            onRemove={() => {
+                              setEditingPage({
+                                ...editingPage,
+                                blockOrder: editingPage.blockOrder.filter((b) => b !== blockName),
+                              });
+                            }}
+                          >
+                            <BlockContentEditor
+                              blockName={blockName}
+                              content={editingPage.content[blockName] || {}}
+                              onChange={(updatedBlock) => {
+                                setEditingPage({
+                                  ...editingPage,
+                                  content: {
+                                    ...editingPage.content,
+                                    [blockName]: updatedBlock,
+                                  },
+                                });
+                              }}
+                            />
+                          </SortableBlockRow>
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+
+                  {/* Add Block Library */}
+                  {ALL_BLOCK_TYPES.filter((t) => !editingPage.blockOrder.includes(t)).length > 0 && (
+                    <div className="pt-4 border-t border-slate-100 space-y-3">
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-800">Add Additional Section</h4>
+                        <p className="text-[11px] text-slate-400">Choose from available component modules to append to this page.</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {ALL_BLOCK_TYPES.filter((t) => !editingPage.blockOrder.includes(t)).map((blockType) => {
+                          const IconComp = blockIcons[blockType] || Layers;
+                          const desc = blockDescriptions[blockType] || 'Custom component section';
+
+                          return (
+                            <div
+                              key={blockType}
+                              onClick={() => {
+                                setEditingPage({
+                                  ...editingPage,
+                                  blockOrder: [...editingPage.blockOrder, blockType],
+                                  content: {
+                                    ...editingPage.content,
+                                    [blockType]: editingPage.content[blockType] || { heading: `${blockType} Section` },
+                                  },
+                                });
+                                setExpandedBlockIds((prev) => ({ ...prev, [blockType]: true }));
+                              }}
+                              className="p-3 rounded-xl border border-dashed border-slate-200 hover:border-blue-500/60 bg-slate-50/40 hover:bg-blue-50/30 transition cursor-pointer flex items-center justify-between gap-2 group"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 group-hover:text-blue-600 group-hover:border-blue-200 flex items-center justify-center shrink-0 transition">
+                                  <IconComp className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <h5 className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition">{blockType}</h5>
+                                  <p className="text-[10px] text-slate-400 truncate">{desc}</p>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 text-[11px] font-bold transition shrink-0"
+                              >
+                                + Add
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* TAB 2: PAGE SETTINGS & SEO */
+                <div className="space-y-5">
+                  {/* General Configuration */}
+                  <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4">
+                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                      <Settings className="w-3.5 h-3.5 text-blue-600" />
+                      General Page Details
+                    </h4>
+
+                    <div className="space-y-3.5">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Page Title</label>
+                        <input
+                          type="text"
+                          value={editingPage.title}
+                          onChange={(e) => setEditingPage({ ...editingPage, title: e.target.value })}
+                          placeholder="e.g. Summer Launch Deal"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition shadow-2xs font-medium"
+                        />
+                        <p className="text-[11px] text-slate-400 mt-1">Displayed on the page banner and browser window tab.</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Hosted URL Slug</label>
+                        <div className="flex items-center rounded-xl border border-slate-200 bg-white overflow-hidden shadow-2xs focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/10 transition">
+                          <span className="px-3 py-2.5 bg-slate-50 border-r border-slate-200 text-slate-500 text-xs font-mono select-none">
+                            okleevo.com/p/
+                          </span>
+                          <input
+                            type="text"
+                            value={editingPage.slug}
+                            onChange={(e) =>
+                              setEditingPage({
+                                ...editingPage,
+                                slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+                              })
+                            }
+                            placeholder="my-landing-page"
+                            className="flex-1 px-3 py-2.5 text-xs font-mono text-slate-900 outline-none bg-transparent"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(editingPage.url);
+                              showNotify('Copied live page URL to clipboard', 'success');
+                            }}
+                            className="px-3 py-2 text-xs font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition cursor-pointer"
+                            title="Copy link"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">Only lowercase letters, numbers, and dashes are allowed.</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">Publication Status</label>
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <div
+                            onClick={() => setEditingPage({ ...editingPage, status: 'published' })}
+                            className={`p-3 rounded-xl border transition cursor-pointer flex items-center justify-between ${
+                              editingPage.status === 'published'
+                                ? 'border-emerald-500 bg-emerald-50/40 shadow-xs'
+                                : 'border-slate-200 bg-white hover:border-slate-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                              <div>
+                                <h5 className="text-xs font-bold text-slate-900">Published (Live)</h5>
+                                <p className="text-[10px] text-slate-500">Publicly accessible to visitors</p>
+                              </div>
+                            </div>
+                            {editingPage.status === 'published' && <Check className="w-4 h-4 text-emerald-600" />}
+                          </div>
+
+                          <div
+                            onClick={() => setEditingPage({ ...editingPage, status: 'draft' })}
+                            className={`p-3 rounded-xl border transition cursor-pointer flex items-center justify-between ${
+                              editingPage.status === 'draft'
+                                ? 'border-amber-500 bg-amber-50/40 shadow-xs'
+                                : 'border-slate-200 bg-white hover:border-slate-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                              <div>
+                                <h5 className="text-xs font-bold text-slate-900">Draft (Private)</h5>
+                                <p className="text-[10px] text-slate-500">Only visible inside dashboard</p>
+                              </div>
+                            </div>
+                            {editingPage.status === 'draft' && <Check className="w-4 h-4 text-amber-600" />}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SEO & Meta Tags */}
+                  <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                        <Globe className="w-3.5 h-3.5 text-blue-600" />
+                        Search Engine Optimization (SEO) &amp; Social Previews
+                      </h4>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Meta Tags</span>
+                    </div>
+
+                    <div className="space-y-3.5">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-xs font-semibold text-slate-700">SEO Meta Title</label>
+                          <span className={`text-[10px] ${(editingPage.seoTitle?.length || 0) > 60 ? 'text-amber-600 font-bold' : 'text-slate-400'}`}>
+                            {editingPage.seoTitle?.length || 0} / 60 characters
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={editingPage.seoTitle || ''}
+                          onChange={(e) => setEditingPage({ ...editingPage, seoTitle: e.target.value })}
+                          placeholder={editingPage.title || 'Page title for search engines…'}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition shadow-2xs"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-xs font-semibold text-slate-700">SEO Meta Description</label>
+                          <span className={`text-[10px] ${(editingPage.seoDescription?.length || 0) > 160 ? 'text-amber-600 font-bold' : 'text-slate-400'}`}>
+                            {editingPage.seoDescription?.length || 0} / 160 characters
+                          </span>
+                        </div>
+                        <textarea
+                          value={editingPage.seoDescription || ''}
+                          onChange={(e) => setEditingPage({ ...editingPage, seoDescription: e.target.value })}
+                          rows={2}
+                          placeholder="Short, compelling summary that will appear under the title in Google and social cards…"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition shadow-2xs resize-none"
+                        />
+                      </div>
+
+                      {/* Google Search Result Preview Box */}
+                      <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-1 shadow-2xs">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                          Google Search Result Preview
+                        </span>
+                        <p className="text-[11px] text-emerald-800 font-medium truncate flex items-center gap-1">
+                          <span>okleevo.com</span>
+                          <span className="text-slate-300">&rsaquo;</span>
+                          <span>p</span>
+                          <span className="text-slate-300">&rsaquo;</span>
+                          <span>{editingPage.slug || 'slug'}</span>
+                        </p>
+                        <h5 className="text-sm font-semibold text-blue-700 hover:underline cursor-pointer truncate">
+                          {editingPage.seoTitle || editingPage.title || 'Micro Page Title'} &bull; Okleevo
+                        </h5>
+                        <p className="text-xs text-slate-600 leading-snug line-clamp-2">
+                          {editingPage.seoDescription ||
+                            'High-converting standalone landing page optimized for lead generation and client engagement.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer (Pinned with solid background and strict shrink-0) */}
+            <div className="p-3 sm:p-4 border-t border-slate-200 bg-white flex items-center justify-between shrink-0 gap-2 shadow-sm z-10">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newStatus = editingPage.status === 'published' ? 'draft' : 'published';
+                    setEditingPage({ ...editingPage, status: newStatus });
+                  }}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
+                    editingPage.status === 'published'
+                      ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                      : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                  }`}
+                >
+                  {editingPage.status === 'published' ? 'Switch to Draft' : 'Publish Live'}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 ml-auto">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 disabled:opacity-50 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 disabled:opacity-50 transition cursor-pointer whitespace-nowrap"
                 >
-                  {saving ? 'Saving...' : 'Save & Close'}
+                  {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  <span>{saving ? 'Saving…' : 'Save Changes'}</span>
                 </button>
               </div>
             </div>
+
           </div>
         </div>
       )}
@@ -873,9 +1467,18 @@ export default function MicroPagesPage() {
           isOpen={showDeleteModal}
           onClose={() => { setShowDeleteModal(false); setDeletingPage(null); }}
           onConfirm={async () => {
-            setPages(pages.filter(p => p.id !== deletingPage.id));
-            setShowDeleteModal(false);
-            showNotify('Micro page deleted successfully');
+            try {
+              const res = await fetch(`/api/micro-pages/${deletingPage.id}`, { method: 'DELETE' });
+              if (!res.ok) {
+                showNotify('Failed to delete micro page', 'error');
+                return;
+              }
+              setPages(pages.filter(p => p.id !== deletingPage.id));
+              setShowDeleteModal(false);
+              showNotify('Micro page deleted successfully');
+            } catch {
+              showNotify('Failed to delete micro page', 'error');
+            }
           }}
           title="Delete Micro Page"
           itemName={deletingPage.title}

@@ -5,6 +5,8 @@ import { getMicroPageTemplate } from '@/lib/micro-page-templates';
 import { getPresignedUrl } from '@/lib/services/minio';
 import type { MicroPageBlockContent, MicroPageContent } from '@/lib/micro-page-content';
 import { PublicFormBlock } from '@/components/micro-pages/PublicFormBlock';
+import { CountdownTimer } from '@/components/micro-pages/CountdownTimer';
+import { ViewTracker } from '@/components/micro-pages/ViewTracker';
 
 async function getPublishedPage(slug: string) {
   try {
@@ -77,7 +79,7 @@ async function Block({
     );
   }
 
-  if (name === 'Form' || name === 'Registration') {
+  if (name === 'Form' || name === 'Registration' || name === 'Email Form') {
     return (
       <PublicFormBlock
         heading={heading}
@@ -133,6 +135,147 @@ async function Block({
     );
   }
 
+  if (name === 'Countdown') {
+    return (
+      <section className="py-16 px-6 text-center border-t border-slate-100">
+        {heading && <h2 className="text-2xl font-bold text-slate-900">{heading}</h2>}
+        {body && <p className="mt-2 mb-6 text-sm text-slate-500 max-w-lg mx-auto leading-relaxed">{body}</p>}
+        {content.targetDate && (
+          <div className="mt-6">
+            <CountdownTimer targetDate={content.targetDate} />
+          </div>
+        )}
+      </section>
+    );
+  }
+
+  if (name === 'Schedule') {
+    const items = content.scheduleItems || [];
+    return (
+      <section className="py-14 px-6 border-t border-slate-100">
+        {heading && <h2 className="text-xl font-semibold text-slate-900 text-center mb-6">{heading}</h2>}
+        {items.length > 0 ? (
+          <div className="max-w-xl mx-auto space-y-4">
+            {items.map((item, i) => (
+              <div key={i} className="flex gap-4 p-4 rounded-xl bg-white border border-slate-100 shadow-sm">
+                <span className="shrink-0 text-xs font-bold text-blue-600 w-20">{item.time}</span>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                  {item.description && <p className="mt-1 text-xs text-slate-500">{item.description}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 text-center">Schedule to be announced.</p>
+        )}
+      </section>
+    );
+  }
+
+  if (name === 'Pricing Cards') {
+    const tiers = content.pricingTiers || [];
+    return (
+      <section className="py-14 px-6 border-t border-slate-100">
+        {heading && <h2 className="text-xl font-semibold text-slate-900 text-center mb-8">{heading}</h2>}
+        {tiers.length > 0 ? (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto items-start">
+              {tiers.map((tier, i) => {
+                const features = (tier.features || []).map((f) => f.trim()).filter(Boolean);
+                return (
+                  <div
+                    key={i}
+                    className={`rounded-2xl p-6 border ${
+                      tier.highlighted
+                        ? 'border-blue-600 bg-blue-50/50 shadow-lg shadow-blue-600/10'
+                        : 'border-slate-200 bg-white'
+                    }`}
+                  >
+                    <p className="text-sm font-bold text-slate-900">{tier.name}</p>
+                    <p className="mt-2 text-3xl font-black text-slate-900">
+                      {tier.price}
+                      {tier.period && <span className="text-sm font-medium text-slate-400">/{tier.period}</span>}
+                    </p>
+                    {features.length > 0 && (
+                      <ul className="mt-4 space-y-2">
+                        {features.map((feature, j) => (
+                          <li key={j} className="text-xs text-slate-600 flex items-start gap-2">
+                            <span className="text-blue-600 font-bold">✓</span> {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {content.buttonText && (
+              <div className="text-center mt-8">
+                <a
+                  href={content.buttonLink || '#form'}
+                  className="inline-block px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md hover:bg-slate-800 transition-all"
+                >
+                  {content.buttonText}
+                </a>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="text-xs text-slate-400 text-center">Pricing to be announced.</p>
+        )}
+      </section>
+    );
+  }
+
+  if (name === 'FAQ') {
+    const items = content.faqItems || [];
+    return (
+      <section className="py-14 px-6 border-t border-slate-100">
+        {heading && <h2 className="text-xl font-semibold text-slate-900 text-center mb-6">{heading}</h2>}
+        {items.length > 0 ? (
+          <div className="max-w-xl mx-auto space-y-2">
+            {items.map((item, i) => (
+              <details key={i} className="group rounded-xl border border-slate-200 bg-white p-4">
+                <summary className="cursor-pointer text-sm font-semibold text-slate-900 list-none flex items-center justify-between">
+                  {item.question}
+                  <span className="text-slate-400 group-open:rotate-45 transition-transform text-lg leading-none">+</span>
+                </summary>
+                <p className="mt-2 text-xs text-slate-500 leading-relaxed">{item.answer}</p>
+              </details>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 text-center">No questions added yet.</p>
+        )}
+      </section>
+    );
+  }
+
+  if (name === 'Testimonials') {
+    const items = content.testimonialItems || [];
+    return (
+      <section className="py-14 px-6 border-t border-slate-100">
+        {heading && <h2 className="text-xl font-semibold text-slate-900 text-center mb-6">{heading}</h2>}
+        {items.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 max-w-3xl mx-auto">
+            {items.map((item, i) => (
+              <blockquote key={i} className="p-5 rounded-xl bg-white border border-slate-100 shadow-sm">
+                <p className="text-sm text-slate-700 leading-relaxed">&quot;{item.quote}&quot;</p>
+                <footer className="mt-3 text-xs font-bold text-slate-900">
+                  {item.author}
+                  {item.role && <span className="font-normal text-slate-400"> — {item.role}</span>}
+                </footer>
+              </blockquote>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 text-center">No testimonials added yet.</p>
+        )}
+      </section>
+    );
+  }
+
   if (heading || body || imageUrl) {
     return (
       <section className="py-14 px-6 text-center border-t border-slate-100">
@@ -164,19 +307,13 @@ export default async function MicroPagePublic({ params }: { params: Promise<{ sl
   const page = await getPublishedPage(slug);
   if (!page) notFound();
 
-  // Fire-and-forget view count increment if page exists in DB
-  try {
-    if ('id' in page && typeof page.id === 'string' && !page.id.startsWith('mp-sample-')) {
-      prisma.microPage.update({ where: { id: page.id }, data: { views: { increment: 1 } } }).catch(() => {});
-    }
-  } catch {}
-
   const template = getMicroPageTemplate(page.template);
-  const blocks = template?.components || ['Hero', 'Form', 'CTA', 'Footer'];
+  const blocks = page.blockOrder.length > 0 ? page.blockOrder : (template?.components || ['Hero', 'Form', 'CTA', 'Footer']);
   const content = (page.content as MicroPageContent | null) || {};
 
   return (
     <main className="min-h-screen bg-slate-50/50">
+      <ViewTracker slug={slug} />
       {blocks.map((block, i) => (
         <Block key={`${block}-${i}`} name={block} pageTitle={page.title} slug={slug} description={page.seoDescription} content={content[block] || {}} />
       ))}

@@ -39,12 +39,11 @@ export function PublicFormBlock({ heading, body, pageTitle, slug }: PublicFormBl
       if (res.ok) {
         setSubmitted(true);
       } else {
-        // Local success fallback for demo/sample mode
-        setSubmitted(true);
+        const data = await res.json().catch(() => null);
+        setErrorMsg(data?.error || 'Something went wrong submitting your details. Please try again.');
       }
     } catch {
-      // Local success fallback
-      setSubmitted(true);
+      setErrorMsg('Something went wrong submitting your details. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -61,7 +60,7 @@ export function PublicFormBlock({ heading, body, pageTitle, slug }: PublicFormBl
           <div className="space-y-2">
             <h2 className="text-2xl font-black text-slate-900">Form Request Received!</h2>
             <p className="text-xs text-slate-600 leading-relaxed max-w-md mx-auto">
-              Thank you, <strong className="text-slate-900">{name}</strong>! A confirmation email has been sent to <strong className="text-blue-600 font-mono">{email}</strong> via the Okleevo Mail Engine. Our team will review your brief and get back to you shortly.
+              Thank you, <strong className="text-slate-900">{name}</strong>! Your details have been received and sent directly to our team. We&apos;ll get back to you at <strong className="text-blue-600 font-mono">{email}</strong> shortly.
             </p>
           </div>
 

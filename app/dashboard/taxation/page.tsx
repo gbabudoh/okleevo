@@ -603,46 +603,53 @@ export default function TaxationPage() {
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
       <TourProvider moduleId="taxation" steps={taxationTourSteps} />
       {/* ── Sticky Header ────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-            <div className="p-1.5 sm:p-2 bg-emerald-600 rounded-xl shrink-0">
-              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+      <div className="sticky top-0 z-40 bg-white border-b border-slate-200/80 shadow-2xs">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
+              <FileText className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
             </div>
-            <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
-              <div className="min-w-0 shrink-0">
-                <h1 className="text-sm sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">UK Taxation</h1>
-                <p className="text-xs text-gray-400 hidden sm:block">Prepare &amp; download tax reports for your accountant</p>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight truncate">
+                  UK Taxation &amp; HMRC Compliance
+                </h1>
+                <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 shrink-0">
+                  MTD Ready
+                </span>
               </div>
-              <ModuleGuideBanner
-                moduleId="taxation"
-                moduleName="UK Taxation"
-                summary="Manage Corporation Tax, Self Assessment, PAYE & NI, VAT, and Tax Deadlines."
-                tips={[
-                  "Export Self Assessment & Corporation Tax computation reports",
-                  "Track HMRC filing deadlines in the Tax Calendar",
-                  "Prepare digital records for Making Tax Digital (MTD)"
-                ]}
-              />
+              <p className="text-[11px] text-slate-500 truncate hidden sm:block">
+                Corporation tax (CT600), VAT, Self Assessment &amp; PAYE records
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
+            <ModuleGuideBanner
+              moduleId="taxation"
+              moduleName="UK Taxation"
+              summary="Manage Corporation Tax, Self Assessment, PAYE & NI, VAT, and Tax Deadlines."
+              tips={[
+                "Export Self Assessment & Corporation Tax computation reports",
+                "Track HMRC filing deadlines in the Tax Calendar",
+                "Prepare digital records for Making Tax Digital (MTD)"
+              ]}
+            />
             <button
               id="tour-taxation-export"
               onClick={() => { setSelectedReportType('Self Assessment'); setShowDownloadModal(true); }}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold shrink-0"
             >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Export</span>
+              <Download className="w-4 h-4 cursor-pointer" />
+              <span className="hidden sm:inline cursor-pointer">Export</span>
             </button>
             <button
               id="tour-taxation-new-return"
               onClick={() => setShowNewReturnModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors cursor-pointer"
+              className="px-3 sm:px-3.5 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-600/20 whitespace-nowrap shrink-0"
             >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">New Return</span>
-              <span className="sm:hidden">New</span>
+              <Plus className="w-4 h-4 cursor-pointer" />
+              <span>New Return</span>
             </button>
           </div>
         </div>
@@ -650,77 +657,95 @@ export default function TaxationPage() {
 
       {/* ── Stats ──────────────────────────────────────────────────── */}
       <div className="px-4 sm:px-6 pt-4">
-        <div id="tour-taxation-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        <div id="tour-taxation-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
             {
               label: 'Corporation Tax',
-              value: `£${taxSummary.corporationTax.toLocaleString()}`,
+              badge: 'CT600 Estimate',
+              value: taxSummary.corporationTax.toLocaleString('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
               icon: Building2,
-              bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600 shadow-md shadow-indigo-100 dark:shadow-none',
+              iconCls: 'bg-indigo-50 text-indigo-600 border-indigo-100',
             },
             {
               label: 'VAT Liability',
-              value: `£${taxSummary.vatLiability.toLocaleString()}`,
+              badge: 'MTD Return',
+              value: taxSummary.vatLiability.toLocaleString('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
               icon: Receipt,
-              bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600 shadow-md shadow-purple-100 dark:shadow-none',
+              iconCls: 'bg-purple-50 text-purple-600 border-purple-100',
             },
             {
               label: 'PAYE & NI',
-              value: `£${taxSummary.payeNI.toLocaleString()}`,
+              badge: 'Payroll Tax',
+              value: taxSummary.payeNI.toLocaleString('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
               icon: Users,
-              bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md shadow-emerald-100 dark:shadow-none',
+              iconCls: 'bg-emerald-50 text-emerald-600 border-emerald-100',
             },
             {
               label: 'Outstanding',
-              value: `£${taxSummary.taxOutstanding.toLocaleString()}`,
+              badge: taxSummary.taxOutstanding > 0 ? 'Action Required' : 'Up to Date',
+              value: taxSummary.taxOutstanding.toLocaleString('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
               icon: AlertCircle,
-              bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-md shadow-amber-100 dark:shadow-none',
+              iconCls: taxSummary.taxOutstanding > 0 ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-slate-50 text-slate-600 border-slate-100',
             },
-          ].map(({ label, value, icon: Icon, bgGrad }) => (
-            <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
-              <div className={`p-2.5 ${bgGrad} rounded-xl w-fit mb-3 group-hover:scale-105 transition-transform`}>
-                <Icon className="w-4.5 h-4.5 text-white" />
+          ].map(({ label, badge, value, icon: Icon, iconCls }) => (
+            <div
+              key={label}
+              className="bg-white rounded-2xl p-4 sm:p-4.5 border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between space-y-3 group"
+            >
+              <div className="flex items-center justify-between gap-1.5">
+                <div className={`p-2 rounded-xl border ${iconCls} transition-transform group-hover:scale-105 shrink-0`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100 truncate max-w-[100px]">
+                  {badge}
+                </span>
               </div>
-              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{label}</p>
-              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{value}</p>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 truncate">{label}</p>
+                <h3 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 mt-0.5 truncate font-mono sm:font-sans">{value}</h3>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── HMRC Disclaimer Banner ── */}
-      <div id="tour-taxation-disclaimer" className="mx-4 sm:mx-6 mt-3.5 bg-gradient-to-r from-amber-50/90 via-orange-50/50 to-amber-50/90 dark:from-slate-800/80 dark:to-slate-800/40 border border-amber-200/80 dark:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+      <div id="tour-taxation-disclaimer" className="mx-4 sm:mx-6 mt-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-amber-100 dark:bg-amber-900/60 rounded-xl text-amber-700 dark:text-amber-300 shrink-0 mt-0.5">
-            <AlertCircle className="w-4 h-4" />
+          <div className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl shrink-0 mt-0.5">
+            <ShieldCheck className="w-4 h-4" />
           </div>
           <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <p className="text-xs font-extrabold text-amber-950 dark:text-amber-200">UK HMRC Compliance Notice</p>
-              <span className="px-2 py-0.2 bg-amber-100 text-amber-800 dark:bg-amber-900/80 dark:text-amber-200 text-[9px] font-bold rounded-full border border-amber-300/60">
-                ℹ️ Accountant &amp; HMRC Ready
+            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+              <p className="text-xs font-bold text-slate-900">UK HMRC Compliance &amp; Computation Notice</p>
+              <span className="px-2 py-0.5 bg-emerald-100/70 text-emerald-800 text-[10px] font-bold rounded-full border border-emerald-200/70">
+                Accountant &amp; HMRC Ready
               </span>
             </div>
-            <p className="text-xs text-amber-900/80 dark:text-gray-300 leading-relaxed">
-              Okleevo calculates statutory tax figures for your UK SME. Download your generated tax packs and share with your chartered accountant for official HMRC submission.
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Okleevo calculates statutory tax figures for your UK SME. Download your generated tax computation packs and share with your chartered accountant for official HMRC submission.
             </p>
           </div>
         </div>
       </div>
 
       {/* ── Tab Bar ──────────────────────────────────────────────────── */}
-      <div id="tour-taxation-tabs" className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100 mt-3">
-        <div className="flex overflow-x-auto scrollbar-hide px-4">
+      <div id="tour-taxation-tabs" className="sticky top-[57px] sm:top-[65px] z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 shadow-2xs mt-3">
+        <div className="flex overflow-x-auto scrollbar-none px-4 sm:px-6 gap-1">
           {tabs.map(({ id, name, icon: Icon }) => {
             const active = activeTab === id;
             return (
-              <button key={id} onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
-                  active ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'
-                }`}>
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{name}</span>
-                <span className="sm:hidden text-xs">{name.split(' ')[0]}</span>
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-2 px-3.5 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
+                  active
+                    ? "border-emerald-600 text-emerald-600 bg-emerald-50/40"
+                    : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
+                }`}
+              >
+                <Icon className="w-4 h-4 cursor-pointer" />
+                <span className="cursor-pointer">{name}</span>
               </button>
             );
           })}

@@ -8,6 +8,8 @@ import {
   PoundSterling,
   Receipt,
   Target,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react";
 import accounting from "accounting";
 
@@ -23,75 +25,89 @@ interface FinancialSummaryProps {
 }
 
 export const AccountingSummary: React.FC<FinancialSummaryProps> = ({ data }) => {
+  const isProfitPositive = data.netProfit >= 0;
+
   const cards = [
     {
       label: "Total Assets",
+      badge: "Debit Balance",
       value: data.totalAssets,
-      labelCls: "text-blue-600 dark:text-blue-400",
-      valueCls: "text-slate-900 dark:text-white",
-      bgGrad: "bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-100 dark:shadow-none",
       icon: TrendingUp,
+      iconCls: "bg-blue-50 text-blue-600 border-blue-100",
+      accentDot: "bg-blue-500",
     },
     {
       label: "Total Liabilities",
+      badge: "Credit Balance",
       value: data.totalLiabilities,
-      labelCls: "text-rose-600 dark:text-rose-400",
-      valueCls: "text-rose-700 dark:text-rose-300",
-      bgGrad: "bg-gradient-to-br from-rose-500 to-red-600 shadow-md shadow-rose-100 dark:shadow-none",
       icon: TrendingDown,
+      iconCls: "bg-rose-50 text-rose-600 border-rose-100",
+      accentDot: "bg-rose-500",
     },
     {
       label: "Total Equity",
+      badge: "Capital & Retained",
       value: data.totalEquity,
-      labelCls: "text-purple-600 dark:text-purple-400",
-      valueCls: "text-purple-900 dark:text-purple-200",
-      bgGrad: "bg-gradient-to-br from-purple-500 to-indigo-600 shadow-md shadow-purple-100 dark:shadow-none",
       icon: Wallet,
+      iconCls: "bg-purple-50 text-purple-600 border-purple-100",
+      accentDot: "bg-purple-500",
     },
     {
       label: "Total Revenue",
+      badge: "Income Captured",
       value: data.totalRevenue,
-      labelCls: "text-emerald-600 dark:text-emerald-400",
-      valueCls: "text-emerald-700 dark:text-emerald-300",
-      bgGrad: "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md shadow-emerald-100 dark:shadow-none",
       icon: PoundSterling,
+      iconCls: "bg-emerald-50 text-emerald-600 border-emerald-100",
+      accentDot: "bg-emerald-500",
     },
     {
       label: "Total Expenses",
+      badge: "Operating Outflow",
       value: data.totalExpenses,
-      labelCls: "text-amber-600 dark:text-amber-400",
-      valueCls: "text-amber-800 dark:text-amber-300",
-      bgGrad: "bg-gradient-to-br from-amber-500 to-orange-600 shadow-md shadow-amber-100 dark:shadow-none",
       icon: Receipt,
+      iconCls: "bg-amber-50 text-amber-600 border-amber-100",
+      accentDot: "bg-amber-500",
     },
     {
       label: "Net Profit",
+      badge: isProfitPositive ? "Net Surplus" : "Net Deficit",
       value: data.netProfit,
-      labelCls: "text-indigo-600 dark:text-indigo-400",
-      valueCls: "text-indigo-950 dark:text-indigo-200",
-      bgGrad: "bg-gradient-to-br from-indigo-600 to-violet-700 shadow-md shadow-indigo-100 dark:shadow-none",
-      icon: Target,
+      icon: isProfitPositive ? ArrowUpRight : ArrowDownRight,
+      iconCls: isProfitPositive
+        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+        : "bg-rose-50 text-rose-700 border-rose-200",
+      accentDot: isProfitPositive ? "bg-emerald-500" : "bg-rose-500",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
       {cards.map((item, idx) => {
         const Icon = item.icon;
+        const formattedValue = accounting.formatMoney(item.value, "£");
+
         return (
           <div
             key={idx}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-slate-800 hover:shadow-md transition-all group"
+            className="bg-white rounded-2xl p-4 sm:p-4.5 border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between space-y-3 group"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div className={`p-2.5 ${item.bgGrad} rounded-xl`}>
-                <Icon className="w-4.5 h-4.5 text-white" />
+            <div className="flex items-center justify-between gap-1.5">
+              <div className={`p-2 rounded-xl border ${item.iconCls} transition-transform group-hover:scale-105 shrink-0`}>
+                <Icon className="w-4 h-4" />
               </div>
+              <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100 truncate max-w-[100px]">
+                {item.badge}
+              </span>
             </div>
-            <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${item.labelCls}`}>{item.label}</p>
-            <p className={`text-xl sm:text-2xl font-extrabold tracking-tight ${item.valueCls}`}>
-              {accounting.formatMoney(item.value, "£")}
-            </p>
+
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 truncate">
+                {item.label}
+              </p>
+              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 mt-0.5 truncate font-mono sm:font-sans">
+                {formattedValue}
+              </h3>
+            </div>
           </div>
         );
       })}

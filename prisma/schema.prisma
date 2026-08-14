@@ -181,6 +181,7 @@ model Business {
   projects        Project[]
   timeEntries     TimeEntry[]
   microPages      MicroPage[]
+  microPageLeads  MicroPageLead[]
   shopifyConnection ShopifyConnection?
   enabledModules  String[]         @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
 
@@ -341,7 +342,8 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  projects Project[]
+  projects        Project[]
+  microPageLeads  MicroPageLead[]
 
   @@index([businessId])
   @@index([userId])
@@ -944,12 +946,18 @@ model MicroPage {
   // Shape: Record<string, { heading?, body?, imageKey?, imageKeys?, buttonText?, buttonLink? }>
   content Json?
 
+  // Ordered list of block names to render. Empty means "not customized yet" —
+  // falls back to the page's template's default component list (see app/p/[slug]/page.tsx).
+  blockOrder String[] @default([])
+
   views       Int @default(0)
   conversions Int @default(0)
 
   publishedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  leads MicroPageLead[]
 
   @@index([businessId])
   @@index([status])
@@ -959,6 +967,30 @@ enum MicroPageStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+// Public form submissions captured on a published micro page, routed into the CRM.
+model MicroPageLead {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  microPageId String
+  microPage   MicroPage @relation(fields: [microPageId], references: [id], onDelete: Cascade)
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  name    String
+  email   String
+  phone   String?
+  message String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId])
+  @@index([microPageId])
 }
 
 model TimeEntry {

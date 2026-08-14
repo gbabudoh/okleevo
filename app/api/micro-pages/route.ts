@@ -20,7 +20,7 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body = await req.json();
-    const { title, template, seoTitle, seoDescription } = body;
+    const { title, template, seoTitle, seoDescription, content, blockOrder } = body;
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Page title is required' }, { status: 400 });
@@ -40,6 +40,8 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         template: template.trim(),
         seoTitle: seoTitle?.trim() || null,
         seoDescription: seoDescription?.trim() || null,
+        content: content ?? undefined,
+        blockOrder: Array.isArray(blockOrder) ? blockOrder : [],
         businessId: user.businessId,
       },
     });

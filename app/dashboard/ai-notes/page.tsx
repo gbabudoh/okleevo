@@ -371,8 +371,8 @@ export default function AINotesPage() {
 
       {/* ── Navigation Toolbar: Search, Filters, & View Mode ── */}
       <div className="space-y-3">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3.5 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-          <div className="flex-1 relative">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 shadow-2xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between min-w-0 overflow-hidden">
+          <div className="flex-1 min-w-0 relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
@@ -383,11 +383,11 @@ export default function AINotesPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2 justify-between md:justify-end">
+          <div className="flex items-center gap-2 justify-between md:justify-end min-w-0 overflow-x-auto scrollbar-none pb-0.5">
             <button
               type="button"
               onClick={() => setShowStarredOnly(!showStarredOnly)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border shrink-0 whitespace-nowrap ${
                 showStarredOnly
                   ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300'
                   : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-400'
@@ -398,32 +398,37 @@ export default function AINotesPage() {
             </button>
 
             {/* View Mode Switcher */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-xs' : 'text-slate-500'
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-2xs' : 'text-slate-500'
                 }`}
+                title="Notion Grid View"
               >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                <span>Notion Grid</span>
+                <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Notion Grid</span>
+                <span className="sm:hidden">Grid</span>
               </button>
               <button
                 onClick={() => setViewMode('posted')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  viewMode === 'posted' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs' : 'text-slate-500'
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  viewMode === 'posted' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-2xs' : 'text-slate-500'
                 }`}
+                title="Posted Board View"
               >
-                <StickyNote className="w-3.5 h-3.5" />
-                <span>Posted Board</span>
+                <StickyNote className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Posted Board</span>
+                <span className="sm:hidden">Board</span>
               </button>
               <button
                 onClick={() => setViewMode('table')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-xs' : 'text-slate-500'
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-2xs' : 'text-slate-500'
                 }`}
+                title="Table View"
               >
-                <List className="w-3.5 h-3.5" />
+                <List className="w-3.5 h-3.5 shrink-0" />
                 <span>Table</span>
               </button>
             </div>

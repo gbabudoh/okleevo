@@ -220,16 +220,28 @@ export default function ESignaturePage() {
     <div className="max-w-7xl mx-auto space-y-6 pb-24 md:pb-12 font-sans text-slate-900">
 
       {/* ── STICKY MODULE HEADER ─────────────────────────────────────── */}
-      <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 shadow-xs px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 bg-linear-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
-            <FileSignature className="w-5 h-5 text-white" />
-          </div>
-          <div className="min-w-0 flex items-center gap-3">
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight truncate">E-Signature Studio</h1>
-              <p className="text-xs text-slate-500 hidden sm:block">Legally binding electronic signatures &amp; document workflows</p>
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-2xs">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 space-y-2.5 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
+              <FileSignature className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
             </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight truncate">
+                  E-Signature Studio
+                </h1>
+                <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 shrink-0">
+                  eIDAS / ESIGN
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 truncate hidden sm:block">
+                Legally binding electronic signatures &amp; document workflows
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
             <ModuleGuideBanner
               moduleId="e-signature"
               moduleName="E-Signature"
@@ -240,25 +252,21 @@ export default function ESignaturePage() {
                 "Download SHA-256 cryptographic Audit Certificates for legal proof"
               ]}
             />
+            <button
+              onClick={() => setShowSignSelfModal(true)}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer shrink-0"
+            >
+              <PenTool className="w-4 h-4 text-slate-600 cursor-pointer" />
+              <span>Sign Yourself</span>
+            </button>
+            <button
+              onClick={() => setShowNewRequestModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition cursor-pointer whitespace-nowrap shrink-0"
+            >
+              <Plus className="w-4 h-4 cursor-pointer" />
+              <span>Request Signatures</span>
+            </button>
           </div>
-        </div>
-
-        {/* Header Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setShowSignSelfModal(true)}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all cursor-pointer active:scale-95"
-          >
-            <PenTool className="w-4 h-4 text-slate-600" />
-            <span>Sign Yourself</span>
-          </button>
-          <button
-            onClick={() => setShowNewRequestModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition-all cursor-pointer active:scale-95 whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Request Signatures</span>
-          </button>
         </div>
       </div>
 
@@ -267,27 +275,32 @@ export default function ESignaturePage() {
         {/* ── KPI METRICS SUMMARY GRID ───────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
-            { id: 'all',       label: 'Total Managed',  value: stats.total,    sub: 'All envelopes',       icon: Layers,        color: 'text-blue-600',   bg: 'bg-blue-50/80 border-blue-100' },
-            { id: 'signed',    label: 'Legally Sealed', value: stats.signed,   sub: 'Fully executed',      icon: ShieldCheck,   color: 'text-emerald-600',bg: 'bg-emerald-50/80 border-emerald-100' },
-            { id: 'pending',   label: 'Out for Sign',  value: stats.pending,  sub: 'Awaiting signature',  icon: Clock,         color: 'text-amber-600',  bg: 'bg-amber-50/80 border-amber-100' },
-            { id: 'draft',     label: 'In Preparation', value: stats.draft,    sub: 'Drafts & templates',  icon: FileText,      color: 'text-purple-600', bg: 'bg-purple-50/80 border-purple-100' },
+            { id: 'all',       label: 'Total Managed',  badge: 'All Envelopes', value: stats.total,    icon: Layers,        iconCls: 'bg-blue-50 text-blue-600 border-blue-100' },
+            { id: 'signed',    label: 'Legally Sealed', badge: 'Fully Executed',value: stats.signed,   icon: ShieldCheck,   iconCls: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+            { id: 'pending',   label: 'Out for Sign',  badge: 'Awaiting Sign',  value: stats.pending,  icon: Clock,         iconCls: 'bg-amber-50 text-amber-600 border-amber-100' },
+            { id: 'draft',     label: 'In Preparation', badge: 'Drafts & Templates',value: stats.draft,    icon: FileText,      iconCls: 'bg-purple-50 text-purple-600 border-purple-100' },
           ].map((item) => {
             const isSelected = selectedStatus === item.id;
+            const Icon = item.icon;
             return (
               <button
                 key={item.id}
                 onClick={() => setSelectedStatus(isSelected ? 'all' : item.id)}
-                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${item.bg} ${
-                  isSelected ? 'ring-2 ring-blue-600 shadow-md scale-[1.02]' : 'hover:shadow-sm'
+                className={`bg-white rounded-2xl p-4 sm:p-4.5 border text-left transition-all cursor-pointer flex flex-col justify-between space-y-3 group ${
+                  isSelected ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-md' : 'border-slate-200/80 shadow-2xs hover:shadow-md hover:border-slate-300'
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{item.label}</span>
-                  <item.icon className={`w-4 h-4 ${item.color}`} />
+                <div className="flex items-center justify-between gap-1.5">
+                  <div className={`p-2 rounded-xl border ${item.iconCls} transition-transform group-hover:scale-105 shrink-0`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100 truncate max-w-[100px]">
+                    {item.badge}
+                  </span>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-black text-slate-900">{item.value}</span>
-                  <span className="text-[11px] font-medium text-slate-500 truncate">{item.sub}</span>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 truncate">{item.label}</p>
+                  <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-0.5 truncate">{item.value}</h3>
                 </div>
               </button>
             );

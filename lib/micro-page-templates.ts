@@ -54,3 +54,7 @@ export const MICRO_PAGE_TEMPLATES: MicroPageTemplate[] = [
 export function getMicroPageTemplate(id: string): MicroPageTemplate | undefined {
   return MICRO_PAGE_TEMPLATES.find(t => t.id === id);
 }
+
+// Union of every block type used across all templates — the catalog offered
+// when adding a block to a page beyond what its original template included.
+export const ALL_BLOCK_TYPES = Array.from(new Set(MICRO_PAGE_TEMPLATES.flatMap(t => t.components)));

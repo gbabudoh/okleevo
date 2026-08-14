@@ -279,69 +279,80 @@ export default function MailboxPage() {
       <TourProvider moduleId="mailbox" steps={mailboxTourSteps} />
 
       {/* Header */}
-      <div id="tour-mailbox-header" className="shrink-0 border-b border-gray-100 bg-white px-3.5 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
-        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+      <div id="tour-mailbox-header" className="shrink-0 border-b border-slate-200/80 bg-white px-3.5 sm:px-6 py-2.5 sm:py-3 space-y-2.5 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           {selectedMessage ? (
             <button
               onClick={() => setSelectedMessage(null)}
-              className="lg:hidden flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-gray-100 rounded-xl text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer shrink-0"
+              className="lg:hidden flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition cursor-pointer shrink-0"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
           ) : (
-            <>
-              <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
-                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex items-center gap-2 sm:gap-3">
-                <div className="min-w-0">
-                  <h1 className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">Mail Engine</h1>
-                  <p className="text-xs text-gray-400 hidden sm:block">Your business email, all in one place</p>
-                </div>
-                <ModuleGuideBanner
-                  moduleId="mailbox"
-                  moduleName="Mailbox Engine"
-                  summary="Send, receive, track, and organize inbound and outbound business emails securely."
-                  tips={[
-                    "Compose rich emails with attachments & verified Postal server domains",
-                    "Organize mail by Inbox, Sent, Drafts, Archived, and Spam",
-                    "Track real-time delivery status and open notifications"
-                  ]}
-                />
-              </div>
-            </>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-orange-500/20">
+              <Mail className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            </div>
           )}
+          
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight truncate">
+                Mail Engine &amp; Inbox
+              </h1>
+              <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0">
+                Live Sync
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 truncate hidden sm:block">
+              Send, receive &amp; manage secure business emails
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
           {/* Desktop search */}
           <div className="hidden md:flex items-center relative">
-            <Search className="absolute left-3 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search mail..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-52 pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+              className="w-48 lg:w-56 pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white transition"
             />
           </div>
+
+          <ModuleGuideBanner
+            moduleId="mailbox"
+            moduleName="Mailbox Engine"
+            summary="Send, receive, track, and organize inbound and outbound business emails securely."
+            tips={[
+              "Compose rich emails with attachments & verified Postal server domains",
+              "Organize mail by Inbox, Sent, Drafts, Archived, and Spam",
+              "Track real-time delivery status and open notifications"
+            ]}
+          />
+
           <button
             onClick={() => fetchMessages(true)}
-            className="p-2 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-colors cursor-pointer"
+            className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition cursor-pointer"
+            title="Sync Mail"
           >
             <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
           </button>
+
           <button
             id="tour-mailbox-compose"
             onClick={() => { setComposeData({ to: '', subject: '', content: '' }); setComposeAttachments([]); setShowCompose(true); }}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-md shadow-indigo-600/20 whitespace-nowrap"
           >
             <PenSquare className="w-4 h-4" />
-            <span className="hidden sm:inline">Compose</span>
+            <span>Compose</span>
           </button>
+
           <button
             onClick={() => setShowSearch(v => !v)}
-            className="md:hidden p-2 bg-gray-100 rounded-xl text-gray-500 cursor-pointer"
+            className="md:hidden p-2 bg-slate-100 rounded-xl text-slate-600 cursor-pointer"
           >
             <Search className="w-4 h-4" />
           </button>
@@ -367,8 +378,8 @@ export default function MailboxPage() {
 
       {/* Mobile folder tabs */}
       {!selectedMessage && (
-        <div className="lg:hidden shrink-0 bg-white border-b border-gray-100">
-          <div className="flex overflow-x-auto scrollbar-hide px-4">
+        <div className="lg:hidden shrink-0 bg-white/95 backdrop-blur-sm border-b border-slate-200/80">
+          <div className="flex overflow-x-auto scrollbar-none px-4 sm:px-6 gap-1">
             {folders.map((folder) => {
               const isActive = selectedFolder === folder.id;
               const Icon = folder.icon;
@@ -376,14 +387,14 @@ export default function MailboxPage() {
                 <button
                   key={folder.id}
                   onClick={() => { setSelectedFolder(folder.id); setSelectedMessage(null); setSelectedLabel(null); }}
-                  className={`flex items-center gap-2 px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-colors cursor-pointer shrink-0 ${
-                    isActive ? `border-indigo-600 text-indigo-600` : 'border-transparent text-gray-400 hover:text-gray-700'
+                  className={`flex items-center gap-2 px-3.5 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
+                    isActive ? "border-indigo-600 text-indigo-600 bg-indigo-50/40" : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? folder.color : 'text-gray-400'}`} />
-                  {folder.label}
+                  <Icon className={`w-4 h-4 ${isActive ? folder.color : 'text-slate-400'}`} />
+                  <span>{folder.label}</span>
                   {folder.id === 'INBOX' && unreadCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-indigo-600 text-white rounded-full text-[9px] font-bold leading-none">
+                    <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-bold border border-indigo-200/60 leading-none">
                       {unreadCount}
                     </span>
                   )}
@@ -398,7 +409,7 @@ export default function MailboxPage() {
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* Desktop Sidebar */}
-        <div id="tour-mailbox-folders" className="hidden lg:flex w-52 border-r border-gray-100 bg-gray-50/40 flex-col p-3 gap-0.5 shrink-0">
+        <div id="tour-mailbox-folders" className="hidden lg:flex w-52 border-r border-slate-200/80 bg-slate-50/50 flex-col p-3 gap-1 shrink-0">
           {folders.map((folder) => {
             const Icon = folder.icon;
             const isActive = selectedFolder === folder.id;
@@ -406,23 +417,23 @@ export default function MailboxPage() {
               <button
                 key={folder.id}
                 onClick={() => { setSelectedFolder(folder.id); setSelectedMessage(null); setSelectedLabel(null); }}
-                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
-                  isActive ? 'bg-white text-indigo-600 shadow-sm border border-gray-100' : 'text-gray-500 hover:bg-white/70 hover:text-gray-900'
+                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  isActive ? 'bg-white text-indigo-600 shadow-2xs border border-slate-200/80' : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Icon className={`w-4 h-4 ${isActive ? folder.color : 'text-gray-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? folder.color : 'text-slate-400'}`} />
                   {folder.label}
                 </div>
                 {folder.id === 'INBOX' && unreadCount > 0 && (
-                  <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-bold">{unreadCount}</span>
+                  <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded-md text-[10px] font-bold border border-indigo-200/60">{unreadCount}</span>
                 )}
               </button>
             );
           })}
 
           <div className="mt-5 px-3">
-            <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-2.5">Labels</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Labels</p>
             <div className="space-y-1">
               {MAIL_LABELS.map(l => {
                 const isActive = selectedLabel === l.label;
@@ -430,8 +441,8 @@ export default function MailboxPage() {
                   <button
                     key={l.label}
                     onClick={() => { setSelectedLabel(isActive ? null : l.label); setSelectedMessage(null); }}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                      isActive ? `${l.bgSoft} ${l.text}` : 'text-gray-400 hover:text-gray-700 hover:bg-white/70'
+                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      isActive ? `${l.bgSoft} ${l.text} border border-slate-200/60` : 'text-slate-500 hover:text-slate-900 hover:bg-white/70'
                     }`}
                   >
                     <div className={`w-2 h-2 rounded-full ${l.color} shrink-0`} />
@@ -444,17 +455,17 @@ export default function MailboxPage() {
         </div>
 
         {/* Message List */}
-        <div className={`flex-1 flex flex-col min-w-0 border-r border-gray-100 bg-white ${selectedMessage ? 'hidden lg:flex' : 'flex'}`}>
+        <div className={`flex-1 flex flex-col min-w-0 bg-white ${selectedMessage ? 'hidden lg:flex' : 'flex'}`}>
           {selectedLabel && (
-            <div className="shrink-0 flex items-center gap-2 px-4 py-2 border-b border-gray-100 bg-gray-50/60">
-              <span className="text-xs text-gray-500">Filtered by label:</span>
-              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${MAIL_LABELS.find(l => l.label === selectedLabel)?.bgSoft} ${MAIL_LABELS.find(l => l.label === selectedLabel)?.text}`}>
+            <div className="shrink-0 flex items-center gap-2 px-4 py-2 border-b border-slate-100 bg-slate-50/60">
+              <span className="text-xs text-slate-500">Filtered by label:</span>
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border border-slate-200/60 ${MAIL_LABELS.find(l => l.label === selectedLabel)?.bgSoft} ${MAIL_LABELS.find(l => l.label === selectedLabel)?.text}`}>
                 <div className={`w-1.5 h-1.5 rounded-full ${MAIL_LABELS.find(l => l.label === selectedLabel)?.color}`} />
                 {selectedLabel}
               </span>
               <button
                 onClick={() => setSelectedLabel(null)}
-                className="ml-auto p-1 hover:bg-gray-200 rounded-lg text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                className="ml-auto p-1 hover:bg-slate-200 rounded-lg text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -463,53 +474,53 @@ export default function MailboxPage() {
           <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex flex-col items-center justify-center h-full gap-4">
-                <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
-                <p className="text-xs text-gray-400 font-semibold">Loading messages...</p>
+                <Loader2 className="w-9 h-9 text-indigo-600 animate-spin" />
+                <p className="text-xs text-slate-400 font-semibold">Loading messages...</p>
               </div>
             ) : filteredMessages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full gap-3">
-                <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center">
-                  <InboxIcon className="w-7 h-7 text-gray-300" />
+                <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center">
+                  <InboxIcon className="w-6 h-6 text-slate-400" />
                 </div>
-                <p className="text-sm font-semibold text-gray-400">
+                <p className="text-xs sm:text-sm font-semibold text-slate-500">
                   No messages in {selectedFolder.toLowerCase()}{selectedLabel ? ` labeled "${selectedLabel}"` : ''}
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-slate-100">
                 {filteredMessages.map((msg) => (
                   <div
                     key={msg.id}
                     onClick={() => handleMessageClick(msg)}
-                    className={`group flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors border-l-2 ${
+                    className={`group flex items-center gap-3 px-4 py-3 sm:py-3.5 cursor-pointer transition-colors border-l-2 ${
                       selectedMessage?.id === msg.id
-                        ? 'bg-indigo-50 border-l-indigo-600'
-                        : 'hover:bg-gray-50 border-l-transparent'
+                        ? 'bg-indigo-50/60 border-l-indigo-600'
+                        : 'hover:bg-slate-50/80 border-l-transparent'
                     }`}
                   >
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-black shadow-xs ${
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-transform group-hover:scale-105 ${
                       msg.status === 'UNREAD' 
-                        ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white ring-2 ring-indigo-200' 
-                        : 'bg-gradient-to-br from-indigo-500 to-blue-600 text-white'
+                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-2xs font-extrabold' 
+                        : 'bg-slate-100 text-slate-700 border border-slate-200/80'
                     }`}>
                       {(selectedFolder === 'SENT' ? msg.to : msg.from).charAt(0).toUpperCase()}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-0.5">
-                        <p className={`text-sm truncate ${msg.status === 'UNREAD' ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>
+                        <p className={`text-xs sm:text-sm truncate ${msg.status === 'UNREAD' ? 'font-bold text-slate-900' : 'font-semibold text-slate-700'}`}>
                           {selectedFolder === 'SENT'
                             ? (msg.to.split('<')[0].trim() || msg.to)
                             : (msg.from.split('<')[0].trim() || msg.from)}
                         </p>
-                        <span className="text-[10px] text-gray-400 shrink-0">
+                        <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 shrink-0">
                           {new Date(msg.date).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                         </span>
                       </div>
-                      <p className={`text-xs truncate mb-0.5 ${msg.status === 'UNREAD' ? 'font-semibold text-gray-800' : 'text-gray-400'}`}>
+                      <p className={`text-xs truncate mb-0.5 ${msg.status === 'UNREAD' ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>
                         {msg.subject}
                       </p>
-                      <p className="text-[11px] text-gray-400 truncate">
+                      <p className="text-[11px] text-slate-400 truncate">
                         {msg.body.substring(0, 80)}...
                       </p>
                     </div>
@@ -517,7 +528,7 @@ export default function MailboxPage() {
                     <div className="flex items-center gap-1.5 shrink-0">
                       {msg.label && (
                         <div
-                          className={`w-2 h-2 rounded-full shrink-0 ${MAIL_LABELS.find(l => l.label === msg.label)?.color || 'bg-gray-300'}`}
+                          className={`w-2 h-2 rounded-full shrink-0 ${MAIL_LABELS.find(l => l.label === msg.label)?.color || 'bg-slate-300'}`}
                           title={msg.label}
                         />
                       )}
@@ -525,7 +536,7 @@ export default function MailboxPage() {
                         <div className="w-2 h-2 bg-indigo-600 rounded-full" />
                       )}
                       {msg.hasAttachments && (
-                        <Paperclip className="w-3.5 h-3.5 text-gray-300" />
+                        <Paperclip className="w-3.5 h-3.5 text-slate-400" />
                       )}
                     </div>
                   </div>

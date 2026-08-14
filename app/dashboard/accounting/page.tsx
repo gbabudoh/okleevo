@@ -1008,55 +1008,73 @@ export default function AccountingPage() {
       <TourProvider moduleId="accounting" steps={accountingTourSteps} />
 
       {/* ── Sticky Header ── */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-2 bg-blue-600 rounded-xl shrink-0">
-              <Calculator className="w-5 h-5 text-white" />
+      <div className="sticky top-0 z-40 bg-white border-b border-slate-200/80 shadow-2xs">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
+              <Calculator className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
             </div>
-            <div className="min-w-0 flex items-center gap-3">
-              <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Accounting</h1>
-                <p className="text-[11px] text-gray-400 hidden sm:block">Double-entry bookkeeping · UK SME</p>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight truncate">
+                  Accounting &amp; Ledger
+                </h1>
+                <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 shrink-0">
+                  UK Double-Entry
+                </span>
               </div>
-              <ModuleGuideBanner
-                moduleId="accounting"
-                moduleName="Double-Entry Accounting & Ledger"
-                summary="Manage your Chart of Accounts, record general journal entries, reconcile cash positions, and generate statutory P&L, Balance Sheet, and Trial Balance reports."
-                tips={[
-                  "Set up your Chart of Accounts with assets, liabilities, equity, revenues, and expenses",
-                  "Record double-entry journal entries with matching debit and credit amounts",
-                  "Export statutory financial statements to PDF or Excel for HMRC tax filing"
-                ]}
-              />
+              <p className="text-[11px] text-slate-500 truncate hidden sm:block">
+                Chart of accounts, general journal, P&amp;L &amp; Balance Sheet
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button id="tour-accounting-export" onClick={() => setShowExportModal(true)}
-              className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-700">
+
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
+            <ModuleGuideBanner
+              moduleId="accounting"
+              moduleName="Double-Entry Accounting & Ledger"
+              summary="Manage your Chart of Accounts, record general journal entries, reconcile cash positions, and generate statutory P&L, Balance Sheet, and Trial Balance reports."
+              tips={[
+                "Set up your Chart of Accounts with assets, liabilities, equity, revenues, and expenses",
+                "Record double-entry journal entries with matching debit and credit amounts",
+                "Export statutory financial statements to PDF or Excel for HMRC tax filing"
+              ]}
+            />
+            <button
+              id="tour-accounting-export"
+              onClick={() => setShowExportModal(true)}
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold shrink-0"
+            >
               <Download className="w-4 h-4 cursor-pointer" />
               <span className="hidden sm:inline cursor-pointer">Export</span>
             </button>
-            <button id="tour-accounting-new-entry" onClick={() => setShowNewEntryModal(true)}
-              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+            <button
+              id="tour-accounting-new-entry"
+              onClick={() => setShowNewEntryModal(true)}
+              className="px-3 sm:px-3.5 py-1.5 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-blue-600/20 whitespace-nowrap shrink-0"
+            >
               <Plus className="w-4 h-4 cursor-pointer" />
-              <span className="hidden sm:inline cursor-pointer">New Entry</span>
-              <span className="sm:hidden cursor-pointer">Add</span>
+              <span>New Entry</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* ── Tab Bar ── */}
-      <div id="tour-accounting-tabs" className="sticky top-[57px] sm:top-[65px] z-30 bg-white border-b border-gray-100">
-        <div className="flex overflow-x-auto scrollbar-hide px-4">
+      <div id="tour-accounting-tabs" className="sticky top-[57px] sm:top-[65px] z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 shadow-2xs">
+        <div className="flex overflow-x-auto scrollbar-none px-4 sm:px-6 gap-1">
           {tabs.map(({ id, name, icon: Icon }) => {
             const active = activeTab === id;
             return (
-              <button key={id} onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
-                  active ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200"
-                }`}>
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-2 px-3.5 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
+                  active
+                    ? "border-blue-600 text-blue-600 bg-blue-50/40"
+                    : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
+                }`}
+              >
                 <Icon className="w-4 h-4 cursor-pointer" />
                 <span className="cursor-pointer">{name}</span>
               </button>
@@ -1073,34 +1091,39 @@ export default function AccountingPage() {
           <>
             <AccountingSummary data={financialSummary} />
 
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-blue-600" />
-                  <h2 className="text-sm font-bold text-gray-900">Recent Journal Entries</h2>
+                  <h2 className="text-sm font-bold text-slate-900">Recent Journal Submissions</h2>
                 </div>
-                <button onClick={() => setActiveTab("journal")} className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">View all</button>
+                <button onClick={() => setActiveTab("journal")} className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">
+                  View all entries &rarr;
+                </button>
               </div>
-              <div className="p-5">
+              <div className="p-4 sm:p-5">
                 <JournalEntries entries={recentTransactions} onViewEntry={handleViewEntry} onEditEntry={handleEditEntry} onDeleteEntry={(id) => handleDeleteClick("entry", id)} />
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               {[
-                { tab: "year-end",      icon: FileCheck,  color: "bg-blue-500",   title: "Year-End Accounts",    desc: "Generate HMRC-ready financials" },
-                { tab: "trial-balance", icon: Calculator, color: "bg-green-500",  title: "Run Trial Balance",    desc: "Verify debits equal credits" },
-                { tab: "reports",       icon: PieChart,   color: "bg-violet-500", title: "Financial Reports",    desc: "P&L, Balance Sheet, Cash Flow" },
-              ].map(({ tab, icon: Icon, color, title, desc }) => (
-                <button key={tab} onClick={() => setActiveTab(tab)}
-                  className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all text-left cursor-pointer group">
-                  <div className={`p-2.5 ${color} rounded-xl shrink-0 group-hover:scale-105 transition-transform`}>
-                    <Icon className="w-5 h-5 text-white" />
+                { tab: "year-end",      icon: FileCheck,  badgeBg: "bg-blue-50 text-blue-600 border-blue-100",   title: "Year-End Accounts Pack", desc: "HMRC-ready financial statement export" },
+                { tab: "trial-balance", icon: Calculator, badgeBg: trialBalanceIsBalanced ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100", title: "Trial Balance Check", desc: trialBalanceIsBalanced ? "Debits match Credits (Balanced)" : "Unbalanced - Review entries" },
+                { tab: "reports",       icon: PieChart,   badgeBg: "bg-purple-50 text-purple-600 border-purple-100", title: "Financial Reports", desc: "P&L, Balance Sheet & Cash Position" },
+              ].map(({ tab, icon: Icon, badgeBg, title, desc }) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className="flex items-center gap-3.5 p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-slate-300 transition-all text-left cursor-pointer group"
+                >
+                  <div className={`p-2.5 rounded-xl border ${badgeBg} shrink-0 group-hover:scale-105 transition-transform`}>
+                    <Icon className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-gray-900">{title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                    <p className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{title}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">{desc}</p>
                   </div>
                 </button>
               ))}
