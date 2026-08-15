@@ -8,7 +8,7 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
     const resolvedParams = await params;
     const id = resolvedParams.id as string;
     const body = await req.json();
-    const { title, amount, category, date } = body;
+    const { title, amount, category, date, vatAmount } = body;
 
     // Check ownership first
     const existing = await prisma.expense.findFirst({
@@ -33,6 +33,7 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
         amount: amount !== undefined ? parseFloat(amount) : undefined,
         category,
         date: date ? new Date(date) : undefined,
+        ...(vatAmount !== undefined && { vatAmount: (vatAmount === null || vatAmount === '') ? null : parseFloat(vatAmount) }),
         ...(needsRepost && { journalEntryId: null }),
       },
     });

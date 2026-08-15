@@ -15,6 +15,12 @@ import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { invoicingTourSteps } from './tour-steps';
 
 /* ── Interfaces ──────────────────────────────────────────────────── */
+// vatRate is optional so older invoices created before this field existed
+// still parse — treat a missing vatRate as the 20% standard rate (the same
+// assumption the app already made everywhere before this field existed).
+interface InvoiceLineItem { description: string; quantity: number; rate: number; vatRate?: number }
+const DEFAULT_VAT_RATE = 20;
+
 interface Invoice {
   id: string;
   client: string;
@@ -23,7 +29,7 @@ interface Invoice {
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
   date: string;
   dueDate: string;
-  items: { description: string; quantity: number; rate: number }[];
+  items: InvoiceLineItem[];
 }
 
 interface InvoiceResponse {
@@ -35,7 +41,7 @@ interface InvoiceResponse {
   status: string;
   createdAt: string;
   dueDate: string;
-  items: { description: string; quantity: number; rate: number }[] | null;
+  items: InvoiceLineItem[] | null;
 }
 
 /* ── Constants ───────────────────────────────────────────────────── */
@@ -211,7 +217,7 @@ export default function InvoicingPage() {
     client: '', clientEmail: '',
     date: new Date().toISOString().split('T')[0],
     dueDate: '',
-    items: [{ description: '', quantity: 1, rate: 0 }],
+    items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
     projectId: '',
   });
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -321,12 +327,13 @@ export default function InvoicingPage() {
   });
 
   const newInvoiceTotal = newInvoice.items.reduce((s, i) => s + i.quantity * i.rate, 0);
+  const newInvoiceVAT = newInvoice.items.reduce((s, i) => s + i.quantity * i.rate * ((i.vatRate ?? DEFAULT_VAT_RATE) / 100), 0);
 
   /* ── Handlers ──────────────────────────────────────────────────── */
   const closeNewModal = () => {
     setShowNewInvoiceModal(false);
     setEditingInvoiceId(null);
-    setNewInvoice({ clientType: 'business', client: '', clientEmail: '', date: new Date().toISOString().split('T')[0], dueDate: '', items: [{ description: '', quantity: 1, rate: 0 }], projectId: '' });
+    setNewInvoice({ clientType: 'business', client: '', clientEmail: '', date: new Date().toISOString().split('T')[0], dueDate: '', items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }], projectId: '' });
   };
 
   const handleViewInvoice = (invoice: Invoice) => {
@@ -341,7 +348,9 @@ export default function InvoicingPage() {
       clientEmail: invoice.clientEmail,
       date: invoice.date,
       dueDate: invoice.dueDate,
-      items: invoice.items.length > 0 ? invoice.items : [{ description: '', quantity: 1, rate: 0 }],
+      items: invoice.items.length > 0
+        ? invoice.items.map(i => ({ ...i, vatRate: i.vatRate ?? DEFAULT_VAT_RATE }))
+        : [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
       projectId: '',
     });
     setShowNewInvoiceModal(true);
@@ -992,7 +1001,7 @@ export default function InvoicingPage() {
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Line Items</p>
                 <button
-                  onClick={() => setNewInvoice({ ...newInvoice, items: [...newInvoice.items, { description: '', quantity: 1, rate: 0 }] })}
+                  onClick={() => setNewInvoice({ ...newInvoice, items: [...newInvoice.items, { description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }] })}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Item
@@ -1013,8 +1022,8 @@ export default function InvoicingPage() {
                         placeholder="Service or product description"
                       />
                     </div>
-                    {/* Qty / Rate / Total / Remove */}
-                    <div className="grid grid-cols-3 gap-2 items-end sm:flex sm:items-end sm:gap-3 sm:flex-initial">
+                    {/* Qty / Rate / VAT / Total / Remove */}
+                    <div className="grid grid-cols-2 sm:grid-cols-none gap-2 items-end sm:flex sm:items-end sm:gap-3 sm:flex-initial">
                       <div className="sm:w-16">
                         <label className="block text-xs font-medium text-gray-400 mb-1">Qty</label>
                         <input
@@ -1033,7 +1042,19 @@ export default function InvoicingPage() {
                           className={inputCls}
                         />
                       </div>
-                      <div className="flex items-end gap-2 col-span-1 sm:col-auto sm:w-36">
+                      <div className="sm:w-24">
+                        <label className="block text-xs font-medium text-gray-400 mb-1">VAT</label>
+                        <select
+                          value={item.vatRate ?? DEFAULT_VAT_RATE}
+                          onChange={e => { const items = [...newInvoice.items]; items[idx].vatRate = parseFloat(e.target.value); setNewInvoice({ ...newInvoice, items }); }}
+                          className={`${inputCls} appearance-none cursor-pointer`}
+                        >
+                          <option value={20}>20%</option>
+                          <option value={5}>5%</option>
+                          <option value={0}>0%</option>
+                        </select>
+                      </div>
+                      <div className="flex items-end gap-2 col-span-2 sm:col-auto sm:w-36">
                         <div className="flex-1">
                           <label className="block text-xs font-medium text-gray-400 mb-1">Subtotal</label>
                           <div className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold text-gray-800 h-[38px] flex items-center">
@@ -1055,9 +1076,15 @@ export default function InvoicingPage() {
               </div>
 
               {/* Total */}
-              <div className="mt-4 flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-indigo-50/80 border border-indigo-100 rounded-2xl">
-                <span className="text-sm font-bold text-gray-700">Invoice Total</span>
-                <span className="text-2xl font-black text-indigo-600 tracking-tight">£{newInvoiceTotal.toFixed(2)}</span>
+              <div className="mt-4 px-4 py-3 bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-indigo-50/80 border border-indigo-100 rounded-2xl space-y-1">
+                <div className="flex items-center justify-between text-xs text-indigo-700/80">
+                  <span>VAT</span>
+                  <span className="font-semibold">£{newInvoiceVAT.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-gray-700">Invoice Total (excl. VAT)</span>
+                  <span className="text-2xl font-black text-indigo-600 tracking-tight">£{newInvoiceTotal.toFixed(2)}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1140,7 +1167,7 @@ export default function InvoicingPage() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      {['Description', 'Qty', 'Rate', 'Amount'].map(h => (
+                      {['Description', 'Qty', 'Rate', 'VAT', 'Amount'].map(h => (
                         <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">{h}</th>
                       ))}
                     </tr>
@@ -1151,6 +1178,7 @@ export default function InvoicingPage() {
                         <td className="px-4 py-3 text-sm text-gray-800">{item.description}</td>
                         <td className="px-4 py-3 text-sm text-gray-500">{item.quantity}</td>
                         <td className="px-4 py-3 text-sm text-gray-500">£{item.rate}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">{item.vatRate ?? DEFAULT_VAT_RATE}%</td>
                         <td className="px-4 py-3 text-sm font-semibold text-gray-900">£{(item.quantity * item.rate).toLocaleString()}</td>
                       </tr>
                     ))}
@@ -1163,16 +1191,22 @@ export default function InvoicingPage() {
                   <div key={i} className="px-4 py-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.quantity} × £{item.rate}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.quantity} × £{item.rate} · VAT {item.vatRate ?? DEFAULT_VAT_RATE}%</p>
                     </div>
                     <p className="text-sm font-bold text-gray-900">£{(item.quantity * item.rate).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
               {/* Total */}
-              <div className="flex items-center justify-between px-4 py-3 bg-blue-50 border-t border-blue-100">
-                <span className="text-sm font-semibold text-gray-700">Total</span>
-                <span className="text-2xl font-bold text-blue-600">£{selectedInvoice.amount.toLocaleString()}</span>
+              <div className="px-4 py-3 bg-blue-50 border-t border-blue-100 space-y-1">
+                <div className="flex items-center justify-between text-xs text-blue-700">
+                  <span>VAT</span>
+                  <span className="font-semibold">£{selectedInvoice.items.reduce((s, i) => s + i.quantity * i.rate * ((i.vatRate ?? DEFAULT_VAT_RATE) / 100), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-gray-700">Total (excl. VAT)</span>
+                  <span className="text-2xl font-bold text-blue-600">£{selectedInvoice.amount.toLocaleString()}</span>
+                </div>
               </div>
             </div>
           </div>

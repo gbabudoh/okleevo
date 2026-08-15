@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
+import { calculateCorporationTax, calculateMonthlyPAYE, calculateEmployeeNI, calculateEmployerNI } from '@/lib/tax/uk-tax';
 
 const addMonths = (date: Date, months: number): Date => {
   const d = new Date(date);
@@ -35,46 +36,77 @@ const getNextVatQuarterEnd = (now: Date): Date => {
 
 const fiscalYearLabel = (yearEnd: Date) => `FY ${yearEnd.getFullYear() - 1}/${yearEnd.getFullYear().toString().slice(-2)}`;
 
+interface InvoiceLineItemRow { description?: string; quantity?: number; rate?: number; vatRate?: number }
+
+// Sums real per-line VAT off an invoice's stored items — items created before
+// vatRate existed default to 20% (the same assumption the whole app made
+// everywhere before this field existed), so old invoices don't silently drop
+// to £0 VAT. Some older/seeded rows have items double-JSON-encoded (a string
+// containing JSON, not a native array) — parse defensively rather than
+// silently treating them as having no items at all.
+const invoiceOutputVAT = (itemsRaw: unknown): number => {
+  let items = itemsRaw;
+  if (typeof items === 'string') {
+    try { items = JSON.parse(items); } catch { return 0; }
+  }
+  if (!Array.isArray(items)) return 0;
+  return (items as InvoiceLineItemRow[]).reduce((sum, item) => {
+    const net = (item.quantity || 0) * (item.rate || 0);
+    const rate = item.vatRate ?? 20;
+    return sum + net * (rate / 100);
+  }, 0);
+};
+
 export const GET = withMultiTenancy(async (req, { dataFilter, business }) => {
   try {
     const businessId = dataFilter.businessId;
     const fyMonth = business.fiscalYearEndMonth;
     const fyDay = business.fiscalYearEndDay;
 
-    // Fetch relevant data for tax calculation
+    // Fetch relevant data for tax calculation. Draft and cancelled invoices
+    // were never earned/sent and must not inflate revenue or tax figures.
     const [invoices, expenses, employees, complianceItems] = await Promise.all([
-      prisma.invoice.findMany({ 
+      prisma.invoice.findMany({
+        where: { businessId, status: { notIn: ['DRAFT', 'CANCELED'] } },
+        include: { journalEntry: true }
+      }),
+      prisma.expense.findMany({
         where: { businessId },
-        include: { journalEntry: true } 
+        include: { journalEntry: true }
       }),
-      prisma.expense.findMany({ 
-        where: { businessId },
-        include: { journalEntry: true } 
+      prisma.employee.findMany({
+        where: { businessId, status: 'ACTIVE' }
       }),
-      prisma.employee.findMany({ 
-        where: { businessId, status: 'ACTIVE' } 
-      }),
-      prisma.complianceItem.findMany({ 
+      prisma.complianceItem.findMany({
         where: { businessId },
         orderBy: { dueDate: 'asc' }
       }),
     ]);
 
-    // Calculate VAT (assuming 20% on all invoices and expenses for simplicity)
-    const vatOutput = invoices.reduce((sum, inv) => sum + (inv.amount * 0.20), 0);
-    const vatInput = expenses.reduce((sum, exp) => sum + (exp.amount * 0.20), 0);
+    // Real VAT: output VAT sums each invoice's actual per-line rate (20%/5%/0%);
+    // input VAT prefers the AI-extracted vatAmount from a validated receipt
+    // (see app/api/expenses/validate-receipt) and only falls back to a flat
+    // 20% estimate for expenses with no validated receipt data.
+    const vatOutput = invoices.reduce((sum, inv) => sum + invoiceOutputVAT(inv.items), 0);
+    const vatInput = expenses.reduce((sum, exp) => sum + (exp.vatAmount ?? exp.amount * 0.20), 0);
     const vatLiability = Math.max(0, vatOutput - vatInput);
 
-    // Calculate PAYE & NI (using basic estimates for UK 2024/25)
-    // Monthly salary aggregation
-    const totalMonthlySalary = employees.reduce((sum, emp) => sum + (emp.salary || 0), 0);
-    const payeNI = totalMonthlySalary * 0.338; // 20% tax + 13.8% employer NI estimate
+    // Employee.salary is an ANNUAL gross figure (see hr-records module).
+    const totalAnnualSalary = employees.reduce((sum, emp) => sum + (emp.salary || 0), 0);
 
-    // Calculate Profit for Corporation Tax
+    // PAYE & NI: real per-employee banded calculation (2025/26 rates), summed
+    // across active employees — not a flat percentage guess.
+    const payeNI = employees.reduce((sum, emp) => {
+      const annual = emp.salary || 0;
+      return sum + calculateMonthlyPAYE(annual) + calculateEmployeeNI(annual) + calculateEmployerNI(annual);
+    }, 0);
+
+    // Calculate Profit for Corporation Tax. totalAnnualSalary is already a
+    // yearly figure — do not multiply by 12 again.
     const totalRevenue = invoices.reduce((sum, inv) => sum + inv.amount, 0);
     const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const profit = Math.max(0, totalRevenue - totalExpenses - (totalMonthlySalary * 12));
-    const corporationTax = profit * 0.19;
+    const profit = Math.max(0, totalRevenue - totalExpenses - totalAnnualSalary);
+    const corporationTax = calculateCorporationTax(profit).tax;
 
     // Map compliance items to obligations
     let obligations = complianceItems.map(item => ({
@@ -150,7 +182,7 @@ export const GET = withMultiTenancy(async (req, { dataFilter, business }) => {
       details: {
         totalRevenue,
         totalExpenses,
-        totalMonthlySalary,
+        totalAnnualSalary,
         employeeCount: employees.length,
         vatOutput,
         vatInput,

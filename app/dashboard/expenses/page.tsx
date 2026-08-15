@@ -99,6 +99,7 @@ export default function ExpensesPage() {
     category: 'Office',
     date: new Date().toISOString().split('T')[0],
     projectId: '',
+    vatAmount: '',
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -168,7 +169,7 @@ export default function ExpensesPage() {
 
   /* ── Handlers ────────────────────────────────────────────────── */
   const resetNewExpense = () => {
-    setNewExpense({ title: '', amount: 0, category: 'Office', date: new Date().toISOString().split('T')[0], projectId: '' });
+    setNewExpense({ title: '', amount: 0, category: 'Office', date: new Date().toISOString().split('T')[0], projectId: '', vatAmount: '' });
     setSelectedFile(null);
   };
 
@@ -626,6 +627,20 @@ export default function ExpensesPage() {
             </div>
 
             <div>
+              <label className={labelCls}>VAT Amount (£) <span className="text-gray-400 font-normal normal-case">— optional</span></label>
+              <div className="relative">
+                <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="number" min="0" step="0.01"
+                  value={newExpense.vatAmount}
+                  onChange={(e) => setNewExpense({ ...newExpense, vatAmount: e.target.value })}
+                  className={`${inputCls} pl-9`}
+                  placeholder="Leave blank to estimate at 20%"
+                />
+              </div>
+            </div>
+
+            <div>
               <label className={labelCls}>Category</label>
               <select
                 value={newExpense.category}
@@ -716,6 +731,20 @@ export default function ExpensesPage() {
                   value={selectedExpense.date}
                   onChange={(e) => setSelectedExpense({ ...selectedExpense, date: e.target.value })}
                   className={inputCls}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelCls}>VAT Amount (£) <span className="text-gray-400 font-normal normal-case">— optional</span></label>
+              <div className="relative">
+                <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="number" min="0" step="0.01"
+                  value={selectedExpense.vatAmount ?? ''}
+                  onChange={(e) => setSelectedExpense({ ...selectedExpense, vatAmount: e.target.value === '' ? null : parseFloat(e.target.value) || 0 })}
+                  className={`${inputCls} pl-9`}
+                  placeholder="Leave blank to estimate at 20%"
                 />
               </div>
             </div>
