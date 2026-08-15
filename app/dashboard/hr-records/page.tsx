@@ -15,8 +15,8 @@ import {
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 
-const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all';
-const labelCls = 'block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1';
+const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all';
+const labelCls = 'block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5';
 
 interface Employee {
   id: string;
@@ -1016,182 +1016,277 @@ export default function HRRecordsPage() {
         </div>
       )}
 
-      {/* ── Multi-Tab Enterprise Entry Modal (UK Standards) ── */}
-      {showAddEmployee && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs" onClick={() => setShowAddEmployee(false)} />
-          <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add UK Employee Record</h3>
-              <button onClick={() => setShowAddEmployee(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+      {/* ── Multi-Step Enterprise Employee Wizard (UK Standards) ── */}
+      {showAddEmployee && (() => {
+        const formSteps = [
+          { id: 'personal' as const, label: 'Personal & RTW', subtitle: 'Enter personal identity and Right to Work code' },
+          { id: 'role' as const, label: 'Role & Department', subtitle: 'Specify position, department, and start date' },
+          { id: 'payroll' as const, label: 'UK Payroll & HMRC', subtitle: 'Configure salary, PAYE tax code, and NI number' },
+          { id: 'leave' as const, label: 'Leave & Hours', subtitle: 'Set statutory leave entitlement and weekly hours' },
+        ];
+        const currentStepIdx = formSteps.findIndex(s => s.id === activeFormTab);
+        const currentStep = formSteps[currentStepIdx];
+        const isLastStep = currentStepIdx === formSteps.length - 1;
+        const isFirstStep = currentStepIdx === 0;
 
-            {/* Modal Form Tabs */}
-            <div className="flex border-b border-slate-100 dark:border-slate-800 px-6 bg-slate-50/30">
-              {[
-                { id: 'personal', label: '1. Personal & RTW' },
-                { id: 'role', label: '2. Role & Department' },
-                { id: 'payroll', label: '3. UK Payroll & HMRC' },
-                { id: 'leave', label: '4. Leave & Hours' },
-              ].map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveFormTab(t.id as any)}
-                  className={`px-4 py-3 text-xs font-bold border-b-2 transition-all ${
-                    activeFormTab === t.id
-                      ? 'border-indigo-600 text-indigo-600'
-                      : 'border-transparent text-slate-400 hover:text-slate-600'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
+        const goNext = () => {
+          if (!isLastStep) setActiveFormTab(formSteps[currentStepIdx + 1].id);
+        };
+        const goBack = () => {
+          if (!isFirstStep) setActiveFormTab(formSteps[currentStepIdx - 1].id);
+        };
 
-            <div className="p-6 space-y-4 flex-1 overflow-y-auto max-h-[65vh]">
-              {activeFormTab === 'personal' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>First Name</label>
-                      <input type="text" placeholder="John" value={newEmpFirstName} onChange={e => setNewEmpFirstName(e.target.value)} className={inputCls} />
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowAddEmployee(false)} />
+            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+
+              {/* ── Header ── */}
+              <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-purple-50/30 dark:from-slate-900 dark:to-purple-950/20">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                      <UserCheck className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <label className={labelCls}>Last Name</label>
-                      <input type="text" placeholder="Smith" value={newEmpLastName} onChange={e => setNewEmpLastName(e.target.value)} className={inputCls} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Work Email</label>
-                      <input type="email" placeholder="john.smith@okleevo.com" value={newEmpEmail} onChange={e => setNewEmpEmail(e.target.value)} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Phone Number</label>
-                      <input type="text" placeholder="+44 7700 900077" value={newEmpPhone} onChange={e => setNewEmpPhone(e.target.value)} className={inputCls} />
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Add UK Employee Record</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Step {currentStepIdx + 1} of {formSteps.length} — {currentStep.subtitle}
+                      </p>
                     </div>
                   </div>
-                  <div>
-                    <label className={labelCls}>UK Right to Work Share Code</label>
-                    <input type="text" placeholder="UK-RTW-99410" value={newEmpShareCode} onChange={e => setNewEmpShareCode(e.target.value)} className={inputCls} />
-                  </div>
+                  <button onClick={() => setShowAddEmployee(false)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer">
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-              )}
+              </div>
 
-              {activeFormTab === 'role' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Job Title / Position</label>
-                      <input type="text" placeholder="Senior Software Engineer" value={newEmpJobTitle} onChange={e => setNewEmpJobTitle(e.target.value)} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Department</label>
-                      {!isCustomWriteIn ? (
-                        <select
-                          value={newEmpDepartment}
-                          onChange={e => {
-                            if (e.target.value === '__WRITE_IN__') {
-                              setIsCustomWriteIn(true);
-                              setCustomDeptWriteIn('');
-                            } else {
-                              setNewEmpDepartment(e.target.value);
-                            }
-                          }}
-                          className={`${inputCls} cursor-pointer`}
+              {/* ── Stepper ── */}
+              <div className="px-6 py-4 bg-white dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  {formSteps.map((step, idx) => {
+                    const isActive = idx === currentStepIdx;
+                    const isCompleted = idx < currentStepIdx;
+                    return (
+                      <React.Fragment key={step.id}>
+                        {/* Step circle + label */}
+                        <button
+                          onClick={() => setActiveFormTab(step.id)}
+                          className="flex flex-col items-center gap-1.5 group cursor-pointer"
                         >
-                          {customDepartments.map(d => (
-                            <option key={d} value={d}>{d}</option>
-                          ))}
-                          <option value="__WRITE_IN__">+ Create Custom Department...</option>
-                        </select>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            placeholder="Type custom department..."
-                            value={customDeptWriteIn}
-                            onChange={e => setCustomDeptWriteIn(e.target.value)}
-                            className={inputCls}
-                            autoFocus
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setIsCustomWriteIn(false)}
-                            className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-500"
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                            isCompleted
+                              ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25'
+                              : isActive
+                                ? 'bg-purple-600 text-white shadow-md shadow-purple-500/25 ring-4 ring-purple-100 dark:ring-purple-900/40'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
+                          }`}>
+                            {isCompleted ? <Check className="w-4 h-4" /> : idx + 1}
+                          </div>
+                          <span className={`text-[10px] font-semibold leading-tight text-center max-w-[80px] transition-colors ${
+                            isActive ? 'text-purple-600 dark:text-purple-400' : isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
+                          }`}>
+                            {step.label}
+                          </span>
+                        </button>
+                        {/* Connector line */}
+                        {idx < formSteps.length - 1 && (
+                          <div className="flex-1 mx-2 mb-5">
+                            <div className={`h-0.5 rounded-full transition-all duration-500 ${
+                              idx < currentStepIdx ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-slate-700'
+                            }`} />
+                          </div>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Form Content ── */}
+              <div className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[55vh]">
+                {activeFormTab === 'personal' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>
+                          First Name <span className="text-red-400">*</span>
+                        </label>
+                        <input type="text" placeholder="John" value={newEmpFirstName} onChange={e => setNewEmpFirstName(e.target.value)} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>
+                          Last Name <span className="text-red-400">*</span>
+                        </label>
+                        <input type="text" placeholder="Smith" value={newEmpLastName} onChange={e => setNewEmpLastName(e.target.value)} className={inputCls} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>
+                          Work Email <span className="text-red-400">*</span>
+                        </label>
+                        <input type="email" placeholder="john.smith@okleevo.com" value={newEmpEmail} onChange={e => setNewEmpEmail(e.target.value)} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Phone Number</label>
+                        <input type="text" placeholder="+44 7700 900077" value={newEmpPhone} onChange={e => setNewEmpPhone(e.target.value)} className={inputCls} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className={labelCls}>UK Right to Work Share Code</label>
+                      <input type="text" placeholder="UK-RTW-99410" value={newEmpShareCode} onChange={e => setNewEmpShareCode(e.target.value)} className={inputCls} />
+                      <p className="text-[10px] text-slate-400 mt-1">9-character Home Office online Right to Work verification code.</p>
+                    </div>
+                  </div>
+                )}
+
+                {activeFormTab === 'role' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>
+                          Job Title / Position <span className="text-red-400">*</span>
+                        </label>
+                        <input type="text" placeholder="Senior Software Engineer" value={newEmpJobTitle} onChange={e => setNewEmpJobTitle(e.target.value)} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Department</label>
+                        {!isCustomWriteIn ? (
+                          <select
+                            value={newEmpDepartment}
+                            onChange={e => {
+                              if (e.target.value === '__WRITE_IN__') {
+                                setIsCustomWriteIn(true);
+                                setCustomDeptWriteIn('');
+                              } else {
+                                setNewEmpDepartment(e.target.value);
+                              }
+                            }}
+                            className={`${inputCls} cursor-pointer`}
                           >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                            {customDepartments.map(d => (
+                              <option key={d} value={d}>{d}</option>
+                            ))}
+                            <option value="__WRITE_IN__">+ Create Custom Department...</option>
+                          </select>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              placeholder="Type custom department..."
+                              value={customDeptWriteIn}
+                              onChange={e => setCustomDeptWriteIn(e.target.value)}
+                              className={inputCls}
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setIsCustomWriteIn(false)}
+                              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>Employment Type</label>
+                        <select value={newEmpType} onChange={e => setNewEmpType(e.target.value as any)} className={`${inputCls} cursor-pointer`}>
+                          <option value="full-time">Full-Time Permanent</option>
+                          <option value="part-time">Part-Time Permanent</option>
+                          <option value="contract">Fixed Term Contract</option>
+                          <option value="intern">Apprentice / Intern</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelCls}>
+                          Start Date <span className="text-red-400">*</span>
+                        </label>
+                        <input type="date" value={newEmpStartDate} onChange={e => setNewEmpStartDate(e.target.value)} className={inputCls} />
+                      </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Employment Type</label>
-                      <select value={newEmpType} onChange={e => setNewEmpType(e.target.value as any)} className={`${inputCls} cursor-pointer`}>
-                        <option value="full-time">Full-Time Permanent</option>
-                        <option value="part-time">Part-Time Permanent</option>
-                        <option value="contract">Fixed Term Contract</option>
-                        <option value="intern">Apprentice / Intern</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className={labelCls}>Start Date</label>
-                      <input type="date" value={newEmpStartDate} onChange={e => setNewEmpStartDate(e.target.value)} className={inputCls} />
-                    </div>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {activeFormTab === 'payroll' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className={labelCls}>Gross Annual Salary ({currencySymbol})</label>
-                    <input type="number" placeholder="55000" value={newEmpSalary} onChange={e => setNewEmpSalary(e.target.value)} className={inputCls} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
+                {activeFormTab === 'payroll' && (
+                  <div className="space-y-4">
                     <div>
-                      <label className={labelCls}>HMRC PAYE Tax Code</label>
-                      <input type="text" placeholder="1257L" value={newEmpTaxCode} onChange={e => setNewEmpTaxCode(e.target.value)} className={inputCls} />
+                      <label className={labelCls}>Gross Annual Salary ({currencySymbol})</label>
+                      <input type="number" placeholder="55000" value={newEmpSalary} onChange={e => setNewEmpSalary(e.target.value)} className={inputCls} />
+                      <p className="text-[10px] text-slate-400 mt-1">Base gross yearly remuneration prior to PAYE tax and NI deductions.</p>
                     </div>
-                    <div>
-                      <label className={labelCls}>National Insurance (NI) Number</label>
-                      <input type="text" placeholder="QQ 12 34 56 A" value={newEmpNINumber} onChange={e => setNewEmpNINumber(e.target.value)} className={inputCls} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>HMRC PAYE Tax Code</label>
+                        <input type="text" placeholder="1257L" value={newEmpTaxCode} onChange={e => setNewEmpTaxCode(e.target.value)} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Standard UK code is 1257L.</p>
+                      </div>
+                      <div>
+                        <label className={labelCls}>National Insurance (NI) Number</label>
+                        <input type="text" placeholder="QQ 12 34 56 A" value={newEmpNINumber} onChange={e => setNewEmpNINumber(e.target.value)} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Required for HMRC RTI payroll reporting.</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {activeFormTab === 'leave' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Statutory Annual Leave (Days)</label>
-                      <input type="number" placeholder="28" defaultValue={28} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Weekly Working Hours</label>
-                      <input type="number" placeholder="37.5" defaultValue={37.5} className={inputCls} />
+                {activeFormTab === 'leave' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>Statutory Annual Leave (Days)</label>
+                        <input type="number" placeholder="28" defaultValue={28} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">UK statutory minimum is 28 days (5.6 weeks).</p>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Weekly Working Hours</label>
+                        <input type="number" placeholder="37.5" defaultValue={37.5} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Standard UK full-time contract hours.</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-3">
-              <button onClick={() => setShowAddEmployee(false)} className="px-4 py-2 bg-white dark:bg-slate-800 border rounded-xl text-xs font-bold">
-                Cancel
-              </button>
-              <button onClick={handleAddEmployee} disabled={!newEmpFirstName || !newEmpEmail} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs">
-                Save Employee Record
-              </button>
+              {/* ── Footer with step-aware navigation ── */}
+              <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+                <div>
+                  {!isFirstStep && (
+                    <button onClick={goBack} className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">
+                      ← Back
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setShowAddEmployee(false)} className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                    Cancel
+                  </button>
+                  {isLastStep ? (
+                    <button
+                      onClick={handleAddEmployee}
+                      disabled={!newEmpFirstName || !newEmpLastName || !newEmpEmail || !newEmpJobTitle || !newEmpStartDate}
+                      className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white font-bold text-xs rounded-lg shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Save Employee Record
+                    </button>
+                  ) : (
+                    <button
+                      onClick={goNext}
+                      className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-lg shadow-md shadow-purple-500/20 hover:shadow-lg transition-all cursor-pointer"
+                    >
+                      Next →
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── Timesheet Modal ── */}
       {showTimesheetModal && selectedEmployee && (

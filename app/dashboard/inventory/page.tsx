@@ -18,8 +18,8 @@ import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { jsPDF } from 'jspdf';
 
-const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all';
-const labelCls = 'block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1';
+const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all';
+const labelCls = 'block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5';
 
 interface InventoryItem {
   id: string;
@@ -755,169 +755,304 @@ export default function InventoryPage() {
           })}
         </div>
       )}
+      {/* ── Multi-Step Enterprise Inventory Wizard ── */}
+      {showAddItem && (() => {
+        const formSteps = [
+          { id: 'specs' as const, label: 'Specs & Barcode', subtitle: 'Define product identity and classification' },
+          { id: 'financials' as const, label: 'Valuation & Pricing', subtitle: 'Set retail and cost pricing' },
+          { id: 'stock' as const, label: 'Stock & Location', subtitle: 'Configure quantities and thresholds' },
+          { id: 'logistics' as const, label: 'Logistics', subtitle: 'Add weight, dimensions, and supplier' },
+        ];
+        const currentStepIdx = formSteps.findIndex(s => s.id === activeFormTab);
+        const currentStep = formSteps[currentStepIdx];
+        const isLastStep = currentStepIdx === formSteps.length - 1;
+        const isFirstStep = currentStepIdx === 0;
 
-      {/* ── Multi-Tab Enterprise Entry Modal ── */}
-      {showAddItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs" onClick={() => setShowAddItem(false)} />
-          <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Enterprise Inventory Product</h3>
-              <button onClick={() => setShowAddItem(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        const goNext = () => {
+          if (!isLastStep) setActiveFormTab(formSteps[currentStepIdx + 1].id);
+        };
+        const goBack = () => {
+          if (!isFirstStep) setActiveFormTab(formSteps[currentStepIdx - 1].id);
+        };
 
-            {/* Modal Form Tabs */}
-            <div className="flex border-b border-slate-100 dark:border-slate-800 px-6 bg-slate-50/30">
-              {[
-                { id: 'specs', label: '1. Specs & Barcode' },
-                { id: 'financials', label: '2. Valuation & Pricing' },
-                { id: 'stock', label: '3. Stock & Location' },
-                { id: 'logistics', label: '4. Logistics' },
-              ].map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveFormTab(t.id as any)}
-                  className={`px-4 py-3 text-xs font-bold border-b-2 transition-all ${
-                    activeFormTab === t.id
-                      ? 'border-indigo-600 text-indigo-600'
-                      : 'border-transparent text-slate-400 hover:text-slate-600'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowAddItem(false)} />
+            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
 
-            <div className="p-6 space-y-4 flex-1 overflow-y-auto max-h-[65vh]">
-              {activeFormTab === 'specs' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className={labelCls}>Item Name</label>
-                    <input type="text" placeholder="e.g. Wireless Ergonomic Keyboard" value={newItem.name} onChange={e => setNewItem({ ...newItem, name: e.target.value })} className={inputCls} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>SKU Code</label>
-                      <input type="text" placeholder="SKU-9904" value={newItem.sku} onChange={e => setNewItem({ ...newItem, sku: e.target.value })} className={inputCls} />
+              {/* ── Header ── */}
+              <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-emerald-50/30 dark:from-slate-900 dark:to-emerald-950/20">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                      <Package className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <label className={labelCls}>Category / Type</label>
-                      {!isCustomWriteIn ? (
-                        <select
-                          value={newItem.category}
-                          onChange={e => {
-                            if (e.target.value === '__WRITE_IN__') {
-                              setIsCustomWriteIn(true);
-                              setCustomCategoryWriteIn('');
-                            } else {
-                              setNewItem({ ...newItem, category: e.target.value });
-                            }
-                          }}
-                          className={`${inputCls} cursor-pointer`}
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Add Enterprise Inventory Product</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Step {currentStepIdx + 1} of {formSteps.length} — {currentStep.subtitle}
+                      </p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowAddItem(false)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* ── Stepper ── */}
+              <div className="px-6 py-4 bg-white dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  {formSteps.map((step, idx) => {
+                    const isActive = idx === currentStepIdx;
+                    const isCompleted = idx < currentStepIdx;
+                    return (
+                      <React.Fragment key={step.id}>
+                        {/* Step circle + label */}
+                        <button
+                          onClick={() => setActiveFormTab(step.id)}
+                          className="flex flex-col items-center gap-1.5 group cursor-pointer"
                         >
-                          {customCategories.map(c => (
-                            <option key={c} value={c}>{c}</option>
-                          ))}
-                          <option value="__WRITE_IN__">+ Create Custom Category...</option>
-                        </select>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            placeholder="Type custom inventory category..."
-                            value={customCategoryWriteIn}
-                            onChange={e => setCustomCategoryWriteIn(e.target.value)}
-                            className={inputCls}
-                            autoFocus
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setIsCustomWriteIn(false)}
-                            className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-500"
-                            title="Back to dropdown"
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                            isCompleted
+                              ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25'
+                              : isActive
+                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25 ring-4 ring-indigo-100 dark:ring-indigo-900/40'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
+                          }`}>
+                            {isCompleted ? <Check className="w-4 h-4" /> : idx + 1}
+                          </div>
+                          <span className={`text-[10px] font-semibold leading-tight text-center max-w-[80px] transition-colors ${
+                            isActive ? 'text-indigo-600 dark:text-indigo-400' : isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
+                          }`}>
+                            {step.label}
+                          </span>
+                        </button>
+                        {/* Connector line */}
+                        {idx < formSteps.length - 1 && (
+                          <div className="flex-1 mx-2 mb-5">
+                            <div className={`h-0.5 rounded-full transition-all duration-500 ${
+                              idx < currentStepIdx ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-slate-700'
+                            }`} />
+                          </div>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Form Content ── */}
+              <div className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[55vh]">
+                {activeFormTab === 'specs' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className={labelCls}>
+                        Item Name <span className="text-red-400">*</span>
+                      </label>
+                      <input type="text" placeholder="e.g. Wireless Ergonomic Keyboard" value={newItem.name} onChange={e => setNewItem({ ...newItem, name: e.target.value })} className={inputCls} />
+                      <p className="text-[10px] text-slate-400 mt-1">The display name shown across all inventory views.</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>SKU Code</label>
+                        <input type="text" placeholder="SKU-9904" value={newItem.sku} onChange={e => setNewItem({ ...newItem, sku: e.target.value })} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Auto-generated if left blank.</p>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Category / Type</label>
+                        {!isCustomWriteIn ? (
+                          <select
+                            value={newItem.category}
+                            onChange={e => {
+                              if (e.target.value === '__WRITE_IN__') {
+                                setIsCustomWriteIn(true);
+                                setCustomCategoryWriteIn('');
+                              } else {
+                                setNewItem({ ...newItem, category: e.target.value });
+                              }
+                            }}
+                            className={`${inputCls} cursor-pointer`}
                           >
-                            <X className="w-4 h-4" />
-                          </button>
+                            {customCategories.map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                            <option value="__WRITE_IN__">+ Create Custom Category...</option>
+                          </select>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              placeholder="Type custom inventory category..."
+                              value={customCategoryWriteIn}
+                              onChange={e => setCustomCategoryWriteIn(e.target.value)}
+                              className={inputCls}
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setIsCustomWriteIn(false)}
+                              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                              title="Back to dropdown"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>Barcode</label>
+                        <input type="text" placeholder="e.g. 5060012345678" value={newItem.barcode} onChange={e => setNewItem({ ...newItem, barcode: e.target.value })} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Unit of Measure</label>
+                        <select value={newItem.unit} onChange={e => setNewItem({ ...newItem, unit: e.target.value })} className={`${inputCls} cursor-pointer`}>
+                          <option value="pcs">Pieces (pcs)</option>
+                          <option value="kg">Kilograms (kg)</option>
+                          <option value="litres">Litres</option>
+                          <option value="metres">Metres</option>
+                          <option value="boxes">Boxes</option>
+                          <option value="pallets">Pallets</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeFormTab === 'financials' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>Retail Unit Price ({currencySymbol})</label>
+                        <input type="text" placeholder="49.99" value={newItem.unitPrice} onChange={e => setNewItem({ ...newItem, unitPrice: e.target.value })} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Selling price per unit (ex. VAT).</p>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Unit Cost Price ({currencySymbol})</label>
+                        <input type="text" placeholder="25.00" value={newItem.costPrice} onChange={e => setNewItem({ ...newItem, costPrice: e.target.value })} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Purchase cost used for margin calculations.</p>
+                      </div>
+                    </div>
+                    {newItem.unitPrice && newItem.costPrice && (
+                      <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                            Gross Margin: {((1 - Number(newItem.costPrice) / Number(newItem.unitPrice)) * 100).toFixed(1)}%
+                          </span>
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-500">
+                            ({currencySymbol}{(Number(newItem.unitPrice) - Number(newItem.costPrice)).toFixed(2)} profit per unit)
+                          </span>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                )}
 
-              {activeFormTab === 'financials' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Retail Unit Price ({currencySymbol})</label>
-                      <input type="text" placeholder="49.99" value={newItem.unitPrice} onChange={e => setNewItem({ ...newItem, unitPrice: e.target.value })} className={inputCls} />
+                {activeFormTab === 'stock' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>
+                          Initial Quantity <span className="text-red-400">*</span>
+                        </label>
+                        <input type="text" placeholder="100" value={newItem.quantity} onChange={e => setNewItem({ ...newItem, quantity: e.target.value })} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Warehouse Location</label>
+                        <select value={newItem.location} onChange={e => setNewItem({ ...newItem, location: e.target.value })} className={`${inputCls} cursor-pointer`}>
+                          <option value="Main Warehouse">Main Warehouse</option>
+                          <option value="Storefront Display">Storefront Display</option>
+                          <option value="Transit Depot">Transit Depot</option>
+                        </select>
+                      </div>
                     </div>
-                    <div>
-                      <label className={labelCls}>Unit Cost Price ({currencySymbol})</label>
-                      <input type="text" placeholder="25.00" value={newItem.costPrice} onChange={e => setNewItem({ ...newItem, costPrice: e.target.value })} className={inputCls} />
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className={labelCls}>Reorder Point</label>
+                        <input type="text" placeholder="10" value={newItem.reorderPoint} onChange={e => setNewItem({ ...newItem, reorderPoint: e.target.value })} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Triggers low-stock alert.</p>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Min Stock</label>
+                        <input type="text" placeholder="5" value={newItem.minStock} onChange={e => setNewItem({ ...newItem, minStock: e.target.value })} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Safety buffer level.</p>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Max Stock</label>
+                        <input type="text" placeholder="100" value={newItem.maxStock} onChange={e => setNewItem({ ...newItem, maxStock: e.target.value })} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Overstock ceiling.</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {activeFormTab === 'stock' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Initial Quantity</label>
-                      <input type="text" placeholder="100" value={newItem.quantity} onChange={e => setNewItem({ ...newItem, quantity: e.target.value })} className={inputCls} />
+                {activeFormTab === 'logistics' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>Weight (kg)</label>
+                        <input type="text" placeholder="0.75" value={newItem.weight} onChange={e => setNewItem({ ...newItem, weight: e.target.value })} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Dimensions (L×W×H cm)</label>
+                        <input type="text" placeholder="30×15×5" value={newItem.dimensions} onChange={e => setNewItem({ ...newItem, dimensions: e.target.value })} className={inputCls} />
+                      </div>
                     </div>
-                    <div>
-                      <label className={labelCls}>Warehouse Location</label>
-                      <select value={newItem.location} onChange={e => setNewItem({ ...newItem, location: e.target.value })} className={`${inputCls} cursor-pointer`}>
-                        <option value="Main Warehouse">Main Warehouse</option>
-                        <option value="Storefront Display">Storefront Display</option>
-                        <option value="Transit Depot">Transit Depot</option>
-                      </select>
-                    </div>
+                    {suppliers.length > 0 && (
+                      <div>
+                        <label className={labelCls}>Linked Supplier</label>
+                        <select value={newItem.supplierId} onChange={e => setNewItem({ ...newItem, supplierId: e.target.value })} className={`${inputCls} cursor-pointer`}>
+                          <option value="">— No supplier linked —</option>
+                          {suppliers.map(s => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                        </select>
+                        <p className="text-[10px] text-slate-400 mt-1">Associate this product with a registered supplier partner.</p>
+                      </div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Reorder Point Threshold</label>
-                      <input type="text" placeholder="10" value={newItem.reorderPoint} onChange={e => setNewItem({ ...newItem, reorderPoint: e.target.value })} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Safety Min Stock</label>
-                      <input type="text" placeholder="5" value={newItem.minStock} onChange={e => setNewItem({ ...newItem, minStock: e.target.value })} className={inputCls} />
-                    </div>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
 
-              {activeFormTab === 'logistics' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Weight (kg)</label>
-                      <input type="text" placeholder="0.75" value={newItem.weight} onChange={e => setNewItem({ ...newItem, weight: e.target.value })} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Dimensions (cm)</label>
-                      <input type="text" placeholder="30x15x5" value={newItem.dimensions} onChange={e => setNewItem({ ...newItem, dimensions: e.target.value })} className={inputCls} />
-                    </div>
-                  </div>
+              {/* ── Footer with step-aware navigation ── */}
+              <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+                <div>
+                  {!isFirstStep && (
+                    <button onClick={goBack} className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">
+                      ← Back
+                    </button>
+                  )}
                 </div>
-              )}
-            </div>
-
-            <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-3">
-              <button onClick={() => setShowAddItem(false)} className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300">
-                Cancel
-              </button>
-              <button onClick={handleAddItem} disabled={!newItem.name || !newItem.quantity} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs">
-                Save Product
-              </button>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setShowAddItem(false)} className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                    Cancel
+                  </button>
+                  {isLastStep ? (
+                    <button
+                      onClick={handleAddItem}
+                      disabled={!newItem.name || !newItem.quantity}
+                      className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs rounded-lg shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Save Product
+                    </button>
+                  ) : (
+                    <button
+                      onClick={goNext}
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg transition-all cursor-pointer"
+                    >
+                      Next →
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── Adjust Stock Modal ── */}
       {adjustingItem && (

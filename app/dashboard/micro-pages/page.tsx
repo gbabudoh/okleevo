@@ -1260,23 +1260,23 @@ export default function MicroPagesPage() {
                       General Page Details
                     </h4>
 
-                    <div className="space-y-3.5">
+                    <div className="space-y-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">Page Title</label>
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Page Title</label>
                         <input
                           type="text"
                           value={editingPage.title}
                           onChange={(e) => setEditingPage({ ...editingPage, title: e.target.value })}
                           placeholder="e.g. Summer Launch Deal"
-                          className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition shadow-2xs font-medium"
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition shadow-2xs font-semibold"
                         />
                         <p className="text-[11px] text-slate-400 mt-1">Displayed on the page banner and browser window tab.</p>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">Hosted URL Slug</label>
-                        <div className="flex items-center rounded-xl border border-slate-200 bg-white overflow-hidden shadow-2xs focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/10 transition">
-                          <span className="px-3 py-2.5 bg-slate-50 border-r border-slate-200 text-slate-500 text-xs font-mono select-none">
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Hosted URL Slug</label>
+                        <div className="flex items-center rounded-lg border border-slate-200 bg-white overflow-hidden shadow-2xs focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/10 transition">
+                          <span className="px-3 py-2.5 bg-slate-100 border-r border-slate-200 text-slate-500 text-xs font-mono select-none shrink-0">
                             okleevo.com/p/
                           </span>
                           <input
@@ -1289,7 +1289,7 @@ export default function MicroPagesPage() {
                               })
                             }
                             placeholder="my-landing-page"
-                            className="flex-1 px-3 py-2.5 text-xs font-mono text-slate-900 outline-none bg-transparent"
+                            className="flex-1 px-3 py-2.5 text-xs font-mono text-slate-900 outline-none bg-transparent min-w-0"
                           />
                           <button
                             type="button"
@@ -1297,7 +1297,7 @@ export default function MicroPagesPage() {
                               navigator.clipboard.writeText(editingPage.url);
                               showNotify('Copied live page URL to clipboard', 'success');
                             }}
-                            className="px-3 py-2 text-xs font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition cursor-pointer"
+                            className="px-3 py-2.5 text-xs font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition cursor-pointer shrink-0 border-l border-slate-100"
                             title="Copy link"
                           >
                             <Copy className="w-3.5 h-3.5" />
@@ -1307,42 +1307,42 @@ export default function MicroPagesPage() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">Publication Status</label>
-                        <div className="grid grid-cols-2 gap-2.5">
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Publication Status</label>
+                        <div className="grid grid-cols-2 gap-3">
                           <div
                             onClick={() => setEditingPage({ ...editingPage, status: 'published' })}
-                            className={`p-3 rounded-xl border transition cursor-pointer flex items-center justify-between ${
+                            className={`p-3.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${
                               editingPage.status === 'published'
-                                ? 'border-emerald-500 bg-emerald-50/40 shadow-xs'
+                                ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-500/20 shadow-xs'
                                 : 'border-slate-200 bg-white hover:border-slate-300'
                             }`}
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                              <div>
-                                <h5 className="text-xs font-bold text-slate-900">Published (Live)</h5>
-                                <p className="text-[10px] text-slate-500">Publicly accessible to visitors</p>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                              <div className="min-w-0">
+                                <h5 className="text-xs font-bold text-slate-900 truncate">Published (Live)</h5>
+                                <p className="text-[10px] text-slate-500 truncate">Publicly accessible to visitors</p>
                               </div>
                             </div>
-                            {editingPage.status === 'published' && <Check className="w-4 h-4 text-emerald-600" />}
+                            {editingPage.status === 'published' && <Check className="w-4 h-4 text-emerald-600 shrink-0 ml-1" />}
                           </div>
 
                           <div
                             onClick={() => setEditingPage({ ...editingPage, status: 'draft' })}
-                            className={`p-3 rounded-xl border transition cursor-pointer flex items-center justify-between ${
+                            className={`p-3.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${
                               editingPage.status === 'draft'
-                                ? 'border-amber-500 bg-amber-50/40 shadow-xs'
+                                ? 'border-slate-400 bg-slate-100/70 ring-2 ring-slate-400/20 shadow-xs'
                                 : 'border-slate-200 bg-white hover:border-slate-300'
                             }`}
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
-                              <div>
-                                <h5 className="text-xs font-bold text-slate-900">Draft (Private)</h5>
-                                <p className="text-[10px] text-slate-500">Only visible inside dashboard</p>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0" />
+                              <div className="min-w-0">
+                                <h5 className="text-xs font-bold text-slate-900 truncate">Draft (Private)</h5>
+                                <p className="text-[10px] text-slate-500 truncate">Only visible inside dashboard</p>
                               </div>
                             </div>
-                            {editingPage.status === 'draft' && <Check className="w-4 h-4 text-amber-600" />}
+                            {editingPage.status === 'draft' && <Check className="w-4 h-4 text-slate-700 shrink-0 ml-1" />}
                           </div>
                         </div>
                       </div>
@@ -1362,7 +1362,7 @@ export default function MicroPagesPage() {
                     <div className="space-y-3.5">
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <label className="text-xs font-semibold text-slate-700">SEO Meta Title</label>
+                          <label className="text-xs font-bold text-slate-700">SEO Meta Title</label>
                           <span className={`text-[10px] ${(editingPage.seoTitle?.length || 0) > 60 ? 'text-amber-600 font-bold' : 'text-slate-400'}`}>
                             {editingPage.seoTitle?.length || 0} / 60 characters
                           </span>
@@ -1372,13 +1372,13 @@ export default function MicroPagesPage() {
                           value={editingPage.seoTitle || ''}
                           onChange={(e) => setEditingPage({ ...editingPage, seoTitle: e.target.value })}
                           placeholder={editingPage.title || 'Page title for search engines…'}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition shadow-2xs"
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition shadow-2xs font-medium"
                         />
                       </div>
 
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <label className="text-xs font-semibold text-slate-700">SEO Meta Description</label>
+                          <label className="text-xs font-bold text-slate-700">SEO Meta Description</label>
                           <span className={`text-[10px] ${(editingPage.seoDescription?.length || 0) > 160 ? 'text-amber-600 font-bold' : 'text-slate-400'}`}>
                             {editingPage.seoDescription?.length || 0} / 160 characters
                           </span>
@@ -1388,7 +1388,7 @@ export default function MicroPagesPage() {
                           onChange={(e) => setEditingPage({ ...editingPage, seoDescription: e.target.value })}
                           rows={2}
                           placeholder="Short, compelling summary that will appear under the title in Google and social cards…"
-                          className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition shadow-2xs resize-none"
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition shadow-2xs resize-none font-medium"
                         />
                       </div>
 
@@ -1418,30 +1418,25 @@ export default function MicroPagesPage() {
               )}
             </div>
 
-            {/* Modal Footer (Pinned with solid background and strict shrink-0) */}
-            <div className="p-3 sm:p-4 border-t border-slate-200 bg-white flex items-center justify-between shrink-0 gap-2 shadow-sm z-10">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newStatus = editingPage.status === 'published' ? 'draft' : 'published';
-                    setEditingPage({ ...editingPage, status: newStatus });
-                  }}
-                  className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
-                    editingPage.status === 'published'
-                      ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                      : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                  }`}
-                >
-                  {editingPage.status === 'published' ? 'Switch to Draft' : 'Publish Live'}
-                </button>
+            {/* Modal Footer */}
+            <div className="p-3.5 sm:p-4 border-t border-slate-200 bg-slate-50/60 flex items-center justify-between shrink-0 gap-2 shadow-xs z-10">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500 font-medium hidden sm:inline">Page Status:</span>
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${
+                  editingPage.status === 'published'
+                    ? 'bg-emerald-100/80 text-emerald-800 border-emerald-200'
+                    : 'bg-slate-200/80 text-slate-700 border-slate-300'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${editingPage.status === 'published' ? 'bg-emerald-500' : 'bg-slate-500'}`} />
+                  {editingPage.status === 'published' ? 'Published' : 'Draft'}
+                </span>
               </div>
 
               <div className="flex items-center gap-2 ml-auto">
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                  className="px-4 py-2 bg-white border border-slate-200 dark:bg-slate-800 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1449,7 +1444,7 @@ export default function MicroPagesPage() {
                   type="button"
                   onClick={handleSave}
                   disabled={saving}
-                  className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 disabled:opacity-50 transition cursor-pointer whitespace-nowrap"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 disabled:opacity-50 transition cursor-pointer whitespace-nowrap"
                 >
                   {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                   <span>{saving ? 'Saving…' : 'Save Changes'}</span>

@@ -16,8 +16,8 @@ import {
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 
-const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all';
-const labelCls = 'block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1';
+const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all';
+const labelCls = 'block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5';
 
 interface Supplier {
   id: string;
@@ -725,146 +725,242 @@ export default function SuppliersPage() {
         </div>
       )}
 
-      {/* ── Multi-Tab Enterprise Entry Modal ── */}
-      {showAddSupplier && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs" onClick={() => setShowAddSupplier(false)} />
-          <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Enterprise Supplier Partner</h3>
-              <button onClick={() => setShowAddSupplier(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+      {/* ── Multi-Step Enterprise Supplier Wizard ── */}
+      {showAddSupplier && (() => {
+        const formSteps = [
+          { id: 'contact' as const, label: 'Company & Contact', subtitle: 'Enter basic supplier details' },
+          { id: 'terms' as const, label: 'Supply Chain Terms', subtitle: 'Define lead time and payment terms' },
+          { id: 'category' as const, label: 'Category & SLA', subtitle: 'Classify the supplier relationship' },
+          { id: 'notes' as const, label: 'Notes & Address', subtitle: 'Add supplementary info and website' },
+        ];
+        const currentStepIdx = formSteps.findIndex(s => s.id === activeFormTab);
+        const currentStep = formSteps[currentStepIdx];
+        const isLastStep = currentStepIdx === formSteps.length - 1;
+        const isFirstStep = currentStepIdx === 0;
 
-            {/* Modal Form Tabs */}
-            <div className="flex border-b border-slate-100 dark:border-slate-800 px-6 bg-slate-50/30">
-              {[
-                { id: 'contact', label: '1. Company & Contact' },
-                { id: 'terms', label: '2. Supply Chain Terms' },
-                { id: 'category', label: '3. Category & SLA' },
-                { id: 'notes', label: '4. Notes & Address' },
-              ].map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveFormTab(t.id as any)}
-                  className={`px-4 py-3 text-xs font-bold border-b-2 transition-all ${
-                    activeFormTab === t.id
-                      ? 'border-indigo-600 text-indigo-600'
-                      : 'border-transparent text-slate-400 hover:text-slate-600'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
+        const goNext = () => {
+          if (!isLastStep) setActiveFormTab(formSteps[currentStepIdx + 1].id);
+        };
+        const goBack = () => {
+          if (!isFirstStep) setActiveFormTab(formSteps[currentStepIdx - 1].id);
+        };
 
-            <div className="p-6 space-y-4 flex-1 overflow-y-auto max-h-[65vh]">
-              {activeFormTab === 'contact' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className={labelCls}>Legal Company Name</label>
-                    <input type="text" placeholder="e.g. Apex Global Components Ltd" value={newSupplierName} onChange={e => setNewSupplierName(e.target.value)} className={inputCls} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Contact Person</label>
-                      <input type="text" placeholder="Sarah Jenkins" value={newSupplierContact} onChange={e => setNewSupplierContact(e.target.value)} className={inputCls} />
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowAddSupplier(false)} />
+            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+
+              {/* ── Header ── */}
+              <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-indigo-50/30 dark:from-slate-900 dark:to-indigo-950/20">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                      <Handshake className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <label className={labelCls}>Email Address</label>
-                      <input type="email" placeholder="sarah@apexcomponents.com" value={newSupplierEmail} onChange={e => setNewSupplierEmail(e.target.value)} className={inputCls} />
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Add Enterprise Supplier Partner</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Step {currentStepIdx + 1} of {formSteps.length} — {currentStep.subtitle}
+                      </p>
                     </div>
                   </div>
+                  <button onClick={() => setShowAddSupplier(false)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer">
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-              )}
+              </div>
 
-              {activeFormTab === 'terms' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Lead Time</label>
-                      <input type="text" placeholder="3-5 Business Days" value={newSupplierLeadTime} onChange={e => setNewSupplierLeadTime(e.target.value)} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Payment Terms</label>
-                      <select value={newSupplierPaymentTerms} onChange={e => setNewSupplierPaymentTerms(e.target.value)} className={`${inputCls} cursor-pointer`}>
-                        <option value="Net 30">Net 30 Days</option>
-                        <option value="Net 60">Net 60 Days</option>
-                        <option value="COD">Cash on Delivery (COD)</option>
-                        <option value="Prepaid">Prepaid</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeFormTab === 'category' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className={labelCls}>Supplier Category</label>
-                    {!isCustomWriteIn ? (
-                      <select
-                        value={newSupplierCategory}
-                        onChange={e => {
-                          if (e.target.value === '__WRITE_IN__') {
-                            setIsCustomWriteIn(true);
-                            setCustomCategoryWriteIn('');
-                          } else {
-                            setNewSupplierCategory(e.target.value);
-                          }
-                        }}
-                        className={`${inputCls} cursor-pointer`}
-                      >
-                        {customCategories.map(c => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                        <option value="__WRITE_IN__">+ Create Custom Category...</option>
-                      </select>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          placeholder="Type custom supplier category..."
-                          value={customCategoryWriteIn}
-                          onChange={e => setCustomCategoryWriteIn(e.target.value)}
-                          className={inputCls}
-                          autoFocus
-                        />
+              {/* ── Stepper ── */}
+              <div className="px-6 py-4 bg-white dark:bg-slate-900/80 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  {formSteps.map((step, idx) => {
+                    const isActive = idx === currentStepIdx;
+                    const isCompleted = idx < currentStepIdx;
+                    return (
+                      <React.Fragment key={step.id}>
+                        {/* Step circle + label */}
                         <button
-                          type="button"
-                          onClick={() => setIsCustomWriteIn(false)}
-                          className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-500"
+                          onClick={() => setActiveFormTab(step.id)}
+                          className="flex flex-col items-center gap-1.5 group cursor-pointer"
                         >
-                          <X className="w-4 h-4" />
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                            isCompleted
+                              ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25'
+                              : isActive
+                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25 ring-4 ring-indigo-100 dark:ring-indigo-900/40'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
+                          }`}>
+                            {isCompleted ? <Check className="w-4 h-4" /> : idx + 1}
+                          </div>
+                          <span className={`text-[10px] font-semibold leading-tight text-center max-w-[80px] transition-colors ${
+                            isActive ? 'text-indigo-600 dark:text-indigo-400' : isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
+                          }`}>
+                            {step.label}
+                          </span>
                         </button>
+                        {/* Connector line */}
+                        {idx < formSteps.length - 1 && (
+                          <div className="flex-1 mx-2 mb-5">
+                            <div className={`h-0.5 rounded-full transition-all duration-500 ${
+                              idx < currentStepIdx ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-slate-700'
+                            }`} />
+                          </div>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Form Content ── */}
+              <div className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[55vh]">
+                {activeFormTab === 'contact' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className={labelCls}>
+                        Legal Company Name <span className="text-red-400">*</span>
+                      </label>
+                      <input type="text" placeholder="e.g. Apex Global Components Ltd" value={newSupplierName} onChange={e => setNewSupplierName(e.target.value)} className={inputCls} />
+                      <p className="text-[10px] text-slate-400 mt-1">The official registered business name of the supplier.</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>Contact Person</label>
+                        <input type="text" placeholder="Sarah Jenkins" value={newSupplierContact} onChange={e => setNewSupplierContact(e.target.value)} className={inputCls} />
                       </div>
-                    )}
+                      <div>
+                        <label className={labelCls}>
+                          Email Address <span className="text-red-400">*</span>
+                        </label>
+                        <input type="email" placeholder="sarah@apexcomponents.com" value={newSupplierEmail} onChange={e => setNewSupplierEmail(e.target.value)} className={inputCls} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className={labelCls}>Phone Number</label>
+                      <input type="tel" placeholder="+44 20 7946 0912" value={newSupplierPhone} onChange={e => setNewSupplierPhone(e.target.value)} className={inputCls} />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {activeFormTab === 'notes' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className={labelCls}>Notes / SLA Terms</label>
-                    <textarea rows={3} placeholder="Add special procurement agreement terms..." value={newSupplierNotes} onChange={e => setNewSupplierNotes(e.target.value)} className={inputCls} />
+                {activeFormTab === 'terms' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelCls}>Lead Time</label>
+                        <input type="text" placeholder="3-5 Business Days" value={newSupplierLeadTime} onChange={e => setNewSupplierLeadTime(e.target.value)} className={inputCls} />
+                        <p className="text-[10px] text-slate-400 mt-1">Average fulfilment turnaround.</p>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Payment Terms</label>
+                        <select value={newSupplierPaymentTerms} onChange={e => setNewSupplierPaymentTerms(e.target.value)} className={`${inputCls} cursor-pointer`}>
+                          <option value="Net 30">Net 30 Days</option>
+                          <option value="Net 60">Net 60 Days</option>
+                          <option value="COD">Cash on Delivery (COD)</option>
+                          <option value="Prepaid">Prepaid</option>
+                        </select>
+                        <p className="text-[10px] text-slate-400 mt-1">Agreed invoice settlement window.</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
 
-            <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-3">
-              <button onClick={() => setShowAddSupplier(false)} className="px-4 py-2 bg-white dark:bg-slate-800 border rounded-xl text-xs font-bold">
-                Cancel
-              </button>
-              <button onClick={handleAddSupplier} disabled={!newSupplierName || !newSupplierEmail} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs">
-                Save Partner
-              </button>
+                {activeFormTab === 'category' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className={labelCls}>Supplier Category</label>
+                      {!isCustomWriteIn ? (
+                        <select
+                          value={newSupplierCategory}
+                          onChange={e => {
+                            if (e.target.value === '__WRITE_IN__') {
+                              setIsCustomWriteIn(true);
+                              setCustomCategoryWriteIn('');
+                            } else {
+                              setNewSupplierCategory(e.target.value);
+                            }
+                          }}
+                          className={`${inputCls} cursor-pointer`}
+                        >
+                          {customCategories.map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                          <option value="__WRITE_IN__">+ Create Custom Category...</option>
+                        </select>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder="Type custom supplier category..."
+                            value={customCategoryWriteIn}
+                            onChange={e => setCustomCategoryWriteIn(e.target.value)}
+                            className={inputCls}
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setIsCustomWriteIn(false)}
+                            className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                      <p className="text-[10px] text-slate-400 mt-1">Select or create a procurement category for this vendor.</p>
+                    </div>
+                  </div>
+                )}
+
+                {activeFormTab === 'notes' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className={labelCls}>Website</label>
+                      <input type="url" placeholder="https://apexcomponents.com" value={newSupplierWebsite} onChange={e => setNewSupplierWebsite(e.target.value)} className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Notes / SLA Terms</label>
+                      <textarea rows={4} placeholder="Add special procurement agreement terms, service level expectations, or delivery conditions..." value={newSupplierNotes} onChange={e => setNewSupplierNotes(e.target.value)} className={`${inputCls} resize-none`} />
+                      <p className="text-[10px] text-slate-400 mt-1">Internal notes — not shared with the supplier.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Footer with step-aware navigation ── */}
+              <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+                <div>
+                  {!isFirstStep && (
+                    <button onClick={goBack} className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">
+                      ← Back
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setShowAddSupplier(false)} className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                    Cancel
+                  </button>
+                  {isLastStep ? (
+                    <button
+                      onClick={handleAddSupplier}
+                      disabled={!newSupplierName || !newSupplierEmail}
+                      className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold text-xs rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Save Partner
+                    </button>
+                  ) : (
+                    <button
+                      onClick={goNext}
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg transition-all cursor-pointer"
+                    >
+                      Next →
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── Issue Purchase Order Modal ── */}
       {showOrderModal && selectedSupplier && (
