@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
-import { calculateCorporationTax, calculateMonthlyPAYE, calculateEmployeeNI, calculateEmployerNI } from '@/lib/tax/uk-tax';
+import { calculateCorporationTax, calculateMonthlyPAYE, calculateEmployeeNI, calculateEmployerNI, invoiceOutputVAT } from '@/lib/tax/uk-tax';
 
 const addMonths = (date: Date, months: number): Date => {
   const d = new Date(date);
@@ -35,27 +35,6 @@ const getNextVatQuarterEnd = (now: Date): Date => {
 };
 
 const fiscalYearLabel = (yearEnd: Date) => `FY ${yearEnd.getFullYear() - 1}/${yearEnd.getFullYear().toString().slice(-2)}`;
-
-interface InvoiceLineItemRow { description?: string; quantity?: number; rate?: number; vatRate?: number }
-
-// Sums real per-line VAT off an invoice's stored items — items created before
-// vatRate existed default to 20% (the same assumption the whole app made
-// everywhere before this field existed), so old invoices don't silently drop
-// to £0 VAT. Some older/seeded rows have items double-JSON-encoded (a string
-// containing JSON, not a native array) — parse defensively rather than
-// silently treating them as having no items at all.
-const invoiceOutputVAT = (itemsRaw: unknown): number => {
-  let items = itemsRaw;
-  if (typeof items === 'string') {
-    try { items = JSON.parse(items); } catch { return 0; }
-  }
-  if (!Array.isArray(items)) return 0;
-  return (items as InvoiceLineItemRow[]).reduce((sum, item) => {
-    const net = (item.quantity || 0) * (item.rate || 0);
-    const rate = item.vatRate ?? 20;
-    return sum + net * (rate / 100);
-  }, 0);
-};
 
 export const GET = withMultiTenancy(async (req, { dataFilter, business }) => {
   try {

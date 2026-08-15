@@ -15,7 +15,7 @@ export async function journalizeInvoice(invoiceId: string) {
   if (!invoice || invoice.status !== 'PAID') return;
 
   const [cashAccount, revenueAccount] = await Promise.all([
-    getOrCreateAccount(invoice.businessId, '1000', 'Cash at Bank', 'ASSET', 'Current Assets'),
+    getOrCreateAccount(invoice.businessId, '1000', 'Cash at Bank', 'ASSET', 'Current Assets', true),
     getOrCreateAccount(invoice.businessId, '4000', 'Sales Revenue', 'REVENUE', 'Revenue'),
   ]);
 
@@ -51,7 +51,7 @@ export async function journalizeExpense(expenseId: string) {
   if (!expense) return;
 
   const [cashAccount, expenseAccount] = await Promise.all([
-    getOrCreateAccount(expense.businessId, '1000', 'Cash at Bank', 'ASSET', 'Current Assets'),
+    getOrCreateAccount(expense.businessId, '1000', 'Cash at Bank', 'ASSET', 'Current Assets', true),
     getOrCreateExpenseCategoryAccount(expense.businessId, expense.category),
   ]);
 
@@ -208,14 +208,14 @@ export async function closeFiscalYear(
   return { closed: true, netIncome, journalEntryId: entry.id };
 }
 
-async function getOrCreateAccount(businessId: string, code: string, name: string, type: AccountType, category: string) {
+async function getOrCreateAccount(businessId: string, code: string, name: string, type: AccountType, category: string, isCashAccount = false) {
   let account = await prisma.ledgerAccount.findFirst({
     where: { businessId, code },
   });
 
   if (!account) {
     account = await prisma.ledgerAccount.create({
-      data: { businessId, code, name, type, category, isSystem: true },
+      data: { businessId, code, name, type, category, isSystem: true, isCashAccount },
     });
   }
 

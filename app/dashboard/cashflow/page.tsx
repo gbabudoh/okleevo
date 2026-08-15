@@ -52,6 +52,12 @@ interface CashflowResponse {
     totalExpenses: number;
     avgMonthlyIncome: number;
     avgMonthlyExpenses: number;
+    cashBalance: number;
+    hasCashAccount: boolean;
+    corporationTaxEstimate: number;
+    vatLiabilityEstimate: number;
+    savingsRateChangePct: number | null;
+    burnRateChangePct: number | null;
   };
 }
 
@@ -106,8 +112,15 @@ export default function CashflowPage() {
     totalIncome: 0,
     totalExpenses: 0,
     avgMonthlyIncome: 0,
-    avgMonthlyExpenses: 0
+    avgMonthlyExpenses: 0,
+    cashBalance: 0,
+    hasCashAccount: false,
+    corporationTaxEstimate: 0,
+    vatLiabilityEstimate: 0,
+    savingsRateChangePct: null as number | null,
+    burnRateChangePct: null as number | null,
   });
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
 
   const getIcon = (name: string): LucideIcon => {
     switch (name) {
@@ -149,6 +162,19 @@ export default function CashflowPage() {
   const netCashflow = avgMonthlyIncome - avgMonthlyExpenses;
   const profitMargin = avgMonthlyIncome > 0 ? (netCashflow / avgMonthlyIncome) * 100 : 0;
   const hasData = summary.totalIncome > 0 || summary.totalExpenses > 0;
+
+  // Cash Runway: real cash balance (posted ledger entries on accounts flagged
+  // as a bank/cash account) ÷ average monthly burn. No cash account posted to
+  // yet -> genuinely unknown, shown as "N/A" rather than a guessed figure.
+  const cashRunwayMonths = summary.hasCashAccount && avgMonthlyExpenses > 0
+    ? Math.min(12, Math.max(0, Math.floor(summary.cashBalance / avgMonthlyExpenses)))
+    : null;
+  const cashRunwayTrend = cashRunwayMonths === null ? '—'
+    : cashRunwayMonths >= 6 ? 'Healthy'
+    : cashRunwayMonths >= 3 ? 'Watch'
+    : 'Low';
+
+  const formatTrendPct = (pct: number | null) => pct === null ? '—' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
 
   const resetNewTransaction = () => setNewTransaction({
     type: 'income',
@@ -389,14 +415,14 @@ export default function CashflowPage() {
               </h4>
               <div className="space-y-2.5">
                 <div className="flex justify-between items-center pb-2.5 border-b border-gray-100">
-                  <span className="text-sm text-gray-500">Est. Corp Tax (25%)</span>
-                  <span className="font-semibold text-gray-900">£{(netCashflow * 0.25).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="text-sm text-gray-500">Est. Corp Tax</span>
+                  <span className="font-semibold text-gray-900">£{summary.corporationTaxEstimate.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">Est. VAT Liability</span>
-                  <span className="font-semibold text-gray-900">£{(avgMonthlyIncome * 0.2 - avgMonthlyExpenses * 0.2).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-semibold text-gray-900">£{summary.vatLiabilityEstimate.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                 </div>
-                <p className="text-[10px] text-gray-400 pt-1">*Projections based on monthly averages. Consult your accountant.</p>
+                <p className="text-[10px] text-gray-400 pt-1">*Based on the last 12 months of recorded activity. Consult your accountant.</p>
               </div>
             </div>
           </div>
@@ -413,9 +439,15 @@ export default function CashflowPage() {
               </div>
               Recent Activity
             </h3>
-            <button className="text-xs font-medium text-gray-500 hover:text-gray-700 flex items-center gap-1 cursor-pointer">
-              View All <ArrowRight className="w-3 h-3" />
-            </button>
+            {recentTransactions.length > 5 && (
+              <button
+                type="button"
+                onClick={() => setShowAllTransactions(v => !v)}
+                className="text-xs font-medium text-gray-500 hover:text-gray-700 flex items-center gap-1 cursor-pointer"
+              >
+                {showAllTransactions ? 'Show Less' : 'View All'} <ArrowRight className="w-3 h-3" />
+              </button>
+            )}
           </div>
           <div className="space-y-2">
             {loading ? (
@@ -424,7 +456,7 @@ export default function CashflowPage() {
               </div>
             ) : recentTransactions.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-8">No transactions yet</p>
-            ) : recentTransactions.map((transaction) => (
+            ) : (showAllTransactions ? recentTransactions : recentTransactions.slice(0, 5)).map((transaction) => (
               <div
                 key={transaction.id}
                 className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all cursor-pointer group"
@@ -481,9 +513,9 @@ export default function CashflowPage() {
       <div id="tour-cashflow-insights" className="px-4 sm:px-6 pt-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { title: 'Cash Runway', val: loading ? '—' : (avgMonthlyExpenses > 0 ? `${Math.min(12, Math.floor(100000 / avgMonthlyExpenses))} mo` : 'N/A'), icon: Calendar, sub: 'Est. from cash reserves', trend: 'Healthy' },
-            { title: 'Savings Rate', val: loading ? '—' : (avgMonthlyIncome > 0 ? `${Math.round(((avgMonthlyIncome - avgMonthlyExpenses) / avgMonthlyIncome) * 100)}%` : '0%'), icon: Sparkles, sub: 'vs last period', trend: '+5.2%' },
-            { title: 'Burn Rate', val: loading ? '—' : `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, icon: Zap, sub: 'per month', trend: '-2.1%' }
+            { title: 'Cash Runway', val: loading ? '—' : (cashRunwayMonths === null ? 'N/A' : `${cashRunwayMonths} mo`), icon: Calendar, sub: 'Est. from cash reserves', trend: loading ? '—' : cashRunwayTrend },
+            { title: 'Savings Rate', val: loading ? '—' : (avgMonthlyIncome > 0 ? `${Math.round(((avgMonthlyIncome - avgMonthlyExpenses) / avgMonthlyIncome) * 100)}%` : '0%'), icon: Sparkles, sub: 'vs last period', trend: loading ? '—' : formatTrendPct(summary.savingsRateChangePct) },
+            { title: 'Burn Rate', val: loading ? '—' : `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, icon: Zap, sub: 'per month', trend: loading ? '—' : formatTrendPct(summary.burnRateChangePct) }
           ].map((item) => (
             <div key={item.title} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
               <div className="flex items-center justify-between mb-2">
