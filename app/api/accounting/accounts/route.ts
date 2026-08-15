@@ -7,7 +7,11 @@ export const GET = withMultiTenancy(async (req, { user }) => {
   try {
     const accounts = await prisma.ledgerAccount.findMany({
       where: { businessId: user.businessId },
-      include: { ledgerEntries: { select: { debit: true, credit: true } } },
+      include: {
+        // Only POSTED entries count toward a balance — a VOIDed entry (e.g. a
+        // reopened paid invoice) must not keep contributing to the books.
+        ledgerEntries: { where: { journalEntry: { status: 'POSTED' } }, select: { debit: true, credit: true } },
+      },
       orderBy: { code: 'asc' },
     });
 

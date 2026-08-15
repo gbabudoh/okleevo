@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FileText, Calendar, Eye, Edit3, Trash2 } from "lucide-react";
+import { FileText, Calendar, Eye, Edit3, Trash2, Undo2 } from "lucide-react";
 import accounting from "accounting";
 
 interface JournalEntry {
@@ -23,6 +23,7 @@ interface JournalEntriesProps {
   onViewEntry: (entry: JournalEntry) => void;
   onEditEntry: (entry: JournalEntry) => void;
   onDeleteEntry: (id: string) => void;
+  onReverseEntry: (entry: JournalEntry) => void;
 }
 
 // Journal entry status is stored as an uppercase Prisma enum (DRAFT/PENDING/POSTED/VOID) —
@@ -39,6 +40,7 @@ export const JournalEntries: React.FC<JournalEntriesProps> = ({
   onViewEntry,
   onEditEntry,
   onDeleteEntry,
+  onReverseEntry,
 }) => {
   return (
     <div className="space-y-3">
@@ -70,8 +72,14 @@ export const JournalEntries: React.FC<JournalEntriesProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => onViewEntry(entry)} className="p-2 hover:bg-blue-50/50 rounded-lg cursor-pointer"><Eye className="w-5 h-5 text-blue-600 cursor-pointer" /></button>
-                <button onClick={() => onEditEntry(entry)} className="p-2 hover:bg-purple-50/50 rounded-lg cursor-pointer"><Edit3 className="w-5 h-5 text-purple-600 cursor-pointer" /></button>
-                <button onClick={() => onDeleteEntry(entry.id)} className="p-2 hover:bg-red-50/50 rounded-lg cursor-pointer"><Trash2 className="w-5 h-5 text-red-600 cursor-pointer" /></button>
+                {entry.status.toUpperCase() === "POSTED" ? (
+                  <button onClick={() => onReverseEntry(entry)} title="Reverse Entry" className="p-2 hover:bg-amber-50/50 rounded-lg cursor-pointer"><Undo2 className="w-5 h-5 text-amber-600 cursor-pointer" /></button>
+                ) : entry.status.toUpperCase() !== "VOID" ? (
+                  <>
+                    <button onClick={() => onEditEntry(entry)} className="p-2 hover:bg-purple-50/50 rounded-lg cursor-pointer"><Edit3 className="w-5 h-5 text-purple-600 cursor-pointer" /></button>
+                    <button onClick={() => onDeleteEntry(entry.id)} className="p-2 hover:bg-red-50/50 rounded-lg cursor-pointer"><Trash2 className="w-5 h-5 text-red-600 cursor-pointer" /></button>
+                  </>
+                ) : null}
               </div>
             </div>
             <div className="text-right">

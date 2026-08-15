@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Plus, Search, Filter, Download, Eye, Edit, Send, Trash2,
   DollarSign, PoundSterling, Clock, CheckCircle, AlertCircle, MoreVertical, X,
-  Calendar, Mail, FileText,
+  Calendar, Mail, FileText, Banknote, Ban, RotateCcw,
   ChevronDown, Loader2, TableProperties, ArrowUpRight,
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
@@ -217,6 +217,24 @@ export default function InvoicingPage() {
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
   const [creatingProject, setCreatingProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [savingInvoice, setSavingInvoice] = useState(false);
+  const [markPaidTarget, setMarkPaidTarget] = useState<Invoice | null>(null);
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [markingPaid, setMarkingPaid] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<Invoice | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [reopenTarget, setReopenTarget] = useState<Invoice | null>(null);
+  const [reopening, setReopening] = useState(false);
+
+  const EDITABLE_STATUSES: Invoice['status'][] = ['draft', 'sent', 'overdue'];
+  const canModify = (invoice: Invoice) => EDITABLE_STATUSES.includes(invoice.status);
+  const REOPENABLE_STATUSES: Invoice['status'][] = ['paid', 'cancelled'];
+  const canReopen = (invoice: Invoice) => REOPENABLE_STATUSES.includes(invoice.status);
+  // Same status an invoice would naturally have if it had never been paid/cancelled —
+  // matches how the overdue cron re-derives status from dueDate.
+  const reopenedStatus = (invoice: Invoice): 'SENT' | 'OVERDUE' =>
+    new Date(invoice.dueDate) < new Date() ? 'OVERDUE' : 'SENT';
   const [savingNewProject, setSavingNewProject] = useState(false);
 
   const fetchProjects = () => {
@@ -258,16 +276,21 @@ export default function InvoicingPage() {
       const res = await fetch('/api/invoices');
       const data = await res.json();
       if (data.data) {
-        setInvoices(data.data.map((inv: InvoiceResponse) => ({
-          id: inv.number || inv.id,
-          client: inv.clientName,
-          clientEmail: inv.clientEmail || '',
-          amount: inv.amount,
-          status: inv.status.toLowerCase() as Invoice['status'],
-          date: new Date(inv.createdAt).toISOString().split('T')[0],
-          dueDate: new Date(inv.dueDate).toISOString().split('T')[0],
-          items: Array.isArray(inv.items) ? inv.items : [],
-        })));
+        setInvoices(data.data.map((inv: InvoiceResponse) => {
+          // Prisma's InvoiceStatus enum spells it "CANCELED" (US); the rest of
+          // this page uses "cancelled" (UK) throughout — normalize here.
+          const rawStatus = inv.status.toLowerCase();
+          return {
+            id: inv.number || inv.id,
+            client: inv.clientName,
+            clientEmail: inv.clientEmail || '',
+            amount: inv.amount,
+            status: (rawStatus === 'canceled' ? 'cancelled' : rawStatus) as Invoice['status'],
+            date: new Date(inv.createdAt).toISOString().split('T')[0],
+            dueDate: new Date(inv.dueDate).toISOString().split('T')[0],
+            items: Array.isArray(inv.items) ? inv.items : [],
+          };
+        }));
       }
     } catch {
       showToast('Failed to load invoices', 'error');
@@ -302,11 +325,27 @@ export default function InvoicingPage() {
   /* ── Handlers ──────────────────────────────────────────────────── */
   const closeNewModal = () => {
     setShowNewInvoiceModal(false);
+    setEditingInvoiceId(null);
     setNewInvoice({ clientType: 'business', client: '', clientEmail: '', date: new Date().toISOString().split('T')[0], dueDate: '', items: [{ description: '', quantity: 1, rate: 0 }], projectId: '' });
   };
 
   const handleViewInvoice = (invoice: Invoice) => {
     setSelectedInvoice(invoice); setShowInvoiceModal(true); setActiveMenu(null);
+  };
+
+  const handleEditInvoice = (invoice: Invoice) => {
+    setEditingInvoiceId(invoice.id);
+    setNewInvoice({
+      clientType: 'business',
+      client: invoice.client,
+      clientEmail: invoice.clientEmail,
+      date: invoice.date,
+      dueDate: invoice.dueDate,
+      items: invoice.items.length > 0 ? invoice.items : [{ description: '', quantity: 1, rate: 0 }],
+      projectId: '',
+    });
+    setShowNewInvoiceModal(true);
+    setActiveMenu(null);
   };
 
   const handleSendEmail = (invoice: Invoice) => {
@@ -336,18 +375,87 @@ export default function InvoicingPage() {
     }
   };
 
-  const handleCreateInvoice = async () => {
+  const handleSaveInvoice = async () => {
+    setSavingInvoice(true);
     try {
-      const res = await fetch('/api/invoices', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientName: newInvoice.client, clientEmail: newInvoice.clientEmail, amount: newInvoiceTotal, items: newInvoice.items, dueDate: newInvoice.dueDate, projectId: newInvoice.projectId || undefined }),
-      });
-      if (!res.ok) throw new Error();
+      const payload = { clientName: newInvoice.client, clientEmail: newInvoice.clientEmail, amount: newInvoiceTotal, items: newInvoice.items, dueDate: newInvoice.dueDate, projectId: newInvoice.projectId || undefined };
+      const res = await fetch(
+        editingInvoiceId ? `/api/invoices/${editingInvoiceId}` : '/api/invoices',
+        {
+          method: editingInvoiceId ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to save invoice');
       await fetchInvoices();
       closeNewModal();
-      showToast('Invoice created successfully!');
-    } catch {
-      showToast('Failed to create invoice', 'error');
+      showToast(editingInvoiceId ? 'Invoice updated successfully!' : 'Invoice created successfully!');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to save invoice', 'error');
+    } finally {
+      setSavingInvoice(false);
+    }
+  };
+
+  const handleMarkPaid = async () => {
+    if (!markPaidTarget) return;
+    setMarkingPaid(true);
+    try {
+      const res = await fetch(`/api/invoices/${markPaidTarget.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'PAID', paidAt: paymentDate }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to mark invoice as paid');
+      await fetchInvoices();
+      showToast(data.warning || `${markPaidTarget.id} marked as paid.`, data.warning ? 'error' : 'success');
+      setMarkPaidTarget(null);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to mark invoice as paid', 'error');
+    } finally {
+      setMarkingPaid(false);
+    }
+  };
+
+  const handleCancelInvoice = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      const res = await fetch(`/api/invoices/${cancelTarget.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CANCELED' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to cancel invoice');
+      await fetchInvoices();
+      showToast(`${cancelTarget.id} has been cancelled.`);
+      setCancelTarget(null);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to cancel invoice', 'error');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleReopenInvoice = async () => {
+    if (!reopenTarget) return;
+    setReopening(true);
+    try {
+      const res = await fetch(`/api/invoices/${reopenTarget.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: reopenedStatus(reopenTarget) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to reopen invoice');
+      await fetchInvoices();
+      showToast(data.warning || `${reopenTarget.id} has been reopened.`, data.warning ? 'error' : 'success');
+      setReopenTarget(null);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to reopen invoice', 'error');
+    } finally {
+      setReopening(false);
     }
   };
 
@@ -643,14 +751,34 @@ export default function InvoicingPage() {
                                   <>
                                     <div className="fixed inset-0 z-40" onClick={() => { setActiveMenu(null); setMenuPosition(null); }} />
                                     <div className="fixed w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50" style={{ top: menuPosition.top, bottom: menuPosition.bottom, right: menuPosition.right }}>
-                                      <button onClick={() => { handleViewInvoice(invoice); setActiveMenu(null); setMenuPosition(null); }}
-                                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer">
-                                        <Edit className="w-4 h-4 text-blue-600" /><span className="font-medium">Edit</span>
-                                      </button>
+                                      {canModify(invoice) && (
+                                        <button onClick={() => handleEditInvoice(invoice)}
+                                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer">
+                                          <Edit className="w-4 h-4 text-blue-600" /><span className="font-medium">Edit</span>
+                                        </button>
+                                      )}
                                       <button onClick={() => { handleSendEmail(invoice); setActiveMenu(null); setMenuPosition(null); }}
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 flex items-center gap-2 cursor-pointer">
                                         <Mail className="w-4 h-4 text-purple-600" /><span className="font-medium">Email</span>
                                       </button>
+                                      {canModify(invoice) && (
+                                        <button onClick={() => { setPaymentDate(new Date().toISOString().split('T')[0]); setMarkPaidTarget(invoice); setActiveMenu(null); setMenuPosition(null); }}
+                                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-emerald-50 flex items-center gap-2 cursor-pointer">
+                                          <Banknote className="w-4 h-4 text-emerald-600" /><span className="font-medium">Mark as Paid</span>
+                                        </button>
+                                      )}
+                                      {canModify(invoice) && (
+                                        <button onClick={() => { setCancelTarget(invoice); setActiveMenu(null); setMenuPosition(null); }}
+                                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 flex items-center gap-2 cursor-pointer">
+                                          <Ban className="w-4 h-4 text-amber-600" /><span className="font-medium">Cancel Invoice</span>
+                                        </button>
+                                      )}
+                                      {canReopen(invoice) && (
+                                        <button onClick={() => { setReopenTarget(invoice); setActiveMenu(null); setMenuPosition(null); }}
+                                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-indigo-50 flex items-center gap-2 cursor-pointer">
+                                          <RotateCcw className="w-4 h-4 text-indigo-600" /><span className="font-medium">Reopen Invoice</span>
+                                        </button>
+                                      )}
                                       <div className="border-t border-gray-100 my-1" />
                                       <button onClick={() => { setDeletingInvoice(invoice); setShowDeleteModal(true); setActiveMenu(null); setMenuPosition(null); }}
                                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer">
@@ -706,6 +834,12 @@ export default function InvoicingPage() {
                                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer">
                                     <Eye className="w-4 h-4 text-blue-600" /><span className="font-medium">View</span>
                                   </button>
+                                  {canModify(invoice) && (
+                                    <button onClick={() => handleEditInvoice(invoice)}
+                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 flex items-center gap-2 cursor-pointer">
+                                      <Edit className="w-4 h-4 text-blue-600" /><span className="font-medium">Edit</span>
+                                    </button>
+                                  )}
                                   <button onClick={() => { downloadAsPDF(invoice); setActiveMenu(null); }}
                                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 cursor-pointer">
                                     <Download className="w-4 h-4 text-red-500" /><span className="font-medium">Download PDF</span>
@@ -714,6 +848,24 @@ export default function InvoicingPage() {
                                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 flex items-center gap-2 cursor-pointer">
                                     <Send className="w-4 h-4 text-purple-600" /><span className="font-medium">Send Email</span>
                                   </button>
+                                  {canModify(invoice) && (
+                                    <button onClick={() => { setPaymentDate(new Date().toISOString().split('T')[0]); setMarkPaidTarget(invoice); setActiveMenu(null); }}
+                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-emerald-50 flex items-center gap-2 cursor-pointer">
+                                      <Banknote className="w-4 h-4 text-emerald-600" /><span className="font-medium">Mark as Paid</span>
+                                    </button>
+                                  )}
+                                  {canModify(invoice) && (
+                                    <button onClick={() => { setCancelTarget(invoice); setActiveMenu(null); }}
+                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 flex items-center gap-2 cursor-pointer">
+                                      <Ban className="w-4 h-4 text-amber-600" /><span className="font-medium">Cancel Invoice</span>
+                                    </button>
+                                  )}
+                                  {canReopen(invoice) && (
+                                    <button onClick={() => { setReopenTarget(invoice); setActiveMenu(null); }}
+                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-indigo-50 flex items-center gap-2 cursor-pointer">
+                                      <RotateCcw className="w-4 h-4 text-indigo-600" /><span className="font-medium">Reopen Invoice</span>
+                                    </button>
+                                  )}
                                   <div className="border-t border-gray-100 my-1" />
                                   <button onClick={() => { setDeletingInvoice(invoice); setShowDeleteModal(true); setActiveMenu(null); }}
                                     className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 cursor-pointer">
@@ -756,8 +908,8 @@ export default function InvoicingPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="font-extrabold text-gray-900 text-base">New Invoice</h2>
-                  <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold uppercase tracking-wider">Drafting</span>
+                  <h2 className="font-extrabold text-gray-900 text-base">{editingInvoiceId ? `Edit Invoice ${editingInvoiceId}` : 'New Invoice'}</h2>
+                  <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold uppercase tracking-wider">{editingInvoiceId ? 'Editing' : 'Drafting'}</span>
                 </div>
                 <p className="text-xs text-gray-400">Fill in client details and line items below</p>
               </div>
@@ -914,10 +1066,12 @@ export default function InvoicingPage() {
           <ModalFooter>
             <CancelBtn onClick={closeNewModal} />
             <button
-              onClick={handleCreateInvoice}
-              className="flex-[2] py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
+              onClick={handleSaveInvoice}
+              disabled={savingInvoice}
+              className="flex-[2] py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
             >
-              <FileText className="w-4 h-4" /> Create Invoice
+              {savingInvoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+              {editingInvoiceId ? 'Save Changes' : 'Create Invoice'}
             </button>
           </ModalFooter>
         </ModalShell>
@@ -1038,6 +1192,22 @@ export default function InvoicingPage() {
             >
               <Send className="w-4 h-4" /> <span className="hidden xs:inline">Send</span>
             </button>
+            {canModify(selectedInvoice) && (
+              <button
+                onClick={() => { setPaymentDate(new Date().toISOString().split('T')[0]); setMarkPaidTarget(selectedInvoice); setShowInvoiceModal(false); }}
+                className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <Banknote className="w-4 h-4" /> <span className="hidden xs:inline">Mark Paid</span>
+              </button>
+            )}
+            {canReopen(selectedInvoice) && (
+              <button
+                onClick={() => { setReopenTarget(selectedInvoice); setShowInvoiceModal(false); }}
+                className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <RotateCcw className="w-4 h-4" /> <span className="hidden xs:inline">Reopen</span>
+              </button>
+            )}
           </ModalFooter>
         </ModalShell>
       )}
@@ -1130,6 +1300,109 @@ export default function InvoicingPage() {
           itemDetails={`${deletingInvoice.client} · £${deletingInvoice.amount.toLocaleString()}`}
           warningMessage="This will permanently remove the invoice and all associated records."
         />
+      )}
+
+      {/* ── MARK AS PAID MODAL ──────────────────────────────────────── */}
+      {markPaidTarget && (
+        <ModalShell maxW="sm:max-w-sm" onClose={() => !markingPaid && setMarkPaidTarget(null)}>
+          <ModalHandle />
+          <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center gap-3 shrink-0">
+            <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
+              <Banknote className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-extrabold text-gray-900 text-base">Mark as Paid</h2>
+              <p className="text-xs text-gray-400">{markPaidTarget.id} · £{markPaidTarget.amount.toLocaleString()}</p>
+            </div>
+          </div>
+          <div className="p-4 sm:p-6 space-y-3">
+            <p className="text-sm text-gray-600">
+              This records the payment and posts a journal entry (Dr Cash, Cr Sales Revenue) to the Accounting ledger.
+            </p>
+            <div>
+              <label className={labelCls}>Payment Date</label>
+              <input type="date" value={paymentDate} onChange={e => setPaymentDate(e.target.value)} className={inputCls} />
+            </div>
+          </div>
+          <ModalFooter>
+            <CancelBtn onClick={() => setMarkPaidTarget(null)} />
+            <button
+              onClick={handleMarkPaid}
+              disabled={markingPaid}
+              className="flex-[2] py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
+            >
+              {markingPaid ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />}
+              Confirm Payment
+            </button>
+          </ModalFooter>
+        </ModalShell>
+      )}
+
+      {/* ── CANCEL INVOICE MODAL ────────────────────────────────────── */}
+      {cancelTarget && (
+        <ModalShell maxW="sm:max-w-sm" onClose={() => !cancelling && setCancelTarget(null)}>
+          <ModalHandle />
+          <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center gap-3 shrink-0">
+            <div className="w-10 h-10 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 shrink-0">
+              <Ban className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-extrabold text-gray-900 text-base">Cancel Invoice</h2>
+              <p className="text-xs text-gray-400">{cancelTarget.id} · £{cancelTarget.amount.toLocaleString()}</p>
+            </div>
+          </div>
+          <div className="p-4 sm:p-6">
+            <p className="text-sm text-gray-600">
+              This marks the invoice as cancelled. It stays in your records for reference but is excluded from pending/overdue totals. This won&apos;t delete it — use Delete for that.
+            </p>
+          </div>
+          <ModalFooter>
+            <CancelBtn onClick={() => setCancelTarget(null)} label="Keep Invoice" />
+            <button
+              onClick={handleCancelInvoice}
+              disabled={cancelling}
+              className="flex-[2] py-2.5 px-4 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
+            >
+              {cancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
+              Cancel Invoice
+            </button>
+          </ModalFooter>
+        </ModalShell>
+      )}
+
+      {/* ── REOPEN INVOICE MODAL ────────────────────────────────────── */}
+      {reopenTarget && (
+        <ModalShell maxW="sm:max-w-sm" onClose={() => !reopening && setReopenTarget(null)}>
+          <ModalHandle />
+          <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center gap-3 shrink-0">
+            <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shrink-0">
+              <RotateCcw className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-extrabold text-gray-900 text-base">Reopen Invoice</h2>
+              <p className="text-xs text-gray-400">{reopenTarget.id} · £{reopenTarget.amount.toLocaleString()}</p>
+            </div>
+          </div>
+          <div className="p-4 sm:p-6">
+            <p className="text-sm text-gray-600">
+              {reopenTarget.status === 'paid'
+                ? 'This undoes the paid status and voids the linked accounting journal entry (the original entry is kept for audit purposes, not deleted). '
+                : 'This restores the invoice to active status. '}
+              It will move back to <span className="font-semibold text-gray-800">{getStatus(reopenedStatus(reopenTarget).toLowerCase()).label}</span> based on its due date.
+            </p>
+          </div>
+          <ModalFooter>
+            <CancelBtn onClick={() => setReopenTarget(null)} />
+            <button
+              onClick={handleReopenInvoice}
+              disabled={reopening}
+              className="flex-[2] py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
+            >
+              {reopening ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+              Reopen Invoice
+            </button>
+          </ModalFooter>
+        </ModalShell>
       )}
 
       {/* ── TOAST ────────────────────────────────────────────────────── */}

@@ -91,12 +91,17 @@ export async function getBalanceSheet(businessId: string, date: Date) {
     totalEquity: 0,
   };
 
+  // Revenue/Expense balances aren't shown as their own section on a Balance
+  // Sheet — they're folded into Equity as current-period net income. Until a
+  // formal year-end close sweeps them into Retained Earnings, this is what
+  // keeps Assets = Liabilities + Equity true for live/interim reporting.
+  let netIncome = 0;
+
   accounts.forEach((account: LedgerAccount) => {
     const balance = account.ledgerEntries.reduce((sum: number, entry: LedgerEntry) => {
       // Normal balances: Assets (Dr), Liabilities (Cr), Equity (Cr)
       if (account.type === 'ASSET') return sum + entry.debit - entry.credit;
       if (account.type === 'LIABILITY' || account.type === 'EQUITY') return sum + entry.credit - entry.debit;
-      // Revenue/Expense balances should be closed to equity, but for a "live" report we can show them
       if (account.type === 'REVENUE') return sum + entry.credit - entry.debit;
       if (account.type === 'EXPENSE') return sum + entry.debit - entry.credit;
       return sum;
@@ -113,8 +118,17 @@ export async function getBalanceSheet(businessId: string, date: Date) {
     } else if (account.type === 'EQUITY') {
       report.equity.push({ name: account.name, balance });
       report.totalEquity += balance;
+    } else if (account.type === 'REVENUE') {
+      netIncome += balance;
+    } else if (account.type === 'EXPENSE') {
+      netIncome -= balance;
     }
   });
+
+  if (Math.abs(netIncome) >= 0.005) {
+    report.equity.push({ name: 'Net Income (Current Period)', balance: netIncome });
+    report.totalEquity += netIncome;
+  }
 
   return report;
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
+import { journalizeExpense } from '@/lib/accounting/accounting';
 
 export const GET = withMultiTenancy(async (req, { dataFilter }) => {
   try {
@@ -38,7 +39,15 @@ export const POST = withMultiTenancy(async (req, { user }) => {
       },
     });
 
-    return NextResponse.json(expense);
+    let journalWarning: string | undefined;
+    try {
+      await journalizeExpense(expense.id);
+    } catch (journalError) {
+      console.error('Failed to journalize expense:', journalError);
+      journalWarning = 'Expense recorded, but the accounting journal entry could not be created. Check the Accounting module.';
+    }
+
+    return NextResponse.json({ ...expense, warning: journalWarning });
   } catch (error: unknown) {
     console.error('Error creating expense:', error);
     return NextResponse.json({ error: 'Failed to create expense' }, { status: 500 });

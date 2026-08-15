@@ -57,9 +57,26 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
 export const DELETE = withMultiTenancy(async (req, { user, params }) => {
   try {
     const { id } = await params;
-    await prisma.ledgerAccount.deleteMany({
-      where: { id: id as string, businessId: user.businessId, isSystem: false },
+    const account = await prisma.ledgerAccount.findFirst({
+      where: { id: id as string, businessId: user.businessId },
     });
+    if (!account) return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+    if (account.isSystem) {
+      return NextResponse.json({ error: 'System accounts cannot be deleted' }, { status: 409 });
+    }
+
+    // LedgerEntry cascades on account delete — silently corrupting any journal
+    // entry that used this account (leaving it with only one leg) if we let
+    // this through. Block instead of cascading.
+    const entryCount = await prisma.ledgerEntry.count({ where: { accountId: id as string } });
+    if (entryCount > 0) {
+      return NextResponse.json(
+        { error: `Cannot delete "${account.name}" — it has ${entryCount} ledger entr${entryCount === 1 ? 'y' : 'ies'} posted against it. Reverse or void those entries first.` },
+        { status: 409 }
+      );
+    }
+
+    await prisma.ledgerAccount.delete({ where: { id: id as string } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Delete account error:', error);

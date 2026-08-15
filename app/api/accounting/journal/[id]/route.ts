@@ -17,6 +17,14 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
     // Verify ownership
     const existing = await prisma.journalEntry.findFirst({ where: { id: id as string, businessId: user.businessId } });
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    // Posted/voided entries are part of the audit trail — never rewritten in
+    // place. Correct a posted entry with a Reverse Entry instead.
+    if (existing.status === 'POSTED' || existing.status === 'VOID') {
+      return NextResponse.json(
+        { error: `A ${existing.status.toLowerCase()} journal entry cannot be edited. Use "Reverse Entry" to post a correcting entry instead.` },
+        { status: 409 }
+      );
+    }
 
     // Delete existing ledger entries and re-create
     await prisma.ledgerEntry.deleteMany({ where: { journalEntryId: id as string } });
@@ -40,7 +48,16 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
 export const DELETE = withMultiTenancy(async (req, { user, params }) => {
   try {
     const { id } = await params;
-    await prisma.journalEntry.deleteMany({ where: { id: id as string, businessId: user.businessId } });
+    const existing = await prisma.journalEntry.findFirst({ where: { id: id as string, businessId: user.businessId } });
+    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (existing.status === 'POSTED' || existing.status === 'VOID') {
+      return NextResponse.json(
+        { error: `A ${existing.status.toLowerCase()} journal entry cannot be deleted. Use "Reverse Entry" to post a correcting entry instead.` },
+        { status: 409 }
+      );
+    }
+
+    await prisma.journalEntry.delete({ where: { id: id as string } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Delete journal entry error:', error);

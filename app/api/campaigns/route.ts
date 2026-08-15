@@ -13,7 +13,7 @@ function serialize(c: ReturnType<typeof Object.assign>) {
     bounced: c.bouncedCount,
     createdAt: c.createdAt.toISOString().split('T')[0],
     sentAt: c.sentAt ? c.sentAt.toISOString().replace('T', ' ').slice(0, 16) : undefined,
-    scheduledAt: c.scheduledAt ? c.scheduledAt.toISOString().slice(0, 16) : undefined,
+    scheduledAt: c.scheduledAt ? c.scheduledAt.toISOString() : undefined,
   };
 }
 

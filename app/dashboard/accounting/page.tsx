@@ -27,6 +27,7 @@ import {
   Users,
   Building2,
   Landmark,
+  Undo2,
 } from "lucide-react";
 import useSWR, { mutate as globalMutate } from "swr";
 import accounting from "accounting";
@@ -601,6 +602,8 @@ export default function AccountingPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showYearEndModal, setShowYearEndModal] = useState(false);
+  const [showYearEndCloseConfirm, setShowYearEndCloseConfirm] = useState(false);
+  const [closingYearEnd, setClosingYearEnd] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<Transaction | null>(null);
@@ -807,12 +810,13 @@ export default function AccountingPage() {
         ? `/api/accounting/accounts/${deleteTarget.id}`
         : `/api/accounting/journal/${deleteTarget.id}`;
       const res = await fetch(url, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         showToastMsg(`${deleteTarget.type === "account" ? "Account" : "Entry"} deleted`);
         globalMutate("/api/accounting/accounts");
         globalMutate("/api/accounting/journal");
       } else {
-        showToastMsg("Failed to delete", "error");
+        showToastMsg(data.error || "Failed to delete", "error");
       }
     } catch (err) {
       console.error("Delete error:", err);
@@ -820,6 +824,23 @@ export default function AccountingPage() {
     }
     setShowDeleteModal(false);
     setDeleteTarget(null);
+  };
+
+  const handleReverseEntry = async (entry: Transaction) => {
+    try {
+      const res = await fetch(`/api/accounting/journal/${entry.id}/reverse`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToastMsg("Reversing entry posted");
+        globalMutate("/api/accounting/journal");
+        globalMutate("/api/accounting/accounts");
+      } else {
+        showToastMsg(data.error || "Failed to reverse entry", "error");
+      }
+    } catch (err) {
+      console.error("Reverse entry error:", err);
+      showToastMsg("Failed to reverse entry", "error");
+    }
   };
 
   const handleExportReport = (reportType: string) => {
@@ -853,6 +874,13 @@ export default function AccountingPage() {
     const assetRows = accounts.filter((a) => a.type === "asset").map((a) => ({ label: a.name, amount: a.balance }));
     const liabilityRows = accounts.filter((a) => a.type === "liability").map((a) => ({ label: a.name, amount: a.balance }));
     const equityRows = accounts.filter((a) => a.type === "equity").map((a) => ({ label: a.name, amount: a.balance }));
+    // Revenue/Expense aren't Balance Sheet accounts — but until a formal
+    // year-end close sweeps them into Retained Earnings, their net (this
+    // period's profit) must appear in Equity or Assets ≠ Liabilities + Equity
+    // for any business that has actually made a sale.
+    if (Math.abs(financialSummary.netProfit) >= 0.005) {
+      equityRows.push({ label: "Net Income (Current Period)", amount: financialSummary.netProfit });
+    }
     const totalAssets = assetRows.reduce((s, r) => s + r.amount, 0);
     const totalLiabilities = liabilityRows.reduce((s, r) => s + r.amount, 0);
     const totalEquity = equityRows.reduce((s, r) => s + r.amount, 0);
@@ -924,6 +952,27 @@ export default function AccountingPage() {
     else exportReportCSV(report);
     setShowReportModal(false);
     showToastMsg(`${report.title} exported as ${fmt}`);
+  };
+
+  const handleRunYearEndClose = async () => {
+    setClosingYearEnd(true);
+    try {
+      const res = await fetch("/api/accounting/year-end-close", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToastMsg(`Fiscal year closed. £${Number(data.data.netIncome).toLocaleString()} net income moved to Retained Earnings.`);
+        globalMutate("/api/accounting/accounts");
+        globalMutate("/api/accounting/journal");
+        setShowYearEndCloseConfirm(false);
+      } else {
+        showToastMsg(data.error || "Failed to close fiscal year", "error");
+      }
+    } catch (err) {
+      console.error("Year-end close error:", err);
+      showToastMsg("Failed to close fiscal year", "error");
+    } finally {
+      setClosingYearEnd(false);
+    }
   };
 
   const handleGenerateYearEnd = () => {
@@ -1102,7 +1151,7 @@ export default function AccountingPage() {
                 </button>
               </div>
               <div className="p-4 sm:p-5">
-                <JournalEntries entries={recentTransactions} onViewEntry={handleViewEntry} onEditEntry={handleEditEntry} onDeleteEntry={(id) => handleDeleteClick("entry", id)} />
+                <JournalEntries entries={recentTransactions} onViewEntry={handleViewEntry} onEditEntry={handleEditEntry} onDeleteEntry={(id) => handleDeleteClick("entry", id)} onReverseEntry={handleReverseEntry} />
               </div>
             </div>
 
@@ -1253,12 +1302,20 @@ export default function AccountingPage() {
                         <button onClick={() => handleViewEntry(tx)} className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer" title="View">
                           <Eye className="w-4 h-4 text-blue-500" />
                         </button>
-                        <button onClick={() => handleEditEntry(tx)} className="p-1.5 hover:bg-violet-50 rounded-lg transition-colors cursor-pointer" title="Edit">
-                          <Edit3 className="w-4 h-4 text-violet-500" />
-                        </button>
-                        <button onClick={() => handleDeleteClick("entry", tx.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Delete">
-                          <Trash2 className="w-4 h-4 text-red-400" />
-                        </button>
+                        {tx.status.toUpperCase() === "POSTED" ? (
+                          <button onClick={() => handleReverseEntry(tx)} className="p-1.5 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer" title="Reverse Entry">
+                            <Undo2 className="w-4 h-4 text-amber-500" />
+                          </button>
+                        ) : tx.status.toUpperCase() !== "VOID" ? (
+                          <>
+                            <button onClick={() => handleEditEntry(tx)} className="p-1.5 hover:bg-violet-50 rounded-lg transition-colors cursor-pointer" title="Edit">
+                              <Edit3 className="w-4 h-4 text-violet-500" />
+                            </button>
+                            <button onClick={() => handleDeleteClick("entry", tx.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Delete">
+                              <Trash2 className="w-4 h-4 text-red-400" />
+                            </button>
+                          </>
+                        ) : null}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -1556,11 +1613,11 @@ export default function AccountingPage() {
                   Generate Year-End Pack (PDF)
                 </button>
                 <button
-                  onClick={() => setShowYearEndModal(true)}
+                  onClick={() => setShowYearEndCloseConfirm(true)}
                   className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <FileCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  Closing Audit Checklist
+                  Run Year-End Close
                 </button>
               </div>
             </div>
@@ -1581,9 +1638,9 @@ export default function AccountingPage() {
                     { doc: "Profit & Loss Statement", tag: "Included in Pack ✓", badgeCls: "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300" },
                     { doc: "Balance Sheet", tag: "Included in Pack ✓", badgeCls: "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300" },
                     { doc: "Trial Balance Ledger", tag: "Included in Pack ✓", badgeCls: "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300" },
-                    { doc: "Corporation Tax Computation", tag: "Auto-Calculated (19%/25%)", badgeCls: "bg-blue-50 text-blue-700 border-blue-200/60 dark:bg-blue-950/60 dark:text-blue-300" },
-                    { doc: "Directors Report", tag: "Optional Add-On", badgeCls: "bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-950/60 dark:text-purple-300" },
-                    { doc: "Notes to Financial Statements", tag: "Optional Add-On", badgeCls: "bg-amber-50 text-amber-800 border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-300" },
+                    { doc: "Corporation Tax Computation", tag: "Not Yet Available — Consult Your Accountant", badgeCls: "bg-gray-100 text-gray-500 border-gray-200/60 dark:bg-slate-800 dark:text-gray-400" },
+                    { doc: "Directors Report", tag: "Not Yet Available", badgeCls: "bg-gray-100 text-gray-500 border-gray-200/60 dark:bg-slate-800 dark:text-gray-400" },
+                    { doc: "Notes to Financial Statements", tag: "Not Yet Available", badgeCls: "bg-gray-100 text-gray-500 border-gray-200/60 dark:bg-slate-800 dark:text-gray-400" },
                   ].map(({ doc, tag, badgeCls }) => (
                     <div key={doc} className="flex items-center justify-between p-3 bg-gray-50/80 dark:bg-slate-800/60 rounded-2xl border border-gray-100/80 dark:border-slate-800">
                       <span className="text-xs font-bold text-gray-900 dark:text-white">{doc}</span>
@@ -2026,6 +2083,39 @@ export default function AccountingPage() {
             <button onClick={() => { handleGenerateYearEnd(); setShowYearEndModal(false); showToastMsg("Year-end accounts pack downloaded"); }}
               className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
               <FileCheck className="w-4 h-4" /> Generate
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {showYearEndCloseConfirm && (
+        <ModalShell onClose={() => !closingYearEnd && setShowYearEndCloseConfirm(false)} title="Run Year-End Close" icon={FileCheck} iconColor="text-indigo-600">
+          <p className="text-sm text-gray-500">
+            This posts a permanent closing journal entry: every Revenue and Expense account is zeroed, and the net result moves into Retained Earnings. It cannot be undone by editing — only by a further correcting entry.
+          </p>
+          <div className="p-3.5 bg-gray-50 rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">Net Income to close</span>
+              <span className={`font-bold ${financialSummary.netProfit >= 0 ? "text-emerald-700" : "text-red-700"}`}>
+                £{financialSummary.netProfit.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">Moves to</span>
+              <span className="font-semibold text-gray-800">Retained Earnings</span>
+            </div>
+          </div>
+          {!trialBalanceIsBalanced && (
+            <div className="flex items-center gap-2.5 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+              <p className="text-xs font-medium text-red-700">Your Trial Balance is currently out of balance — fix that before closing the year.</p>
+            </div>
+          )}
+          <div className="flex gap-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.25rem)] sm:pb-0">
+            <button onClick={() => setShowYearEndCloseConfirm(false)} disabled={closingYearEnd} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50">Cancel</button>
+            <button onClick={handleRunYearEndClose} disabled={closingYearEnd || !trialBalanceIsBalanced}
+              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <FileCheck className="w-4 h-4" /> {closingYearEnd ? "Closing…" : "Close Fiscal Year"}
             </button>
           </div>
         </ModalShell>
