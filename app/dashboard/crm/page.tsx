@@ -32,6 +32,8 @@ interface Client {
   lastContact?: string;
   tags?: string[];
   notes?: string;
+  gdprConsent: boolean;
+  unsubscribedAt?: string | null;
 }
 
 interface PrismaContact {
@@ -48,7 +50,14 @@ interface PrismaContact {
   lastContact?: string;
   tags: string[];
   notes?: string;
+  gdprConsent: boolean;
+  unsubscribedAt?: string | null;
 }
+
+// Marketing consent gate — mirrors the same rule Campaigns applies
+// (lib/services/campaigns.ts resolveAudienceContacts) so a bulk send from
+// CRM can't reach someone who withdrew consent or unsubscribed elsewhere.
+const canBulkEmail = (c: Client) => c.gdprConsent && !c.unsubscribedAt;
 
 interface TimelineItem {
   id: string;
@@ -242,6 +251,7 @@ export default function CRMPage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [excludedFromBulk, setExcludedFromBulk] = useState(0);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commFilter, setCommFilter] = useState<'all' | 'SENT' | 'RECEIVED'>('all');
@@ -549,8 +559,10 @@ export default function CRMPage() {
   };
 
   const handleBulkEmail = () => {
-    const emails = clients.filter(c => selectedIds.has(c.id)).map(c => c.email).join(', ');
-    setEmailData({ to: emails, subject: '', message: '' });
+    const selected = clients.filter(c => selectedIds.has(c.id));
+    const eligible = selected.filter(canBulkEmail);
+    setExcludedFromBulk(selected.length - eligible.length);
+    setEmailData({ to: eligible.map(c => c.email).join(', '), subject: '', message: '' });
     setShowEmailModal(true);
   };
 
@@ -909,7 +921,7 @@ export default function CRMPage() {
       {/* Footer */}
       <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-800 shrink-0">
         <button
-          onClick={() => { setEmailData(prev => ({ ...prev, to: client.email })); setShowEmailModal(true); }}
+          onClick={() => { setExcludedFromBulk(0); setEmailData(prev => ({ ...prev, to: client.email })); setShowEmailModal(true); }}
           className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
         >
           <Mail className="w-4 h-4" /> Email Contact
@@ -988,6 +1000,13 @@ export default function CRMPage() {
                 className={`bg-white rounded-xl p-3 border flex items-center gap-3 cursor-pointer transition-all ${
                   selectedClient?.id === client.id ? 'border-blue-500 shadow-sm' : 'border-gray-100 shadow-sm'
                 }`}>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); toggleSelectOne(client.id); }}
+                  className="shrink-0 text-gray-300 hover:text-blue-600 cursor-pointer p-0.5"
+                >
+                  {selectedIds.has(client.id) ? <CheckSquare className="w-4.5 h-4.5 text-blue-600" /> : <Square className="w-4.5 h-4.5" />}
+                </button>
                 <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0">
                   {client.name[0]}
                 </div>
@@ -1007,9 +1026,9 @@ export default function CRMPage() {
 
           {/* Bulk action bar */}
           {selectedIds.size > 0 && (
-            <div className="hidden sm:flex items-center justify-between gap-3 bg-blue-600 text-white rounded-2xl px-4 py-2.5 mb-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 bg-blue-600 text-white rounded-2xl px-4 py-2.5 mb-2.5">
               <span className="text-sm font-bold">{selectedIds.size} selected</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button type="button" disabled={bulkWorking} onClick={handleBulkEmail}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs font-bold cursor-pointer disabled:opacity-50 transition-colors">
                   <Mail className="w-3.5 h-3.5" /> Email
@@ -1234,8 +1253,10 @@ export default function CRMPage() {
             <button
               type="button"
               onClick={() => {
-                const emails = clients.filter(c => c.status === 'active').map(c => c.email).join(', ');
-                setEmailData({ to: emails, subject: 'Update from Your Company', message: 'Dear valued clients,\n\n\n\nBest regards,\nYour Company' });
+                const active = clients.filter(c => c.status === 'active');
+                const eligible = active.filter(canBulkEmail);
+                setExcludedFromBulk(active.length - eligible.length);
+                setEmailData({ to: eligible.map(c => c.email).join(', '), subject: 'Update from Your Company', message: 'Dear valued clients,\n\n\n\nBest regards,\nYour Company' });
                 setShowEmailModal(true);
               }}
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
@@ -1353,7 +1374,7 @@ export default function CRMPage() {
           <PipelineBoard
             clients={filteredClients}
             loading={loading}
-            onSelect={setSelectedClient}
+            onSelect={(c) => setSelectedClient(clients.find((cl) => cl.id === c.id) ?? null)}
             onStageChange={handleStageChange}
             onAddToStage={handleAddToStage}
           />
@@ -1767,6 +1788,14 @@ export default function CRMPage() {
                   </span>
                 </div>
               </div>
+              {excludedFromBulk > 0 && (
+                <div className="flex items-start gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>
+                    {excludedFromBulk} contact{excludedFromBulk === 1 ? '' : 's'} left out of this send — no marketing consent on file or they&apos;ve unsubscribed.
+                  </span>
+                </div>
+              )}
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3.5">
                 <p className="text-xs font-medium text-gray-600 mb-2 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-gray-400" /> Quick Templates
