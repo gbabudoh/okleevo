@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
+import { resolveReceiptUrl } from '@/lib/services/minio';
 
 const getGeminiClient = () => {
   if (!process.env.GEMINI_API_KEY) return null;
@@ -69,7 +70,16 @@ export const POST = withMultiTenancy(async (req, { user }) => {
       return NextResponse.json({ error: 'Receipt validation is unavailable (Gemini not configured)' }, { status: 503 });
     }
 
-    const imageRes = await fetch(expense.receipt);
+    // receipt is stored as a stable object key (or, for older rows, a
+    // presigned URL whose signature has since expired) — resolve it to a
+    // freshly-signed URL right before fetching rather than trusting whatever
+    // was saved at upload time.
+    const freshReceiptUrl = await resolveReceiptUrl(expense.receipt);
+    if (!freshReceiptUrl) {
+      return NextResponse.json({ error: 'Receipt file could not be located in storage' }, { status: 502 });
+    }
+
+    const imageRes = await fetch(freshReceiptUrl);
     if (!imageRes.ok) {
       return NextResponse.json({ error: 'Failed to fetch receipt image' }, { status: 502 });
     }

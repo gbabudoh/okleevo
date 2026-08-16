@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 import { journalizeExpense } from '@/lib/accounting/accounting';
+import { resolveReceiptUrl } from '@/lib/services/minio';
 
 export const GET = withMultiTenancy(async (req, { dataFilter }) => {
   try {
@@ -14,7 +15,13 @@ export const GET = withMultiTenancy(async (req, { dataFilter }) => {
       },
     });
 
-    return NextResponse.json(expenses);
+    // receipt is stored as a stable MinIO object key; resolve it to a
+    // freshly-signed URL on every read so it never goes stale in the client.
+    const withFreshReceipts = await Promise.all(
+      expenses.map(async (exp) => ({ ...exp, receipt: await resolveReceiptUrl(exp.receipt) }))
+    );
+
+    return NextResponse.json(withFreshReceipts);
   } catch (error: unknown) {
     console.error('Error fetching expenses:', error);
     return NextResponse.json({ error: 'Failed to fetch expenses' }, { status: 500 });

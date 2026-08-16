@@ -20,11 +20,8 @@ interface Expense {
   amount: number;
   category: string;
   date: string;
-  receipt?: string;
-  vendor?: string;
-  paymentMethod?: string;
-  status?: string;
-  notes?: string;
+  receipt?: string | null;
+  projectId?: string | null;
   vatNumber?: string | null;
   vatAmount?: number | null;
   receiptValidated?: boolean;
@@ -66,7 +63,7 @@ const ModalHandle = () => (
 );
 
 const ModalFooter = ({ children }: { children: ReactNode }) => (
-  <div className="px-4 sm:px-6 pt-3.5 pb-8 sm:pb-5 border-t border-gray-100 bg-white flex flex-row gap-2.5 shrink-0 mb-1.5 sm:mb-0">
+  <div className="px-4 sm:px-6 pt-3.5 pb-8 sm:pb-5 border-t border-gray-100 bg-white flex flex-row gap-3 shrink-0 mb-1.5 sm:mb-0">
     {children}
   </div>
 );
@@ -75,7 +72,7 @@ const CancelBtn = ({ onClick, label = 'Cancel' }: { onClick: () => void; label?:
   <button
     type="button"
     onClick={onClick}
-    className="w-full sm:w-auto sm:flex-1 py-3 px-5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer"
+    className="flex-1 py-3.5 px-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 bg-white hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] transition-all cursor-pointer"
   >
     {label}
   </button>
@@ -105,6 +102,10 @@ export default function ExpensesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
   const [validatingReceipt, setValidatingReceipt] = useState(false);
+  const [savingExpense, setSavingExpense] = useState(false);
+  const [updatingExpense, setUpdatingExpense] = useState(false);
+  const [selectedEditFile, setSelectedEditFile] = useState<File | null>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch('/api/projects')
@@ -142,7 +143,7 @@ export default function ExpensesPage() {
   const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
   const avgExpense    = filteredExpenses.length > 0 ? totalExpenses / filteredExpenses.length : 0;
 
-  const categoryTotals = expenses.reduce((acc, exp) => {
+  const categoryTotals = filteredExpenses.reduce((acc, exp) => {
     acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
     return acc;
   }, {} as Record<string, number>);
@@ -174,8 +175,13 @@ export default function ExpensesPage() {
   };
 
   const handleAddExpense = async () => {
+    if (!newExpense.title.trim() || !newExpense.amount) return;
+    setSavingExpense(true);
     try {
-      let receiptUrl: string | undefined;
+      // Store the stable object key, not the presigned URL — the URL's
+      // signature expires after 7 days, but the key can always be re-signed
+      // fresh on read (see resolveReceiptUrl).
+      let receiptKey: string | undefined;
       if (selectedFile) {
         const fd = new FormData();
         fd.append('file', selectedFile);
@@ -183,14 +189,14 @@ export default function ExpensesPage() {
         const uploadRes = await fetch('/api/storage/upload', { method: 'POST', body: fd });
         if (uploadRes.ok) {
           const uploadData = await uploadRes.json();
-          receiptUrl = uploadData.url;
+          receiptKey = uploadData.objectKey;
         }
       }
 
       const response = await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newExpense, receipt: receiptUrl }),
+        body: JSON.stringify({ ...newExpense, receipt: receiptKey }),
       });
       if (!response.ok) throw new Error('Failed to save expense');
       const saved = await response.json();
@@ -202,6 +208,8 @@ export default function ExpensesPage() {
     } catch (error) {
       console.error('Error adding expense:', error);
       setStatusModal({ isOpen: true, title: 'Error', message: 'Failed to add expense. Please try again.', type: 'error' });
+    } finally {
+      setSavingExpense(false);
     }
   };
 
@@ -231,11 +239,24 @@ export default function ExpensesPage() {
 
   const handleEditExpense = async () => {
     if (!selectedExpense) return;
+    setUpdatingExpense(true);
     try {
+      let receiptKey: string | undefined;
+      if (selectedEditFile) {
+        const fd = new FormData();
+        fd.append('file', selectedEditFile);
+        fd.append('folder', 'receipts');
+        const uploadRes = await fetch('/api/storage/upload', { method: 'POST', body: fd });
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          receiptKey = uploadData.objectKey;
+        }
+      }
+
       const response = await fetch(`/api/expenses/${selectedExpense.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(selectedExpense),
+        body: JSON.stringify({ ...selectedExpense, ...(receiptKey && { receipt: receiptKey }) }),
       });
       if (!response.ok) throw new Error('Failed to update expense');
       const updated = await response.json();
@@ -244,18 +265,20 @@ export default function ExpensesPage() {
       ));
       setShowEditModal(false);
       setSelectedExpense(null);
+      setSelectedEditFile(null);
       setStatusModal({ isOpen: true, title: 'Expense Updated', message: 'The expense details have been successfully updated.', type: 'success' });
     } catch (error) {
       console.error('Error updating expense:', error);
       setStatusModal({ isOpen: true, title: 'Error', message: 'Failed to update expense. Please try again.', type: 'error' });
+    } finally {
+      setUpdatingExpense(false);
     }
   };
 
   const handleExport = () => {
-    const headers = ['Title', 'Category', 'Vendor', 'Payment Method', 'Date', 'Amount', 'Status', 'Notes'];
+    const headers = ['Title', 'Category', 'Date', 'Amount', 'VAT Amount'];
     const rows = filteredExpenses.map(exp => [
-      exp.title, exp.category, exp.vendor, exp.paymentMethod,
-      exp.date, exp.amount, exp.status || 'N/A', exp.notes || '',
+      exp.title, exp.category, exp.date, exp.amount, exp.vatAmount ?? '',
     ]);
     let csv = 'Expense Report\n';
     csv += `Generated: ${new Date().toLocaleDateString()}\n`;
@@ -512,7 +535,7 @@ export default function ExpensesPage() {
                         £{expense.amount.toLocaleString()}
                       </span>
                       <button
-                        onClick={() => { setSelectedExpense(expense); setShowEditModal(true); }}
+                        onClick={() => { setSelectedExpense(expense); setSelectedEditFile(null); setShowEditModal(true); }}
                         className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                       >
                         <Edit className="w-3.5 h-3.5" />
@@ -673,9 +696,11 @@ export default function ExpensesPage() {
             <button
               type="button"
               onClick={handleAddExpense}
-              className="w-full sm:flex-[2] py-3 px-5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              disabled={!newExpense.title.trim() || !newExpense.amount || savingExpense}
+              className="flex-[2] py-3.5 px-4 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm shadow-rose-500/25 transition-all disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer whitespace-nowrap"
             >
-              <Receipt className="w-4 h-4" /> Save Expense
+              {savingExpense ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Receipt className="w-4 h-4 shrink-0" />}
+              <span className="truncate">{savingExpense ? 'Saving...' : 'Save Expense'}</span>
             </button>
           </ModalFooter>
         </ModalShell>
@@ -683,7 +708,7 @@ export default function ExpensesPage() {
 
       {/* ── Edit Expense Modal ────────────────────────────────────── */}
       {showEditModal && selectedExpense && (
-        <ModalShell onClose={() => { setShowEditModal(false); setSelectedExpense(null); }}>
+        <ModalShell onClose={() => { setShowEditModal(false); setSelectedExpense(null); setSelectedEditFile(null); }}>
           <ModalHandle />
           <div className="bg-linear-to-r from-blue-500 to-indigo-600 px-4 sm:px-6 py-2.5 sm:py-5 flex items-center justify-between shrink-0 shadow-lg">
             <div className="flex items-center gap-3">
@@ -693,7 +718,7 @@ export default function ExpensesPage() {
               <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight">Edit Expense</h2>
             </div>
             <button
-              onClick={() => { setShowEditModal(false); setSelectedExpense(null); }}
+              onClick={() => { setShowEditModal(false); setSelectedExpense(null); setSelectedEditFile(null); }}
               className="p-2.5 hover:bg-white/20 rounded-xl transition-all cursor-pointer text-white"
             >
               <X className="w-5 h-5" />
@@ -762,7 +787,52 @@ export default function ExpensesPage() {
               </select>
             </div>
 
-            {selectedExpense.receipt && (
+            <div>
+              <label className={labelCls}>Project</label>
+              <select
+                value={selectedExpense.projectId || ''}
+                onChange={(e) => setSelectedExpense({ ...selectedExpense, projectId: e.target.value || null })}
+                className={`${inputCls} cursor-pointer`}
+              >
+                <option value="">No project</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className={labelCls}>Receipt</label>
+              <input
+                type="file"
+                ref={editFileInputRef}
+                onChange={(e) => setSelectedEditFile(e.target.files?.[0] || null)}
+                className="hidden"
+                accept="image/*,.pdf"
+              />
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex-1 min-w-0">
+                  {selectedEditFile ? (
+                    <p className="text-sm font-semibold text-green-700 truncate">{selectedEditFile.name} <span className="text-gray-400 font-normal">(will replace on save)</span></p>
+                  ) : selectedExpense.receipt ? (
+                    <a href={selectedExpense.receipt} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-blue-600 hover:underline">
+                      View current receipt
+                    </a>
+                  ) : (
+                    <p className="text-sm text-gray-400">No receipt attached</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => editFileInputRef.current?.click()}
+                  className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer shrink-0"
+                >
+                  {selectedExpense.receipt || selectedEditFile ? 'Replace' : 'Upload'}
+                </button>
+              </div>
+            </div>
+
+            {selectedExpense.receipt && !selectedEditFile && (
               <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className={labelCls}>VAT / HMRC Receipt Check</p>
@@ -795,13 +865,15 @@ export default function ExpensesPage() {
           </div>
 
           <ModalFooter>
-            <CancelBtn onClick={() => { setShowEditModal(false); setSelectedExpense(null); }} />
+            <CancelBtn onClick={() => { setShowEditModal(false); setSelectedExpense(null); setSelectedEditFile(null); }} />
             <button
               type="button"
               onClick={handleEditExpense}
-              className="w-full sm:flex-[2] py-3 px-5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              disabled={!selectedExpense.title.trim() || !selectedExpense.amount || updatingExpense}
+              className="flex-[2] py-3.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm shadow-blue-600/25 transition-all disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer whitespace-nowrap"
             >
-              <Edit className="w-4 h-4" /> Update Expense
+              {updatingExpense ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Edit className="w-4 h-4 shrink-0" />}
+              <span className="truncate">{updatingExpense ? 'Updating...' : 'Update Expense'}</span>
             </button>
           </ModalFooter>
         </ModalShell>
@@ -827,7 +899,7 @@ export default function ExpensesPage() {
           }}
           title="Delete Expense"
           itemName={deletingExpense.title}
-          itemDetails={`£${deletingExpense.amount} - ${deletingExpense.vendor}`}
+          itemDetails={`£${deletingExpense.amount.toLocaleString()} - ${deletingExpense.category} - ${new Date(deletingExpense.date).toLocaleDateString()}`}
           warningMessage="This will permanently remove this expense record."
         />
       )}

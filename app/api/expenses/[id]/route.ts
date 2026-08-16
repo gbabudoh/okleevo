@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 import { journalizeExpense, voidJournalEntry } from '@/lib/accounting/accounting';
+import { resolveReceiptUrl } from '@/lib/services/minio';
 
 export const PATCH = withMultiTenancy(async (req, { user, params }) => {
   try {
     const resolvedParams = await params;
     const id = resolvedParams.id as string;
     const body = await req.json();
-    const { title, amount, category, date, vatAmount } = body;
+    const { title, amount, category, date, vatAmount, projectId, receipt } = body;
 
     // Check ownership first
     const existing = await prisma.expense.findFirst({
@@ -34,6 +35,8 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
         category,
         date: date ? new Date(date) : undefined,
         ...(vatAmount !== undefined && { vatAmount: (vatAmount === null || vatAmount === '') ? null : parseFloat(vatAmount) }),
+        ...(projectId !== undefined && { projectId: projectId || null }),
+        ...(receipt !== undefined && { receipt: receipt || null }),
         ...(needsRepost && { journalEntryId: null }),
       },
     });
@@ -49,7 +52,7 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
       }
     }
 
-    return NextResponse.json({ ...expense, warning: journalWarning });
+    return NextResponse.json({ ...expense, receipt: await resolveReceiptUrl(expense.receipt), warning: journalWarning });
   } catch (error: unknown) {
     console.error('Error updating expense:', error);
     return NextResponse.json({ error: 'Failed to update expense' }, { status: 500 });

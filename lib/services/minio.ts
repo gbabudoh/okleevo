@@ -73,6 +73,38 @@ export async function getPresignedUrl(
   return client.presignedGetObject(bucket, objectName, expirySeconds);
 }
 
+/**
+ * A presigned URL's signature token expires (see getPresignedUrl), but the
+ * underlying object doesn't — so a value that was stored as a full presigned
+ * URL can still be resolved back to its stable object key by stripping the
+ * host/bucket prefix and query string. Callers that persist a "receipt" URL
+ * should store the object key (not the presigned URL) and call
+ * resolveReceiptUrl at read time instead — this also transparently repairs
+ * rows that were saved as an expired URL before that fix existed.
+ */
+export function extractObjectKey(stored: string, bucket: string = DEFAULT_BUCKET): string {
+  if (!/^https?:\/\//i.test(stored)) return stored;
+  try {
+    const { pathname } = new URL(stored);
+    const decoded = decodeURIComponent(pathname).replace(/^\//, '');
+    return decoded.startsWith(`${bucket}/`) ? decoded.slice(bucket.length + 1) : decoded;
+  } catch {
+    return stored;
+  }
+}
+
+/** Resolve a stored receipt value (object key, or legacy full/expired presigned URL) to a fresh, working presigned URL. */
+export async function resolveReceiptUrl(stored: string | null | undefined, bucket: string = DEFAULT_BUCKET): Promise<string | null> {
+  if (!stored) return null;
+  const objectKey = extractObjectKey(stored, bucket);
+  try {
+    return await getPresignedUrl(objectKey, bucket);
+  } catch (error) {
+    console.error(`Failed to resolve receipt URL for object "${objectKey}":`, error);
+    return null;
+  }
+}
+
 /** Get a permanent public URL (works when bucket policy is public) */
 export function getPublicUrl(
   objectName: string,
