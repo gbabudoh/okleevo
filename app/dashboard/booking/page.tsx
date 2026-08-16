@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import {
   Calendar, Clock, Plus, X, Mail, Phone, MapPin, Video,
   CheckCircle, Edit, Trash2, Search, TrendingUp, CalendarCheck,
-  ChevronDown, Loader2, User
+  ChevronDown, Loader2, User, Link as LinkIcon
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import StatusModal from '@/components/StatusModal';
 
 interface Booking {
   id: string;
@@ -16,11 +17,19 @@ interface Booking {
   service: string;
   date: string;
   time: string;
+  startTime: string;
   duration: number;
   status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
   type: 'in-person' | 'video' | 'phone';
   location?: string;
   notes?: string;
+}
+
+interface CrmContact {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
 }
 
 const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
@@ -75,17 +84,35 @@ const blankBooking = () => ({
 });
 
 const BookingFormFields = ({
-  data, onChange,
+  data, onChange, contacts = [],
 }: {
   data: ReturnType<typeof blankBooking> | Booking;
   onChange: (patch: Partial<Booking>) => void;
+  contacts?: CrmContact[];
 }) => (
   <div className="space-y-2 sm:space-y-4">
     <div className="grid grid-cols-2 gap-2 sm:gap-3">
       <div>
         <label className={labelCls}>Client name *</label>
-        <input type="text" value={data.client} onChange={e => onChange({ client: e.target.value })}
+        <input type="text" list="crm-contacts" value={data.client}
+          onChange={e => {
+            const name = e.target.value;
+            const match = contacts.find(c => c.name.toLowerCase() === name.toLowerCase());
+            if (match) {
+              onChange({ client: match.name, email: match.email, phone: match.phone || data.phone });
+            } else {
+              onChange({ client: name });
+            }
+          }}
           className={inputCls} placeholder="e.g. John Smith" />
+        {contacts.length > 0 && (
+          <datalist id="crm-contacts">
+            {contacts.map(c => <option key={c.id} value={c.name} />)}
+          </datalist>
+        )}
+        {contacts.length > 0 && (
+          <p className="text-[10px] text-gray-400 mt-1">Start typing to pick an existing CRM contact</p>
+        )}
       </div>
       <div>
         <label className={labelCls}>Email *</label>
@@ -177,6 +204,12 @@ export default function BookingPage() {
   const [filterStatus, setFilterStatus]       = useState('all');
   const [searchTerm, setSearchTerm]           = useState('');
   const [newBooking, setNewBooking]           = useState(blankBooking());
+  const [contacts, setContacts]               = useState<CrmContact[]>([]);
+  const [businessId, setBusinessId]           = useState<string | null>(null);
+  const [savingBooking, setSavingBooking]     = useState(false);
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info';
+  }>({ isOpen: false, title: '', message: '', type: 'success' });
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -188,37 +221,61 @@ export default function BookingPage() {
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
+  useEffect(() => {
+    fetch('/api/crm').then(res => res.json()).then(data => {
+      if (Array.isArray(data)) setContacts(data.map((c: { id: string; name: string; email: string; phone?: string }) => ({ id: c.id, name: c.name, email: c.email, phone: c.phone })));
+    }).catch(() => {});
+    fetch('/api/business').then(res => res.json()).then(data => {
+      if (data?.id) setBusinessId(data.id);
+    }).catch(() => {});
+  }, []);
+
+  const handleCopyBookingLink = async () => {
+    if (!businessId) return;
+    const link = `${window.location.origin}/booking/${businessId}`;
+    await navigator.clipboard.writeText(link);
+    setStatusModal({ isOpen: true, title: 'Link Copied', message: 'Your public booking request link has been copied to your clipboard.', type: 'info' });
+  };
+
   const handleCreateBooking = async () => {
+    setSavingBooking(true);
     try {
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newBooking),
       });
-      if (res.ok) {
-        const saved = await res.json();
-        setBookings(prev => [saved, ...prev]);
-        setShowAddModal(false);
-        setNewBooking(blankBooking());
-      }
-    } catch { /* silent */ }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create booking');
+      setBookings(prev => [data, ...prev]);
+      setShowAddModal(false);
+      setNewBooking(blankBooking());
+    } catch (error: unknown) {
+      setStatusModal({ isOpen: true, title: 'Could Not Create Booking', message: error instanceof Error ? error.message : 'Failed to create booking.', type: 'error' });
+    } finally {
+      setSavingBooking(false);
+    }
   };
 
   const handleSaveEdit = async () => {
     if (!editBooking) return;
+    setSavingBooking(true);
     try {
       const res = await fetch(`/api/bookings/${editBooking.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editBooking),
       });
-      if (res.ok) {
-        const updated = await res.json();
-        setBookings(prev => prev.map(b => b.id === updated.id ? updated : b));
-        setShowEditModal(false);
-        setEditBooking(null);
-      }
-    } catch { /* silent */ }
+      const updated = await res.json();
+      if (!res.ok) throw new Error(updated.error || 'Failed to update booking');
+      setBookings(prev => prev.map(b => b.id === updated.id ? updated : b));
+      setShowEditModal(false);
+      setEditBooking(null);
+    } catch (error: unknown) {
+      setStatusModal({ isOpen: true, title: 'Could Not Save Changes', message: error instanceof Error ? error.message : 'Failed to update booking.', type: 'error' });
+    } finally {
+      setSavingBooking(false);
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -242,7 +299,7 @@ export default function BookingPage() {
 
   const totalBookings     = bookings.length;
   const confirmedCount    = bookings.filter(b => b.status === 'confirmed').length;
-  const upcomingCount     = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length;
+  const upcomingCount     = bookings.filter(b => (b.status === 'confirmed' || b.status === 'pending') && new Date(b.startTime).getTime() >= Date.now()).length;
   const completedCount    = bookings.filter(b => b.status === 'completed').length;
 
   return (
@@ -267,6 +324,15 @@ export default function BookingPage() {
             <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Bookings</h1>
             <p className="text-xs text-gray-500 hidden sm:block">Manage appointments and schedule</p>
           </div>
+          <button
+            type="button"
+            onClick={handleCopyBookingLink}
+            disabled={!businessId}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <LinkIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Booking Link</span>
+          </button>
           <button
             id="tour-booking-new"
             type="button"
@@ -452,6 +518,7 @@ export default function BookingPage() {
               <BookingFormFields
                 data={newBooking}
                 onChange={patch => setNewBooking(prev => ({ ...prev, ...patch }))}
+                contacts={contacts}
               />
             </div>
 
@@ -460,10 +527,11 @@ export default function BookingPage() {
               <button
                 type="button"
                 onClick={handleCreateBooking}
-                disabled={!newBooking.client || !newBooking.email || !newBooking.service || !newBooking.date || !newBooking.time}
+                disabled={savingBooking || !newBooking.client || !newBooking.email || !newBooking.service || !newBooking.date || !newBooking.time}
                 className="flex-2 py-3 px-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
-                <Plus className="w-4 h-4" /> Create Booking
+                {savingBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                {savingBooking ? 'Creating...' : 'Create Booking'}
               </button>
             </ModalFooter>
           </div>
@@ -490,6 +558,7 @@ export default function BookingPage() {
               <BookingFormFields
                 data={editBooking}
                 onChange={patch => setEditBooking(prev => prev ? { ...prev, ...patch } : prev)}
+                contacts={contacts}
               />
             </div>
 
@@ -498,9 +567,11 @@ export default function BookingPage() {
               <button
                 type="button"
                 onClick={handleSaveEdit}
-                className="flex-2 py-3 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                disabled={savingBooking}
+                className="flex-2 py-3 px-5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
-                <CheckCircle className="w-4 h-4" /> Save Changes
+                {savingBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                {savingBooking ? 'Saving...' : 'Save Changes'}
               </button>
             </ModalFooter>
           </div>
@@ -611,6 +682,14 @@ export default function BookingPage() {
           warningMessage="This action cannot be undone."
         />
       )}
+
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal(prev => ({ ...prev, isOpen: false }))}
+        title={statusModal.title}
+        message={statusModal.message}
+        type={statusModal.type}
+      />
     </div>
   );
 }

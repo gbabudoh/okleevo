@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 
 export const GET = withMultiTenancy(async (_req, { business }) => {
   return NextResponse.json({
+    id: business.id,
+    name: business.name,
     fiscalYearEndMonth: business.fiscalYearEndMonth,
     fiscalYearEndDay: business.fiscalYearEndDay,
   });
