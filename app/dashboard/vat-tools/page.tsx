@@ -1,15 +1,47 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Calculator, Plus, Minus, TrendingUp, FileText, Download, Calendar,
   Info, ArrowRight, Percent, CheckCircle, DollarSign, BarChart3,
-  Activity, Target, Zap, Trash2, Sparkles, Receipt
+  Activity, Target, Zap, Trash2, Sparkles, Receipt, Loader2
 } from 'lucide-react';
 import StatusModal from '@/components/StatusModal';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import TourProvider from '@/components/tours/TourProvider';
 import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { vatToolsTourSteps } from './tour-steps';
+
+interface VatHistoryItem {
+  id: string;
+  date: string;
+  amount: number;
+  vatRate: number;
+  vatAmount: number;
+  total: number;
+  mode: 'add' | 'remove';
+}
+
+interface VatCalculationRecord {
+  id: string;
+  mode: 'add' | 'remove';
+  amount: number;
+  vatRate: number;
+  vatAmount: number;
+  netAmount: number;
+  grossAmount: number;
+  createdAt: string;
+}
+
+const toHistoryItem = (r: VatCalculationRecord): VatHistoryItem => ({
+  id: r.id,
+  date: new Date(r.createdAt).toLocaleString(),
+  amount: r.amount,
+  vatRate: r.vatRate,
+  vatAmount: r.vatAmount,
+  total: r.grossAmount,
+  mode: r.mode,
+});
 
 export default function VATToolsPage() {
   const [calculatorMode, setCalculatorMode] = useState<'add' | 'remove'>('add');
@@ -19,16 +51,12 @@ export default function VATToolsPage() {
   const [netAmount, setNetAmount] = useState<number>(0);
   const [vatAmount, setVatAmount] = useState<number>(0);
   const [grossAmount, setGrossAmount] = useState<number>(0);
+  const [calculating, setCalculating] = useState(false);
+  const [clearingHistory, setClearingHistory] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const [vatHistory, setVatHistory] = useState<Array<{
-    id: string;
-    date: string;
-    amount: number;
-    vatRate: number;
-    vatAmount: number;
-    total: number;
-    mode: 'add' | 'remove';
-  }>>([]);
+  const [vatHistory, setVatHistory] = useState<VatHistoryItem[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
 
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean;
@@ -37,9 +65,30 @@ export default function VATToolsPage() {
     type: 'success' | 'error' | 'info';
   }>({ isOpen: false, title: '', message: '', type: 'success' });
 
-  const calculateVAT = () => {
-    const amountNum = parseFloat(amount) || 0;
-    const rateNum = vatRate === 'custom' ? parseFloat(customRate) || 0 : parseFloat(vatRate) || 0;
+  const fetchHistory = useCallback(async () => {
+    try {
+      setLoadingHistory(true);
+      const res = await fetch('/api/vat-tools');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setVatHistory(data.map(toHistoryItem));
+      }
+    } catch (error) {
+      console.error('Error fetching VAT calculation history:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  const amountNum = parseFloat(amount) || 0;
+  const rateNum = vatRate === 'custom' ? parseFloat(customRate) || 0 : parseFloat(vatRate) || 0;
+  const isCustomRateInvalid = vatRate === 'custom' && (customRate.trim() === '' || parseFloat(customRate) < 0);
+  const canCalculate = amountNum > 0 && !isCustomRateInvalid && !calculating;
+
+  const calculateVAT = async () => {
+    if (!canCalculate) return;
     let net = 0, vat = 0, gross = 0;
     if (calculatorMode === 'add') {
       net = amountNum;
@@ -53,15 +102,30 @@ export default function VATToolsPage() {
     setNetAmount(net);
     setVatAmount(vat);
     setGrossAmount(gross);
-    setVatHistory([{
-      id: Date.now().toString(),
-      date: new Date().toLocaleString(),
-      amount: amountNum,
-      vatRate: rateNum,
-      vatAmount: vat,
-      total: gross,
-      mode: calculatorMode
-    }, ...vatHistory.slice(0, 9)]);
+
+    setCalculating(true);
+    try {
+      const res = await fetch('/api/vat-tools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: calculatorMode,
+          amount: amountNum,
+          vatRate: rateNum,
+          vatAmount: vat,
+          netAmount: net,
+          grossAmount: gross,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to save calculation');
+      const saved = await res.json();
+      setVatHistory([toHistoryItem(saved), ...vatHistory]);
+    } catch (error) {
+      console.error('Error saving VAT calculation:', error);
+      setStatusModal({ isOpen: true, title: 'Not Saved', message: 'The result above is correct, but it could not be added to your saved history. Please try again.', type: 'error' });
+    } finally {
+      setCalculating(false);
+    }
   };
 
   const clearCalculator = () => {
@@ -69,6 +133,20 @@ export default function VATToolsPage() {
     setNetAmount(0);
     setVatAmount(0);
     setGrossAmount(0);
+  };
+
+  const clearHistory = async () => {
+    setClearingHistory(true);
+    try {
+      const res = await fetch('/api/vat-tools', { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to clear history');
+      setVatHistory([]);
+    } catch (error) {
+      console.error('Error clearing VAT calculation history:', error);
+      setStatusModal({ isOpen: true, title: 'Error', message: 'Failed to clear history. Please try again.', type: 'error' });
+    } finally {
+      setClearingHistory(false);
+    }
   };
 
   const exportHistory = () => {
@@ -145,8 +223,8 @@ export default function VATToolsPage() {
             </button>
             <button
               type="button"
-              onClick={() => setVatHistory([])}
-              disabled={vatHistory.length === 0}
+              onClick={() => setShowClearConfirm(true)}
+              disabled={vatHistory.length === 0 || clearingHistory}
               className="p-2 sm:px-4 sm:py-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 hover:bg-rose-100 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
             >
               <Trash2 className="w-4 h-4" />
@@ -160,7 +238,7 @@ export default function VATToolsPage() {
       <div id="tour-vat-tools-stats" className="px-4 sm:px-6 pt-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Calculations', value: vatHistory.length.toString(), sub: 'Total operations', icon: Calculator, bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600', badge: 'Today' },
+            { label: 'Calculations', value: vatHistory.length.toString(), sub: 'Total operations', icon: Calculator, bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600', badge: 'All Time' },
             { label: 'Total VAT', value: `£${totalVATCalculated.toFixed(2)}`, sub: 'Cumulative VAT', icon: TrendingUp, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600', badge: 'Total' },
             { label: 'Average VAT', value: `£${avgVATAmount.toFixed(2)}`, sub: 'Per transaction', icon: BarChart3, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600', badge: 'Avg' },
             { label: 'Current Rate', value: `${activeRate}%`, sub: 'Applied VAT %', icon: Percent, bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600', badge: 'Active' },
@@ -175,7 +253,7 @@ export default function VATToolsPage() {
                 </span>
               </div>
               <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{label}</p>
-              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{value}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{loadingHistory ? '—' : value}</p>
               <p className="text-[11px] font-medium text-gray-400 mt-1">{sub}</p>
             </div>
           ))}
@@ -257,9 +335,11 @@ export default function VATToolsPage() {
             <div className="flex gap-3 pt-1">
               <button
                 onClick={calculateVAT}
-                className="flex-1 px-5 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
+                disabled={!canCalculate}
+                className="flex-1 px-5 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Zap className="w-4 h-4" /> Calculate
+                {calculating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                {calculating ? 'Saving...' : 'Calculate'}
               </button>
               <button
                 onClick={clearCalculator}
@@ -423,6 +503,15 @@ export default function VATToolsPage() {
           </div>
         </div>
       )}
+
+      <DeleteConfirmationModal
+        isOpen={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        onConfirm={clearHistory}
+        title="Clear VAT History"
+        itemName={`${vatHistory.length} saved calculation${vatHistory.length === 1 ? '' : 's'}`}
+        warningMessage="This will permanently delete your entire VAT calculation history. This cannot be undone."
+      />
 
       <StatusModal
         isOpen={statusModal.isOpen}

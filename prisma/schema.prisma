@@ -66,6 +66,7 @@ model User {
   stockMovements  StockMovement[]
   notifications   Notification[]
   mailboxMessages MailboxMessage[]
+  vatCalculations VatCalculation[]
 
   @@index([email])
   @@index([businessId])
@@ -182,6 +183,7 @@ model Business {
   timeEntries     TimeEntry[]
   microPages      MicroPage[]
   microPageLeads  MicroPageLead[]
+  vatCalculations VatCalculation[]
   shopifyConnection ShopifyConnection?
   enabledModules  String[]         @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
 
@@ -427,6 +429,31 @@ model Expense {
   @@index([category])
   @@index([date])
   @@index([projectId])
+}
+
+// Standalone VAT calculator history (app/dashboard/vat-tools) — a persisted
+// log of ad-hoc add/remove VAT calculations. Independent of Invoice/Expense;
+// it doesn't feed into or read from real ledger/tax figures elsewhere.
+model VatCalculation {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  mode        String // "add" | "remove"
+  amount      Float // the entered figure (net if mode=add, gross if mode=remove)
+  vatRate     Float
+  vatAmount   Float
+  netAmount   Float
+  grossAmount Float
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId])
+  @@index([createdAt])
 }
 
 // =============================================================================
