@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 import { TicketStatus, TicketPriority } from '@/lib/prisma-client';
+import { notifyTicketEvent } from '@/lib/services/tickets';
 
 export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
   try {
@@ -41,12 +42,16 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
   }
 });
 
-export const POST = withMultiTenancy(async (req, { user }) => {
+export const POST = withMultiTenancy(async (req, { user, business }) => {
   try {
     const body = await req.json();
-    const { 
-      subject, customer, email, priority, category, description, type 
+    const {
+      subject, customer, email, priority, category, description, type
     } = body;
+
+    if (!subject?.trim() || !customer?.trim() || !email?.trim()) {
+      return NextResponse.json({ error: 'Subject, customer, and email are required' }, { status: 400 });
+    }
 
     const ticket = await prisma.ticket.create({
       data: {
@@ -62,6 +67,10 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         type: type === 'PLATFORM' ? 'PLATFORM' : 'CUSTOMER',
       },
     });
+
+    if (ticket.type === 'CUSTOMER') {
+      notifyTicketEvent(ticket, business.name, 'received').catch(() => {});
+    }
 
     return NextResponse.json({
       ...ticket,

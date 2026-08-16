@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
+import { notifyTicketEvent } from '@/lib/services/tickets';
 
-export const POST = withMultiTenancy(async (req, { user, params }) => {
+export const POST = withMultiTenancy(async (req, { user, business, params }) => {
   try {
     const resolvedParams = await params;
     const id = resolvedParams.id as string;
-    const { content } = await req.json();
+    const { content, isInternal } = await req.json();
 
-    if (!content) {
+    if (!content?.trim()) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });
     }
 
@@ -27,6 +28,7 @@ export const POST = withMultiTenancy(async (req, { user, params }) => {
         authorName: user.name || user.firstName || 'Support Agent',
         authorRole: 'agent',
         content,
+        isInternal: isInternal === true,
       },
     });
 
@@ -42,6 +44,11 @@ export const POST = withMultiTenancy(async (req, { user, params }) => {
         where: { id },
         data: { updatedAt: new Date() }
       });
+    }
+
+    // Internal notes are agent-only — never notify the customer about those.
+    if (!comment.isInternal && ticket.type === 'CUSTOMER') {
+      notifyTicketEvent(ticket, business.name, 'replied', content).catch(() => {});
     }
 
     return NextResponse.json(comment);

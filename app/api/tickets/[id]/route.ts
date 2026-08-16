@@ -2,17 +2,19 @@ import { NextResponse } from 'next/server';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 import { TicketStatus, TicketPriority } from '@/lib/prisma-client';
+import { notifyTicketEvent } from '@/lib/services/tickets';
 
 export const GET = withMultiTenancy(async (_req, { user, params }) => {
   try {
     const resolvedParams = await params;
     const id = resolvedParams.id as string;
 
+    // Staff view — includes internal (agent-only) notes alongside customer
+    // replies; the UI distinguishes them visually via isInternal.
     const ticket = await prisma.ticket.findFirst({
       where: { id, businessId: user.businessId },
       include: {
         comments: {
-          where: { isInternal: false },
           orderBy: { createdAt: 'asc' }
         }
       }
@@ -35,7 +37,7 @@ export const GET = withMultiTenancy(async (_req, { user, params }) => {
   }
 });
 
-export const PATCH = withMultiTenancy(async (req, { user, params }) => {
+export const PATCH = withMultiTenancy(async (req, { user, business, params }) => {
   try {
     const resolvedParams = await params;
     const id = resolvedParams.id as string;
@@ -50,17 +52,27 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
     }
 
+    const newStatus = status ? (status.toUpperCase() as TicketStatus) : existing.status;
+    const enteringResolved = newStatus === 'RESOLVED' && existing.status !== 'RESOLVED';
+    const leavingResolved = existing.status === 'RESOLVED' && newStatus !== 'RESOLVED';
+
     const updated = await prisma.ticket.update({
       where: { id },
       data: {
-        ...(status && { status: status.toUpperCase() as TicketStatus }),
+        ...(status && { status: newStatus }),
         ...(priority && { priority: priority.toUpperCase() as TicketPriority }),
         ...(assignedTo !== undefined && { assignedTo }),
         ...(subject && { subject }),
         ...(description && { description }),
         ...(category && { category }),
+        ...(enteringResolved && { resolvedAt: new Date() }),
+        ...(leavingResolved && { resolvedAt: null }),
       },
     });
+
+    if (enteringResolved && updated.type === 'CUSTOMER') {
+      notifyTicketEvent(updated, business.name, 'resolved').catch(() => {});
+    }
 
     return NextResponse.json({
       ...updated,

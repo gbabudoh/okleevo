@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import {
   MessageSquare, Clock, Plus, X, AlertCircle, CheckCircle,
   Timer, Search, Send, Eye, Edit, Trash2, TrendingUp,
-  Zap, User, Loader2, ChevronDown
+  Zap, User, Loader2, ChevronDown, Link as LinkIcon, Lock
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import StatusModal from '@/components/StatusModal';
 import WritingAssistButton from '@/components/ai/WritingAssistButton';
 import TourProvider from '@/components/tours/TourProvider';
 import { helpdeskTourSteps } from './tour-steps';
@@ -17,6 +18,12 @@ interface TicketComment {
   authorRole: string;
   content: string;
   createdAt: string;
+  isInternal?: boolean;
+}
+
+interface TeamMember {
+  id: string;
+  name: string;
 }
 
 interface Ticket {
@@ -93,8 +100,15 @@ export default function HelpdeskPage() {
   const [filterStatus, setFilterStatus]     = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [replyMessage, setReplyMessage]     = useState('');
+  const [replyInternal, setReplyInternal]   = useState(false);
   const [isReplying, setIsReplying]         = useState(false);
   const [newTicket, setNewTicket]           = useState(blankTicket());
+  const [teamMembers, setTeamMembers]       = useState<TeamMember[]>([]);
+  const [businessId, setBusinessId]         = useState<string | null>(null);
+  const [savingTicket, setSavingTicket]     = useState(false);
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info';
+  }>({ isOpen: false, title: '', message: '', type: 'success' });
 
   const fetchTickets = useCallback(async () => {
     try {
@@ -106,37 +120,63 @@ export default function HelpdeskPage() {
 
   useEffect(() => { fetchTickets(); }, [fetchTickets]);
 
+  useEffect(() => {
+    fetch('/api/employees').then(res => res.json()).then(data => {
+      if (Array.isArray(data?.users)) {
+        setTeamMembers(data.users.map((u: { id: string; firstName: string; lastName: string }) => ({ id: u.id, name: `${u.firstName} ${u.lastName}`.trim() })));
+      }
+    }).catch(() => {});
+    fetch('/api/business').then(res => res.json()).then(data => {
+      if (data?.id) setBusinessId(data.id);
+    }).catch(() => {});
+  }, []);
+
+  const handleCopySupportLink = async () => {
+    if (!businessId) return;
+    const link = `${window.location.origin}/helpdesk/${businessId}`;
+    await navigator.clipboard.writeText(link);
+    setStatusModal({ isOpen: true, title: 'Link Copied', message: 'Your public support request link has been copied to your clipboard.', type: 'info' });
+  };
+
   const handleCreateTicket = async () => {
+    setSavingTicket(true);
     try {
       const res = await fetch('/api/tickets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTicket),
       });
-      if (res.ok) {
-        const saved = await res.json();
-        setTickets(prev => [saved, ...prev]);
-        setShowCreateModal(false);
-        setNewTicket(blankTicket());
-      }
-    } catch { /* silent */ }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create ticket');
+      setTickets(prev => [data, ...prev]);
+      setShowCreateModal(false);
+      setNewTicket(blankTicket());
+    } catch (error: unknown) {
+      setStatusModal({ isOpen: true, title: 'Could Not Create Ticket', message: error instanceof Error ? error.message : 'Failed to create ticket.', type: 'error' });
+    } finally {
+      setSavingTicket(false);
+    }
   };
 
   const handleUpdateTicket = async () => {
     if (!editTicket) return;
+    setSavingTicket(true);
     try {
       const res = await fetch(`/api/tickets/${editTicket.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editTicket),
       });
-      if (res.ok) {
-        const updated = await res.json();
-        setTickets(prev => prev.map(t => t.id === updated.id ? updated : t));
-        setShowEditModal(false);
-        setEditTicket(null);
-      }
-    } catch { /* silent */ }
+      const updated = await res.json();
+      if (!res.ok) throw new Error(updated.error || 'Failed to update ticket');
+      setTickets(prev => prev.map(t => t.id === updated.id ? updated : t));
+      setShowEditModal(false);
+      setEditTicket(null);
+    } catch (error: unknown) {
+      setStatusModal({ isOpen: true, title: 'Could Not Save Changes', message: error instanceof Error ? error.message : 'Failed to update ticket.', type: 'error' });
+    } finally {
+      setSavingTicket(false);
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -156,6 +196,8 @@ export default function HelpdeskPage() {
       const res = await fetch(`/api/tickets/${id}`);
       if (res.ok) {
         setSelectedTicket(await res.json());
+        setReplyMessage('');
+        setReplyInternal(false);
         setShowDetailModal(true);
       }
     } catch { /* silent */ }
@@ -168,7 +210,7 @@ export default function HelpdeskPage() {
       const res = await fetch(`/api/tickets/${selectedTicket.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: replyMessage }),
+        body: JSON.stringify({ content: replyMessage, isInternal: replyInternal }),
       });
       if (res.ok) {
         const newComment = await res.json();
@@ -178,9 +220,17 @@ export default function HelpdeskPage() {
           responses: (prev.responses ?? 0) + 1,
         } : null);
         setReplyMessage('');
+        setReplyInternal(false);
         fetchTickets();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setStatusModal({ isOpen: true, title: 'Could Not Send Reply', message: data.error || 'Failed to add reply.', type: 'error' });
       }
-    } catch { /* silent */ } finally { setIsReplying(false); }
+    } catch {
+      setStatusModal({ isOpen: true, title: 'Could Not Send Reply', message: 'Failed to add reply.', type: 'error' });
+    } finally {
+      setIsReplying(false);
+    }
   };
 
   const filteredTickets = tickets.filter(t =>
@@ -220,6 +270,15 @@ export default function HelpdeskPage() {
             <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Helpdesk</h1>
             <p className="text-xs text-gray-500 hidden sm:block">Manage support tickets and customer requests</p>
           </div>
+          <button
+            type="button"
+            onClick={handleCopySupportLink}
+            disabled={!businessId}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <LinkIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Support Link</span>
+          </button>
           <button
             id="tour-helpdesk-new-button"
             type="button"
@@ -470,9 +529,10 @@ export default function HelpdeskPage() {
             <ModalFooter>
               <CancelBtn onClick={() => { setShowCreateModal(false); setNewTicket(blankTicket()); }} />
               <button type="button" onClick={handleCreateTicket}
-                disabled={!newTicket.subject || !newTicket.customer || !newTicket.email}
+                disabled={savingTicket || !newTicket.subject || !newTicket.customer || !newTicket.email}
                 className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2">
-                <Plus className="w-4 h-4" /> Create Ticket
+                {savingTicket ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                {savingTicket ? 'Creating...' : 'Create Ticket'}
               </button>
             </ModalFooter>
           </div>
@@ -499,7 +559,7 @@ export default function HelpdeskPage() {
                 <h2 className="text-sm sm:text-base font-bold text-gray-900 leading-snug tracking-tight">{selectedTicket.subject}</h2>
                 <p className="text-gray-500 text-[10px] sm:text-xs mt-0.5">{selectedTicket.customer} · {selectedTicket.email}</p>
               </div>
-              <button type="button" onClick={() => { setShowDetailModal(false); setReplyMessage(''); }}
+              <button type="button" onClick={() => { setShowDetailModal(false); setReplyMessage(''); setReplyInternal(false); }}
                 className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600 shrink-0">
                 <X className="w-5 h-5" />
               </button>
@@ -528,6 +588,25 @@ export default function HelpdeskPage() {
               {/* Comments */}
               {selectedTicket.comments?.map(comment => {
                 const isAgent = comment.authorRole === 'agent';
+                if (comment.isInternal) {
+                  return (
+                    <div key={comment.id} className="flex gap-3 items-start">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-amber-100">
+                        <Lock className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-xs font-bold text-gray-700">{comment.authorName}</span>
+                          <span className="text-[10px] font-bold uppercase text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Internal note</span>
+                          <span className="text-[10px] text-gray-400">{new Date(comment.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div className="p-3.5 text-sm leading-relaxed border bg-amber-50 border-amber-200 text-amber-900 rounded-2xl rounded-tl-none">
+                          {comment.content}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
                 return (
                   <div key={comment.id} className={`flex gap-3 items-start ${isAgent ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isAgent ? 'bg-indigo-600' : 'bg-gray-200'}`}>
@@ -553,19 +632,28 @@ export default function HelpdeskPage() {
             </div>
 
             {/* Reply footer */}
-            <div className="shrink-0 bg-white border-t border-gray-100 p-3 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3">
+            <div className="shrink-0 bg-white border-t border-gray-100 p-3 pb-[calc(1.25rem+env(safe-area-inset-bottom,12px))] sm:pb-3 space-y-2">
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 cursor-pointer w-fit">
+                <input type="checkbox" checked={replyInternal} onChange={e => setReplyInternal(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded border-gray-300 text-amber-500 focus:ring-amber-400 cursor-pointer" />
+                <Lock className="w-3 h-3" /> Internal note (not sent to customer)
+              </label>
               <div className="flex gap-2 items-end">
                 <textarea
                   value={replyMessage}
                   onChange={e => setReplyMessage(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleReply(); } }}
-                  placeholder="Type your reply… (Enter to send)"
-                  className="flex-1 px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent resize-none transition-all h-10 min-h-[40px] sm:h-11 sm:min-h-[44px]"
+                  placeholder={replyInternal ? "Write an internal note… (Enter to send)" : "Type your reply… (Enter to send)"}
+                  className={`flex-1 px-3 py-2 rounded-xl border text-sm outline-none focus:ring-2 focus:border-transparent resize-none transition-all h-10 min-h-[40px] sm:h-11 sm:min-h-[44px] ${
+                    replyInternal ? 'bg-amber-50 border-amber-200 focus:ring-amber-400' : 'bg-gray-50 border-gray-200 focus:ring-indigo-400'
+                  }`}
                 />
                 <button type="button" onClick={handleReply}
                   disabled={isReplying || !replyMessage.trim()}
-                  className="p-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors cursor-pointer shrink-0 h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center">
-                  {isReplying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  className={`p-2 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors cursor-pointer shrink-0 h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center ${
+                    replyInternal ? 'bg-amber-500 hover:bg-amber-600' : 'bg-indigo-600 hover:bg-indigo-700'
+                  }`}>
+                  {isReplying ? <Loader2 className="w-4 h-4 animate-spin" /> : replyInternal ? <Lock className="w-4 h-4" /> : <Send className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -615,17 +703,22 @@ export default function HelpdeskPage() {
               </div>
               <div>
                 <label className={labelCls}>Assigned to</label>
-                <input type="text" value={editTicket.assignedTo || ''}
+                <select value={editTicket.assignedTo || ''}
                   onChange={e => setEditTicket({ ...editTicket, assignedTo: e.target.value })}
-                  className={inputCls} placeholder="Agent name" />
+                  className={`${inputCls} appearance-none cursor-pointer`}>
+                  <option value="">Unassigned</option>
+                  {teamMembers.map(m => <option key={m.id} value={m.name}>{m.name}</option>)}
+                </select>
               </div>
             </div>
 
             <ModalFooter>
               <CancelBtn onClick={() => { setShowEditModal(false); setEditTicket(null); }} />
               <button type="button" onClick={handleUpdateTicket}
-                className="flex-2 py-3 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2">
-                <CheckCircle className="w-4 h-4" /> Save Changes
+                disabled={savingTicket}
+                className="flex-2 py-3 px-5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2">
+                {savingTicket ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                {savingTicket ? 'Saving...' : 'Save Changes'}
               </button>
             </ModalFooter>
           </div>
@@ -644,6 +737,14 @@ export default function HelpdeskPage() {
           warningMessage="This will permanently remove the ticket and all its replies."
         />
       )}
+
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal(prev => ({ ...prev, isOpen: false }))}
+        title={statusModal.title}
+        message={statusModal.message}
+        type={statusModal.type}
+      />
     </div>
   );
 }
