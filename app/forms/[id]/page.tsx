@@ -180,10 +180,12 @@ export default function PublicFormPage() {
             <div className="space-y-6">
               {form.fieldList.map((field) => (
                 <div key={field.id} className="group">
-                  <label className="block text-sm font-bold text-slate-700 mb-2.5 transition-colors group-focus-within:text-indigo-600">
-                    {field.label} {field.required && <span className="text-red-500">*</span>}
-                  </label>
-                  
+                  {field.type !== 'checkbox' && (
+                    <label className="block text-sm font-bold text-slate-700 mb-2.5 transition-colors group-focus-within:text-indigo-600">
+                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                    </label>
+                  )}
+
                   {field.type === 'textarea' ? (
                     <textarea
                       required={field.required}
@@ -212,7 +214,7 @@ export default function PublicFormPage() {
                         className="w-6 h-6 rounded-lg text-indigo-600 focus:ring-indigo-500 border-2 border-slate-200 cursor-pointer"
                       />
                       <label htmlFor={field.id} className="text-slate-600 font-medium cursor-pointer">
-                        I agree to the terms and conditions
+                        {field.label} {field.required && <span className="text-red-500">*</span>}
                       </label>
                     </div>
                   ) : (

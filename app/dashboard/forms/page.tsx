@@ -21,6 +21,7 @@ interface FormField {
   type: FieldType;
   required: boolean;
   placeholder?: string;
+  options?: string[];
 }
 
 interface Form {
@@ -100,6 +101,9 @@ export default function FormsPage() {
   const [editForm, setEditForm] = useState<Form | null>(null);
   const [deletingForm, setDeletingForm] = useState<Form | null>(null);
 
+  const [formResponses, setFormResponses] = useState<{ id: string; data: Record<string, unknown>; createdAt: string }[]>([]);
+  const [loadingResponses, setLoadingResponses] = useState(false);
+
   const [newForm, setNewForm] = useState<{
     name: string;
     description: string;
@@ -116,6 +120,7 @@ export default function FormsPage() {
     fieldList: [],
   });
   const [newField, setNewField] = useState<FormField>(blankField());
+  const [newFieldOptionsRaw, setNewFieldOptionsRaw] = useState('');
 
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info';
@@ -147,8 +152,15 @@ export default function FormsPage() {
 
   const addFieldToNew = () => {
     if (!newField.label.trim()) return;
-    setNewForm(prev => ({ ...prev, fieldList: [...prev.fieldList, { ...newField }] }));
+    if (newField.type === 'select') {
+      const options = newFieldOptionsRaw.split(',').map(o => o.trim()).filter(Boolean);
+      if (options.length === 0) return;
+      setNewForm(prev => ({ ...prev, fieldList: [...prev.fieldList, { ...newField, options }] }));
+    } else {
+      setNewForm(prev => ({ ...prev, fieldList: [...prev.fieldList, { ...newField }] }));
+    }
     setNewField(blankField());
+    setNewFieldOptionsRaw('');
   };
 
   const removeFieldFromNew = (id: string) =>
@@ -157,6 +169,7 @@ export default function FormsPage() {
   const resetCreate = () => {
     setNewForm({ name: '', description: '', category: 'Contact', status: 'active', webhookUrl: '', fieldList: [] });
     setNewField(blankField());
+    setNewFieldOptionsRaw('');
     setShowCreateModal(false);
   };
 
@@ -238,6 +251,23 @@ export default function FormsPage() {
 
   const formLink = (id: string) =>
     typeof window !== 'undefined' ? `${window.location.origin}/forms/${id}` : `/forms/${id}`;
+
+  const openFormDetails = async (form: Form) => {
+    setSelectedForm(form);
+    setShowViewModal(true);
+    setFormResponses([]);
+    setLoadingResponses(true);
+    try {
+      const res = await fetch(`/api/forms/${form.id}/responses`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setFormResponses(Array.isArray(data.responses) ? data.responses : []);
+    } catch {
+      // Non-fatal — the form's summary stats still render without the response list.
+    } finally {
+      setLoadingResponses(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
@@ -376,7 +406,7 @@ export default function FormsPage() {
                   <div className="grid grid-cols-2 gap-1.5 mt-auto pt-1 border-t border-gray-50">
                     <button
                       type="button"
-                      onClick={() => { setSelectedForm(form); setShowViewModal(true); }}
+                      onClick={() => openFormDetails(form)}
                       className="flex items-center justify-center gap-1.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" /> Details
@@ -524,6 +554,18 @@ export default function FormsPage() {
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-xs font-medium bg-white"
                     />
                   </div>
+                  {newField.type === 'select' && (
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">Options (comma separated)</label>
+                      <input
+                        type="text"
+                        value={newFieldOptionsRaw}
+                        onChange={(e) => setNewFieldOptionsRaw(e.target.value)}
+                        placeholder="e.g., Small, Medium, Large"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-xs font-medium bg-white"
+                      />
+                    </div>
+                  )}
                   <div className="flex gap-2 items-end">
                     <div className="flex-1">
                       <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">Type</label>
@@ -548,7 +590,7 @@ export default function FormsPage() {
                     <button
                       type="button"
                       onClick={addFieldToNew}
-                      disabled={!newField.label.trim()}
+                      disabled={!newField.label.trim() || (newField.type === 'select' && newFieldOptionsRaw.split(',').map(o => o.trim()).filter(Boolean).length === 0)}
                       className="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shrink-0 shadow-xs"
                     >
                       <Plus className="w-3 h-3" /> Add
@@ -730,6 +772,38 @@ export default function FormsPage() {
                 </div>
               )}
 
+              {/* Responses */}
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5" /> Responses
+                </p>
+                {loadingResponses ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                  </div>
+                ) : formResponses.length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-4 bg-gray-50 rounded-xl border border-gray-100">No responses yet</p>
+                ) : (
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {formResponses.map((r) => (
+                      <div key={r.id} className="bg-gray-50 rounded-xl border border-gray-100 p-3 space-y-1.5">
+                        <p className="text-[10px] text-gray-400 font-semibold">{new Date(r.createdAt).toLocaleString()}</p>
+                        {(selectedForm.fieldList || []).map((field) => (
+                          <div key={field.id} className="flex items-start justify-between gap-3 text-xs">
+                            <span className="text-gray-500 font-medium shrink-0">{field.label}</span>
+                            <span className="text-gray-900 font-semibold text-right break-words">
+                              {field.type === 'checkbox'
+                                ? (r.data[field.id] ? 'Yes' : 'No')
+                                : String(r.data[field.id] ?? '—')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Public link */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5">
                 <p className="text-xs font-bold text-gray-500 mb-2 flex items-center gap-1.5">
@@ -759,8 +833,16 @@ export default function FormsPage() {
               <CancelBtn onClick={() => setShowViewModal(false)} label="Close" />
               <button
                 type="button"
+                disabled={formResponses.length === 0}
                 onClick={() => {
-                  const csv = `Form: ${selectedForm.name}\nTotal Responses: ${selectedForm.responses}\nFields: ${selectedForm.fields}\n\nExported: ${new Date().toLocaleString()}`;
+                  const fields = selectedForm.fieldList || [];
+                  const escape = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+                  const headers = [...fields.map(f => f.label), 'Submitted At'];
+                  const rows = formResponses.map(r => [
+                    ...fields.map(f => f.type === 'checkbox' ? (r.data[f.id] ? 'Yes' : 'No') : (r.data[f.id] ?? '')),
+                    new Date(r.createdAt).toLocaleString(),
+                  ]);
+                  const csv = [headers, ...rows].map(row => row.map(escape).join(',')).join('\n');
                   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
@@ -768,9 +850,9 @@ export default function FormsPage() {
                   a.download = `${selectedForm.name.replace(/\s+/g, '-').toLowerCase()}-responses.csv`;
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
                   URL.revokeObjectURL(url);
-                  showStatus('Export Complete', `${selectedForm.name} responses exported to CSV.`);
+                  showStatus('Export Complete', `${formResponses.length} response(s) exported to CSV.`);
                 }}
-                className="flex-2 py-3 px-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="flex-2 py-3 px-5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" /> Export Data
               </button>
