@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   Plus, Search, Calendar, User, AlertCircle,
   Circle, Trash2, X, ListTodo,
@@ -59,12 +60,6 @@ interface TeamMemberOption {
   lastName: string;
   role: string;
 }
-
-const EGOBAS_TEAM_MEMBERS: TeamMemberOption[] = [
-  { userId: 'ego_eb', firstName: 'Ebi', lastName: 'B', role: 'Executive Lead' },
-  { userId: 'ego_gb', firstName: 'Godwin', lastName: 'B', role: 'System Admin' },
-  { userId: 'ego_ab', firstName: 'Amaebi', lastName: 'B', role: 'Product & Operations' },
-];
 
 const STATUS_COLS = [
   { id: 'todo'        as const, label: 'To Do',       icon: Circle,       dotColor: 'bg-slate-400',   accentBg: 'bg-slate-50 dark:bg-slate-800/40', badge: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300' },
@@ -200,7 +195,11 @@ export default function TasksPage() {
     dueDate: '', assignedTo: '', tags: '', projectId: '', status: 'todo' as Task['status']
   });
   const [projects, setProjects] = useState<ProjectOption[]>([]);
-  const [teamMembers, setTeamMembers] = useState<TeamMemberOption[]>(EGOBAS_TEAM_MEMBERS);
+  const [teamMembers, setTeamMembers] = useState<TeamMemberOption[]>([]);
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id;
+  const currentTeamMember = teamMembers.find(m => m.userId === currentUserId);
+  const currentUserName = currentTeamMember ? `${currentTeamMember.firstName} ${currentTeamMember.lastName}` : null;
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -382,7 +381,7 @@ export default function TasksPage() {
                         task.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
     let matchPreset = true;
-    if (presetFilter === 'my_tasks') matchPreset = !!task.assignedTo;
+    if (presetFilter === 'my_tasks') matchPreset = !!currentUserName && task.assignedTo === currentUserName;
     if (presetFilter === 'high_priority') matchPreset = task.priority === 'urgent' || task.priority === 'high';
     if (presetFilter === 'overdue') {
       if (task.status === 'done' || !task.dueDate) matchPreset = false;
@@ -393,13 +392,19 @@ export default function TasksPage() {
       (filterStatus   === 'all' || task.status   === filterStatus) &&
       (filterPriority === 'all' || task.priority === filterPriority) &&
       (filterAssignee === 'all' || task.assignedTo === filterAssignee);
-  }), [tasks, searchTerm, presetFilter, filterStatus, filterPriority, filterAssignee]);
+  }), [tasks, searchTerm, presetFilter, filterStatus, filterPriority, filterAssignee, currentUserName]);
 
   // ── Calendar View Calculations ──
+  // calendarCursor holds the year/month currently being viewed — previously
+  // hardcoded to new Date(), so a task due in any month but the current one
+  // was invisible in this view with no way to navigate to it.
+  const [calendarCursor, setCalendarCursor] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
   const calendarDays = useMemo(() => {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
+    const { year, month } = calendarCursor;
     const firstDayOfMonth = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -409,17 +414,29 @@ export default function TasksPage() {
     }
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      days.push({ day: d, dateStr, isToday: d === today.getDate() });
+      const isToday = year === today.getFullYear() && month === today.getMonth() && d === today.getDate();
+      days.push({ day: d, dateStr, isToday });
     }
     return days;
-  }, []);
+  }, [calendarCursor]);
+  const shiftCalendarMonth = (delta: number) => setCalendarCursor(prev => {
+    const d = new Date(prev.year, prev.month + delta, 1);
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+  const goToCurrentCalendarMonth = () => {
+    const now = new Date();
+    setCalendarCursor({ year: now.getFullYear(), month: now.getMonth() });
+  };
 
   // ── Timeline Roadmap 14-Day Window ──
+  // timelineOffsetDays shifts the window's start date — previously hardcoded
+  // to today-3, so a task due more than ~10 days out never appeared here.
+  const [timelineOffsetDays, setTimelineOffsetDays] = useState(0);
   const timelineDays = useMemo(() => {
     const days = [];
     const today = new Date();
     const start = new Date(today);
-    start.setDate(today.getDate() - 3);
+    start.setDate(today.getDate() - 3 + timelineOffsetDays);
 
     for (let i = 0; i < 14; i++) {
       const current = new Date(start);
@@ -431,7 +448,7 @@ export default function TasksPage() {
       days.push({ dateStr, dayName, dayNum, isToday });
     }
     return days;
-  }, []);
+  }, [timelineOffsetDays]);
 
   return (
     <div className="min-h-screen space-y-6 pb-24 sm:pb-12 text-slate-900 dark:text-slate-100">
@@ -1058,10 +1075,24 @@ export default function TasksPage() {
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                {new Date(calendarCursor.year, calendarCursor.month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </h2>
             </div>
-            <span className="text-xs font-semibold text-slate-400">Click any day to schedule a task</span>
+            <div className="flex items-center gap-1.5">
+              <span className="hidden sm:inline text-xs font-semibold text-slate-400 mr-2">Click any day to schedule a task</span>
+              <button type="button" onClick={() => shiftCalendarMonth(-1)}
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <ChevronLeft className="w-4 h-4 text-slate-500" />
+              </button>
+              <button type="button" onClick={goToCurrentCalendarMonth}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                Today
+              </button>
+              <button type="button" onClick={() => shiftCalendarMonth(1)}
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
           </div>
 
           {/* Calendar Header Row */}
@@ -1136,7 +1167,21 @@ export default function TasksPage() {
                 Sprint Deliverables Roadmap Timeline
               </h2>
             </div>
-            <span className="text-xs font-semibold text-slate-400">14-Day Rolling Execution View</span>
+            <div className="flex items-center gap-1.5">
+              <span className="hidden sm:inline text-xs font-semibold text-slate-400 mr-2">14-Day Rolling Execution View</span>
+              <button type="button" onClick={() => setTimelineOffsetDays(d => d - 7)}
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <ChevronLeft className="w-4 h-4 text-slate-500" />
+              </button>
+              <button type="button" onClick={() => setTimelineOffsetDays(0)}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                Today
+              </button>
+              <button type="button" onClick={() => setTimelineOffsetDays(d => d + 7)}
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto custom-scrollbar">

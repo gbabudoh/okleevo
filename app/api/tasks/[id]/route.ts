@@ -21,7 +21,7 @@ interface TaskUpdateBody {
   dueDate?: string;
   assignedTo?: string;
   tags?: string[];
-  subtasks?: { title: string; completed?: boolean }[];
+  subtasks?: { id?: string; title: string; completed?: boolean }[];
   projectId?: string;
 }
 
@@ -34,18 +34,27 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
     const existing = await prisma.task.findFirst({ where: { id: id as string, businessId: user.businessId } });
     if (!existing) return NextResponse.json({ error: 'Task not found' }, { status: 404 });
 
-    // Handle subtasks update: simple way is to delete and recreate or update individually
-    // Here we'll do a simple update/create/delete logic for subtasks
+    // Diff against existing subtasks instead of deleting and recreating
+    // everything — a full delete+recreate on every checkbox toggle generated
+    // a brand new id for every subtask on every single edit, which remounted
+    // the whole checklist in the UI each time. Incoming subtasks may carry a
+    // real DB id (existing) or a client-side temp id (new, not in the DB
+    // set) — only ids that actually exist are treated as updates.
     if (subtasks && Array.isArray(subtasks)) {
-      // For simplicity in this step, we delete all and recreate
-      await prisma.subTask.deleteMany({ where: { taskId: id as string } });
-      await prisma.subTask.createMany({
-        data: subtasks.map((s) => ({
-          taskId: id as string,
-          title: s.title,
-          completed: !!s.completed
-        }))
-      });
+      const existingSubtasks = await prisma.subTask.findMany({ where: { taskId: id as string }, select: { id: true } });
+      const existingIds = new Set(existingSubtasks.map((s) => s.id));
+      const keepIds = new Set(subtasks.filter((s) => s.id && existingIds.has(s.id)).map((s) => s.id as string));
+
+      const idsToDelete = existingSubtasks.map((s) => s.id).filter((eid) => !keepIds.has(eid));
+      if (idsToDelete.length > 0) {
+        await prisma.subTask.deleteMany({ where: { id: { in: idsToDelete } } });
+      }
+
+      await Promise.all(subtasks.map((s) =>
+        s.id && existingIds.has(s.id)
+          ? prisma.subTask.update({ where: { id: s.id }, data: { title: s.title, completed: !!s.completed } })
+          : prisma.subTask.create({ data: { taskId: id as string, title: s.title, completed: !!s.completed } })
+      ));
     }
 
     const task = await prisma.task.update({
