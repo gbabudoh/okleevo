@@ -20,7 +20,8 @@ interface Project {
   status: 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'ARCHIVED';
   budget?: number | null;
   dueDate?: string | null;
-  ownerId?: string;
+  ownerId?: string | null;
+  owner?: { id: string; firstName: string; lastName: string } | null;
   contact?: { id: string; name: string; company?: string } | null;
   _count?: { tasks: number; invoices: number; expenses: number };
 }
@@ -45,11 +46,7 @@ interface PortfolioSummary {
   netProfit: number;
 }
 
-const EGOBAS_ROSTER = [
-  { id: 'EB', name: 'Ebi B', role: 'Executive Lead' },
-  { id: 'GB', name: 'Godwin B', role: 'Product Lead' },
-  { id: 'AB', name: 'Amaebi B', role: 'Engineering Lead' },
-];
+const CURRENCY_CODE: Record<string, 'GBP' | 'USD' | 'EUR'> = { '£': 'GBP', '$': 'USD', '€': 'EUR' };
 
 const statusBadge = (s: Project['status']) => {
   switch (s) {
@@ -60,14 +57,14 @@ const statusBadge = (s: Project['status']) => {
   }
 };
 
-const currency = (n: number, symbol: string = '£') =>
-  `${symbol}${n ? n.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}`;
+const currency = (n: number, symbol: string = '£', rate: number = 1) =>
+  `${symbol}${Math.round((n || 0) * rate).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
-const emptyForm: ProjectFormValues = { name: '', contactId: '', status: 'ACTIVE', budget: '', dueDate: '' };
+const emptyForm: ProjectFormValues = { name: '', contactId: '', status: 'ACTIVE', budget: '', dueDate: '', ownerId: '' };
 
 /* ── Project Card Component ─────────────────────────────────────────── */
 function ProjectCard({
-  project, onEdit, onArchiveToggle, onDelete, onOpenAIAnalysis, currencySymbol
+  project, onEdit, onArchiveToggle, onDelete, onOpenAIAnalysis, currencySymbol, rate
 }: {
   project: Project;
   onEdit: (p: Project) => void;
@@ -75,6 +72,7 @@ function ProjectCard({
   onDelete: (p: Project) => void;
   onOpenAIAnalysis: (p: Project) => void;
   currencySymbol: string;
+  rate: number;
 }) {
   const router = useRouter();
   const [profitability, setProfitability] = useState<Profitability | null>(null);
@@ -92,7 +90,6 @@ function ProjectCard({
   const spent = profitability ? profitability.expenses + profitability.laborCost : 0;
   const budgetPct = project.budget ? Math.min(100, Math.round((spent / project.budget) * 100)) : null;
   const isOverdue = project.dueDate && new Date(project.dueDate) < new Date() && project.status !== 'COMPLETED' && project.status !== 'ARCHIVED';
-  const owner = EGOBAS_ROSTER.find(m => m.id === (project.ownerId || 'EB')) || EGOBAS_ROSTER[0];
 
   return (
     <div
@@ -156,11 +153,11 @@ function ProjectCard({
         <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50/70 dark:bg-slate-800/60 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs">
           <div>
             <p className="text-[10px] font-bold uppercase text-slate-400">Gross Revenue</p>
-            <p className="font-extrabold text-slate-900 dark:text-white mt-0.5">{currency(profitability.revenue, currencySymbol)}</p>
+            <p className="font-extrabold text-slate-900 dark:text-white mt-0.5">{currency(profitability.revenue, currencySymbol, rate)}</p>
           </div>
           <div>
             <p className="text-[10px] font-bold uppercase text-slate-400">Direct Cost</p>
-            <p className="font-extrabold text-slate-900 dark:text-white mt-0.5">{currency(profitability.expenses + profitability.laborCost, currencySymbol)}</p>
+            <p className="font-extrabold text-slate-900 dark:text-white mt-0.5">{currency(profitability.expenses + profitability.laborCost, currencySymbol, rate)}</p>
           </div>
           <div>
             <p className="text-[10px] font-bold uppercase text-slate-400">Logged Hours</p>
@@ -170,7 +167,7 @@ function ProjectCard({
             <p className="text-[10px] font-bold uppercase text-slate-400">Net Margin</p>
             <p className={`font-extrabold flex items-center gap-1 mt-0.5 ${profitability.netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600'}`}>
               {profitability.netProfit >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              {currency(profitability.netProfit, currencySymbol)} ({profitability.margin.toFixed(0)}%)
+              {currency(profitability.netProfit, currencySymbol, rate)} ({profitability.margin.toFixed(0)}%)
             </p>
           </div>
         </div>
@@ -185,7 +182,7 @@ function ProjectCard({
         <div className="space-y-1 pt-1">
           <div className="flex items-center justify-between text-[11px] font-bold">
             <span className="text-slate-400">Budget Usage</span>
-            <span className="text-slate-800 dark:text-slate-200">{currency(spent, currencySymbol)} / {currency(project.budget, currencySymbol)}</span>
+            <span className="text-slate-800 dark:text-slate-200">{currency(spent, currencySymbol, rate)} / {currency(project.budget, currencySymbol, rate)}</span>
           </div>
           <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
             <div
@@ -200,9 +197,11 @@ function ProjectCard({
       <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-1.5 text-xs">
           <div className="w-6 h-6 rounded-md bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] flex items-center justify-center">
-            {owner.id}
+            {project.owner ? `${project.owner.firstName[0]}${project.owner.lastName[0]}` : '—'}
           </div>
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{owner.name}</span>
+          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            {project.owner ? `${project.owner.firstName} ${project.owner.lastName}` : 'Unassigned'}
+          </span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -218,6 +217,55 @@ function ProjectCard({
             className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Real Revenue-vs-Cost Comparison Row (Profitability Chart view) ──── */
+function ProfitabilityChartRow({ project, currencySymbol, rate }: { project: Project; currencySymbol: string; rate: number }) {
+  const [profitability, setProfitability] = useState<Profitability | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/projects/${project.id}/profitability`)
+      .then(res => res.json())
+      .then(data => setProfitability(data))
+      .catch(() => setProfitability(null))
+      .finally(() => setLoading(false));
+  }, [project.id]);
+
+  const revenue = profitability?.revenue || 0;
+  const cost = profitability ? profitability.expenses + profitability.laborCost : 0;
+  const max = Math.max(revenue, cost, 1);
+
+  return (
+    <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{project.name}</span>
+        {loading ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600 shrink-0" />
+        ) : (
+          <span className={`text-xs font-extrabold shrink-0 ${profitability && profitability.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+            {profitability ? `${profitability.margin.toFixed(0)}% margin` : 'No data'}
+          </span>
+        )}
+      </div>
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold text-slate-400 w-14 shrink-0">Revenue</span>
+          <div className="flex-1 bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+            <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${(revenue / max) * 100}%` }} />
+          </div>
+          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 w-16 text-right shrink-0">{currency(revenue, currencySymbol, rate)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold text-slate-400 w-14 shrink-0">Cost</span>
+          <div className="flex-1 bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+            <div className="bg-rose-500 h-full rounded-full transition-all duration-500" style={{ width: `${(cost / max) * 100}%` }} />
+          </div>
+          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 w-16 text-right shrink-0">{currency(cost, currencySymbol, rate)}</span>
         </div>
       </div>
     </div>
@@ -242,10 +290,19 @@ export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'chart' | 'board'>('grid');
   const [currencySymbol, setCurrencySymbol] = useState('£');
+  const [fxRates, setFxRates] = useState<Record<string, number> | null>(null);
+  const [fxStale, setFxStale] = useState(false);
+  const [fxFetchedAt, setFxFetchedAt] = useState<string | null>(null);
+  const [fxUnavailable, setFxUnavailable] = useState(false);
   const [showAIAnalysisModal, setShowAIAnalysisModal] = useState(false);
   const [analysisProject, setAnalysisProject] = useState<Project | null>(null);
+  const [insightText, setInsightText] = useState<string | null>(null);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [insightError, setInsightError] = useState<string | null>(null);
   const [showUserGuideModal, setShowUserGuideModal] = useState(false);
   const [guideHovered, setGuideHovered] = useState(false);
+
+  const rate = fxRates ? (fxRates[CURRENCY_CODE[currencySymbol]] ?? 1) : 1;
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -275,6 +332,32 @@ export default function ProjectsPage() {
 
   useEffect(() => { fetchProjects(); fetchSummary(); }, [fetchProjects, fetchSummary]);
 
+  useEffect(() => {
+    fetch('/api/fx-rates')
+      .then(async res => {
+        if (!res.ok) throw new Error('unavailable');
+        return res.json();
+      })
+      .then(data => {
+        setFxRates(data.rates);
+        setFxStale(!!data.stale);
+        setFxFetchedAt(data.fetchedAt);
+        setFxUnavailable(false);
+      })
+      .catch(() => {
+        setFxRates(null);
+        setFxUnavailable(true);
+      });
+  }, []);
+
+  const handleCurrencyChange = (symbol: string) => {
+    if (symbol !== '£' && fxUnavailable) {
+      setCurrencySymbol('£');
+      return;
+    }
+    setCurrencySymbol(symbol);
+  };
+
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
       const q = searchQuery.toLowerCase();
@@ -294,6 +377,7 @@ export default function ProjectsPage() {
         body: JSON.stringify({
           name: values.name,
           contactId: values.contactId || null,
+          ownerId: values.ownerId || null,
           budget: values.budget || null,
           dueDate: values.dueDate || null,
         }),
@@ -319,6 +403,7 @@ export default function ProjectsPage() {
           name: values.name,
           status: values.status,
           contactId: values.contactId || null,
+          ownerId: values.ownerId || null,
           budget: values.budget || null,
           dueDate: values.dueDate || null,
         }),
@@ -330,6 +415,33 @@ export default function ProjectsPage() {
       }
     } finally {
       setSavingEdit(false);
+    }
+  };
+
+  const openAIAnalysis = (project: Project) => {
+    setAnalysisProject(project);
+    setInsightText(null);
+    setInsightError(null);
+    setShowAIAnalysisModal(true);
+    fetchInsight(project);
+  };
+
+  const fetchInsight = async (project: Project) => {
+    setInsightLoading(true);
+    setInsightError(null);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/insight`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setInsightText(data.insight);
+      } else {
+        const err = await res.json().catch(() => null);
+        setInsightError(err?.error || 'Failed to generate insight. Please try again.');
+      }
+    } catch {
+      setInsightError('Failed to generate insight. Please try again.');
+    } finally {
+      setInsightLoading(false);
     }
   };
 
@@ -380,15 +492,25 @@ export default function ProjectsPage() {
           </div>
 
           <div className="flex items-center gap-3 shrink-0 flex-wrap">
-            <select
-              value={currencySymbol}
-              onChange={e => setCurrencySymbol(e.target.value)}
-              className="px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
-            >
-              <option value="£">Currency: £ GBP</option>
-              <option value="$">Currency: $ USD</option>
-              <option value="€">Currency: € EUR</option>
-            </select>
+            <div className="space-y-1">
+              <select
+                value={currencySymbol}
+                onChange={e => handleCurrencyChange(e.target.value)}
+                className="px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
+              >
+                <option value="£">Currency: £ GBP</option>
+                <option value="$" disabled={fxUnavailable}>Currency: $ USD{fxUnavailable ? ' (unavailable)' : ''}</option>
+                <option value="€" disabled={fxUnavailable}>Currency: € EUR{fxUnavailable ? ' (unavailable)' : ''}</option>
+              </select>
+              {currencySymbol !== '£' && fxRates && (
+                <p className="text-[10px] text-slate-400 font-medium px-1">
+                  1 GBP = {rate.toFixed(4)} {CURRENCY_CODE[currencySymbol]} · {fxStale ? 'last known rate' : `via ECB, ${fxFetchedAt ? new Date(fxFetchedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}`}
+                </p>
+              )}
+              {fxUnavailable && (
+                <p className="text-[10px] text-amber-600 font-semibold px-1">Live rates unavailable — showing GBP</p>
+              )}
+            </div>
 
             <button
               onClick={handleRefresh}
@@ -455,7 +577,7 @@ export default function ProjectsPage() {
               <Wallet className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{currency(summary.totalRevenue, currencySymbol)}</p>
+              <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{currency(summary.totalRevenue, currencySymbol, rate)}</p>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Gross Revenue</p>
             </div>
           </div>
@@ -465,7 +587,7 @@ export default function ProjectsPage() {
               <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{currency(summary.netProfit, currencySymbol)}</p>
+              <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{currency(summary.netProfit, currencySymbol, rate)}</p>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Net Portfolio Profit</p>
             </div>
           </div>
@@ -618,13 +740,13 @@ export default function ProjectsPage() {
                       {p.status.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5 font-extrabold">{p.budget ? currency(p.budget, currencySymbol) : 'Unbounded'}</td>
+                  <td className="px-5 py-3.5 font-extrabold">{p.budget ? currency(p.budget, currencySymbol, rate) : 'Unbounded'}</td>
                   <td className="px-5 py-3.5 text-slate-400">
                     {(p._count?.tasks || 0) + (p._count?.invoices || 0) + (p._count?.expenses || 0)} assets
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <button
-                      onClick={e => { e.stopPropagation(); setAnalysisProject(p); setShowAIAnalysisModal(true); }}
+                      onClick={e => { e.stopPropagation(); openAIAnalysis(p); }}
                       className="p-1 hover:bg-slate-100 rounded-md text-indigo-600"
                     >
                       <Sparkles className="w-4 h-4" />
@@ -649,16 +771,8 @@ export default function ProjectsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredProjects.slice(0, 4).map(p => (
-              <div key={p.id} className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">{p.name}</span>
-                  <span className="text-xs font-extrabold text-indigo-600">Budget: {p.budget ? currency(p.budget, currencySymbol) : 'Flex'}</span>
-                </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-3 rounded-full overflow-hidden">
-                  <div className="bg-indigo-600 h-full rounded-full" style={{ width: '75%' }} />
-                </div>
-              </div>
+            {filteredProjects.slice(0, 8).map(p => (
+              <ProfitabilityChartRow key={p.id} project={p} currencySymbol={currencySymbol} rate={rate} />
             ))}
           </div>
         </div>
@@ -685,8 +799,9 @@ export default function ProjectsPage() {
                       onEdit={setEditingProject}
                       onArchiveToggle={handleArchiveToggle}
                       onDelete={setDeletingProject}
-                      onOpenAIAnalysis={proj => { setAnalysisProject(proj); setShowAIAnalysisModal(true); }}
+                      onOpenAIAnalysis={openAIAnalysis}
                       currencySymbol={currencySymbol}
+                      rate={rate}
                     />
                   ))}
                 </div>
@@ -704,8 +819,9 @@ export default function ProjectsPage() {
               onEdit={setEditingProject}
               onArchiveToggle={handleArchiveToggle}
               onDelete={setDeletingProject}
-              onOpenAIAnalysis={proj => { setAnalysisProject(proj); setShowAIAnalysisModal(true); }}
+              onOpenAIAnalysis={openAIAnalysis}
               currencySymbol={currencySymbol}
+              rate={rate}
             />
           ))}
         </div>
@@ -731,6 +847,7 @@ export default function ProjectsPage() {
             status: editingProject.status,
             budget: editingProject.budget != null ? String(editingProject.budget) : '',
             dueDate: editingProject.dueDate ? editingProject.dueDate.split('T')[0] : '',
+            ownerId: editingProject.owner?.id || editingProject.ownerId || '',
           }}
           saving={savingEdit}
           onClose={() => setEditingProject(null)}
@@ -764,11 +881,18 @@ export default function ProjectsPage() {
                 </span>
               </div>
 
-              <div className="p-4 bg-purple-50 dark:bg-purple-950/60 rounded-xl border border-purple-100 dark:border-purple-900/40 space-y-2">
+              <div className="p-4 bg-purple-50 dark:bg-purple-950/60 rounded-xl border border-purple-100 dark:border-purple-900/40 space-y-2 min-h-[84px]">
                 <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">AI Margin Synthesis</span>
-                <p className="text-xs text-purple-900 dark:text-purple-200 font-medium leading-relaxed">
-                  Project revenue is currently tracking on budget. Net profitability margin is healthy with zero revenue leakage detected across linked tasks and expenses.
-                </p>
+                {insightLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-purple-700 dark:text-purple-300 font-medium">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Analyzing project financials...</span>
+                  </div>
+                ) : insightError ? (
+                  <p className="text-xs text-rose-700 dark:text-rose-400 font-medium leading-relaxed">{insightError}</p>
+                ) : (
+                  <p className="text-xs text-purple-900 dark:text-purple-200 font-medium leading-relaxed">{insightText}</p>
+                )}
               </div>
             </div>
 
@@ -819,7 +943,7 @@ export default function ProjectsPage() {
                   <span>1. Getting Started with Enterprise Projects</span>
                 </div>
                 <p className="text-xs text-purple-900 dark:text-purple-200 leading-relaxed font-medium">
-                  Create a new project by clicking <strong className="font-extrabold">+ New Project</strong> in the top header. You can assign a client contact, budget threshold, due date, and assign a project lead from the Egobas Limited roster (**Ebi B**, **Godwin B**, **Amaebi B**).
+                  Create a new project by clicking <strong className="font-extrabold">+ New Project</strong> in the top header. You can assign a client contact, budget threshold, due date, and a project owner from your team.
                 </p>
               </div>
 
@@ -834,7 +958,7 @@ export default function ProjectsPage() {
                   <br />
                   <strong className="text-indigo-600 font-bold">Net Margin = Gross Revenue − (Vendor Expenses + Labor Costs)</strong>.
                   <br />
-                  To link invoices, expenses, or tasks, simply select this project from their respective "Project" dropdown menus across the dashboard.
+                  To link invoices, expenses, or tasks, simply select this project from their respective &ldquo;Project&rdquo; dropdown menus across the dashboard.
                 </p>
               </div>
 
@@ -864,7 +988,7 @@ export default function ProjectsPage() {
                   <span>4. Okleevo AI Profitability Copilot</span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                  Click the <strong className="text-purple-600 font-bold">Sparkles Icon</strong> on any project card or table row to generate 1-click AI margin leakage analysis, budget overrun warnings, and forecast completion dates.
+                  Click the <strong className="text-purple-600 font-bold">Sparkles Icon</strong> on any project card or table row to generate a real-time AI analysis of that project&apos;s actual revenue, cost, and margin position.
                 </p>
               </div>
             </div>

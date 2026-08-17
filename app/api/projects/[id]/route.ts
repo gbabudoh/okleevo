@@ -11,6 +11,7 @@ export const GET = withMultiTenancy(async (_req, { user, params }) => {
       where: { id: id as string, businessId: user.businessId },
       include: {
         contact: { select: { id: true, name: true, company: true, email: true } },
+        owner: { select: { id: true, firstName: true, lastName: true } },
         tasks: true,
         invoices: true,
         expenses: true,
@@ -33,7 +34,7 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, contactId, status, budget, dueDate } = body;
+    const { name, contactId, status, budget, dueDate, ownerId } = body;
 
     const existing = await prisma.project.findFirst({
       where: { id: id as string, businessId: user.businessId },
@@ -51,7 +52,9 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
         status: status ? (status.toUpperCase() as ProjectStatus) : undefined,
         budget: budget !== undefined ? (budget === null || budget === '' ? null : Number(budget)) : undefined,
         dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : undefined,
+        ownerId: ownerId !== undefined ? (ownerId || null) : undefined,
       },
+      include: { owner: { select: { id: true, firstName: true, lastName: true } } },
     });
 
     return NextResponse.json(project);

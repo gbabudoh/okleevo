@@ -9,6 +9,13 @@ interface ContactOption {
   company?: string;
 }
 
+interface TeamMemberOption {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
 export type ProjectStatusValue = 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'ARCHIVED';
 
 export interface ProjectFormValues {
@@ -17,6 +24,7 @@ export interface ProjectFormValues {
   status: ProjectStatusValue;
   budget: string;
   dueDate: string;
+  ownerId: string;
 }
 
 const STATUS_OPTIONS: ProjectStatusValue[] = ['ACTIVE', 'ON_HOLD', 'COMPLETED', 'ARCHIVED'];
@@ -36,12 +44,21 @@ export default function ProjectFormModal({
 }) {
   const [values, setValues] = useState<ProjectFormValues>(initialValues);
   const [contacts, setContacts] = useState<ContactOption[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMemberOption[]>([]);
 
   useEffect(() => {
     fetch('/api/crm')
       .then(res => res.json())
       .then(data => setContacts(Array.isArray(data) ? data : []))
       .catch(() => setContacts([]));
+
+    fetch('/api/presence')
+      .then(res => res.json())
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data?.presence || []);
+        if (Array.isArray(list) && list.length > 0) setTeamMembers(list);
+      })
+      .catch(() => setTeamMembers([]));
   }, []);
 
   return (
@@ -78,6 +95,20 @@ export default function ProjectFormModal({
               <option value="">No client</option>
               {contacts.map(c => (
                 <option key={c.id} value={c.id}>{c.company ? `${c.name} — ${c.company}` : c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Project owner</label>
+            <select
+              value={values.ownerId}
+              onChange={e => setValues({ ...values, ownerId: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition cursor-pointer"
+            >
+              <option value="">Unassigned</option>
+              {teamMembers.map(m => (
+                <option key={m.userId} value={m.userId}>{m.firstName} {m.lastName} ({m.role})</option>
               ))}
             </select>
           </div>

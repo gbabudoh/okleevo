@@ -69,6 +69,7 @@ model User {
   mailboxMessages MailboxMessage[]
   vatCalculations VatCalculation[]
   aiGenerations   AIGeneration[]
+  ownedProjects   Project[]
 
   @@index([email])
   @@index([businessId])
@@ -931,6 +932,9 @@ model Project {
   contactId String?
   contact   Contact? @relation(fields: [contactId], references: [id])
 
+  ownerId String?
+  owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
   name   String
   status ProjectStatus @default(ACTIVE)
 
@@ -948,6 +952,7 @@ model Project {
   @@index([businessId])
   @@index([contactId])
   @@index([status])
+  @@index([ownerId])
 }
 
 enum ProjectStatus {

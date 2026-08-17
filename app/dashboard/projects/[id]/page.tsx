@@ -54,6 +54,7 @@ interface ProjectDetail {
   budget?: number | null;
   dueDate?: string | null;
   contact?: { id: string; name: string; company?: string; email?: string } | null;
+  owner?: { id: string; firstName: string; lastName: string } | null;
   tasks: Task[];
   invoices: Invoice[];
   expenses: Expense[];
@@ -152,6 +153,7 @@ export default function ProjectDetailPage() {
           name: values.name,
           status: values.status,
           contactId: values.contactId || null,
+          ownerId: values.ownerId || null,
           budget: values.budget || null,
           dueDate: values.dueDate || null,
         }),
@@ -265,6 +267,9 @@ export default function ProjectDetailPage() {
               {project.contact.email}
             </span>
           )}
+          <span className="flex items-center gap-1.5">
+            {project.owner ? `Owner: ${project.owner.firstName} ${project.owner.lastName}` : 'Unassigned'}
+          </span>
         </div>
 
         {/* KPI row */}
@@ -433,6 +438,7 @@ export default function ProjectDetailPage() {
             status: project.status,
             budget: project.budget != null ? String(project.budget) : '',
             dueDate: project.dueDate ? project.dueDate.split('T')[0] : '',
+            ownerId: project.owner?.id || '',
           }}
           saving={savingEdit}
           onClose={() => setShowEditModal(false)}
