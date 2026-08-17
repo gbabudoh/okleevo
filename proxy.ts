@@ -21,7 +21,10 @@ const publicRoutes = [
   '/api/unsubscribe',
   '/api/integrations/shopify/callback', // Shopify's redirect mid-OAuth-flow; gated by HMAC + signed state, not a session
   '/forms',
+  '/booking',        // Public booking-request page (app/booking/[businessId]), no session required
+  '/helpdesk',       // Public support-ticket page (app/helpdesk/[businessId]), no session required
   '/api/public',
+  '/api/campaigns/track', // Open pixel + click redirect, hit by recipients' mail clients with no session
   '/p',              // Hosted micro-pages are public landing pages, no session required
   '/api/micro-pages/submit', // Public lead-capture form on hosted micro-pages, no session required
   '/api/micro-pages/track-view', // Public view-count beacon fired from hosted micro-pages, no session required

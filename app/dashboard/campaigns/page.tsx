@@ -80,7 +80,7 @@ export default function CampaignsPage() {
   const [searchTerm, setSearchTerm]       = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating]           = useState(false);
-  const emptyCampaignForm = { name: '', subject: '', type: 'PROMOTIONAL', audience: 'All Subscribers', content: '', scheduledAt: '' };
+  const emptyCampaignForm = { name: '', subject: '', type: 'PROMOTIONAL', audience: 'All Subscribers', content: '', scheduledAt: '', revenue: '' };
   const [newCampaign, setNewCampaign]     = useState(emptyCampaignForm);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
   const [selectedReport, setSelectedReport] = useState<Campaign | null>(null);
@@ -114,6 +114,7 @@ export default function CampaignsPage() {
       const payload = {
         ...newCampaign,
         scheduledAt: newCampaign.scheduledAt ? new Date(newCampaign.scheduledAt).toISOString() : null,
+        revenue: newCampaign.revenue !== '' ? Number(newCampaign.revenue) : undefined,
       };
       const res = await fetch(
         editingCampaign ? `/api/campaigns/${editingCampaign.id}` : '/api/campaigns',
@@ -143,6 +144,7 @@ export default function CampaignsPage() {
       audience: campaign.audience,
       content: campaign.content || '',
       scheduledAt: campaign.scheduledAt ? toLocalInputValue(campaign.scheduledAt) : '',
+      revenue: campaign.revenue ? String(campaign.revenue) : '',
     });
     setShowCreateModal(true);
   };
@@ -633,6 +635,16 @@ export default function CampaignsPage() {
                   </div>
                   <p className="text-[10px] text-gray-400 font-medium mt-1">Leave blank to save as a draft you send manually. Scheduled sends run hourly.</p>
                 </div>
+
+                {editingCampaign && (editingCampaign.status === 'sent' || editingCampaign.status === 'completed') && (
+                  <div>
+                    <label className={labelCls}>Revenue Generated (£)</label>
+                    <input type="number" min="0" step="0.01" value={newCampaign.revenue}
+                      onChange={e => setNewCampaign({ ...newCampaign, revenue: e.target.value })}
+                      className={inputCls} placeholder="0.00" />
+                    <p className="text-[10px] text-gray-400 font-medium mt-1">There&apos;s no automatic sales attribution — enter what this campaign actually generated once you know it.</p>
+                  </div>
+                )}
               </div>
 
               <ModalFooter>

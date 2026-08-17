@@ -664,6 +664,8 @@ model Campaign {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  emailLogs EmailLog[]
+
   @@index([businessId])
   @@index([status])
 }
@@ -1247,11 +1249,20 @@ model EmailLog {
   messageId    String? // SMTP message ID
   archived     Boolean     @default(false)
 
+  // Campaign open/click tracking — set only for sends that came from a
+  // Campaign (see lib/services/campaigns.ts). null campaignId = a regular
+  // one-off client email, not part of any campaign's stats.
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  openedAt   DateTime?
+  clickedAt  DateTime?
+
   createdAt DateTime @default(now())
 
   @@index([businessId])
   @@index([userId])
   @@index([createdAt])
+  @@index([campaignId])
 }
 
 enum EmailStatus {

@@ -41,6 +41,23 @@ export interface CampaignSender {
   email: string;
 }
 
+const RAW_URL_RE = /(https?:\/\/[^\s<>"']+)/g;
+
+/**
+ * Converts a plain-text campaign body (the composer is a bare textarea, no
+ * rich text) into tracked HTML: line breaks become <br/>, and any bare URL
+ * the user typed becomes a real, clickable link routed through the click
+ * tracker so a real click can be counted before redirecting to the real
+ * destination.
+ */
+function buildTrackedHtml(content: string, appUrl: string, logId: string): string {
+  const withBreaks = content.replace(/\n/g, '<br/>');
+  return withBreaks.replace(RAW_URL_RE, (url) => {
+    const trackingUrl = `${appUrl}/api/campaigns/track/click?log=${logId}&url=${encodeURIComponent(url)}`;
+    return `<a href="${trackingUrl}">${url}</a>`;
+  });
+}
+
 export type CampaignSendResult =
   | { ok: true; sentCount: number; failCount: number }
   | { ok: false; error: string; status: number };
@@ -84,6 +101,22 @@ export async function sendCampaignNow(
   let failCount = 0;
 
   for (const contact of contacts) {
+    // The EmailLog row is created *before* sending — its id is what the
+    // tracking pixel and click-redirect URLs are keyed on, so it has to
+    // exist before the email goes out. Status/messageId are corrected
+    // once the send result is known.
+    const log = await prisma.emailLog.create({
+      data: {
+        businessId,
+        userId: sender.userId,
+        to: contact.email,
+        subject: campaign.subject,
+        body: campaign.content,
+        status: 'SENT',
+        campaignId: campaign.id,
+      },
+    });
+
     try {
       let unsubscribeToken = contact.unsubscribeToken;
       if (!unsubscribeToken) {
@@ -92,7 +125,9 @@ export async function sendCampaignNow(
       }
 
       const unsubscribeUrl = `${env.APP_URL}/unsubscribe?token=${unsubscribeToken}`;
-      const htmlBody = `${campaign.content.replace(/\n/g, '<br/>')}<hr/><p style="font-size:12px;color:#888;">Don't want these emails? <a href="${unsubscribeUrl}">Unsubscribe</a></p>`;
+      const trackedContent = buildTrackedHtml(campaign.content, env.APP_URL, log.id);
+      const pixelUrl = `${env.APP_URL}/api/campaigns/track/open?log=${log.id}`;
+      const htmlBody = `${trackedContent}<hr/><p style="font-size:12px;color:#888;">Don't want these emails? <a href="${unsubscribeUrl}">Unsubscribe</a></p><img src="${pixelUrl}" width="1" height="1" alt="" style="display:none" />`;
       const textBody = `${campaign.content}\n\nUnsubscribe: ${unsubscribeUrl}`;
 
       const result = await sendClientEmail({
@@ -107,23 +142,18 @@ export async function sendCampaignNow(
 
       if (result.success) {
         sentCount++;
-        await prisma.emailLog.create({
-          data: {
-            businessId,
-            userId: sender.userId,
-            to: contact.email,
-            subject: campaign.subject,
-            body: campaign.content,
-            status: 'SENT',
-            messageId: result.messageId,
-          },
-        });
+        await prisma.emailLog.update({ where: { id: log.id }, data: { messageId: result.messageId } });
       } else {
         failCount++;
+        await prisma.emailLog.update({ where: { id: log.id }, data: { status: 'FAILED', errorMessage: result.error } });
       }
     } catch (err) {
       console.error(`Failed to send campaign email to ${contact.email}:`, err);
       failCount++;
+      await prisma.emailLog.update({
+        where: { id: log.id },
+        data: { status: 'FAILED', errorMessage: err instanceof Error ? err.message : 'Unknown error' },
+      }).catch(() => {});
     }
   }
 
