@@ -44,9 +44,13 @@ ${text}`;
     const groq = getGroqClient();
     if (groq) {
       try {
+        // llama-3.3-70b-versatile was deprecated from this account's Groq
+        // catalog — every request 404'd and silently fell through to Gemini
+        // (see app/api/ai/generate/route.ts for the same fix, verified
+        // against the live Groq API).
         const completion = await groq.chat.completions.create({
           messages: [{ role: 'user', content: prompt }],
-          model: 'llama-3.3-70b-versatile',
+          model: 'openai/gpt-oss-120b',
           temperature: 0.5,
           max_tokens: 1024,
         });

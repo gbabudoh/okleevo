@@ -40,6 +40,7 @@ model User {
   avatar                  String?
   notificationPreferences Json? // Store notification settings
   seenTours               String[] @default([]) // Module ids whose onboarding tour has been completed/skipped
+  favoriteAiTemplates     String[] @default([]) // AI Content Studio template ids the user has starred
 
   // Timestamps
   createdAt   DateTime  @default(now())
@@ -67,6 +68,7 @@ model User {
   notifications   Notification[]
   mailboxMessages MailboxMessage[]
   vatCalculations VatCalculation[]
+  aiGenerations   AIGeneration[]
 
   @@index([email])
   @@index([businessId])
@@ -184,6 +186,7 @@ model Business {
   microPages      MicroPage[]
   microPageLeads  MicroPageLead[]
   vatCalculations VatCalculation[]
+  aiGenerations   AIGeneration[]
   shopifyConnection ShopifyConnection?
   enabledModules  String[]         @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
 
@@ -1349,6 +1352,30 @@ model AINote {
 
   @@index([businessId])
   @@index([userId])
+}
+
+// AI Content Studio (app/dashboard/ai-content) generation history — also the
+// source of truth for the monthly word-quota display (summed from wordCount,
+// not a separately-tracked counter that could drift from what was logged).
+model AIGeneration {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  templateId   String
+  templateName String
+  content      String @db.Text
+  wordCount    Int
+  model        String // the real model that produced this (e.g. "llama-3.3-70b-versatile")
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId])
+  @@index([businessId, createdAt])
 }
 
 // =============================================================================

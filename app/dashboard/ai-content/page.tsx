@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Sparkles, Copy, Download, Wand2, FileText, Mail,
@@ -8,7 +8,7 @@ import {
   Briefcase, TrendingUp, Lightbulb, Check,
   ChevronRight, ChevronLeft, Zap, Target, Users, Globe,
   Search, Star, ShieldCheck, Layers, ArrowUpRight, BarChart2,
-  Sliders, Bot, Send, RefreshCw, Bookmark
+  Sliders, Bot, Send, RefreshCw, Bookmark, AlertTriangle
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -69,7 +69,7 @@ const contentTemplates: ContentTemplate[] = [
     description: 'Persuasive e-commerce product copy that highlights core benefits',
     category: 'E-commerce', gradient: 'from-emerald-600 to-teal-500', model: 'Okleevo Deep-Reasoning', speed: '~1.1s',
     fields: [
-      { name: 'product', label: 'Product Name', type: 'text', placeholder: 'e.g. Okleevo Enterprise Workspace' },
+      { name: 'product', label: 'Product Name', type: 'text', placeholder: 'e.g. Wireless Noise-Cancelling Headphones' },
       { name: 'features', label: 'Key Features & Specs', type: 'textarea', placeholder: 'List main features (one per line)' },
       { name: 'audience', label: 'Target Buyer Persona', type: 'text', placeholder: 'Who is the ideal customer?' },
       { name: 'style', label: 'Copywriting Style', type: 'select', options: ['Benefit-Driven', 'Technical Specs', 'Luxury / Premium', 'Feature Outline'] },
@@ -113,10 +113,10 @@ const contentTemplates: ContentTemplate[] = [
     description: 'Official corporate announcements formatted for media distribution',
     category: 'PR', gradient: 'from-indigo-600 to-purple-600', model: 'Okleevo Fast-Neural', speed: '~1.0s',
     fields: [
-      { name: 'announcement', label: 'Core News / Milestone', type: 'text', placeholder: 'e.g. Egobas Launches Okleevo v2.0 Enterprise Hub' },
-      { name: 'company', label: 'Company Name', type: 'text', placeholder: 'Egobas Limited' },
+      { name: 'announcement', label: 'Core News / Milestone', type: 'text', placeholder: 'e.g. Acme Corp Launches Product X 2.0' },
+      { name: 'company', label: 'Company Name', type: 'text', placeholder: 'e.g. Acme Corp' },
       { name: 'details', label: 'Key Highlight Points', type: 'textarea', placeholder: 'Important facts, launch dates, and features' },
-      { name: 'quote', label: 'Executive Quote Source', type: 'text', placeholder: 'e.g. Ebi B, Executive Lead' },
+      { name: 'quote', label: 'Executive Quote Source', type: 'text', placeholder: 'e.g. Jane Doe, CEO' },
     ],
   },
   {
@@ -126,7 +126,7 @@ const contentTemplates: ContentTemplate[] = [
     fields: [
       { name: 'client', label: 'Client / Organization', type: 'text', placeholder: 'Client name or Industry Persona' },
       { name: 'challenge', label: 'Initial Challenge', type: 'textarea', placeholder: 'What bottleneck did they face?' },
-      { name: 'solution', label: 'Provided Solution', type: 'textarea', placeholder: 'How did Egobas technology help?' },
+      { name: 'solution', label: 'Provided Solution', type: 'textarea', placeholder: 'How did your product or service help?' },
       { name: 'results', label: 'Quantifiable Outcomes', type: 'textarea', placeholder: 'e.g. 45% productivity boost' },
     ],
   },
@@ -157,7 +157,7 @@ const contentTemplates: ContentTemplate[] = [
     description: 'Memorable brand slogans, mission taglines, and value hooks',
     category: 'Branding', gradient: 'from-amber-500 to-yellow-500', model: 'Okleevo Fast-Neural', speed: '~0.4s',
     fields: [
-      { name: 'brand', label: 'Company / Product Name', type: 'text', placeholder: 'Egobas Limited / Okleevo' },
+      { name: 'brand', label: 'Company / Product Name', type: 'text', placeholder: 'e.g. Acme Corp' },
       { name: 'values', label: 'Core Brand Values', type: 'text', placeholder: 'Seamless Collaboration, High Security, High Velocity' },
       { name: 'audience', label: 'Target Audience', type: 'text', placeholder: 'Enterprise Teams & Executives' },
       { name: 'style', label: 'Slogan Style', type: 'select', options: ['Short & Punchy', 'Visionary & Inspiring', 'Direct Value Prop', 'Witty & Modern'] },
@@ -168,13 +168,49 @@ const contentTemplates: ContentTemplate[] = [
 const CATEGORIES = ['All', 'Content', 'Social', 'Email', 'Ads', 'Video', 'E-commerce', 'SEO', 'PR', 'Branding'] as const;
 
 const BRAND_VOICES = [
-  { id: 'egobas_corporate', label: 'Egobas Corporate (Default)', desc: 'Authoritative, precise, enterprise-grade tone' },
+  { id: 'corporate_professional', label: 'Corporate Professional (Default)', desc: 'Authoritative, precise, enterprise-grade tone' },
   { id: 'b2b_authoritative', label: 'B2B Technical & Strategic', desc: 'Data-backed, professional strategic copy' },
   { id: 'friendly_marketing', label: 'Warm & Conversational', desc: 'Approachable, customer-centric narrative' },
   { id: 'executive_thought_leadership', label: 'Executive Thought Leadership', desc: 'High-level visionary perspective' },
 ];
 
+// Real, distinct models the Engine selector actually switches between —
+// mirrors the two model badges already used across the template catalog.
+const ENGINES = [
+  { id: 'deep' as const, label: 'Engine: Okleevo Deep-Reasoning', badge: 'Okleevo Deep-Reasoning' },
+  { id: 'fast' as const, label: 'Engine: Okleevo Fast-Neural', badge: 'Okleevo Fast-Neural' },
+];
+const engineForBadge = (badge: string): 'deep' | 'fast' => badge === 'Okleevo Fast-Neural' ? 'fast' : 'deep';
+
+// Real Flesch Reading Ease approximation — not a fabricated static grade.
+function readabilityLabel(text: string): string {
+  const words = text.split(/\s+/).filter(Boolean);
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  if (words.length === 0 || sentences.length === 0) return '—';
+  const syllables = words.reduce((sum, w) => {
+    const matches = w.toLowerCase().replace(/[^a-z]/g, '').match(/[aeiouy]+/g);
+    return sum + Math.max(1, matches ? matches.length : 1);
+  }, 0);
+  const score = 206.835 - 1.015 * (words.length / sentences.length) - 84.6 * (syllables / words.length);
+  if (score >= 90) return 'Very Easy';
+  if (score >= 70) return 'Easy';
+  if (score >= 60) return 'Standard';
+  if (score >= 50) return 'Fairly Difficult';
+  if (score >= 30) return 'Difficult';
+  return 'Very Difficult';
+}
+
 const fieldCls = "w-full min-h-[46px] px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400";
+
+interface GenerationRecord {
+  id: string;
+  templateId: string;
+  templateName: string;
+  content: string;
+  wordCount: number;
+  model: string;
+  createdAt: string;
+}
 
 export default function AIContentPage() {
   const router = useRouter();
@@ -182,18 +218,48 @@ export default function AIContentPage() {
   const [formData, setFormData]                   = useState<Record<string, string>>({});
   const [generatedContent, setGeneratedContent]   = useState('');
   const [loading, setLoading]                     = useState(false);
+  const [genError, setGenError]                   = useState<string | null>(null);
   const [copied, setCopied]                       = useState(false);
-  const [history, setHistory]                     = useState<Array<{ template: string; content: string; timestamp: Date }>>([]);
+  const [history, setHistory]                     = useState<GenerationRecord[]>([]);
+  const [quota, setQuota]                         = useState<{ used: number; limit: number } | null>(null);
   const [activeCategory, setActiveCategory]       = useState<string>('All');
   const [searchTerm, setSearchTerm]               = useState('');
-  const [favorites, setFavorites]                 = useState<string[]>(['blog-post', 'email-campaign']);
+  const [favorites, setFavorites]                 = useState<string[]>([]);
   const [showStarredOnly, setShowStarredOnly]     = useState(false);
-  const [brandVoice, setBrandVoice]               = useState('egobas_corporate');
-  const [selectedModel, setSelectedModel]         = useState('Okleevo Deep-Reasoning Engine');
+  const [brandVoice, setBrandVoice]               = useState('corporate_professional');
+  const [selectedModel, setSelectedModel]         = useState<'deep' | 'fast'>('deep');
+  const [businessName, setBusinessName]           = useState<string | null>(null);
+
+  const fetchHistory = useCallback(async () => {
+    try {
+      const res = await fetch('/api/ai/history');
+      const data = await res.json();
+      setHistory(Array.isArray(data.history) ? data.history : []);
+      if (data.quota) setQuota(data.quota);
+    } catch { /* non-fatal — panel just stays empty */ }
+  }, []);
+
+  useEffect(() => {
+    fetchHistory();
+    fetch('/api/ai/favorites').then(r => r.json()).then(d => {
+      if (Array.isArray(d.favorites)) setFavorites(d.favorites);
+    }).catch(() => {});
+    fetch('/api/business').then(r => r.json()).then(d => {
+      if (d?.name) setBusinessName(d.name);
+    }).catch(() => {});
+  }, [fetchHistory]);
 
   const toggleFavorite = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setFavorites(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    setFavorites(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      fetch('/api/ai/favorites', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ favorites: next }),
+      }).catch(() => {});
+      return next;
+    });
   };
 
   const filteredTemplates = useMemo(() => {
@@ -221,23 +287,27 @@ export default function AIContentPage() {
     if (!selectedTemplate) return;
     setLoading(true);
     setGeneratedContent('');
+    setGenError(null);
     try {
+      const voice = BRAND_VOICES.find(v => v.id === brandVoice);
       const response = await fetch('/api/ai/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           template: { id: selectedTemplate.id, name: selectedTemplate.name },
-          formData: { ...formData, brandVoice, aiModel: selectedModel }
+          formData,
+          brandVoice: voice ? { label: voice.label, desc: voice.desc } : undefined,
+          model: selectedModel,
         }),
       });
-      if (!response.ok) throw new Error('Failed');
       const data = await response.json();
-      if (data.content) {
-        setGeneratedContent(data.content);
-        setHistory(prev => [{ template: selectedTemplate.name, content: data.content, timestamp: new Date() }, ...prev]);
-      } else throw new Error('No content');
-    } catch {
-      setGeneratedContent('## Executive Generation Summary\n\nGenerated high-impact content customized for Egobas Limited brand strategy.\n\nKey takeaways and deliverable copy generated seamlessly.');
+      if (!response.ok || !data.content) {
+        throw new Error(data.error || 'Generation failed. Please try again.');
+      }
+      setGeneratedContent(data.content);
+      fetchHistory();
+    } catch (error: unknown) {
+      setGenError(error instanceof Error ? error.message : 'Generation failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -288,7 +358,7 @@ export default function AIContentPage() {
                   </span>
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Engineered multi-channel content generators for Egobas Limited brand strategy.
+                  Engineered multi-channel content generators for {businessName || 'your'} brand strategy.
                 </p>
               </div>
             </div>
@@ -311,8 +381,10 @@ export default function AIContentPage() {
 
               <div className="hidden sm:flex items-center gap-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-xl px-3.5 py-2">
                 <div className="space-y-1 text-right">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Word Quota</div>
-                  <div className="text-xs font-extrabold text-slate-900 dark:text-white">18,450 / 50,000</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Word Quota (This Month)</div>
+                  <div className="text-xs font-extrabold text-slate-900 dark:text-white">
+                    {quota ? `${quota.used.toLocaleString()} / ${quota.limit.toLocaleString()}` : '—'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -386,7 +458,7 @@ export default function AIContentPage() {
             return (
               <div
                 key={template.id}
-                onClick={() => { setSelectedTemplate(template); setFormData({}); setGeneratedContent(''); }}
+                onClick={() => { setSelectedTemplate(template); setFormData({}); setGeneratedContent(''); setGenError(null); setSelectedModel(engineForBadge(template.model)); }}
                 className="group bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-4 relative"
               >
                 {/* Header Row: Icon, Model Badge, & Star */}
@@ -436,6 +508,35 @@ export default function AIContentPage() {
           })}
         </div>
 
+        {/* ── Recent Generations ── */}
+        {history.length > 0 && (
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-3">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Bot className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              Recent Generations
+            </h3>
+            <div className="space-y-2">
+              {history.map(h => (
+                <div key={h.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{h.templateName}</p>
+                    <p className="text-[10px] text-slate-400">
+                      {new Date(h.createdAt).toLocaleString()} · {h.wordCount} words · {h.model}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { navigator.clipboard.writeText(h.content); }}
+                    className="shrink-0 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer flex items-center gap-1"
+                  >
+                    <Copy className="w-3 h-3" /> Copy
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
     );
   }
@@ -474,12 +575,10 @@ export default function AIContentPage() {
           <div className="hidden sm:flex items-center gap-2">
             <select
               value={selectedModel}
-              onChange={e => setSelectedModel(e.target.value)}
+              onChange={e => setSelectedModel(e.target.value === 'fast' ? 'fast' : 'deep')}
               className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none"
             >
-              <option value="Okleevo Deep-Reasoning Engine">Engine: Okleevo Deep-Reasoning</option>
-              <option value="Okleevo Ultra-Fast Engine">Engine: Okleevo Ultra-Fast Neural</option>
-              <option value="Okleevo Enterprise Secure AI">Engine: Okleevo Enterprise Secure AI</option>
+              {ENGINES.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}
             </select>
           </div>
         </div>
@@ -637,10 +736,20 @@ export default function AIContentPage() {
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Read Time</p>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-center">
-                    <p className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">A+ Enterprise</p>
+                    <p className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">{readabilityLabel(generatedContent)}</p>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Readability</p>
                   </div>
                 </div>
+              </div>
+            ) : genError ? (
+              <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
+                <AlertTriangle className="w-8 h-8 text-rose-500" />
+                <p className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Generation Failed</p>
+                <p className="text-[11px] text-slate-400 max-w-xs">{genError}</p>
+                <button type="button" onClick={handleGenerate}
+                  className="mt-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer transition-colors">
+                  Try Again
+                </button>
               </div>
             ) : (
               <div className="py-24 text-center text-slate-400 space-y-2 flex flex-col items-center justify-center flex-1">
