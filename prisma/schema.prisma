@@ -161,34 +161,35 @@ model Business {
   updatedAt DateTime @updatedAt
 
   // Relations
-  users           User[]
-  invoices        Invoice[]
-  contacts        Contact[]
-  tasks           Task[]
-  notes           Note[]
-  expenses        Expense[]
-  inventory       InventoryItem[]
-  employees       Employee[]
-  suppliers       Supplier[]
-  campaigns       Campaign[]
-  tickets         Ticket[]
-  ledgerAccounts  LedgerAccount[]
-  journalEntries  JournalEntry[]
-  emailLogs       EmailLog[]
-  forms           Form[]
-  appointments    Appointment[]
-  aiNotes         AINote[]
-  stockMovements  StockMovement[]
-  mailboxMessages MailboxMessage[]
-  replyTokens     ReplyToken[]
-  projects        Project[]
-  timeEntries     TimeEntry[]
-  microPages      MicroPage[]
-  microPageLeads  MicroPageLead[]
-  vatCalculations VatCalculation[]
-  aiGenerations   AIGeneration[]
+  users             User[]
+  invoices          Invoice[]
+  contacts          Contact[]
+  tasks             Task[]
+  notes             Note[]
+  expenses          Expense[]
+  inventory         InventoryItem[]
+  employees         Employee[]
+  suppliers         Supplier[]
+  campaigns         Campaign[]
+  tickets           Ticket[]
+  ledgerAccounts    LedgerAccount[]
+  journalEntries    JournalEntry[]
+  emailLogs         EmailLog[]
+  forms             Form[]
+  appointments      Appointment[]
+  aiNotes           AINote[]
+  stockMovements    StockMovement[]
+  mailboxMessages   MailboxMessage[]
+  replyTokens       ReplyToken[]
+  projects          Project[]
+  timeEntries       TimeEntry[]
+  microPages        MicroPage[]
+  microPageLeads    MicroPageLead[]
+  vatCalculations   VatCalculation[]
+  aiGenerations     AIGeneration[]
+  kpiTargets        KpiTarget[]
   shopifyConnection ShopifyConnection?
-  enabledModules  String[]         @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
+  enabledModules    String[]           @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
 
   @@index([name])
 }
@@ -347,8 +348,8 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  projects        Project[]
-  microPageLeads  MicroPageLead[]
+  projects       Project[]
+  microPageLeads MicroPageLead[]
 
   @@index([businessId])
   @@index([userId])
@@ -877,8 +878,8 @@ model Task {
   updatedAt DateTime @updatedAt
 
   // Project Profitability + Automation Integration
-  projectId String?
-  project   Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId   String?
+  project     Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
   timeEntries TimeEntry[]
 
   @@index([businessId])
@@ -1150,8 +1151,8 @@ model LedgerAccount {
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  isActive Boolean @default(true)
-  isSystem Boolean @default(false) // If true, cannot be deleted (e.g., Accounts Payable)
+  isActive      Boolean @default(true)
+  isSystem      Boolean @default(false) // If true, cannot be deleted (e.g., Accounts Payable)
   isCashAccount Boolean @default(false) // Marks a bank/cash account for Cash Flow Statement categorization
 
   createdAt DateTime @default(now())
@@ -1378,6 +1379,31 @@ model AIGeneration {
   @@index([businessId, createdAt])
 }
 
+// KPI Dashboard (app/dashboard/kpi-dashboard) — user-defined custom KPI
+// targets. The core KPIs (revenue, margin, expenses, sales volume, etc.) are
+// computed live from Invoice/Expense/Contact data in app/api/kpis/route.ts
+// and are never stored here; this table only holds targets a user manually
+// created via "Add Target KPI", so they persist across sessions.
+model KpiTarget {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name     String
+  value    String
+  target   String?
+  category String // financial, sales, marketing, customer
+  iconName String  @default("Activity")
+  color    String  @default("blue")
+  gradient String  @default("from-blue-600 to-indigo-600")
+  ownerId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
+}
+
 // =============================================================================
 // Business Inbox (Mailbox)
 // =============================================================================
@@ -1502,28 +1528,26 @@ model ReplyToken {
 // =============================================================================
 
 model LandingPreviewConfig {
-  id              String   @id @default("default")
-  activeTab       String   @default("crm")
-  
+  id        String @id @default("default")
+  activeTab String @default("crm")
+
   // CRM Tab Custom Mock Data
-  crmTotalRevenue Float    @default(12450.00)
-  crmClientCount  Int      @default(8)
-  crmContactsJson String   @default("[{\"name\": \"Alex Mercer\", \"email\": \"alex@designco.uk\", \"stage\": \"Lead\", \"value\": 4500.00}, {\"name\": \"Sarah Jenkins\", \"email\": \"sarah@jenkinslegal.co.uk\", \"stage\": \"Customer\", \"value\": 3200.00}, {\"name\": \"David Cole\", \"email\": \"david@colebuilders.uk\", \"stage\": \"Contact\", \"value\": 1500.00}]") @db.Text
-  
+  crmTotalRevenue Float  @default(12450.00)
+  crmClientCount  Int    @default(8)
+  crmContactsJson String @default("[{\"name\": \"Alex Mercer\", \"email\": \"alex@designco.uk\", \"stage\": \"Lead\", \"value\": 4500.00}, {\"name\": \"Sarah Jenkins\", \"email\": \"sarah@jenkinslegal.co.uk\", \"stage\": \"Customer\", \"value\": 3200.00}, {\"name\": \"David Cole\", \"email\": \"david@colebuilders.uk\", \"stage\": \"Contact\", \"value\": 1500.00}]") @db.Text
+
   // Invoices Tab Custom Mock Data
-  invUnpaidCount  Int      @default(3)
-  invTotalUnpaid  Float    @default(1850.00)
-  invInvoicesJson String   @default("[{\"number\": \"INV-2026-001\", \"client\": \"Acme Corp Ltd\", \"amount\": 950.00, \"status\": \"Pending\"}, {\"number\": \"INV-2026-002\", \"client\": \"Sarah Jenkins\", \"amount\": 650.00, \"status\": \"Overdue\"}, {\"number\": \"INV-2026-003\", \"client\": \"David Cole\", \"amount\": 250.00, \"status\": \"Pending\"}]") @db.Text
-  
+  invUnpaidCount  Int    @default(3)
+  invTotalUnpaid  Float  @default(1850.00)
+  invInvoicesJson String @default("[{\"number\": \"INV-2026-001\", \"client\": \"Acme Corp Ltd\", \"amount\": 950.00, \"status\": \"Pending\"}, {\"number\": \"INV-2026-002\", \"client\": \"Sarah Jenkins\", \"amount\": 650.00, \"status\": \"Overdue\"}, {\"number\": \"INV-2026-003\", \"client\": \"David Cole\", \"amount\": 250.00, \"status\": \"Pending\"}]") @db.Text
+
   // Tasks Tab Custom Mock Data
-  tasksJson       String   @default("[{\"id\": \"1\", \"title\": \"Review UK VAT returns\", \"status\": \"TODO\", \"priority\": \"HIGH\"}, {\"id\": \"2\", \"title\": \"Follow up with Alex Mercer\", \"status\": \"IN_PROGRESS\", \"priority\": \"MEDIUM\"}, {\"id\": \"3\", \"title\": \"Submit corporation tax draft\", \"status\": \"TODO\", \"priority\": \"HIGH\"}]") @db.Text
-  
+  tasksJson String @default("[{\"id\": \"1\", \"title\": \"Review UK VAT returns\", \"status\": \"TODO\", \"priority\": \"HIGH\"}, {\"id\": \"2\", \"title\": \"Follow up with Alex Mercer\", \"status\": \"IN_PROGRESS\", \"priority\": \"MEDIUM\"}, {\"id\": \"3\", \"title\": \"Submit corporation tax draft\", \"status\": \"TODO\", \"priority\": \"HIGH\"}]") @db.Text
+
   // AI Tab Custom Mock Data
-  aiInputText     String   @default("Spent 45 mins with John. He wants to order 12 more units by Friday. Send invoice ASAP.") @db.Text
-  aiOutputText    String   @default("• Client: John\\n• Action Item: Order 12 units by Friday\\n• Task: Generate and send invoice.") @db.Text
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  aiInputText  String @default("Spent 45 mins with John. He wants to order 12 more units by Friday. Send invoice ASAP.") @db.Text
+  aiOutputText String @default("• Client: John\\n• Action Item: Order 12 units by Friday\\n• Task: Generate and send invoice.") @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
-

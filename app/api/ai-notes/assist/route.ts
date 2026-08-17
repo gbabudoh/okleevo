@@ -13,6 +13,15 @@ const getGeminiClient = () => {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 };
 
+// Same real, distinct models as app/api/ai/generate/route.ts — verified
+// against the live Groq API. The previous llama-3.3-70b-versatile was
+// deprecated from this account's catalog and 404'd on every single call,
+// with no fallback in this route, so AI Assist failed 100% of the time.
+const GROQ_MODELS: Record<'deep' | 'fast', string> = {
+  deep: 'openai/gpt-oss-120b',
+  fast: 'openai/gpt-oss-20b',
+};
+
 interface Assist {
   summary: string;
   actionItems: string[];
@@ -42,42 +51,57 @@ Respond with ONLY a JSON object (no markdown fences, no prose):
 
 export const POST = withMultiTenancy(async (req) => {
   try {
-    const { title, content, provider } = await req.json();
+    const { title, content, model } = await req.json();
 
     if (!title?.trim() && !content?.trim()) {
       return NextResponse.json({ error: 'title or content is required' }, { status: 400 });
     }
 
+    const engine: 'deep' | 'fast' = model === 'fast' ? 'fast' : 'deep';
     const prompt = buildPrompt(title || '', content || '');
 
-    if (provider === 'Gemini') {
-      const genAI = getGeminiClient();
-      if (!genAI) {
-        return NextResponse.json({ error: 'Gemini is not configured' }, { status: 503 });
+    let assist: Assist | null = null;
+    let modelUsed: string | undefined;
+
+    const groq = getGroqClient();
+    if (groq) {
+      try {
+        const groqModel = GROQ_MODELS[engine];
+        const completion = await groq.chat.completions.create({
+          messages: [{ role: 'user', content: prompt }],
+          model: groqModel,
+          temperature: 0.5,
+          max_tokens: 512,
+        });
+        const raw = completion.choices[0]?.message?.content;
+        if (raw) {
+          assist = parseAssist(raw);
+          if (assist) modelUsed = groqModel;
+        }
+      } catch (groqError: unknown) {
+        console.error('[AI Notes] Groq failed:', groqError instanceof Error ? groqError.message : groqError);
       }
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-      const result = await model.generateContent(prompt);
-      const assist = parseAssist(result.response.text());
-      if (!assist) return NextResponse.json({ error: 'Could not parse AI response' }, { status: 502 });
-      return NextResponse.json(assist);
     }
 
-    // Default / 'Groq'
-    const groq = getGroqClient();
-    if (!groq) {
-      return NextResponse.json({ error: 'Groq is not configured' }, { status: 503 });
+    if (!assist) {
+      const genAI = getGeminiClient();
+      if (genAI) {
+        try {
+          const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+          const result = await geminiModel.generateContent(prompt);
+          assist = parseAssist(result.response.text());
+          if (assist) modelUsed = 'gemini-2.5-flash';
+        } catch (geminiError: unknown) {
+          console.error('[AI Notes] Gemini failed:', geminiError instanceof Error ? geminiError.message : geminiError);
+        }
+      }
     }
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.3-70b-versatile',
-      temperature: 0.5,
-      max_tokens: 512,
-    });
-    const raw = completion.choices[0]?.message?.content;
-    if (!raw) return NextResponse.json({ error: 'No response from Groq' }, { status: 502 });
-    const assist = parseAssist(raw);
-    if (!assist) return NextResponse.json({ error: 'Could not parse AI response' }, { status: 502 });
-    return NextResponse.json(assist);
+
+    if (!assist) {
+      return NextResponse.json({ error: 'All AI providers failed. Please try again, or save the note without AI assist.' }, { status: 502 });
+    }
+
+    return NextResponse.json({ ...assist, model: modelUsed });
   } catch (error) {
     console.error('AI Notes Assist Error:', error);
     return NextResponse.json({ error: 'Failed to generate AI assist' }, { status: 500 });

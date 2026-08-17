@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   FileText, Plus, Search, Star, Pin,
   Calendar, Users, Sparkles, Download,
@@ -11,6 +12,13 @@ import {
   ShieldCheck, StickyNote, PenTool, Send,
   Sliders, Layers, Tag, ArrowUpRight, Maximize2
 } from 'lucide-react';
+
+interface TeamMemberOption {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
 
 interface Note {
   id: string;
@@ -28,12 +36,6 @@ interface Note {
   duration?: string;
 }
 
-const EGOBAS_ROSTER = [
-  { id: 'EB', name: 'Ebi B', role: 'Executive Lead' },
-  { id: 'GB', name: 'Godwin B', role: 'Product Lead' },
-  { id: 'AB', name: 'Amaebi B', role: 'Engineering Lead' },
-];
-
 const STICKY_COLORS = [
   { id: 'yellow', name: 'Cyber Yellow', bg: 'bg-amber-100 dark:bg-amber-950/70', border: 'border-amber-300 dark:border-amber-800', text: 'text-amber-950 dark:text-amber-100', badge: 'bg-amber-200 text-amber-900' },
   { id: 'pink', name: 'Electric Pink', bg: 'bg-rose-100 dark:bg-rose-950/70', border: 'border-rose-300 dark:border-rose-800', text: 'text-rose-950 dark:text-rose-100', badge: 'bg-rose-200 text-rose-900' },
@@ -42,9 +44,9 @@ const STICKY_COLORS = [
   { id: 'lavender', name: 'Soft Lavender', bg: 'bg-purple-100 dark:bg-purple-950/70', border: 'border-purple-300 dark:border-purple-800', text: 'text-purple-950 dark:text-purple-100', badge: 'bg-purple-200 text-purple-900' },
 ];
 
-const availableEngines = [
-  { id: 'okleevo-deep-reasoning', name: 'Okleevo Deep-Reasoning Engine', description: 'High-precision summary & action extraction' },
-  { id: 'okleevo-ultra-fast', name: 'Okleevo Ultra-Fast Copilot', description: 'Real-time note synthesis & tagging' },
+const availableEngines: { id: 'deep' | 'fast'; name: string; description: string }[] = [
+  { id: 'deep', name: 'Deep Reasoning', description: 'High-precision summary & action extraction' },
+  { id: 'fast', name: 'Fast Copilot', description: 'Lower-latency note synthesis' },
 ];
 
 const NOTE_TYPES = [
@@ -64,6 +66,7 @@ const labelCls = "block text-xs font-bold text-slate-700 dark:text-slate-300 mb-
 
 export default function AINotesPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [notes, setNotes]                   = useState<Note[]>([]);
   const [loading, setLoading]               = useState(true);
   const [viewMode, setViewMode]             = useState<'grid' | 'posted' | 'table'>('grid');
@@ -74,12 +77,13 @@ export default function AINotesPage() {
   const [showAIAssist, setShowAIAssist]     = useState(true);
   const [newNoteType, setNewNoteType]       = useState<'meeting' | 'brainstorm' | 'document' | 'task' | 'research' | 'personal' | 'posted'>('document');
   const [newStickyColor, setNewStickyColor] = useState('yellow');
-  const [selectedEngine, setSelectedEngine] = useState(availableEngines[0].id);
+  const [selectedEngine, setSelectedEngine] = useState<'deep' | 'fast'>(availableEngines[0].id);
   const [copied, setCopied]                 = useState(false);
   const [newTitle, setNewTitle]             = useState('');
   const [newContent, setNewContent]         = useState('');
   const [newTags, setNewTags]               = useState('');
-  const [assignedMember, setAssignedMember] = useState('EB');
+  const [teamMembers, setTeamMembers]       = useState<TeamMemberOption[]>([]);
+  const [assignedMember, setAssignedMember] = useState('');
   const [creatingNote, setCreatingNote]     = useState(false);
   const [assistError, setAssistError]       = useState<string | null>(null);
   const [showStarredOnly, setShowStarredOnly] = useState(false);
@@ -99,6 +103,20 @@ export default function AINotesPage() {
   }, []);
 
   useEffect(() => { fetchNotes(); }, [fetchNotes]);
+
+  useEffect(() => {
+    fetch('/api/presence')
+      .then(res => res.json())
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data?.presence || []);
+        if (Array.isArray(list) && list.length > 0) setTeamMembers(list);
+      })
+      .catch(() => setTeamMembers([]));
+  }, []);
+
+  useEffect(() => {
+    if (!assignedMember && session?.user?.id) setAssignedMember(session.user.id);
+  }, [assignedMember, session?.user?.id]);
 
   const filteredNotes = useMemo(() => {
     return notes.filter(n => {
@@ -156,21 +174,22 @@ export default function AINotesPage() {
       try {
         const assistRes = await fetch('/api/ai-notes/assist', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: newTitle.trim(), content: newContent.trim(), provider: 'Groq' }),
+          body: JSON.stringify({ title: newTitle.trim(), content: newContent.trim(), model: selectedEngine }),
         });
         if (assistRes.ok) {
           const assist = await assistRes.json();
           aiSummary = assist.summary;
           actionItems = assist.actionItems;
         } else {
-          aiSummary = `Executive summary synthesized by Okleevo Neural Copilot for ${newTitle}.`;
-          actionItems = ['Review key action items with Egobas Limited team'];
+          const err = await assistRes.json().catch(() => null);
+          setAssistError(err?.error || 'AI assist failed. Saving note without a summary.');
         }
       } catch {
-        aiSummary = `Executive summary synthesized by Okleevo Neural Copilot for ${newTitle}.`;
+        setAssistError('AI assist failed. Saving note without a summary.');
       }
     }
 
+    const assignee = teamMembers.find(m => m.userId === assignedMember);
     const res = await fetch('/api/ai-notes', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -178,7 +197,7 @@ export default function AINotesPage() {
         color: newNoteType === 'posted' ? newStickyColor : undefined,
         tags: newTags.split(',').map(t => t.trim()).filter(Boolean),
         aiSummary, actionItems,
-        participants: [EGOBAS_ROSTER.find(m => m.id === assignedMember)?.name || 'Ebi B'],
+        participants: assignee ? [`${assignee.firstName} ${assignee.lastName}`] : [],
       }),
     });
     setCreatingNote(false);
@@ -243,7 +262,7 @@ export default function AINotesPage() {
 
         <div className="pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-bold opacity-70">
           <span>{note.date.toLocaleDateString()}</span>
-          <span>Egobas Shared</span>
+          <span>Team Shared</span>
         </div>
       </div>
     );
@@ -720,15 +739,47 @@ export default function AINotesPage() {
                     onChange={e => setAssignedMember(e.target.value)}
                     className={`${inputCls} cursor-pointer`}
                   >
-                    {EGOBAS_ROSTER.map(m => (
-                      <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
+                    <option value="">Unassigned</option>
+                    {teamMembers.map(m => (
+                      <option key={m.userId} value={m.userId}>{m.firstName} {m.lastName} ({m.role})</option>
                     ))}
                   </select>
                 </div>
               </div>
+
+              <div className="flex items-center justify-between gap-3 p-3 bg-purple-50/60 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40 rounded-xl">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showAIAssist}
+                    onChange={e => setShowAIAssist(e.target.checked)}
+                    className="w-4 h-4 accent-purple-600 cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> AI Assist (summary & action items)
+                  </span>
+                </label>
+                {showAIAssist && (
+                  <select
+                    value={selectedEngine}
+                    onChange={e => setSelectedEngine(e.target.value as 'deep' | 'fast')}
+                    className="text-xs font-semibold px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800 rounded-lg cursor-pointer text-purple-900 dark:text-purple-200"
+                  >
+                    {availableEngines.map(e => (
+                      <option key={e.id} value={e.id} title={e.description}>{e.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {assistError && (
+                <div className="px-3 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-xl text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                  {assistError}
+                </div>
+              )}
             </div>
 
-            <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-3">
+            <div className="px-5 pt-3 pb-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowNewModal(false)}
                 className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300"

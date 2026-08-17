@@ -50,6 +50,14 @@ function calculateChange(trend: number[]) {
   return Math.round(((current - previous) / previous) * 1000) / 10;
 }
 
+function parseProgress(value?: string, target?: string): number | undefined {
+  if (!value || !target) return undefined;
+  const v = parseFloat(value.replace(/[^0-9.-]/g, ''));
+  const t = parseFloat(target.replace(/[^0-9.-]/g, ''));
+  if (!Number.isFinite(v) || !Number.isFinite(t) || t === 0) return undefined;
+  return Math.min(100, Math.max(0, Math.round((v / t) * 100)));
+}
+
 export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
   try {
     const businessId = dataFilter.businessId;
@@ -96,7 +104,7 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
         name: 'Net Profit Margin',
         value: `${profitMargin.toFixed(1)}%`,
         change: calculateChange(history.revenue.map((r, i) => r - history.expenses[i])),
-        changeType: profitMargin > 20 ? 'increase' : 'neutral',
+        changeType: calculateChange(history.revenue.map((r, i) => r - history.expenses[i])) >= 0 ? 'increase' : 'decrease',
         target: '25%',
         progress: Math.min(Math.round((profitMargin / 25) * 100), 100),
         category: 'financial',
@@ -192,11 +200,81 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
       }
     ];
 
+    const custom = await prisma.kpiTarget.findMany({
+      where: { businessId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const customKpis = custom.map(k => ({
+      id: k.id,
+      name: k.name,
+      value: k.value,
+      change: 0,
+      changeType: 'neutral' as const,
+      target: k.target ?? undefined,
+      progress: parseProgress(k.value, k.target ?? undefined),
+      category: k.category,
+      iconName: k.iconName,
+      color: k.color,
+      gradient: k.gradient,
+      description: 'User-defined target metric',
+      trend: [] as number[],
+      ownerId: k.ownerId ?? undefined,
+      custom: true,
+    }));
+
     const trendLabels = history.labels;
 
-    return NextResponse.json({ kpis, trendLabels });
+    return NextResponse.json({ kpis: [...kpis, ...customKpis], trendLabels });
   } catch (error) {
     console.error('Error generating live KPIs:', error);
     return NextResponse.json({ error: 'Data synthesis failure' }, { status: 500 });
+  }
+});
+
+const VALID_CATEGORIES = ['financial', 'sales', 'marketing', 'customer'];
+
+export const POST = withMultiTenancy(async (req, { user }) => {
+  try {
+    const { name, value, target, category, ownerId } = await req.json();
+
+    if (!name?.trim()) {
+      return NextResponse.json({ error: 'name is required' }, { status: 400 });
+    }
+    if (!VALID_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
+    }
+
+    const created = await prisma.kpiTarget.create({
+      data: {
+        businessId: user.businessId,
+        name: name.trim(),
+        value: value?.trim() || '0',
+        target: target?.trim() || null,
+        category,
+        ownerId: ownerId || null,
+      },
+    });
+
+    return NextResponse.json({
+      id: created.id,
+      name: created.name,
+      value: created.value,
+      change: 0,
+      changeType: 'neutral' as const,
+      target: created.target ?? undefined,
+      progress: parseProgress(created.value, created.target ?? undefined),
+      category: created.category,
+      iconName: created.iconName,
+      color: created.color,
+      gradient: created.gradient,
+      description: 'User-defined target metric',
+      trend: [] as number[],
+      ownerId: created.ownerId ?? undefined,
+      custom: true,
+    });
+  } catch (error) {
+    console.error('Error creating KPI target:', error);
+    return NextResponse.json({ error: 'Failed to create KPI target' }, { status: 500 });
   }
 });
