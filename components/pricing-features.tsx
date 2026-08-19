@@ -1,66 +1,66 @@
 "use client";
 
-import { 
-  Wallet, Briefcase, TrendingUp, Cpu, 
+import {
+  UsersRound, Briefcase, Calendar, Cpu,
   CheckCircle2
 } from "lucide-react";
 
 export function PricingFeatures() {
   const categories = [
     {
-      title: "Finance & Sales",
-      icon: Wallet,
+      title: "Virtual HQ",
+      icon: UsersRound,
       color: "text-blue-600",
       bg: "bg-blue-100",
       items: [
-        "Mini Invoicing System",
-        "Cashflow Snapshot",
-        "Expense Tracker",
-        "VAT Calculator",
-        "Lite CRM",
-        "Lead Forms Builder"
+        "Team Chat Channels",
+        "Voice & Video Huddles",
+        "Async Status Tracker",
+        "Direct Messaging",
+        "File Sharing",
+        "Timezone-Aware Presence"
       ]
     },
     {
-      title: "Operations",
+      title: "Async Productivity",
       icon: Briefcase,
       color: "text-purple-600",
       bg: "bg-purple-100",
       items: [
-         "Appointment Booking",
-         "Helpdesk System",
-         "Task Board",
-         "Inventory Management",
-         "Supplier Tracker",
-         "Employee Onboarding"
+         "Kanban & List Task Boards",
+         "Unified Project Notes",
+         "OKR & Delivery KPI Dashboard",
+         "AI Meeting Transcription",
+         "Action Item Extraction",
+         "Timezone-Localized Calendar"
       ]
     },
     {
-      title: "Growth & Tools",
-      icon: TrendingUp,
+      title: "Client Engagement",
+      icon: Calendar,
       color: "text-orange-600",
       bg: "bg-orange-100",
       items: [
-        "Email Campaigns",
-        "Micro Pages",
-        "HR Records",
-        "E-Signature",
-        "Compliance Reminders",
-        "KPI Dashboard"
+        "Zero-Login Booking Pages",
+        "Lean CRM Pipeline",
+        "Okleevo Mail Engine",
+        "Helpdesk Tickets",
+        "Built-in E-Signature",
+        "Isolated Guest File Uploads"
       ]
     },
     {
-      title: "AI Power",
+      title: "AI & Growth",
       icon: Cpu,
       color: "text-rose-600",
       bg: "bg-rose-100",
       items: [
         "AI Content Generator",
         "AI Note Taking",
-        "AI Business Assistant", 
+        "Multi-Region Mail Campaigns",
         "Automated Insights",
-        "Smart Categorization",
-        "24/7 AI Support"
+        "White-Label Client Interfaces",
+        "Priority Global Server Routing"
       ]
     }
   ];
@@ -68,7 +68,7 @@ export function PricingFeatures() {
   return (
     <div className="mt-12 space-y-8">
       <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
-        Everything Included for £9.99
+        Everything a Distributed Team Needs
       </h3>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -80,7 +80,7 @@ export function PricingFeatures() {
               </div>
               <h4 className="font-semibold text-gray-900">{cat.title}</h4>
             </div>
-            
+
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {cat.items.map((item, itemIdx) => (
                 <li key={itemIdx} className="flex items-center gap-2 text-sm text-gray-600">
@@ -92,10 +92,10 @@ export function PricingFeatures() {
           </div>
         ))}
       </div>
-      
+
       <div className="text-center pt-6">
         <p className="text-sm text-gray-500">
-          + Unlimited Users, Unlimited Storage, Free Updates, and Priority Support.
+          Seat allotments, storage, and video minutes scale with your plan — see the full breakdown below.
         </p>
       </div>
     </div>

@@ -8,15 +8,30 @@ export const GET = withMultiTenancy(async (_req, { business }) => {
     name: business.name,
     fiscalYearEndMonth: business.fiscalYearEndMonth,
     fiscalYearEndDay: business.fiscalYearEndDay,
+    pivotNavEnabled: business.pivotNavEnabled,
   });
 });
 
 export const PATCH = withMultiTenancy(async (req, { dataFilter, user }) => {
   try {
     const body = await req.json();
-    const { fiscalYearEndMonth, fiscalYearEndDay, name, address, city, country } = body;
+    const { fiscalYearEndMonth, fiscalYearEndDay, name, address, city, country, pivotNavEnabled } = body;
 
-    const data: Record<string, string | number> = {};
+    const data: Record<string, string | number | boolean> = {};
+
+    // Global pivot: self-serve opt-in to the new 3-tab nav (Virtual HQ /
+    // Async Productivity / Client Engagement). Same OWNER/ADMIN gate as the
+    // other workspace-identity fields below — any member switching this for
+    // the whole business needs to be someone who can actually decide that.
+    if (pivotNavEnabled !== undefined) {
+      if (user.role !== 'OWNER' && user.role !== 'ADMIN') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+      if (typeof pivotNavEnabled !== 'boolean') {
+        return NextResponse.json({ error: 'pivotNavEnabled must be a boolean' }, { status: 400 });
+      }
+      data.pivotNavEnabled = pivotNavEnabled;
+    }
 
     if (fiscalYearEndMonth !== undefined || fiscalYearEndDay !== undefined) {
       const month = Number(fiscalYearEndMonth);
@@ -62,6 +77,7 @@ export const PATCH = withMultiTenancy(async (req, { dataFilter, user }) => {
       address: business.address,
       city: business.city,
       country: business.country,
+      pivotNavEnabled: business.pivotNavEnabled,
     });
   } catch (error) {
     console.error('Update business error:', error);

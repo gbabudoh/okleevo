@@ -6,17 +6,15 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
-  LayoutDashboard, Users, PoundSterling, Calculator, FileText,
-  TrendingUp, FormInput, Calendar, MessageSquare, Mail,
-  CheckSquare, Sparkles, FileEdit, BarChart3, Package,
-  Truck, UserCheck, PenTool, Globe, Shield, X, Inbox,
+  LayoutDashboard, X, Inbox,
   LogOut, Settings, Building2, CreditCard, HelpCircle, ChevronUp,
-  LifeBuoy, Rocket, BookOpen, Bell, Cpu, UsersRound, AtSign, FolderKanban, Compass
+  LifeBuoy, Rocket, BookOpen, Bell, Compass
 } from 'lucide-react';
 
 import WelcomeGuideModal from '@/components/WelcomeGuideModal';
 import IncomingCallModal from '@/components/collaboration/IncomingCallModal';
 import MobileBottomNav from '@/components/navigation/MobileBottomNav';
+import PivotNav from '@/components/navigation/PivotNav';
 import { REPLAY_TOUR_EVENT } from '@/components/tours/TourProvider';
 import { moduleHasTour } from '@/components/tours/pilot-modules';
 
@@ -31,6 +29,7 @@ interface UserData {
     seatCount: number;
     maxSeats: number;
     enabledModules: string[];
+    pivotNavEnabled: boolean;
     createdAt: string;
   };
 }
@@ -300,16 +299,9 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
-      {/* Dynamic Background */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[100px] animate-blob mix-blend-multiply" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-orange-400/20 rounded-full blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply" />
-        <div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] bg-purple-400/20 rounded-full blur-[100px] animate-blob animation-delay-4000 mix-blend-multiply" />
-      </div>
-
       {/* Sidebar (Desktop Only) */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white/60 backdrop-blur-xl border-r border-white/20 z-40 transition-all duration-300 shadow-sm flex-col">
-        <div className="p-6 border-b border-white/20 flex items-center justify-between">
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-100 z-40 transition-all duration-300 flex-col">
+        <div className="px-5 py-5 border-b border-gray-100 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Image src="/logo.png" alt="Okleevo" width={100} height={26} className="h-6 w-auto" />
           </Link>
@@ -319,228 +311,41 @@ export default function DashboardLayout({
           {(() => {
             const enabledModules = userData?.business?.enabledModules || [];
             const defaultModules = [
-              "dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools",
-              "crm", "mailbox", "forms", "booking", "helpdesk", "campaigns",
-              "collaboration", "tasks", "ai-content", "ai-notes", "kpi-dashboard",
-              "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"
+              "dashboard",
+              "crm", "mailbox", "booking", "helpdesk", "campaigns",
+              "collaboration", "tasks", "ai-notes", "kpi-dashboard",
+              "e-signature"
             ];
 
             // Show only enabled modules to the user
             const finalModules = enabledModules.length > 0 ? enabledModules : defaultModules;
 
-            const isModuleActive = (href: string) => pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
             const isDashboardActive = pathname === '/dashboard';
 
             return (
               <>
                 <Link
                   href="/dashboard"
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
-                    isDashboardActive
-                      ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
+                  className={`group flex items-center gap-3 px-3 py-2 rounded-lg mb-4 transition-colors ${
+                    isDashboardActive ? 'text-orange-700 font-semibold' : 'text-gray-600 hover:text-gray-900 font-medium'
                   }`}
                 >
-                  <LayoutDashboard className={`w-5 h-5 ${isDashboardActive ? 'text-orange-600' : ''}`} />
-                  <span>Dashboard</span>
+                  <span className={`flex items-center justify-center w-7 h-7 rounded-md shrink-0 transition-colors ${
+                    isDashboardActive ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-600'
+                  }`}>
+                    <LayoutDashboard className="w-4 h-4" />
+                  </span>
+                  <span className="text-sm">Dashboard</span>
                 </Link>
 
-                <div className="space-y-4">
-                  {/* Finance */}
-                  {(() => {
-                    const financeModules = [
-                      { id: 'invoicing', href: '/dashboard/invoicing', icon: PoundSterling, label: 'Invoicing' },
-                      { id: 'accounting', href: '/dashboard/accounting', icon: Calculator, label: 'Accounting' },
-                      { id: 'taxation', href: '/dashboard/taxation', icon: FileText, label: 'Taxation' },
-                      { id: 'cashflow', href: '/dashboard/cashflow', icon: TrendingUp, label: 'Cashflow' },
-                      { id: 'expenses', href: '/dashboard/expenses', icon: FileText, label: 'Expenses' },
-                      { id: 'vat-tools', href: '/dashboard/vat-tools', icon: Calculator, label: 'VAT Tools' },
-                    ].filter(m => finalModules.includes(m.id));
-
-                    if (financeModules.length === 0) return null;
-                    return (
-                      <div className="pt-4">
-                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Finance</p>
-                        {financeModules.map(m => {
-                          const active = isModuleActive(m.href);
-                          return (
-                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
-                              active
-                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
-                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
-                            }`}>
-                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Okleevo Mail Engine — always visible, never gated by enabledModules */}
-                  {(() => {
-                    const mailActive = isModuleActive('/dashboard/mailbox');
-                    return (
-                      <div className="pt-4">
-                        <p className="px-4 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#fc6813' }}>
-                          Okleevo Mail Engine
-                        </p>
-                        <Link
-                          href="/dashboard/mailbox"
-                          className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all ${mailActive
-                              ? 'bg-orange-50 border border-orange-200 text-orange-600 shadow-sm'
-                              : 'text-orange-500 hover:bg-orange-50 border border-transparent hover:border-orange-100'
-                            }`}
-                        >
-                          <div className="relative flex items-center justify-center w-8 h-8 rounded-xl shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813, #ff8c42)' }}>
-                            <Mail className="w-4 h-4 text-white" />
-                            {unreadMailCount > 0 && (
-                              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
-                                {unreadMailCount > 99 ? '99+' : unreadMailCount}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="text-sm">Mail Engine</span>
-                          </div>
-                          {unreadMailCount > 0 && (
-                            <span className="px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-bold leading-none shrink-0">
-                              {unreadMailCount > 99 ? '99+' : unreadMailCount}
-                            </span>
-                          )}
-                        </Link>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Customer */}
-                  {(() => {
-                    const customerModules = [
-                      { id: 'crm', href: '/dashboard/crm', icon: Users, label: 'CRM' },
-                      { id: 'forms', href: '/dashboard/forms', icon: FormInput, label: 'Forms' },
-                      { id: 'booking', href: '/dashboard/booking', icon: Calendar, label: 'Booking' },
-                      { id: 'helpdesk', href: '/dashboard/helpdesk', icon: MessageSquare, label: 'Helpdesk' },
-                      { id: 'campaigns', href: '/dashboard/campaigns', icon: Mail, label: 'Campaigns' },
-                    ].filter(m => finalModules.includes(m.id));
-
-                    return (
-                      <div className="pt-4">
-                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Customer</p>
-                        {customerModules.map(m => {
-                          const active = isModuleActive(m.href);
-                          return (
-                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
-                              active
-                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
-                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
-                            }`}>
-                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Team */}
-                  {(() => {
-                    const teamModules = [
-                      { id: 'collaboration', href: '/dashboard/collaboration', icon: UsersRound, label: 'Collaboration' },
-                    ];
-
-                    if (teamModules.length === 0) return null;
-                    return (
-                      <div className="pt-4">
-                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Team</p>
-                        {teamModules.map(m => {
-                          const active = isModuleActive(m.href);
-                          return (
-                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
-                              active
-                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
-                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
-                            }`}>
-                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Productivity */}
-                  {(() => {
-                    const productivityModules = [
-                      { id: 'tasks', href: '/dashboard/tasks', icon: CheckSquare, label: 'Tasks' },
-                      { id: 'ai-content', href: '/dashboard/ai-content', icon: Sparkles, label: 'AI Content' },
-                      { id: 'ai-notes', href: '/dashboard/ai-notes', icon: FileEdit, label: 'AI Notes' },
-                      { id: 'kpi-dashboard', href: '/dashboard/kpi-dashboard', icon: BarChart3, label: 'KPI Dashboard' },
-                    ].filter(m => finalModules.includes(m.id));
-
-                    // Projects is new cross-module infrastructure (not yet a toggleable
-                    // billed module), so it's always shown rather than gated by enabledModules.
-                    const allModules = [
-                      ...productivityModules,
-                      { id: 'projects', href: '/dashboard/projects', icon: FolderKanban, label: 'Projects' },
-                    ];
-
-                    return (
-                      <div className="pt-4">
-                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Productivity</p>
-                        {allModules.map(m => {
-                          const active = isModuleActive(m.href);
-                          return (
-                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
-                              active
-                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
-                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
-                            }`}>
-                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Operations */}
-                  {(() => {
-                    const operationsModules = [
-                      { id: 'inventory', href: '/dashboard/inventory', icon: Package, label: 'Inventory' },
-                      { id: 'suppliers', href: '/dashboard/suppliers', icon: Truck, label: 'Suppliers' },
-                      { id: 'hr-records', href: '/dashboard/hr-records', icon: UserCheck, label: 'HR Records' },
-                      { id: 'e-signature', href: '/dashboard/e-signature', icon: PenTool, label: 'E-Signature' },
-                      { id: 'micro-pages', href: '/dashboard/micro-pages', icon: Globe, label: 'Micro Pages' },
-                      { id: 'compliance', href: '/dashboard/compliance', icon: Shield, label: 'Compliance' },
-                    ].filter(m => finalModules.includes(m.id));
-
-                    if (operationsModules.length === 0) return null;
-                    return (
-                      <div className="pt-4">
-                        <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Operations</p>
-                        {operationsModules.map(m => {
-                          const active = isModuleActive(m.href);
-                          return (
-                            <Link key={m.id} href={m.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
-                              active
-                                ? 'bg-orange-50 border border-orange-200/90 text-orange-600 shadow-xs font-bold'
-                                : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 border border-transparent transition-colors font-medium'
-                            }`}>
-                              <m.icon className={`w-5 h-5 ${active ? 'text-orange-600' : ''}`} /> {m.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-                </div>
+                <PivotNav finalModules={finalModules} pathname={pathname} unreadMailCount={unreadMailCount} />
               </>
             );
           })()}
         </nav>
 
         {/* Bottom Actions */}
-        <div className="p-3 border-t border-gray-100 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl space-y-1 relative">
+        <div className="p-3 border-t border-gray-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/80 space-y-1 relative">
           <div className="relative">
             <button
               onClick={() => setShowHelpMenu(v => !v)}
@@ -630,8 +435,8 @@ export default function DashboardLayout({
       {/* Main Content */}
       <div className="ml-0 md:ml-64 h-screen pb-20 md:pb-0 overflow-y-auto relative" id="main-content">
         {/* Header */}
-        <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-md border-b border-white/20">
-          <div className="px-6 py-3 flex items-center justify-between">
+        <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
+          <div className="px-6 py-3.5 flex items-center justify-between">
             <div className="flex-1 min-w-0">
               {loading ? (
                 <div className="flex items-center gap-2 py-2">
@@ -639,23 +444,13 @@ export default function DashboardLayout({
                   <p className="text-sm text-gray-500">Loading...</p>
                 </div>
               ) : userData && userData.business ? (
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
-                  <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-white/50 border border-white/50 rounded-lg shadow-sm">
-                    <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" />
-                    <span className="text-xs sm:text-sm font-semibold text-slate-800">{userData.business.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-emerald-50/50 border border-emerald-100/50 rounded-lg shadow-sm">
-                    <Cpu className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
-                    <span className="text-xs sm:text-sm text-emerald-700 capitalize">{userData.business.industry}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50/50 border border-blue-100/50 rounded-lg shadow-sm">
-                    <UsersRound className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
-                    <span className="text-xs sm:text-sm text-blue-700">{userData.business.seatCount} / {userData.business.maxSeats} employees</span>
-                  </div>
-                  <div className="hidden md:flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-amber-50/50 border border-amber-100/50 rounded-lg shadow-sm">
-                    <AtSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600" />
-                    <span className="text-xs sm:text-sm text-amber-700">{userData.email}</span>
-                  </div>
+                <div className="flex items-center gap-2 text-sm min-w-0">
+                  <Building2 className="w-4 h-4 text-gray-400 shrink-0" />
+                  <span className="font-semibold text-gray-900 truncate">{userData.business.name}</span>
+                  <span className="text-gray-300 shrink-0">·</span>
+                  <span className="text-gray-500 capitalize hidden sm:inline shrink-0">{userData.business.industry}</span>
+                  <span className="text-gray-300 hidden sm:inline shrink-0">·</span>
+                  <span className="text-gray-500 hidden sm:inline shrink-0">{userData.business.seatCount}/{userData.business.maxSeats} seats</span>
                 </div>
               ) : null}
             </div>

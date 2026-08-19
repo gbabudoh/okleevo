@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      NEXTAUTH_SECRET: ci-only-placeholder-secret-not-used-in-any-real-environment
+      GUEST_TOKEN_SECRET: ci-only-placeholder-secret-not-used-in-any-real-environment
+      INTERNAL_WEBHOOK_SECRET: ci-only-placeholder-secret-not-used-in-any-real-environment
+      JWT_SECRET: ci-only-placeholder-secret-not-used-in-any-real-environment
+      CRON_SECRET: ci-only-placeholder-secret
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_ci_placeholder
+      GEMINI_API_KEY: ci-placeholder
+      GROQ_API_KEY: ci-placeholder
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prisma schema validate
+        run: npx prisma validate
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Push schema to CI database
+        # This repo currently manages schema via `prisma db push` (no
+        # prisma/migrations history yet), matching the `db:setup` script.
+        # Switch this to `prisma migrate deploy` once real migrations exist.
+        run: npx prisma db push --accept-data-loss
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

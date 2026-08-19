@@ -5,30 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  X, LayoutDashboard, Users, PoundSterling,
+  X, LayoutDashboard, Users,
   Inbox, Menu, LogOut, Settings, BookOpen,
-  Calculator, FileText, TrendingUp, FormInput,
   Calendar, MessageSquare, Mail, UsersRound,
-  CheckSquare, Sparkles, FileEdit, BarChart3,
-  Package, Truck, UserCheck, PenTool, Globe, Shield,
+  CheckSquare, FileEdit, BarChart3,
+  PenTool,
   LifeBuoy, Rocket
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
 const ALL_SECTIONS = [
-  {
-    label: 'Finance',
-    color: 'from-emerald-500 to-teal-500',
-    bg: 'bg-emerald-50',
-    items: [
-      { name: 'Invoicing',   icon: PoundSterling, href: '/dashboard/invoicing',     color: 'from-emerald-500 to-green-500' },
-      { name: 'Accounting',  icon: Calculator,    href: '/dashboard/accounting',    color: 'from-teal-500 to-cyan-500' },
-      { name: 'Taxation',    icon: FileText,      href: '/dashboard/taxation',      color: 'from-green-500 to-emerald-600' },
-      { name: 'Cashflow',    icon: TrendingUp,    href: '/dashboard/cashflow',      color: 'from-cyan-500 to-teal-600' },
-      { name: 'Expenses',    icon: FileText,      href: '/dashboard/expenses',      color: 'from-lime-500 to-green-500' },
-      { name: 'VAT Tools',   icon: Calculator,    href: '/dashboard/vat-tools',     color: 'from-green-600 to-teal-600' },
-    ],
-  },
   {
     label: 'Customer',
     color: 'from-blue-500 to-indigo-500',
@@ -36,7 +22,6 @@ const ALL_SECTIONS = [
     items: [
       { name: 'CRM',       icon: Users,          href: '/dashboard/crm',       color: 'from-blue-500 to-indigo-500' },
       { name: 'Mailbox',   icon: Inbox,          href: '/dashboard/mailbox',   color: 'from-rose-500 to-pink-500' },
-      { name: 'Forms',     icon: FormInput,      href: '/dashboard/forms',     color: 'from-violet-500 to-purple-500' },
       { name: 'Booking',   icon: Calendar,       href: '/dashboard/booking',   color: 'from-sky-500 to-blue-500' },
       { name: 'Helpdesk',  icon: MessageSquare,  href: '/dashboard/helpdesk',  color: 'from-orange-500 to-amber-500' },
       { name: 'Campaigns', icon: Mail,           href: '/dashboard/campaigns', color: 'from-indigo-500 to-purple-500' },
@@ -56,7 +41,6 @@ const ALL_SECTIONS = [
     bg: 'bg-orange-50',
     items: [
       { name: 'Tasks',         icon: CheckSquare, href: '/dashboard/tasks',         color: 'from-green-500 to-emerald-500' },
-      { name: 'AI Content',    icon: Sparkles,    href: '/dashboard/ai-content',    color: 'from-orange-500 to-red-500' },
       { name: 'AI Notes',      icon: FileEdit,    href: '/dashboard/ai-notes',      color: 'from-amber-500 to-orange-500' },
       { name: 'KPI Dashboard', icon: BarChart3,   href: '/dashboard/kpi-dashboard', color: 'from-teal-500 to-cyan-500' },
     ],
@@ -66,12 +50,7 @@ const ALL_SECTIONS = [
     color: 'from-slate-600 to-gray-700',
     bg: 'bg-slate-50',
     items: [
-      { name: 'Inventory',   icon: Package,    href: '/dashboard/inventory',   color: 'from-slate-500 to-gray-600' },
-      { name: 'Suppliers',   icon: Truck,      href: '/dashboard/suppliers',   color: 'from-gray-500 to-slate-600' },
-      { name: 'HR Records',  icon: UserCheck,  href: '/dashboard/hr-records',  color: 'from-blue-600 to-slate-600' },
-      { name: 'E-Signature', icon: PenTool,    href: '/dashboard/e-signature', color: 'from-indigo-600 to-slate-600' },
-      { name: 'Micro Pages', icon: Globe,      href: '/dashboard/micro-pages', color: 'from-sky-600 to-blue-600' },
-      { name: 'Compliance',  icon: Shield,     href: '/dashboard/compliance',  color: 'from-amber-600 to-orange-600' },
+      { name: 'E-Signature', icon: PenTool, href: '/dashboard/e-signature', color: 'from-indigo-600 to-slate-600' },
     ],
   },
 ];
@@ -237,7 +216,7 @@ export default function MobileBottomNav() {
     { name: 'Home',    href: '/dashboard',          icon: LayoutDashboard },
     { name: 'CRM',     href: '/dashboard/crm',      icon: Users },
     { name: 'Mail',    href: '/dashboard/mailbox',  icon: Inbox },
-    { name: 'Finance', href: '/dashboard/invoicing', icon: PoundSterling },
+    { name: 'Tasks', href: '/dashboard/tasks', icon: CheckSquare },
   ];
 
   return (

@@ -22,7 +22,7 @@ export interface ProjectFormValues {
   name: string;
   contactId: string;
   status: ProjectStatusValue;
-  budget: string;
+  startDate: string;
   dueDate: string;
   ownerId: string;
 }
@@ -45,6 +45,9 @@ export default function ProjectFormModal({
   const [values, setValues] = useState<ProjectFormValues>(initialValues);
   const [contacts, setContacts] = useState<ContactOption[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMemberOption[]>([]);
+
+  const dateRangeInvalid = !!(values.startDate && values.dueDate && values.startDate > values.dueDate);
+  const canSubmit = !!values.name.trim() && !dateRangeInvalid;
 
   useEffect(() => {
     fetch('/api/crm')
@@ -80,7 +83,7 @@ export default function ProjectFormModal({
               placeholder="e.g. Website Redesign"
               value={values.name}
               onChange={e => setValues({ ...values, name: e.target.value })}
-              onKeyDown={e => e.key === 'Enter' && values.name.trim() && onSubmit(values)}
+              onKeyDown={e => e.key === 'Enter' && canSubmit && onSubmit(values)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition"
             />
           </div>
@@ -115,26 +118,28 @@ export default function ProjectFormModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">Budget (£)</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">Start date</label>
               <input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                value={values.budget}
-                onChange={e => setValues({ ...values, budget: e.target.value })}
+                type="date"
+                value={values.startDate}
+                onChange={e => setValues({ ...values, startDate: e.target.value })}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">Due date</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">End date</label>
               <input
                 type="date"
                 value={values.dueDate}
                 onChange={e => setValues({ ...values, dueDate: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 transition"
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 transition ${
+                  dateRangeInvalid ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100' : 'border-gray-200 focus:border-gray-400 focus:ring-gray-100'
+                }`}
               />
             </div>
+            {dateRangeInvalid && (
+              <p className="col-span-2 text-xs text-rose-600 font-medium -mt-1">End date can&apos;t be before the start date.</p>
+            )}
           </div>
 
           {mode === 'edit' && (
@@ -161,7 +166,7 @@ export default function ProjectFormModal({
           </button>
           <button
             type="button"
-            disabled={saving || !values.name.trim()}
+            disabled={saving || !canSubmit}
             onClick={() => onSubmit(values)}
             className="flex-1 py-2.5 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 cursor-pointer"
           >

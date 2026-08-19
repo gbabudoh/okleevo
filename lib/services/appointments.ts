@@ -78,3 +78,72 @@ export async function notifyAppointmentStatus(
     console.error(`Failed to send ${kind} appointment email:`, error);
   }
 }
+
+/**
+ * Minimal RFC 5545 .ics invite for a single appointment. Good enough for
+ * every mainstream calendar client to pick up date/time/location — not a
+ * full calendar integration (no recurrence, no attendee RSVP tracking).
+ */
+export function buildIcsInvite(appointment: Appointment, businessName: string, meetingUrl?: string): string {
+  const toIcsDate = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const escape = (s: string) => s.replace(/[\\,;]/g, (m) => `\\${m}`).replace(/\n/g, '\\n');
+
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Okleevo//Booking//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${appointment.id}@okleevo.com`,
+    `DTSTAMP:${toIcsDate(new Date())}`,
+    `DTSTART:${toIcsDate(appointment.startTime)}`,
+    `DTEND:${toIcsDate(appointment.endTime)}`,
+    `SUMMARY:${escape(`${appointment.title} — ${businessName}`)}`,
+    ...(meetingUrl ? [`DESCRIPTION:${escape(`Join: ${meetingUrl}`)}`, `LOCATION:${escape(meetingUrl)}`] : []),
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ];
+  return lines.join('\r\n');
+}
+
+/**
+ * Layer 2 (zero-login guest booking-page) confirmation email: booking
+ * details, the .ics invite, and the one-time 6-digit access PIN for the
+ * guest video room. The PIN is passed in raw here (never stored raw — only
+ * appointment.securePinHash is persisted) and sent exactly once, at the
+ * moment it's generated, so the server never needs to hold or recover it
+ * again later.
+ */
+export async function notifyGuestBookingConfirmed(
+  appointment: Appointment,
+  businessName: string,
+  rawPin: string,
+  meetingUrl: string,
+) {
+  const when = formatWhen(appointment.startTime);
+  const html = `
+    <p>Your booking for <strong>${appointment.title}</strong> with <strong>${businessName}</strong> on <strong>${when}</strong> is confirmed.</p>
+    <p>Join at the scheduled time: <a href="${meetingUrl}">${meetingUrl}</a></p>
+    <p>Your one-time access code: <strong style="font-size:1.25em;letter-spacing:0.15em;">${rawPin}</strong></p>
+    <p>You'll be asked to enter this code when you join — no account or download required.</p>
+  `;
+
+  try {
+    await sendClientEmail({
+      to: appointment.clientEmail,
+      subject: `Booking confirmed — ${appointment.title}`,
+      html,
+      businessName,
+      attachments: [
+        {
+          filename: 'invite.ics',
+          content: buildIcsInvite(appointment, businessName, meetingUrl),
+          contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
+        },
+      ],
+    });
+  } catch (error) {
+    console.error('Failed to send guest booking confirmation email:', error);
+  }
+}

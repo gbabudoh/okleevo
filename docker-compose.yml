@@ -1,0 +1,107 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: okleevo
+      POSTGRES_PASSWORD: okleevo
+      POSTGRES_DB: okleevo
+    ports:
+      - '5432:5432'
+    volumes:
+      - okleevo_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U okleevo']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: okleevo
+      MINIO_ROOT_PASSWORD: okleevo-local-dev
+      # Bucket-notification target for the malware-scan worker. The webhook
+      # itself is enabled here; binding it to the guest sandbox bucket's
+      # PUT events still needs the one-time `mc event add` the minio-init
+      # service below runs on every stack start (idempotent).
+      MINIO_NOTIFY_WEBHOOK_ENABLE_SCAN: 'on'
+      MINIO_NOTIFY_WEBHOOK_ENDPOINT_SCAN: http://malware-scan-worker:4001/minio-webhook
+    ports:
+      - '9000:9000' # S3 API
+      - '9001:9001' # Web console
+    volumes:
+      - okleevo_minio_data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ClamAV daemon (clamd) — the malware-scan worker connects to this over
+  # TCP using the clamd INSTREAM protocol (see worker/malware-scan/src/clamav.ts).
+  # First boot downloads virus definitions, which can take a couple of
+  # minutes; the worker will simply fail scans (fail-closed, files stay
+  # PENDING) until this reports healthy.
+  clamav:
+    image: clamav/clamav:1.3
+    restart: unless-stopped
+    ports:
+      - '3310:3310'
+    volumes:
+      - okleevo_clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ['CMD', 'clamdcheck.sh']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  malware-scan-worker:
+    build: ./worker/malware-scan
+    restart: unless-stopped
+    depends_on:
+      - minio
+      - clamav
+    environment:
+      PORT: '4001'
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: '3310'
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: '9000'
+      MINIO_USE_SSL: 'false'
+      MINIO_ACCESS_KEY: okleevo
+      MINIO_SECRET_KEY: okleevo-local-dev
+      GUEST_SANDBOX_BUCKET: okleevo-client-sandbox
+      # host.docker.internal resolves to the Docker host from inside a
+      # container on Docker Desktop (Windows/Mac); on native Linux Docker
+      # you'll need to point this at the host's real address instead.
+      INTERNAL_WEBHOOK_URL: http://host.docker.internal:3000/api/internal/webhooks/malware-scan-result
+      INTERNAL_WEBHOOK_SECRET: local-dev-internal-secret
+    ports:
+      - '4001:4001'
+
+  # One-shot init: creates the guest sandbox bucket (private, no anonymous
+  # read/list) and binds its PUT events to the webhook notification target
+  # configured on the minio service above. Re-runs harmlessly on every
+  # `docker compose up`.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+      - malware-scan-worker
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 okleevo okleevo-local-dev; do sleep 1; done;
+      mc mb --ignore-existing local/okleevo-client-sandbox;
+      mc anonymous set none local/okleevo-client-sandbox;
+      mc event add local/okleevo-client-sandbox arn:minio:sqs::SCAN:webhook --event put --prefix incoming/ --ignore-existing;
+      exit 0;
+      "
+
+volumes:
+  okleevo_postgres_data:
+  okleevo_minio_data:
+  okleevo_clamav_data:

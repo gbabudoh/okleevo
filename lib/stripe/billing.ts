@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
+import type { SubscriptionStatus } from '@/lib/prisma-client';
 
 export const TRIAL_DAYS = 14;
 export const PLAN_AMOUNT = 999; // £9.99 in pence
@@ -74,6 +75,10 @@ export type SubscriptionInfo = {
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   amount: number;
+  // Global pivot: set once a workspace has switched to a Starter/Growth/
+  // Scale USD plan (see lib/stripe/global-billing.ts); null for every
+  // legacy £9.99 subscriber, unchanged.
+  planTier: string | null;
 };
 
 export async function getSubscriptionInfo(businessId: string): Promise<SubscriptionInfo> {
@@ -89,6 +94,7 @@ export async function getSubscriptionInfo(businessId: string): Promise<Subscript
     stripeCustomerId: null,
     stripeSubscriptionId: null,
     amount: PLAN_AMOUNT,
+    planTier: null,
   };
 
   if (!sub) return fallback;
@@ -109,6 +115,7 @@ export async function getSubscriptionInfo(businessId: string): Promise<Subscript
       stripeCustomerId: sub.stripeCustomerId,
       stripeSubscriptionId: sub.stripeSubscriptionId,
       amount: sub.amount,
+      planTier: sub.planTier,
     };
   }
 
@@ -123,12 +130,14 @@ export async function getSubscriptionInfo(businessId: string): Promise<Subscript
       stripeCustomerId: sub.stripeCustomerId,
       stripeSubscriptionId: sub.stripeSubscriptionId,
       amount: sub.amount,
+      planTier: sub.planTier,
     };
   }
 
   return {
     ...fallback,
     status: sub.status,
+    planTier: sub.planTier,
     stripeCustomerId: sub.stripeCustomerId,
     stripeSubscriptionId: sub.stripeSubscriptionId,
     amount: sub.amount,
@@ -209,7 +218,7 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
     // Renewal, plan change, or cancellation scheduled
     case 'customer.subscription.updated': {
       const s = event.data.object as Stripe.Subscription;
-      const statusMap: Record<string, string> = {
+      const statusMap: Record<string, SubscriptionStatus> = {
         active: 'ACTIVE',
         past_due: 'PAST_DUE',
         incomplete: 'INCOMPLETE',
@@ -220,7 +229,7 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
       await prisma.subscription.updateMany({
         where: { stripeSubscriptionId: s.id },
         data: {
-          status: newStatus as any,
+          status: newStatus,
           cancelAtPeriodEnd: s.cancel_at_period_end,
           currentPeriodStart: new Date(s.current_period_start * 1000),
           currentPeriodEnd: new Date(s.current_period_end * 1000),

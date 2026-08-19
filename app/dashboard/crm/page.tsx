@@ -91,8 +91,8 @@ interface ReceivedEmail {
 }
 
 const labelCls = "block text-xs font-semibold text-gray-600 mb-1 sm:mb-1.5";
-const inputCls = "w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm outline-none";
-const selectCls = "w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer text-sm outline-none";
+const inputCls = "w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm outline-none";
+const selectCls = "w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm outline-none";
 const modalHeaderCls = "px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100";
 
 function TagInput({ value, onChange, placeholder }: {
@@ -118,11 +118,11 @@ function TagInput({ value, onChange, placeholder }: {
   };
 
   return (
-    <div className="w-full min-h-[42px] px-2.5 py-1.5 border border-gray-200 rounded-xl bg-white flex flex-wrap items-center gap-1.5 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+    <div className="w-full min-h-[42px] px-2.5 py-1.5 border border-gray-200 rounded-xl bg-white flex flex-wrap items-center gap-1.5 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
       {value.map(tag => (
-        <span key={tag} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-semibold pl-2 pr-1 py-1 rounded-lg">
+        <span key={tag} className="flex items-center gap-1 bg-indigo-50 text-indigo-700 text-xs font-semibold pl-2 pr-1 py-1 rounded-lg">
           {tag}
-          <button type="button" onClick={() => onChange(value.filter(t => t !== tag))} className="hover:text-blue-900 cursor-pointer">
+          <button type="button" onClick={() => onChange(value.filter(t => t !== tag))} className="hover:text-indigo-900 cursor-pointer">
             <X className="w-3 h-3" />
           </button>
         </span>
@@ -396,7 +396,7 @@ export default function CRMPage() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'lead': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'lead': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
       case 'inactive': return 'bg-gray-100 text-gray-700 border-gray-200';
       case 'customer': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
       default: return 'bg-gray-100 text-gray-700';
@@ -596,7 +596,7 @@ export default function CRMPage() {
 
   const STATUS_ORDER: Client['status'][] = ['active', 'lead', 'customer', 'inactive'];
   const statusBarColor: Record<Client['status'], string> = {
-    active: 'bg-emerald-500', lead: 'bg-blue-500', customer: 'bg-indigo-500', inactive: 'bg-gray-400',
+    active: 'bg-emerald-500', lead: 'bg-indigo-500', customer: 'bg-indigo-500', inactive: 'bg-gray-400',
   };
   const statusHexColor: Record<Client['status'], string> = {
     active: '#10b981', lead: '#3b82f6', customer: '#6366f1', inactive: '#9ca3af',
@@ -742,9 +742,9 @@ export default function CRMPage() {
   const DetailPanel = ({ client }: { client: Client }) => (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-blue-50/50 dark:bg-blue-950/20 shrink-0">
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-indigo-50/50 dark:bg-indigo-950/20 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-base shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base shrink-0">
             {client.name[0]}
           </div>
           <div className="min-w-0">
@@ -754,7 +754,7 @@ export default function CRMPage() {
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button onClick={() => { setEditingClient(client); setShowEditModal(true); setSelectedClient(null); }}
-            className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-colors text-blue-500 cursor-pointer">
+            className="p-2 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-lg transition-colors text-indigo-500 cursor-pointer">
             <Edit className="w-4 h-4" />
           </button>
           <button onClick={() => { setDeletingClient(client); setShowDeleteModal(true); setSelectedClient(null); }}
@@ -773,7 +773,7 @@ export default function CRMPage() {
         {(['communication', 'info', 'notes'] as const).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`flex-1 py-2.5 text-[11px] font-bold uppercase tracking-wide transition-colors border-b-2 cursor-pointer ${
-              activeTab === tab ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+              activeTab === tab ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
             }`}>
             {tab}
           </button>
@@ -786,7 +786,7 @@ export default function CRMPage() {
           <div className="space-y-3">
             {loadingTimeline ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <Loader2 className="w-7 h-7 text-blue-600 animate-spin" />
+                <Loader2 className="w-7 h-7 text-indigo-600 animate-spin" />
                 <p className="text-[11px] text-gray-400 font-medium">Loading emails...</p>
               </div>
             ) : emailTimeline.length === 0 ? (
@@ -802,11 +802,11 @@ export default function CRMPage() {
                   {[{ id: 'all', label: 'All', icon: Clock }, { id: 'RECEIVED', label: 'Inbox', icon: InboxIcon }, { id: 'SENT', label: 'Sent', icon: SendIcon }].map((item) => (
                     <button key={item.id} onClick={() => setCommFilter(item.id as 'all' | 'SENT' | 'RECEIVED')}
                       className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all cursor-pointer ${
-                        commFilter === item.id ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                        commFilter === item.id ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                       }`}>
                       <item.icon className="w-3 h-3" />
                       {item.label}
-                      <span className={`px-1 rounded text-[9px] ${commFilter === item.id ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400' : 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-gray-400'}`}>
+                      <span className={`px-1 rounded text-[9px] ${commFilter === item.id ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400' : 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-gray-400'}`}>
                         {item.id === 'all' ? emailTimeline.length : emailTimeline.filter(e => e.type === item.id).length}
                       </span>
                     </button>
@@ -815,11 +815,11 @@ export default function CRMPage() {
                 <div className="space-y-2.5">
                   {emailTimeline.filter(item => commFilter === 'all' || item.type === commFilter).map((item) => (
                     <div key={item.id} className={`p-3.5 rounded-xl border ${
-                      item.type === 'SENT' ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/40' : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 shadow-sm'
+                      item.type === 'SENT' ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/40' : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 shadow-sm'
                     }`}>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                          item.type === 'SENT' ? 'bg-blue-600 text-white' : 'bg-indigo-600 text-white'
+                          item.type === 'SENT' ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white'
                         }`}>
                           {item.type === 'SENT' ? 'Outgoing' : 'Incoming'}
                         </span>
@@ -842,7 +842,7 @@ export default function CRMPage() {
               <select
                 value={client.pipelineStage}
                 onChange={(e) => handleStageChange(client.id, e.target.value as Client['pipelineStage'])}
-                className="w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-gray-900 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-gray-900 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="new">New</option>
                 <option value="contacted">Contacted</option>
@@ -865,7 +865,7 @@ export default function CRMPage() {
                 <p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Tags</p>
                 <div className="flex flex-wrap gap-1.5">
                   {client.tags.map(tag => (
-                    <span key={tag} className="px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[11px] font-semibold">{tag}</span>
+                    <span key={tag} className="px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-[11px] font-semibold">{tag}</span>
                   ))}
                 </div>
               </div>
@@ -877,7 +877,7 @@ export default function CRMPage() {
             <div className="grid grid-cols-2 gap-2">
               <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <div className="p-1 bg-blue-100 dark:bg-blue-950 rounded"><SendIcon className="w-3 h-3 text-blue-600 dark:text-blue-400" /></div>
+                  <div className="p-1 bg-indigo-100 dark:bg-indigo-950 rounded"><SendIcon className="w-3 h-3 text-indigo-600 dark:text-indigo-400" /></div>
                   <span className="text-[9px] font-bold uppercase text-gray-400">Last Sent</span>
                 </div>
                 {emailTimeline.find(e => e.type === 'SENT')
@@ -904,13 +904,13 @@ export default function CRMPage() {
               onChange={(e) => setNoteDraft(e.target.value)}
               placeholder="Add notes about this client…"
               rows={10}
-              className="w-full px-3.5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-900 transition-all resize-none"
+              className="w-full px-3.5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all resize-none"
             />
             <button
               type="button"
               disabled={savingNote || noteDraft === (client.notes || '')}
               onClick={() => handleSaveNote(client.id)}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
+              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
             >
               {savingNote ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save Notes'}
             </button>
@@ -922,7 +922,7 @@ export default function CRMPage() {
       <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-800 shrink-0">
         <button
           onClick={() => { setExcludedFromBulk(0); setEmailData(prev => ({ ...prev, to: client.email })); setShowEmailModal(true); }}
-          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
+          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
         >
           <Mail className="w-4 h-4" /> Email Contact
         </button>
@@ -934,7 +934,7 @@ export default function CRMPage() {
     <>
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-          <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+          <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
           <p className="text-sm font-semibold text-gray-500">Loading contacts...</p>
         </div>
       ) : filteredClients.length === 0 ? (
@@ -942,7 +942,7 @@ export default function CRMPage() {
           <Users className="w-10 h-10 text-gray-200 mx-auto" />
           <h3 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">No clients found</h3>
           <button onClick={() => setShowAddModal(true)}
-            className="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center gap-2 text-sm cursor-pointer">
+            className="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors inline-flex items-center gap-2 text-sm cursor-pointer">
             <Plus className="w-4 h-4" /> Add First Client
           </button>
         </div>
@@ -954,13 +954,13 @@ export default function CRMPage() {
               onClick={() => setSelectedClient(client)}
               className={`bg-white rounded-2xl p-4 border transition-all cursor-pointer group ${
                 selectedClient?.id === client.id
-                  ? 'border-blue-500 shadow-md ring-2 ring-blue-100'
+                  ? 'border-indigo-500 shadow-md ring-2 ring-indigo-100'
                   : 'border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200'
               }`}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shrink-0">
                     {client.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div className="min-w-0">
@@ -970,7 +970,7 @@ export default function CRMPage() {
                 </div>
                 <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={(e) => { e.stopPropagation(); setEditingClient(client); setShowEditModal(true); }}
-                    className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-400 cursor-pointer">
+                    className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-400 cursor-pointer">
                     <Edit className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); setDeletingClient(client); setShowDeleteModal(true); }}
@@ -998,16 +998,16 @@ export default function CRMPage() {
             {sortedClients.map((client) => (
               <div key={client.id} onClick={() => setSelectedClient(client)}
                 className={`bg-white rounded-xl p-3 border flex items-center gap-3 cursor-pointer transition-all ${
-                  selectedClient?.id === client.id ? 'border-blue-500 shadow-sm' : 'border-gray-100 shadow-sm'
+                  selectedClient?.id === client.id ? 'border-indigo-500 shadow-sm' : 'border-gray-100 shadow-sm'
                 }`}>
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); toggleSelectOne(client.id); }}
-                  className="shrink-0 text-gray-300 hover:text-blue-600 cursor-pointer p-0.5"
+                  className="shrink-0 text-gray-300 hover:text-indigo-600 cursor-pointer p-0.5"
                 >
-                  {selectedIds.has(client.id) ? <CheckSquare className="w-4.5 h-4.5 text-blue-600" /> : <Square className="w-4.5 h-4.5" />}
+                  {selectedIds.has(client.id) ? <CheckSquare className="w-4.5 h-4.5 text-indigo-600" /> : <Square className="w-4.5 h-4.5" />}
                 </button>
-                <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm shrink-0">
                   {client.name[0]}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1026,7 +1026,7 @@ export default function CRMPage() {
 
           {/* Bulk action bar */}
           {selectedIds.size > 0 && (
-            <div className="flex flex-wrap items-center justify-between gap-2.5 bg-blue-600 text-white rounded-2xl px-4 py-2.5 mb-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 bg-indigo-600 text-white rounded-2xl px-4 py-2.5 mb-2.5">
               <span className="text-sm font-bold">{selectedIds.size} selected</span>
               <div className="flex items-center gap-2 flex-wrap">
                 <button type="button" disabled={bulkWorking} onClick={handleBulkEmail}
@@ -1059,9 +1059,9 @@ export default function CRMPage() {
               <thead>
                 <tr className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/60">
                   <th className="w-10 px-4 py-3">
-                    <button type="button" onClick={toggleSelectAll} className="flex items-center cursor-pointer text-gray-400 hover:text-blue-600">
+                    <button type="button" onClick={toggleSelectAll} className="flex items-center cursor-pointer text-gray-400 hover:text-indigo-600">
                       {selectedIds.size === filteredClients.length && filteredClients.length > 0
-                        ? <CheckSquare className="w-4 h-4 text-blue-600" /> : <Square className="w-4 h-4" />}
+                        ? <CheckSquare className="w-4 h-4 text-indigo-600" /> : <Square className="w-4 h-4" />}
                     </button>
                   </th>
                   {([
@@ -1079,15 +1079,15 @@ export default function CRMPage() {
               <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                 {sortedClients.map((client) => (
                   <tr key={client.id} onClick={() => setSelectedClient(client)}
-                    className={`cursor-pointer transition-colors ${selectedClient?.id === client.id ? 'bg-blue-50 dark:bg-blue-950/30' : 'hover:bg-gray-50 dark:hover:bg-slate-800/40'}`}>
+                    className={`cursor-pointer transition-colors ${selectedClient?.id === client.id ? 'bg-indigo-50 dark:bg-indigo-950/30' : 'hover:bg-gray-50 dark:hover:bg-slate-800/40'}`}>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <button type="button" onClick={() => toggleSelectOne(client.id)} className="flex items-center cursor-pointer text-gray-400 hover:text-blue-600">
-                        {selectedIds.has(client.id) ? <CheckSquare className="w-4 h-4 text-blue-600" /> : <Square className="w-4 h-4" />}
+                      <button type="button" onClick={() => toggleSelectOne(client.id)} className="flex items-center cursor-pointer text-gray-400 hover:text-indigo-600">
+                        {selectedIds.has(client.id) ? <CheckSquare className="w-4 h-4 text-indigo-600" /> : <Square className="w-4 h-4" />}
                       </button>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xs shrink-0">
                           {client.name[0]}
                         </div>
                         <div className="min-w-0">
@@ -1124,8 +1124,8 @@ export default function CRMPage() {
             <h2 className="text-sm font-bold text-gray-900">Communication Feed</h2>
             <p className="text-[11px] text-gray-400 mt-0.5">Live global interaction feed</p>
           </div>
-          <div className="p-2 bg-blue-100 rounded-xl">
-            <InboxIcon className="w-4 h-4 text-blue-600" />
+          <div className="p-2 bg-indigo-100 rounded-xl">
+            <InboxIcon className="w-4 h-4 text-indigo-600" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -1133,11 +1133,11 @@ export default function CRMPage() {
             type="button"
             onClick={() => setGlobalCommFilter(prev => prev === 'SENT' ? 'all' : 'SENT')}
             className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
-              globalCommFilter === 'SENT' ? 'bg-blue-600 border-blue-600' : 'bg-blue-50 border-blue-100 hover:border-blue-200'
+              globalCommFilter === 'SENT' ? 'bg-indigo-600 border-indigo-600' : 'bg-indigo-50 border-indigo-100 hover:border-indigo-200'
             }`}
           >
-            <p className={`text-[10px] font-bold uppercase mb-1 ${globalCommFilter === 'SENT' ? 'text-blue-100' : 'text-blue-600'}`}>Total Sent</p>
-            <p className={`text-xl font-bold ${globalCommFilter === 'SENT' ? 'text-white' : 'text-blue-900'}`}>{globalTimeline.filter(e => e.type === 'SENT').length}</p>
+            <p className={`text-[10px] font-bold uppercase mb-1 ${globalCommFilter === 'SENT' ? 'text-indigo-100' : 'text-indigo-600'}`}>Total Sent</p>
+            <p className={`text-xl font-bold ${globalCommFilter === 'SENT' ? 'text-white' : 'text-indigo-900'}`}>{globalTimeline.filter(e => e.type === 'SENT').length}</p>
           </button>
           <button
             type="button"
@@ -1154,7 +1154,7 @@ export default function CRMPage() {
       <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
         {loadingGlobal ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
             <p className="text-sm text-gray-400">Loading feed...</p>
           </div>
         ) : globalTimeline.filter(item => globalCommFilter === 'all' || item.type === globalCommFilter).length === 0 ? (
@@ -1171,11 +1171,11 @@ export default function CRMPage() {
             if (client) setSelectedClient(client);
           }}
             className={`group relative p-3.5 rounded-xl border cursor-pointer transition-all hover:shadow-sm ${
-              item.type === 'SENT' ? 'bg-blue-50 border-blue-100 hover:border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'
+              item.type === 'SENT' ? 'bg-indigo-50 border-indigo-100 hover:border-indigo-200' : 'bg-white border-gray-100 hover:border-gray-200'
             }`}>
             <div className="flex items-start justify-between gap-2 mb-1.5">
               <div className="flex items-center gap-2 min-w-0">
-                <div className={`p-1 rounded-lg shrink-0 ${item.type === 'SENT' ? 'bg-blue-600' : 'bg-indigo-600'}`}>
+                <div className={`p-1 rounded-lg shrink-0 ${item.type === 'SENT' ? 'bg-indigo-600' : 'bg-indigo-600'}`}>
                   {item.type === 'SENT' ? <SendIcon className="w-3 h-3 text-white" /> : <InboxIcon className="w-3 h-3 text-white" />}
                 </div>
                 <div className="min-w-0">
@@ -1222,14 +1222,14 @@ export default function CRMPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-8">
       <TourProvider moduleId="crm" steps={crmTourSteps} />
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-            <div className="p-1.5 sm:p-2 bg-blue-600 rounded-xl shrink-0">
+            <div className="p-1.5 sm:p-2 bg-indigo-600 rounded-xl shrink-0">
               <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
@@ -1267,7 +1267,7 @@ export default function CRMPage() {
               id="tour-crm-add-button"
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Client</span>
@@ -1280,7 +1280,7 @@ export default function CRMPage() {
       {/* Mobile FAB */}
       <button
         onClick={() => setShowAddModal(true)}
-        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:bg-blue-700"
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:bg-indigo-700"
       >
         <Plus className="w-8 h-8" />
       </button>
@@ -1296,7 +1296,7 @@ export default function CRMPage() {
           ] as const).map(([id, label, Icon]) => (
             <button key={id} type="button" onClick={() => setCrmSection(id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
-                crmSection === id ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'
+                crmSection === id ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'
               }`}>
               <Icon className="w-3.5 h-3.5" /> {label}
             </button>
@@ -1307,10 +1307,10 @@ export default function CRMPage() {
         {/* Stats */}
         <div id="tour-crm-stats" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {[
-            { label: 'All Clients', value: clients.length, sub: 'Total database', icon: Users, bgGrad: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
+            { label: 'All Clients', value: clients.length, sub: 'Total database', icon: Users, bgGrad: 'bg-gradient-to-br from-indigo-500 to-indigo-600' },
             { label: 'Active', value: activeClients, sub: 'Currently engaged', icon: Star, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
             { label: 'New Leads', value: leadClients, sub: 'Opportunities', icon: TrendingUp, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
-            { label: 'Pipeline Value', value: `£${(pipelineValue / 1000).toFixed(1)}k`, sub: 'Open deals', icon: Wallet, bgGrad: 'bg-gradient-to-br from-cyan-500 to-blue-600' },
+            { label: 'Pipeline Value', value: `£${(pipelineValue / 1000).toFixed(1)}k`, sub: 'Open deals', icon: Wallet, bgGrad: 'bg-gradient-to-br from-cyan-500 to-indigo-600' },
             { label: 'Win Rate', value: `${winRate}%`, sub: `${wonCount} won · ${lostCount} lost`, icon: Trophy, bgGrad: 'bg-gradient-to-br from-rose-500 to-pink-600' },
             { label: 'Total Revenue', value: `£${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Lifetime value', icon: PoundSterling, bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
           ].map(({ label, value, sub, icon: Icon, bgGrad }) => (
@@ -1336,21 +1336,21 @@ export default function CRMPage() {
               placeholder="Search clients or companies..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-gray-900 placeholder:text-gray-400 transition-all outline-none"
+              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm text-gray-900 placeholder:text-gray-400 transition-all outline-none"
             />
           </div>
           <div className="flex gap-2">
             <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
               <button onClick={() => setViewMode('board')} title="Pipeline board"
-                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'board' ? 'bg-white dark:bg-slate-900 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600'}`}>
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'board' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600'}`}>
                 <Kanban className="w-4 h-4" />
               </button>
               <button onClick={() => setViewMode('grid')} title="Card grid"
-                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white dark:bg-slate-900 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600'}`}>
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600'}`}>
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button onClick={() => setViewMode('list')} title="Table"
-                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white dark:bg-slate-900 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600'}`}>
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600'}`}>
                 <List className="w-4 h-4" />
               </button>
             </div>
@@ -1358,7 +1358,7 @@ export default function CRMPage() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full appearance-none pl-3 pr-8 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full appearance-none pl-3 pr-8 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 cursor-pointer focus:ring-2 focus:ring-indigo-500 outline-none"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -1388,7 +1388,7 @@ export default function CRMPage() {
             {/* Mobile: full-screen detail */}
             <div className="block md:hidden bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex-col h-[70dvh]">
               <button onClick={() => setSelectedClient(null)}
-                className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-blue-600 border-b border-gray-100 bg-blue-50 w-full text-left cursor-pointer shrink-0">
+                className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-indigo-600 border-b border-gray-100 bg-indigo-50 w-full text-left cursor-pointer shrink-0">
                 <ArrowLeft className="w-4 h-4" /> Back to Contacts
               </button>
               <div className="flex-1 min-h-0 overflow-hidden">
@@ -1467,7 +1467,7 @@ export default function CRMPage() {
                 <div className="space-y-4">
                   {stageStats.map((s) => (
                     <ReportBar key={s.stage} label={s.label} valueLabel={`£${s.revenue.toLocaleString()}`} subLabel={`${s.count} deal${s.count === 1 ? '' : 's'}`}
-                      pct={(s.revenue / maxStageRevenue) * 100} colorClass="bg-blue-500" />
+                      pct={(s.revenue / maxStageRevenue) * 100} colorClass="bg-indigo-500" />
                   ))}
                 </div>
               </div>
@@ -1521,7 +1521,7 @@ export default function CRMPage() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400">
-                  <span className="w-2 h-2 rounded-full bg-blue-500" /> Last contact
+                  <span className="w-2 h-2 rounded-full bg-indigo-500" /> Last contact
                 </span>
                 <button type="button" onClick={() => setCalendarMonth(new Date())}
                   className="px-3 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 cursor-pointer transition-colors">
@@ -1541,14 +1541,14 @@ export default function CRMPage() {
                 return (
                   <div key={i} className={`min-h-[92px] border-b border-r border-gray-50 dark:border-slate-800/60 p-1.5 ${inMonth ? '' : 'bg-gray-50/50 dark:bg-slate-950/40'}`}>
                     <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-bold mb-1 ${
-                      isToday ? 'bg-blue-600 text-white' : inMonth ? 'text-gray-700 dark:text-gray-300' : 'text-gray-300 dark:text-slate-700'
+                      isToday ? 'bg-indigo-600 text-white' : inMonth ? 'text-gray-700 dark:text-gray-300' : 'text-gray-300 dark:text-slate-700'
                     }`}>
                       {date.getDate()}
                     </span>
                     <div className="space-y-0.5">
                       {dayClients.slice(0, 2).map(c => (
                         <button key={c.id} type="button" onClick={() => { setSelectedClient(c); setCrmSection('contacts'); setViewMode('board'); }}
-                          className="w-full text-left px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-[10px] font-semibold truncate cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                          className="w-full text-left px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-[10px] font-semibold truncate cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors">
                           {c.name}
                         </button>
                       ))}
@@ -1656,7 +1656,7 @@ export default function CRMPage() {
                 Cancel
               </button>
               <button type="button" onClick={handleAddClient}
-                className="flex-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
+                className="flex-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
                 <Plus className="w-4 h-4" /> Add Client
               </button>
             </div>
@@ -1751,7 +1751,7 @@ export default function CRMPage() {
                 Cancel
               </button>
               <button type="button" onClick={handleEditClient}
-                className="flex-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
+                className="flex-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
                 <Edit className="w-4 h-4" /> Save Changes
               </button>
             </div>

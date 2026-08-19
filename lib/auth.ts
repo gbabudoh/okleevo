@@ -158,7 +158,15 @@ const config = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "tz1wswwlybqHRgqrUp97A1SYKmLAqIIpjovNlBr87b4=",
+  secret: (() => {
+    const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET;
+    if (!secret) {
+      throw new Error(
+        'NEXTAUTH_SECRET (or AUTH_SECRET) environment variable is required and must not be left unset — no fallback secret is used.'
+      );
+    }
+    return secret;
+  })(),
   trustHost: true,
 } satisfies NextAuthConfig;
 

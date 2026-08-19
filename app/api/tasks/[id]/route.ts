@@ -3,11 +3,12 @@ import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 import { Task, SubTask, TaskStatus, TaskPriority } from '@/lib/prisma-client';
 
-function serialize(t: Task & { subtasks?: SubTask[] }) {
+function serialize(t: Task & { subtasks?: SubTask[]; dependsOn?: Task[] }) {
   return {
     ...t,
     status: t.status.toLowerCase(),
     priority: t.priority.toLowerCase(),
+    startDate: t.startDate ? t.startDate.toISOString().split('T')[0] : '',
     dueDate: t.dueDate ? t.dueDate.toISOString().split('T')[0] : '',
     createdAt: t.createdAt.toISOString().split('T')[0],
   };
@@ -18,18 +19,20 @@ interface TaskUpdateBody {
   description?: string;
   status?: string;
   priority?: string;
+  startDate?: string;
   dueDate?: string;
   assignedTo?: string;
   tags?: string[];
   subtasks?: { id?: string; title: string; completed?: boolean }[];
   projectId?: string;
+  dependsOnIds?: string[];
 }
 
 export const PATCH = withMultiTenancy(async (req, { user, params }) => {
   try {
     const { id } = await params;
     const body: TaskUpdateBody = await req.json();
-    const { title, description, status, priority, dueDate, assignedTo, tags, subtasks, projectId } = body;
+    const { title, description, status, priority, startDate, dueDate, assignedTo, tags, subtasks, projectId, dependsOnIds } = body;
 
     const existing = await prisma.task.findFirst({ where: { id: id as string, businessId: user.businessId } });
     if (!existing) return NextResponse.json({ error: 'Task not found' }, { status: 404 });
@@ -64,10 +67,12 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
         ...(description !== undefined && { description: description?.trim() || null }),
         ...(status !== undefined && { status: status.toUpperCase() as TaskStatus }),
         ...(priority !== undefined && { priority: priority.toUpperCase() as TaskPriority }),
+        ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
         ...(assignedTo !== undefined && { assignedTo }),
         ...(tags !== undefined && { tags: Array.isArray(tags) ? tags : [] }),
         ...(projectId !== undefined && { projectId: projectId || null }),
+        ...(dependsOnIds !== undefined && { dependsOn: { set: dependsOnIds.map((depId) => ({ id: depId })) } }),
       },
       include: { subtasks: true }
     });

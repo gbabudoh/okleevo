@@ -37,7 +37,7 @@ function toLocalInputValue(iso: string): string {
 
 const KNOWN_SEGMENTS = new Set(['all subscribers', 'vip customers', 'new signups', 'inactive']);
 
-const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
+const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
 const labelCls = 'block text-xs font-semibold text-gray-600 mb-1';
 const modalHeaderCls = 'px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100';
 
@@ -213,7 +213,7 @@ export default function CampaignsPage() {
     c.sent > 0 ? ((c.clicked / c.sent) * 100).toFixed(0) + '%' : '0%';
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-8">
 
       {/* Toast */}
       {toast && (
@@ -236,7 +236,7 @@ export default function CampaignsPage() {
       <button
         type="button"
         onClick={() => setShowCreateModal(true)}
-        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-linear-to-r from-blue-600 to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-transform"
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-linear-to-r from-indigo-600 to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-transform"
       >
         <Plus className="w-7 h-7" />
       </button>
@@ -244,7 +244,7 @@ export default function CampaignsPage() {
       {/* Sticky header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 bg-blue-600 rounded-xl shrink-0">
+          <div className="p-1.5 sm:p-2 bg-indigo-600 rounded-xl shrink-0">
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3">
@@ -267,7 +267,7 @@ export default function CampaignsPage() {
             id="tour-campaigns-new-button"
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">New Campaign</span>
@@ -281,7 +281,7 @@ export default function CampaignsPage() {
         {/* Stats */}
         <div id="tour-campaigns-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Active',      value: activeCount.toString(),                     icon: Rocket,        bgGrad: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
+            { label: 'Active',      value: activeCount.toString(),                     icon: Rocket,        bgGrad: 'bg-gradient-to-br from-indigo-500 to-purple-600' },
             { label: 'Total Reach', value: (totalSent / 1000).toFixed(1) + 'k',        icon: Users,         bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
             { label: 'Avg Open',    value: avgEngagement.toFixed(1) + '%',              icon: MousePointer2, bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
             { label: 'Revenue',     value: '£' + (totalRevenue / 1000).toFixed(1) + 'k', icon: TrendingUp,  bgGrad: 'bg-gradient-to-br from-rose-500 to-purple-600' },
@@ -307,21 +307,21 @@ export default function CampaignsPage() {
               placeholder="Search campaigns…"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
             />
           </div>
           <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl shrink-0">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white dark:bg-slate-900 shadow text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white dark:bg-slate-900 shadow text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white dark:bg-slate-900 shadow text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white dark:bg-slate-900 shadow text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -331,13 +331,13 @@ export default function CampaignsPage() {
         {/* Content */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+            <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
             <p className="text-sm text-gray-500 font-medium">Loading campaigns…</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="w-7 h-7 text-blue-600 dark:text-blue-400" />
+            <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
             </div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
               {searchTerm ? 'No matching campaigns' : 'No campaigns yet'}
@@ -347,7 +347,7 @@ export default function CampaignsPage() {
             </p>
             {!searchTerm && (
               <button type="button" onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer">
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer">
                 <Plus className="w-4 h-4" /> New Campaign
               </button>
             )}
@@ -380,7 +380,7 @@ export default function CampaignsPage() {
                     {/* Audience */}
                     <div className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 border border-gray-100">
                       <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                        <Users className="w-3.5 h-3.5 text-blue-400" /> Audience
+                        <Users className="w-3.5 h-3.5 text-indigo-400" /> Audience
                       </span>
                       <span className="text-xs font-semibold text-gray-800">{campaign.audience}</span>
                     </div>
@@ -402,9 +402,9 @@ export default function CampaignsPage() {
                         <p className="text-sm font-bold text-emerald-700">{openRate(campaign)}</p>
                         <p className="text-[10px] text-emerald-500 font-medium uppercase">Open</p>
                       </div>
-                      <div className="text-center bg-blue-50 rounded-xl py-2 border border-blue-100">
-                        <p className="text-sm font-bold text-blue-700">{clickRate(campaign)}</p>
-                        <p className="text-[10px] text-blue-500 font-medium uppercase">Click</p>
+                      <div className="text-center bg-indigo-50 rounded-xl py-2 border border-indigo-100">
+                        <p className="text-sm font-bold text-indigo-700">{clickRate(campaign)}</p>
+                        <p className="text-[10px] text-indigo-500 font-medium uppercase">Click</p>
                       </div>
                     </div>
 
@@ -433,7 +433,7 @@ export default function CampaignsPage() {
                           <button type="button"
                             onClick={(e) => { e.stopPropagation(); handleEdit(campaign); }}
                             title="Edit campaign"
-                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer">
+                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer">
                             <Pencil className="w-4 h-4" />
                           </button>
                         )}
@@ -445,7 +445,7 @@ export default function CampaignsPage() {
                         </button>
                         <button type="button"
                           onClick={(e) => { e.stopPropagation(); setSelectedReport(campaign); setShowReportModal(true); }}
-                          className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer group shrink-0">
+                          className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors cursor-pointer group shrink-0">
                           Reports <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </button>
                       </div>
@@ -483,7 +483,7 @@ export default function CampaignsPage() {
                               <TypeIcon className="w-3.5 h-3.5 text-white" />
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">{campaign.name}</p>
+                              <p className="text-sm font-semibold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">{campaign.name}</p>
                               <p className="text-[10px] text-gray-400 uppercase font-medium">{campaign.type}</p>
                             </div>
                           </div>
@@ -500,7 +500,7 @@ export default function CampaignsPage() {
                           <span className="text-sm font-semibold text-emerald-700">{openRate(campaign)}</span>
                         </td>
                         <td className="px-4 py-3.5 text-center">
-                          <span className="text-sm font-semibold text-blue-700">{clickRate(campaign)}</span>
+                          <span className="text-sm font-semibold text-indigo-700">{clickRate(campaign)}</span>
                         </td>
                         <td className="px-4 py-3.5 text-right">
                           <div className="flex items-center justify-end gap-3">
@@ -518,7 +518,7 @@ export default function CampaignsPage() {
                               {canEdit(campaign) && (
                                 <button onClick={(e) => { e.stopPropagation(); handleEdit(campaign); }}
                                   title="Edit campaign"
-                                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer">
+                                  className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer">
                                   <Pencil className="w-4 h-4" />
                                 </button>
                               )}
@@ -527,7 +527,7 @@ export default function CampaignsPage() {
                                 className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer">
                                 <Trash2 className="w-4 h-4" />
                               </button>
-                              <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+                              <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
                             </div>
                           </div>
                         </td>
@@ -597,8 +597,8 @@ export default function CampaignsPage() {
                         onClick={() => setNewCampaign({ ...newCampaign, audience: seg })}
                         className={`px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold transition-all border cursor-pointer ${
                           newCampaign.audience === seg
-                            ? 'bg-blue-600 border-blue-600 text-white'
-                            : 'bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
+                            ? 'bg-indigo-600 border-indigo-600 text-white'
+                            : 'bg-white border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600'
                         }`}>
                         {seg}
                       </button>
@@ -653,7 +653,7 @@ export default function CampaignsPage() {
                   Cancel
                 </button>
                 <button type="submit" disabled={creating}
-                  className="flex-2 py-3 px-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2">
+                  className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2">
                   {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                   {editingCampaign ? 'Save Changes' : 'Create Campaign'}
                 </button>
@@ -686,7 +686,7 @@ export default function CampaignsPage() {
                 <p className="text-sm font-bold text-gray-900">{sendTarget.name}</p>
                 <p className="text-xs text-gray-500 italic mt-0.5">&quot;{sendTarget.subject}&quot;</p>
                 <div className="flex items-center gap-1.5 text-xs text-gray-600 mt-2">
-                  <Users className="w-3.5 h-3.5 text-blue-400" />
+                  <Users className="w-3.5 h-3.5 text-indigo-400" />
                   Audience: <span className="font-semibold">{sendTarget.audience}</span>
                 </div>
               </div>
@@ -731,7 +731,7 @@ export default function CampaignsPage() {
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { label: 'Opened', val: openRate(selectedReport), color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                  { label: 'Clicked', val: clickRate(selectedReport), color: 'text-blue-600', bg: 'bg-blue-50' },
+                  { label: 'Clicked', val: clickRate(selectedReport), color: 'text-indigo-600', bg: 'bg-indigo-50' },
                   { label: 'Revenue', val: `£${selectedReport.revenue.toLocaleString()}`, color: 'text-rose-600', bg: 'bg-rose-50' }
                 ].map((s, i) => (
                   <div key={i} className={`${s.bg} rounded-2xl p-4 text-center border border-white/50 shadow-sm`}>
@@ -745,7 +745,7 @@ export default function CampaignsPage() {
               <div className="space-y-4">
                 <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Engagement Overview</h3>
                 {[
-                  { label: 'Successful Delivery', val: selectedReport.sent, total: selectedReport.sent, color: 'bg-blue-500' },
+                  { label: 'Successful Delivery', val: selectedReport.sent, total: selectedReport.sent, color: 'bg-indigo-500' },
                   { label: 'Unique Opens', val: selectedReport.opened, total: selectedReport.sent, color: 'bg-emerald-500' },
                   { label: 'Link Clicks', val: selectedReport.clicked, total: selectedReport.opened, color: 'bg-indigo-500' }
                 ].map((b, i) => (
@@ -787,7 +787,7 @@ export default function CampaignsPage() {
             </div>
 
             <ModalFooter>
-              <button onClick={() => setShowReportModal(false)} className="w-full py-3 bg-gray-900 text-white text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all cursor-pointer active:scale-95">
+              <button onClick={() => setShowReportModal(false)} className="w-full py-3 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all cursor-pointer active:scale-95">
                 Close Report
               </button>
             </ModalFooter>

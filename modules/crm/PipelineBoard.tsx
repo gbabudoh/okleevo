@@ -78,7 +78,7 @@ export function PipelineBoard({
             }}
             className={`shrink-0 w-[270px] snap-start rounded-2xl border transition-colors ${
               isOver
-                ? 'border-blue-400 bg-blue-50/60 dark:bg-blue-950/20'
+                ? 'border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/20'
                 : 'border-gray-100 dark:border-slate-800 bg-gray-50/60 dark:bg-slate-900/60'
             }`}
           >
@@ -116,7 +116,7 @@ export function PipelineBoard({
                 >
                   <div className="flex items-start justify-between gap-1.5 mb-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-[11px] shrink-0">
+                      <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-[11px] shrink-0">
                         {client.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                       </div>
                       <div className="min-w-0">
@@ -160,7 +160,7 @@ export function PipelineBoard({
               <button
                 type="button"
                 onClick={() => onAddToStage(stage.id)}
-                className="w-full py-2 rounded-xl border border-dashed border-gray-200 dark:border-slate-700 text-[11px] font-bold text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                className="w-full py-2 rounded-xl border border-dashed border-gray-200 dark:border-slate-700 text-[11px] font-bold text-gray-400 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-colors cursor-pointer flex items-center justify-center gap-1"
               >
                 <Plus className="w-3 h-3" /> Add deal
               </button>

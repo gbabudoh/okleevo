@@ -35,6 +35,7 @@ export async function GET() {
             seatCount: true,
             maxSeats: true,
             enabledModules: true,
+            pivotNavEnabled: true,
             createdAt: true,
           },
         },

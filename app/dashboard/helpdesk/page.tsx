@@ -248,7 +248,7 @@ export default function HelpdeskPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-8">
       <TourProvider moduleId="helpdesk" steps={helpdeskTourSteps} />
 
       {/* Mobile FAB */}

@@ -74,6 +74,35 @@ export async function getPresignedUrl(
 }
 
 /**
+ * Generate a presigned PUT url so a browser can upload directly to MinIO
+ * without the file passing through our server. Used by the Layer 2 guest
+ * upload flow (lib/services/guest-storage.ts) with a short expiry — the
+ * caller is expected to pass a much shorter window than the GET default.
+ */
+export async function getPresignedPutUrl(
+  objectName: string,
+  bucket: string = DEFAULT_BUCKET,
+  expirySeconds: number = 15 * 60,
+): Promise<string> {
+  const client = getMinioClient();
+  await ensureBucket(bucket);
+  return client.presignedPutObject(bucket, objectName, expirySeconds);
+}
+
+/**
+ * Open a server-side read stream for an object. Used to proxy/stream a file
+ * through an authenticated API route (e.g. shared meeting assets) so the
+ * client never receives a direct MinIO URL or credentials for that bucket.
+ */
+export async function getObjectStream(
+  objectName: string,
+  bucket: string = DEFAULT_BUCKET,
+) {
+  const client = getMinioClient();
+  return client.getObject(bucket, objectName);
+}
+
+/**
  * A presigned URL's signature token expires (see getPresignedUrl), but the
  * underlying object doesn't — so a value that was stored as a full presigned
  * URL can still be resolved back to its stable object key by stripping the
@@ -113,6 +142,20 @@ export function getPublicUrl(
   const protocol = MINIO_USE_SSL ? 'https' : 'http';
   const portSuffix = (MINIO_PORT === 443 || MINIO_PORT === 80) ? '' : `:${MINIO_PORT}`;
   return `${protocol}://${MINIO_ENDPOINT}${portSuffix}/${bucket}/${objectName}`;
+}
+
+/** Whether an object exists (used to confirm a presigned-PUT upload actually landed). */
+export async function objectExists(
+  objectName: string,
+  bucket: string = DEFAULT_BUCKET,
+): Promise<boolean> {
+  const client = getMinioClient();
+  try {
+    await client.statObject(bucket, objectName);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Delete a single object */

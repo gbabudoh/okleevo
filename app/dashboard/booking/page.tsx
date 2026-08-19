@@ -32,7 +32,7 @@ interface CrmContact {
   phone?: string;
 }
 
-const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
+const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
 const selectCls = `${inputCls} appearance-none cursor-pointer`;
 const labelCls = 'block text-xs font-semibold text-gray-600 mb-1';
 const modalHeaderCls = 'px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100';
@@ -303,13 +303,13 @@ export default function BookingPage() {
   const completedCount    = bookings.filter(b => b.status === 'completed').length;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-8">
 
       {/* Mobile FAB */}
       <button
         type="button"
         onClick={() => setShowAddModal(true)}
-        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-linear-to-r from-blue-600 to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-transform"
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-linear-to-r from-indigo-600 to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-transform"
       >
         <Plus className="w-7 h-7" />
       </button>
@@ -317,7 +317,7 @@ export default function BookingPage() {
       {/* Sticky header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-          <div className="p-2 bg-blue-600 rounded-xl shrink-0">
+          <div className="p-2 bg-indigo-600 rounded-xl shrink-0">
             <Calendar className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -337,7 +337,7 @@ export default function BookingPage() {
             id="tour-booking-new"
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-600 hover:from-indigo-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">New Booking</span>
@@ -351,7 +351,7 @@ export default function BookingPage() {
         {/* Stats */}
         <div id="tour-booking-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Total Bookings', value: totalBookings,  icon: CalendarCheck, bgGrad: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
+            { label: 'Total Bookings', value: totalBookings,  icon: CalendarCheck, bgGrad: 'bg-gradient-to-br from-indigo-500 to-indigo-600' },
             { label: 'Confirmed',      value: confirmedCount, icon: CheckCircle,   bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
             { label: 'Upcoming',       value: upcomingCount,  icon: Clock,         bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
             { label: 'Completed',      value: completedCount, icon: TrendingUp,    bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
@@ -377,14 +377,14 @@ export default function BookingPage() {
               placeholder="Search clients or services…"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
             />
           </div>
           <div className="relative sm:w-48">
             <select
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value)}
-              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all appearance-none cursor-pointer pr-8"
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all appearance-none cursor-pointer pr-8"
             >
               <option value="all">All Statuses</option>
               <option value="confirmed">Confirmed</option>
@@ -399,13 +399,13 @@ export default function BookingPage() {
         {/* Booking list */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+            <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
             <p className="text-sm text-gray-500 font-medium">Loading bookings…</p>
           </div>
         ) : filteredBookings.length === 0 ? (
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-7 h-7 text-blue-600 dark:text-blue-400" />
+            <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
             </div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
               {searchTerm || filterStatus !== 'all' ? 'No matching bookings' : 'No bookings yet'}
@@ -419,7 +419,7 @@ export default function BookingPage() {
               <button
                 type="button"
                 onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-600 hover:from-indigo-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> New Booking
               </button>
@@ -434,7 +434,7 @@ export default function BookingPage() {
                   <div className="flex items-start gap-3">
                     {/* Avatar */}
                     <div className="relative shrink-0">
-                      <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-sm font-bold">
                         {initials(booking.client)}
                       </div>
                       <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${sc.dot}`} />
@@ -472,7 +472,7 @@ export default function BookingPage() {
                     <button
                       type="button"
                       onClick={() => { setSelectedBooking(booking); setShowDetailModal(true); }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                     >
                       <User className="w-3.5 h-3.5" /> Details
                     </button>
@@ -528,7 +528,7 @@ export default function BookingPage() {
                 type="button"
                 onClick={handleCreateBooking}
                 disabled={savingBooking || !newBooking.client || !newBooking.email || !newBooking.service || !newBooking.date || !newBooking.time}
-                className="flex-2 py-3 px-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
                 {savingBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 {savingBooking ? 'Creating...' : 'Create Booking'}
@@ -594,7 +594,7 @@ export default function BookingPage() {
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5 space-y-3 sm:space-y-4">
               {/* Avatar + name */}
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-lg sm:text-xl font-bold shrink-0">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-lg sm:text-xl font-bold shrink-0">
                   {initials(selectedBooking.client)}
                 </div>
                 <div>
@@ -608,13 +608,13 @@ export default function BookingPage() {
 
               {/* Date / time / type */}
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <div className="bg-blue-50 rounded-xl p-2.5 sm:p-3 border border-blue-100">
-                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide mb-1">Date</p>
-                  <p className="text-xs sm:text-sm font-bold text-blue-900">{selectedBooking.date}</p>
+                <div className="bg-indigo-50 rounded-xl p-2.5 sm:p-3 border border-indigo-100">
+                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide mb-1">Date</p>
+                  <p className="text-xs sm:text-sm font-bold text-indigo-900">{selectedBooking.date}</p>
                 </div>
-                <div className="bg-blue-50 rounded-xl p-2.5 sm:p-3 border border-blue-100">
-                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide mb-1">Time</p>
-                  <p className="text-xs sm:text-sm font-bold text-blue-900">{selectedBooking.time} · {selectedBooking.duration}m</p>
+                <div className="bg-indigo-50 rounded-xl p-2.5 sm:p-3 border border-indigo-100">
+                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide mb-1">Time</p>
+                  <p className="text-xs sm:text-sm font-bold text-indigo-900">{selectedBooking.time} · {selectedBooking.duration}m</p>
                 </div>
               </div>
 

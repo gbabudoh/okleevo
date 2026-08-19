@@ -70,6 +70,8 @@ model User {
   vatCalculations VatCalculation[]
   aiGenerations   AIGeneration[]
   ownedProjects   Project[]
+  projectNotes    ProjectNote[]
+  bookingPages    BookingPage[]
 
   @@index([email])
   @@index([businessId])
@@ -157,6 +159,13 @@ model Business {
   seatCount Int @default(1)
   maxSeats  Int @default(10) // Based on tier
 
+  // Global pivot: opts this workspace into the new 3-tab nav (Virtual HQ /
+  // Async Productivity / Client Engagement) in app/dashboard/layout.tsx.
+  // Defaults false so every existing workspace keeps today's flat nav until
+  // explicitly rolled over (see prisma pivot plan Phase 5/9) — never flip
+  // this in bulk for existing rows.
+  pivotNavEnabled Boolean @default(false)
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -183,6 +192,8 @@ model Business {
   mailboxMessages   MailboxMessage[]
   replyTokens       ReplyToken[]
   projects          Project[]
+  milestones        Milestone[]
+  projectNotes      ProjectNote[]
   timeEntries       TimeEntry[]
   microPages        MicroPage[]
   microPageLeads    MicroPageLead[]
@@ -190,7 +201,12 @@ model Business {
   aiGenerations     AIGeneration[]
   kpiTargets        KpiTarget[]
   shopifyConnection ShopifyConnection?
-  enabledModules    String[]           @default(["dashboard", "invoicing", "accounting", "taxation", "cashflow", "expenses", "vat-tools", "crm", "forms", "booking", "helpdesk", "campaigns", "tasks", "ai-content", "ai-notes", "kpi-dashboard", "inventory", "suppliers", "hr-records", "e-signature", "micro-pages", "compliance"])
+  bookingPages      BookingPage[]
+  // Global pivot: default trimmed to only the modules that still exist in the
+  // product (see lib/module-catalogue.ts). Only affects NEW rows going
+  // forward — existing businesses' arrays are never rewritten, matching how
+  // proxy.ts blocks the retired routes regardless of what's in this array.
+  enabledModules    String[]           @default(["dashboard", "crm", "booking", "helpdesk", "campaigns", "tasks", "ai-notes", "kpi-dashboard", "e-signature", "mailbox", "collaboration"])
 
   @@index([name])
 }
@@ -213,6 +229,12 @@ model Subscription {
   amount   Int                @default(1999) // in pence
   currency String             @default("gbp")
 
+  // Global pivot: USD tiered plans (Starter/Growth/Scale). Nullable and
+  // separate from the legacy `plan`/`amount`/`currency` fields above so
+  // existing GBP subscribers are left completely untouched — only new
+  // signups routed through the new billing path set this.
+  planTier PlanTier?
+
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
   cancelAtPeriodEnd  Boolean   @default(false)
@@ -231,6 +253,13 @@ enum SubscriptionStatus {
   PAST_DUE
   CANCELED
   INCOMPLETE
+}
+
+// Global pivot pricing tiers (Starter/Growth/Scale, USD). See Subscription.planTier.
+enum PlanTier {
+  STARTER
+  GROWTH
+  SCALE
 }
 
 // =============================================================================
@@ -795,6 +824,23 @@ model Appointment {
   type     AppointmentType   @default(VIDEO)
   location String? // For in-person or meeting link
 
+  // --- Layer 2 (borderless-workspace pivot): zero-login guest video room ---
+  // Nullable/defaulted additions only — existing Appointment rows created by
+  // the pre-pivot public booking flow (app/api/public/bookings/[businessId])
+  // are unaffected. bookingPageId is null for those; guest-room fields stay
+  // at their "not applicable" defaults until a BookingPage-driven reservation
+  // sets them (see app/api/public/booking-pages/**).
+  bookingPageId String?
+  bookingPage   BookingPage? @relation(fields: [bookingPageId], references: [id], onDelete: SetNull)
+
+  // Bcrypt hash of the 6-digit guest access PIN — never store the raw PIN.
+  securePinHash     String?
+  pinAttempts       Int               @default(0) // failed /video-rooms/verify attempts since the last lockout
+  pinLockedUntil    DateTime? // set after too many failed attempts; verify is refused until this passes
+  meetingRoomStatus MeetingRoomStatus @default(NOT_APPLICABLE)
+
+  guestUploads GuestUpload[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -802,6 +848,7 @@ model Appointment {
   @@index([userId])
   @@index([status])
   @@index([startTime])
+  @@index([bookingPageId])
 }
 
 enum AppointmentStatus {
@@ -815,6 +862,92 @@ enum AppointmentType {
   VIDEO
   PHONE
   IN_PERSON
+}
+
+// Guest video-room lifecycle for Layer 2 appointments. NOT_APPLICABLE covers
+// every pre-pivot Appointment (internal calendar bookings, phone/in-person
+// appointments) that never has a guest video room at all.
+enum MeetingRoomStatus {
+  NOT_APPLICABLE
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+}
+
+// =============================================================================
+// Layer 2: Outer Edge Gate — public booking pages & isolated guest uploads
+// =============================================================================
+
+// A single SME's branded, public, zero-login booking page. One Business can
+// have several (e.g. "Sales Consultation", "Support Call"), each with its
+// own slug, working hours, and upload rules. Rendered at
+// app/book/[businessId]/[slug]/page.tsx via the public
+// app/api/public/booking-pages/** routes — never exposes internal ids beyond
+// the ones already in the URL.
+model BookingPage {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  creatorUserId String?
+  creatorUser   User?   @relation(fields: [creatorUserId], references: [id], onDelete: SetNull)
+
+  name     String
+  slug     String
+  isPublic Boolean @default(true)
+
+  // Working hours per weekday, e.g. { "mon": [["09:00","17:00"]], "tue": [...] }.
+  // Empty/absent day means unavailable. Times are in the Business's own
+  // timezone context (set via each User.timezone today; a Business-level
+  // timezone is a follow-up, not required for this additive phase).
+  workingHours Json?
+
+  allowedMimeTypes String[] @default(["application/pdf", "application/zip", "image/png", "image/jpeg"])
+  maxFileSizeBytes Int      @default(26214400) // 25MB, matches lib/services/storage.ts's existing default
+
+  // Scale-tier white-labelling (logo/colors/custom domain metadata). Null
+  // until a workspace configures it — never required for the page to work.
+  brandingConfig Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointments Appointment[]
+
+  @@unique([businessId, slug])
+  @@index([businessId])
+}
+
+// A file an unauthenticated guest uploaded while booking/attending a Layer 2
+// appointment. Deliberately separate from any internal-file storage path —
+// objects live in the isolated `okleevo-client-sandbox` MinIO bucket (see
+// lib/services/guest-storage.ts, Phase 3), never the internal
+// `okleevo-uploads` bucket that lib/services/storage.ts writes to.
+model GuestUpload {
+  id String @id @default(cuid())
+
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  fileName        String
+  s3ObjectKey     String @unique // one row per storage object; the malware-scan worker looks up by this key
+  fileSizeBytes   Int
+  mimeType        String
+
+  malwareScanStatus MalwareScanStatus @default(PENDING)
+  scannedAt         DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([appointmentId])
+  @@index([malwareScanStatus])
+}
+
+enum MalwareScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
 }
 
 // =============================================================================
@@ -868,6 +1001,7 @@ model Task {
   status   TaskStatus   @default(TODO)
   priority TaskPriority @default(MEDIUM)
 
+  startDate  DateTime?
   dueDate    DateTime?
   assignedTo String? // Name of assignee
 
@@ -875,10 +1009,13 @@ model Task {
 
   subtasks SubTask[]
 
+  // Task dependencies: this task is blocked by `dependsOn`, and blocks `blocks`
+  dependsOn Task[] @relation("TaskDependencies")
+  blocks    Task[] @relation("TaskDependencies")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Project Profitability + Automation Integration
   projectId   String?
   project     Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
   timeEntries TimeEntry[]
@@ -920,7 +1057,7 @@ enum TaskPriority {
 }
 
 // =============================================================================
-// Projects Module (cross-module linkage for automation + profitability)
+// Projects Module (delivery tracking: tasks, milestones, timelines)
 // =============================================================================
 
 model Project {
@@ -938,13 +1075,16 @@ model Project {
   name   String
   status ProjectStatus @default(ACTIVE)
 
-  budget  Float?
-  dueDate DateTime?
+  budget    Float?
+  startDate DateTime?
+  dueDate   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   tasks       Task[]
+  milestones  Milestone[]
+  notes       ProjectNote[]
   invoices    Invoice[]
   expenses    Expense[]
   timeEntries TimeEntry[]
@@ -953,6 +1093,47 @@ model Project {
   @@index([contactId])
   @@index([status])
   @@index([ownerId])
+}
+
+model ProjectNote {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  body String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([projectId])
+}
+
+model Milestone {
+  id String @id @default(cuid())
+
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title     String
+  dueDate   DateTime
+  completed Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([projectId])
 }
 
 enum ProjectStatus {

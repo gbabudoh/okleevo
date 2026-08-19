@@ -5,9 +5,9 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   CheckCircle2, Circle, ChevronRight, Rocket,
-  User, Users, FileText,
+  User, Users, Calendar,
   BarChart3, MessageSquare, Star, Sparkles,
-  Building2, Package, BookOpen,
+  Building2, UsersRound, BookOpen,
 } from "lucide-react";
 
 interface Step {
@@ -35,7 +35,7 @@ const STEPS: Step[] = [
   {
     id: "business",
     title: "Set up your business",
-    description: "Add your business name, logo, address, and bank details — used across invoices and documents.",
+    description: "Add your business name, logo, and address — used across your booking pages and client-facing documents.",
     href: "/dashboard/settings",
     icon: Building2,
     iconBg: "bg-blue-50",
@@ -53,14 +53,14 @@ const STEPS: Step[] = [
     cta: "Open CRM",
   },
   {
-    id: "invoice",
-    title: "Send your first invoice",
-    description: "Create and send a professional invoice in seconds — track payments and chase overdue ones.",
-    href: "/dashboard/invoicing",
-    icon: FileText,
+    id: "booking",
+    title: "Set up your booking page",
+    description: "Create a branded, zero-login booking page so clients can schedule time with you directly.",
+    href: "/dashboard/booking",
+    icon: Calendar,
     iconBg: "bg-orange-50",
     iconColor: "text-orange-600",
-    cta: "Create Invoice",
+    cta: "Set up Booking",
   },
   {
     id: "team",
@@ -73,24 +73,24 @@ const STEPS: Step[] = [
     cta: "Invite Team",
   },
   {
-    id: "product",
-    title: "Add a product or service",
-    description: "Build your inventory or service catalogue to speed up invoice and quote creation.",
-    href: "/dashboard/inventory",
-    icon: Package,
+    id: "huddle",
+    title: "Start a team huddle",
+    description: "Jump into a voice or video huddle with your team — instant, no extra login required.",
+    href: "/dashboard/collaboration",
+    icon: UsersRound,
     iconBg: "bg-amber-50",
     iconColor: "text-amber-600",
-    cta: "Add Product",
+    cta: "Open Virtual HQ",
   },
   {
     id: "ai",
-    title: "Try an AI tool",
-    description: "Generate content, write emails, or summarise notes — all powered by built-in AI tools.",
-    href: "/dashboard/ai-content",
+    title: "Try AI meeting notes",
+    description: "Transcribe a call and let AI summarise it and extract action items automatically.",
+    href: "/dashboard/ai-notes",
     icon: Sparkles,
     iconBg: "bg-purple-50",
     iconColor: "text-purple-600",
-    cta: "Explore AI",
+    cta: "Open AI Notes",
   },
   {
     id: "analytics",

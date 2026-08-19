@@ -1,17 +1,17 @@
 "use client";
 
 import React from "react";
-import { 
-  PiggyBank, Zap, Target, Rocket, Users, Shield, 
-  BarChart3, GraduationCap, Sparkles 
+import {
+  PiggyBank, Zap, Target, Rocket, Users, ShieldCheck,
+  BarChart3, Globe2, Sparkles
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const features = [
   {
     icon: PiggyBank,
-    title: "Save Money",
-    description: "Replace 5-10 separate tools with one affordable subscription. Save up to £500/month on software costs.",
+    title: "Ditch the Subscription Tax",
+    description: "Stop paying for Slack, Zoom, Calendly, and Asana separately — one workspace replaces the whole stack.",
     className: "md:col-span-2",
     gradient: "from-emerald-500/20 to-emerald-500/5",
     iconColor: "text-emerald-600",
@@ -19,8 +19,8 @@ const features = [
   },
   {
     icon: Zap,
-    title: "Save Time",
-    description: "No more switching apps. Workflows that fly.",
+    title: "Zero-Login Client Bookings",
+    description: "Clients pick a slot, upload files, and join the call — no account, no download.",
     className: "md:col-span-1",
     gradient: "from-blue-500/20 to-blue-500/5",
     iconColor: "text-blue-600",
@@ -28,8 +28,8 @@ const features = [
   },
   {
     icon: Target,
-    title: "Stay Organized",
-    description: "One unified system for all your data.",
+    title: "Stay Aligned, Async",
+    description: "Timezone-aware Kanban boards keep distributed teams moving without more meetings.",
     className: "md:col-span-1",
     gradient: "from-purple-500/20 to-purple-500/5",
     iconColor: "text-purple-600",
@@ -37,17 +37,17 @@ const features = [
   },
   {
     icon: BarChart3,
-    title: "Real-Time Insights",
-    description: "Unified dashboard shows your entire business at a glance. Make informed decisions faster than ever before.",
+    title: "Real-Time Team Insights",
+    description: "KPI dashboards track delivery speed and OKRs — not financial statements.",
     className: "md:col-span-2",
     gradient: "from-teal-500/20 to-teal-500/5",
     iconColor: "text-teal-600",
     delay: 0.4
   },
   {
-    icon: Rocket,
-    title: "Scale Easily",
-    description: "Start small, grow big. Activate modules as you need them.",
+    icon: ShieldCheck,
+    title: "Secure, Isolated Uploads",
+    description: "Client files land in a sandboxed, malware-scanned bucket your team never has to manage.",
     className: "md:col-span-1",
     gradient: "from-orange-500/20 to-orange-500/5",
     iconColor: "text-orange-600",
@@ -56,16 +56,16 @@ const features = [
   {
     icon: Users,
     title: "Better Collaboration",
-    description: "Share tasks and insights seamlessly with your team.",
+    description: "Instant voice huddles and team chat — no separate Slack or Zoom bill.",
     className: "md:col-span-1",
     gradient: "from-pink-500/20 to-pink-500/5",
     iconColor: "text-pink-600",
     delay: 0.6
   },
   {
-    icon: Shield,
-    title: "UK-Based & Secure",
-    description: "GDPR compliant, enterprise-grade security.",
+    icon: Globe2,
+    title: "100% Borderless",
+    description: "Built for distributed teams across every timezone — no regional lock-in.",
     className: "md:col-span-1",
     gradient: "from-indigo-500/20 to-indigo-500/5",
     iconColor: "text-indigo-600",
@@ -74,16 +74,16 @@ const features = [
   {
     icon: Sparkles,
     title: "AI-Powered",
-    description: "Automate boring tasks with built-in AI tools for content, notes, and more.",
+    description: "Transcribe calls, summarize meetings, and extract action items automatically.",
     className: "md:col-span-2",
     gradient: "from-rose-500/20 to-rose-500/5",
     iconColor: "text-rose-600",
     delay: 0.8
   },
   {
-    icon: GraduationCap,
-    title: "Easy to Use",
-    description: "Get started in minutes.",
+    icon: Rocket,
+    title: "Scale as You Grow",
+    description: "Start at 5 seats, scale to 25+ — plans that grow with your team.",
     className: "md:col-span-1",
     gradient: "from-amber-500/20 to-amber-500/5",
     iconColor: "text-amber-600",
@@ -107,16 +107,16 @@ export function FeaturesBentoGrid() {
                     viewport={{ once: true }}
                     className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 tracking-tight"
                 >
-                Why SMEs Choose Okleevo
+                Remote work shouldn&apos;t mean tool chaos.
                 </motion.h2>
-                <motion.p 
+                <motion.p
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.1 }}
                     className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
                 >
-                Stop paying for multiple subscriptions. Get everything you need in one powerful platform designed specifically for UK small businesses.
+                Stop losing critical project context between endless messages, scattered threads, and forgotten video links. Okleevo brings your global team and your clients into one workspace.
                 </motion.p>
             </div>
 

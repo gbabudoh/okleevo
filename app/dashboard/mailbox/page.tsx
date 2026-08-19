@@ -742,7 +742,7 @@ export default function MailboxPage() {
                         {clientContext.tickets.map(t => (
                           <div key={t.id} className="flex items-center justify-between text-xs bg-white rounded-lg px-2.5 py-1.5 border border-gray-100">
                             <span className="font-medium text-gray-700 truncate">{t.subject}</span>
-                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-700 shrink-0">
+                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-indigo-100 text-indigo-700 shrink-0">
                               {t.status}
                             </span>
                           </div>

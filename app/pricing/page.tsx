@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -7,10 +8,44 @@ import { Check } from "lucide-react";
 import { PricingFeatures } from "@/components/pricing-features";
 import { PricingComparison } from "@/components/pricing-comparison";
 
+const TIERS = [
+  {
+    id: "STARTER",
+    label: "Starter Workspace",
+    monthly: 49,
+    annual: 39,
+    seats: 5,
+    seatAddon: 8,
+    blurb: "Full Virtual HQ, task boards, and basic CRM for small distributed teams.",
+    highlight: false,
+  },
+  {
+    id: "GROWTH",
+    label: "Growth Workspace",
+    monthly: 99,
+    annual: 79,
+    seats: 12,
+    seatAddon: 10,
+    blurb: "Everything in Starter, plus AI transcription, helpdesk, and e-signatures.",
+    highlight: true,
+  },
+  {
+    id: "SCALE",
+    label: "Scale Workspace",
+    monthly: 199,
+    annual: 159,
+    seats: 25,
+    seatAddon: 12,
+    blurb: "Everything in Growth, plus white-labelling and multi-region campaigns.",
+    highlight: false,
+  },
+] as const;
+
 export default function PricingPage() {
   const { data: session, status } = useSession();
   const isLoggedIn = status === "authenticated" && session?.user;
-  
+  const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 overflow-hidden relative">
       {/* Decorative Background Elements */}
@@ -72,14 +107,14 @@ export default function PricingPage() {
       <section className="pt-32 pb-12 px-6">
         <div className="max-w-7xl mx-auto text-center">
           <div className="inline-block px-4 py-1.5 rounded-full bg-primary-100 text-primary-700 font-medium text-sm mb-6 border border-primary-200">
-             For UK SMEs
+             Borderless, Global Pricing
           </div>
           <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 mb-6 tracking-tight">
             Simple, Transparent Pricing
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
-            One price. All features. No hidden fees. <br className="hidden md:block"/>
-            Replace your entire tech stack for less than the cost of a team lunch.
+            Three plans. Every plan includes the full Virtual HQ. <br className="hidden md:block"/>
+            Replace Slack + Zoom + Calendly + Asana for a fraction of the cost.
           </p>
         </div>
       </section>
@@ -90,29 +125,74 @@ export default function PricingPage() {
           {/* Main Glass Card */}
           <div className="relative rounded-[2.5rem] border border-white/60 bg-white/40 backdrop-blur-2xl shadow-2xl overflow-hidden p-8 md:p-12">
              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-50" />
-             
-             {/* Price Header */}
-             <div className="text-center mb-12">
-               <h2 className="text-3xl font-bold text-gray-900 mb-2">PRO All-In-One</h2>
-               <p className="text-gray-500 mb-8">Everything included. 10 User Seats Included.</p>
-               
-               <div className="flex items-center justify-center gap-1 mb-6">
-                  <span className="text-4xl text-gray-400 font-light line-through decoration-red-500/50 decoration-2 mr-4">£120+</span>
-                  <span className="text-7xl font-bold text-gray-900 tracking-tighter">£9.99</span>
-                  <span className="text-xl text-gray-500 self-end mb-2">/mo</span>
+
+             {/* Billing period toggle */}
+             <div className="flex justify-center mb-10">
+               <div className="inline-flex items-center bg-white/80 border border-gray-200 rounded-full p-1 text-sm font-semibold">
+                 <button
+                   type="button"
+                   onClick={() => setPeriod("monthly")}
+                   className={`px-5 py-2 rounded-full transition-colors ${period === "monthly" ? "bg-gray-900 text-white" : "text-gray-500"}`}
+                 >
+                   Monthly
+                 </button>
+                 <button
+                   type="button"
+                   onClick={() => setPeriod("annual")}
+                   className={`px-5 py-2 rounded-full transition-colors ${period === "annual" ? "bg-gray-900 text-white" : "text-gray-500"}`}
+                 >
+                   Annual <span className="text-emerald-600">· save ~20%</span>
+                 </button>
                </div>
-               
-               <Link
-                  href="/onboarding"
-                  className="inline-block px-12 py-5 rounded-full text-white font-bold text-lg shadow-xl shadow-orange-500/20 hover:shadow-2xl hover:scale-105 transition-all duration-300"
-                  style={{ backgroundColor: '#fc6813' }}
-                >
-                  Start 14-Day Free Trial
-                </Link>
-                <div className="flex items-center justify-center gap-6 mt-6 text-sm text-gray-500">
-                   <span className="flex items-center gap-1"><Check className="w-4 h-4 text-emerald-500" /> Cancel anytime</span>
-                   <span className="flex items-center gap-1"><Check className="w-4 h-4 text-emerald-500" /> No credit card required</span>
-                </div>
+             </div>
+
+             {/* Three tiers */}
+             <div className="grid md:grid-cols-3 gap-6 mb-4">
+               {TIERS.map((tier) => {
+                 const price = period === "monthly" ? tier.monthly : tier.annual;
+                 return (
+                   <div
+                     key={tier.id}
+                     className={`relative rounded-3xl p-8 flex flex-col border ${
+                       tier.highlight
+                         ? "border-orange-300 bg-white shadow-xl scale-[1.02]"
+                         : "border-gray-200 bg-white/70"
+                     }`}
+                   >
+                     {tier.highlight && (
+                       <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-orange-500 text-white text-xs font-bold uppercase tracking-wide rounded-full shadow">
+                         Flagship
+                       </span>
+                     )}
+                     <h2 className="text-xl font-bold text-gray-900">{tier.label}</h2>
+                     <p className="text-gray-500 text-sm mt-2 mb-6 min-h-[40px]">{tier.blurb}</p>
+                     <div className="flex items-end gap-1 mb-1">
+                       <span className="text-5xl font-bold text-gray-900 tracking-tighter">${price}</span>
+                       <span className="text-gray-500 mb-1.5">/mo</span>
+                     </div>
+                     <p className="text-xs text-gray-500 mb-6">
+                       {tier.seats} seats included · +${tier.seatAddon}/seat/mo after that
+                     </p>
+                     <Link
+                       href="/onboarding"
+                       className={`mt-auto inline-flex items-center justify-center px-6 py-3.5 rounded-full font-bold text-sm transition-all duration-300 ${
+                         tier.highlight
+                           ? "text-white shadow-lg shadow-orange-500/20 hover:shadow-xl hover:scale-105"
+                           : "text-gray-900 bg-gray-100 hover:bg-gray-200"
+                       }`}
+                       style={tier.highlight ? { backgroundColor: '#fc6813' } : undefined}
+                     >
+                       Start Free Trial
+                     </Link>
+                   </div>
+                 );
+               })}
+             </div>
+
+             <div className="flex items-center justify-center gap-6 mt-6 mb-4 text-sm text-gray-500">
+                <span className="flex items-center gap-1"><Check className="w-4 h-4 text-emerald-500" /> Cancel anytime</span>
+                <span className="flex items-center gap-1"><Check className="w-4 h-4 text-emerald-500" /> No credit card required</span>
+                <span className="flex items-center gap-1"><Check className="w-4 h-4 text-emerald-500" /> 14-day free trial</span>
              </div>
 
              {/* Categorized Features */}
@@ -139,19 +219,19 @@ export default function PricingPage() {
               },
               {
                 q: "Is there a free trial?",
-                a: "Yes, we offer a 14-day free trial with full access to all features. No credit card required to start."
+                a: "Yes, we offer a 14-day free trial with full access to your chosen plan. No credit card required to start."
               },
               {
-                q: "How many users can I add?",
-                a: "You can add up to 10 team members as part of the standard plan at no extra cost. This is perfect for small to medium staffing needs."
+                q: "What happens if my team grows past my plan's seat count?",
+                a: "Extra seats beyond your plan's allotment are billed per seat, per month — you're never blocked from adding a new team member."
               },
               {
-                q: "Is my data secure?",
-                a: "Absolutely. We use enterprise-grade security, UK-based data centers, and are fully GDPR compliant."
+                q: "Do my clients need an account to book or join a call?",
+                a: "No. Clients book through your branded public page, upload files to an isolated, malware-scanned bucket, and join with a one-time access code — zero login required."
               },
               {
                 q: "Can I upgrade or downgrade?",
-                a: "We have one simple plan that includes everything. No need to worry about upgrades or feature limitations."
+                a: "Yes, switch between Starter, Growth, and Scale at any time from your billing settings — your seat count carries over automatically."
               },
               {
                 q: "Do you offer refunds?",
@@ -173,12 +253,12 @@ export default function PricingPage() {
           <Link href="/" className="flex items-center justify-center gap-2 mb-4">
              <Image src="/logo.png" alt="Okleevo" width={150} height={40} className="h-10 w-auto" />
           </Link>
-          <p className="text-gray-500 mb-4">Everything included. 10 User Seats Included.</p>
+          <p className="text-gray-500 mb-4">Starter, Growth, and Scale — plans that grow with your distributed team.</p>
           <p className="text-sm text-indigo-400 font-bold mb-8">
-            10 seats included – allows multiple users on one account, suitable for SMEs with small or large teams.
+            Starts at 5 seats – add seats one at a time as your team grows, on any plan.
           </p>
           <p className="text-gray-400 mb-6">
-            The all-in-one business platform designed specifically for UK SMEs
+            The borderless workspace for distributed teams and global agencies
           </p>
           <div className="flex justify-center gap-6 text-sm">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>

@@ -10,15 +10,25 @@ import {
   Zap, Download, Upload,
   Trash2, LogOut, Key, Smartphone, Monitor, Users, Crown,
   FileText, Code, Sparkles,
-  Edit3, UserPlus, UserCheck, Package, Truck, MessageSquare,
-  Shield as ShieldIcon, Receipt, Calculator, FormInput, Calendar as CalendarIcon,
-  CheckSquare, FileEdit, BarChart3, PenTool, TrendingUp
+  Edit3, UserPlus, UserCheck, MessageSquare,
+  Calculator, Calendar as CalendarIcon,
+  CheckSquare, FileEdit, BarChart3, PenTool
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { usePresence } from '@/components/hooks/use-presence';
 import { TeamActivityFeed } from '@/components/team-activity-feed';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertCircle as AlertCircleIcon } from 'lucide-react';
+
+// Global pivot pricing tiers — display copy only. The actual charge amount
+// always comes from Stripe (see lib/stripe/global-billing.ts, which reads
+// unit_amount off the configured Price object rather than duplicating these
+// numbers as a billing source of truth).
+const GLOBAL_TIERS: { id: 'STARTER' | 'GROWTH' | 'SCALE'; label: string; monthly: number; annual: number; seats: number }[] = [
+  { id: 'STARTER', label: 'Starter', monthly: 49, annual: 39, seats: 5 },
+  { id: 'GROWTH', label: 'Growth', monthly: 99, annual: 79, seats: 12 },
+  { id: 'SCALE', label: 'Scale', monthly: 199, annual: 159, seats: 25 },
+];
 
 interface UserProfile {
   firstName: string;
@@ -101,11 +111,14 @@ function SettingsPageInner() {
     currentPeriodEnd: string | null;
     cancelAtPeriodEnd: boolean;
     amount: number;
+    planTier: string | null;
   }
 
   const [subInfo, setSubInfo] = useState<SubInfo | null>(null);
   const [loadingBilling, setLoadingBilling] = useState(false);
-  
+  const [globalBillingPeriod, setGlobalBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+  const [checkoutLoadingTier, setCheckoutLoadingTier] = useState<string | null>(null);
+
   // Presence tracking
   const { presence } = usePresence();
   const [newEmployee, setNewEmployee] = useState({
@@ -325,6 +338,28 @@ function SettingsPageInner() {
     } catch (error) {
       console.error('Portal error:', error);
       showToast('Connection error', 'error');
+    }
+  }
+
+  async function handleGlobalCheckout(planTier: 'STARTER' | 'GROWTH' | 'SCALE') {
+    setCheckoutLoadingTier(planTier);
+    try {
+      const response = await fetch('/api/billing/checkout-global', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planTier, billingPeriod: globalBillingPeriod }),
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showToast(data.error || 'Failed to start checkout', 'error');
+      }
+    } catch (error) {
+      console.error('Global checkout error:', error);
+      showToast('Connection error', 'error');
+    } finally {
+      setCheckoutLoadingTier(null);
     }
   }
 
@@ -1370,7 +1405,7 @@ function SettingsPageInner() {
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Zap className="w-4 h-4 text-gray-400" />
-                  What's included
+                  What&apos;s included
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
@@ -1395,6 +1430,63 @@ function SettingsPageInner() {
                   Payment methods, invoices, and billing history are managed securely through the <strong>Stripe Customer Portal</strong>. Click <em>Manage via Stripe Portal</em> above to update your card, download receipts, or cancel your subscription.
                 </p>
               </div>
+
+              {/* Global pivot: new USD tiered plans */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-indigo-500" />
+                      Okleevo Global — the borderless workspace plans
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">Switch anytime. Your seat count carries over; extra seats beyond a plan&apos;s allotment are billed per seat.</p>
+                  </div>
+                  <div className="inline-flex items-center bg-gray-100 rounded-lg p-1 text-sm font-medium shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setGlobalBillingPeriod('monthly')}
+                      className={`px-3 py-1.5 rounded-md transition-colors ${globalBillingPeriod === 'monthly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                    >
+                      Monthly
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGlobalBillingPeriod('annual')}
+                      className={`px-3 py-1.5 rounded-md transition-colors ${globalBillingPeriod === 'annual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                    >
+                      Annual
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {GLOBAL_TIERS.map((tier) => {
+                    const price = globalBillingPeriod === 'monthly' ? tier.monthly : tier.annual;
+                    const isCurrentTier = subInfo?.planTier === tier.id;
+                    return (
+                      <div key={tier.id} className={`rounded-xl border p-5 flex flex-col ${tier.id === 'GROWTH' ? 'border-indigo-300 bg-indigo-50/40' : 'border-gray-200'}`}>
+                        {tier.id === 'GROWTH' && (
+                          <span className="self-start px-2 py-0.5 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wide rounded-full mb-2">Flagship</span>
+                        )}
+                        <p className="text-sm font-semibold text-gray-900">{tier.label}</p>
+                        <p className="mt-1">
+                          <span className="text-2xl font-bold text-gray-900">${price}</span>
+                          <span className="text-sm text-gray-500">/mo</span>
+                        </p>
+                        <p className="text-xs text-gray-500 mb-4">{tier.seats} seats included</p>
+                        <button
+                          type="button"
+                          disabled={checkoutLoadingTier !== null || Boolean(isCurrentTier)}
+                          onClick={() => handleGlobalCheckout(tier.id)}
+                          className="mt-auto px-3 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isCurrentTier ? 'Current plan' : checkoutLoadingTier === tier.id ? 'Redirecting...' : 'Switch to this plan'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -1403,6 +1495,7 @@ function SettingsPageInner() {
       {/* Modules Tab */}
       {activeTab === 'modules' && (
         <div className="space-y-6">
+
           <div className="bg-white rounded-xl p-5 sm:p-6 border border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div className="flex items-center gap-3">
@@ -1445,30 +1538,16 @@ function SettingsPageInner() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { id: 'invoicing', label: 'Invoicing', icon: Receipt, category: 'Finance', desc: 'Create and manage professional invoices.' },
-                { id: 'accounting', label: 'Accounting', icon: Calculator, category: 'Finance', desc: 'Double-entry bookkeeping and ledgers.' },
-                { id: 'taxation', label: 'Taxation', icon: FileText, category: 'Finance', desc: 'Tax calculations and reporting.' },
-                { id: 'cashflow', label: 'Cashflow', icon: TrendingUp, category: 'Finance', desc: 'Monitor your business liquidity.' },
-                { id: 'expenses', label: 'Expenses', icon: FileText, category: 'Finance', desc: 'Track business spending and receipts.' },
-                { id: 'vat-tools', label: 'VAT Tools', icon: Calculator, category: 'Finance', desc: 'VAT returns and MTD tools.' },
-                
                 { id: 'crm', label: 'CRM', icon: Users, category: 'Customer', desc: 'Manage your leads and customers.' },
-                { id: 'forms', label: 'Forms', icon: FormInput, category: 'Customer', desc: 'Custom intake and lead forms.' },
                 { id: 'booking', label: 'Booking', icon: CalendarIcon, category: 'Customer', desc: 'Online appointment scheduling.' },
                 { id: 'helpdesk', label: 'Helpdesk', icon: MessageSquare, category: 'Customer', desc: 'Customer support ticket system.' },
                 { id: 'campaigns', label: 'Campaigns', icon: Mail, category: 'Customer', desc: 'Email marketing and outreach.' },
 
                 { id: 'tasks', label: 'Tasks', icon: CheckSquare, category: 'Productivity', desc: 'Project and task management.' },
-                { id: 'ai-content', label: 'AI Content', icon: Sparkles, category: 'Productivity', desc: 'Generate marketing copy with AI.' },
                 { id: 'ai-notes', label: 'AI Notes', icon: FileEdit, category: 'Productivity', desc: 'Smart note-taking and summaries.' },
                 { id: 'kpi-dashboard', label: 'KPI Dashboard', icon: BarChart3, category: 'Productivity', desc: 'Business performance metrics.' },
 
-                { id: 'inventory', label: 'Inventory', icon: Package, category: 'Operations', desc: 'Stock levels and warehouse tracking.' },
-                { id: 'suppliers', label: 'Suppliers', icon: Truck, category: 'Operations', desc: 'Manage vendor relationships.' },
-                { id: 'hr-records', label: 'HR Records', icon: UserCheck, category: 'Operations', desc: 'Employee data and HR management.' },
                 { id: 'e-signature', label: 'E-Signature', icon: PenTool, category: 'Operations', desc: 'Sign documents electronically.' },
-                { id: 'micro-pages', label: 'Micro Pages', icon: Globe, category: 'Operations', desc: 'Mini-websites for your business.' },
-                { id: 'compliance', label: 'Compliance', icon: ShieldIcon, category: 'Operations', desc: 'Legal and regulatory reminders.' },
               ].map((module) => (
                 <div
                   key={module.id}

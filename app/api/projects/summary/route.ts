@@ -17,6 +17,7 @@ export const GET = withMultiTenancy(async (_req, { user }) => {
 
     const activeCount = projects.filter(p => p.status === 'ACTIVE').length;
     const onHoldCount = projects.filter(p => p.status === 'ON_HOLD').length;
+    const completedCount = projects.filter(p => p.status === 'COMPLETED').length;
     const overdueCount = projects.filter(
       p => p.dueDate && p.dueDate < now && p.status !== 'COMPLETED' && p.status !== 'ARCHIVED'
     ).length;
@@ -63,6 +64,7 @@ export const GET = withMultiTenancy(async (_req, { user }) => {
       totalProjects: projects.length,
       activeCount,
       onHoldCount,
+      completedCount,
       overdueCount,
       atRiskCount,
       totalRevenue,

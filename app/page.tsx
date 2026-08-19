@@ -1,28 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { HeroAnimation } from "@/components/hero-animation";
 import { FeaturesBentoGrid } from "@/components/features-bento-grid";
-import { DashboardPreviewRegion } from "@/components/dashboard-preview-region";
+import { ProductDemoSimulator } from "@/components/product-demo/ProductDemoSimulator";
+import { ScrollFeatureFlow } from "@/components/scroll-feature-flow";
+import { TrustBadges } from "@/components/trust-badges";
 
 export default function Home() {
   const { data: session, status } = useSession();
   const isLoggedIn = status === "authenticated" && session?.user;
-  const [config, setConfig] = useState<any>(null);
-
-  useEffect(() => {
-    fetch("/api/public/dashboard-preview")
-      .then((res) => {
-        if (res.ok) return res.json();
-      })
-      .then((data) => {
-        if (data) setConfig(data);
-      })
-      .catch((err) => console.error("Error loading showcase config:", err));
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50" data-ai-landing-page="true">
@@ -37,11 +26,26 @@ export default function Home() {
               "name": "Okleevo",
               "operatingSystem": "All",
               "applicationCategory": "BusinessApplication",
-              "offers": {
-                "@type": "Offer",
-                "price": "9.99",
-                "priceCurrency": "GBP"
-              },
+              "offers": [
+                {
+                  "@type": "Offer",
+                  "name": "Starter Workspace",
+                  "price": "49",
+                  "priceCurrency": "USD"
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Growth Workspace",
+                  "price": "99",
+                  "priceCurrency": "USD"
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Scale Workspace",
+                  "price": "199",
+                  "priceCurrency": "USD"
+                }
+              ],
               "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": "4.9",
@@ -50,50 +54,30 @@ export default function Home() {
             },
             {
               "@context": "https://schema.org",
-              "@type": "LocalBusiness",
-              "name": "Okleevo",
-              "image": "https://okleevo.com/logo.png",
-              "priceRange": "£",
-              "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "London",
-                "addressRegion": "Greater London",
-                "postalCode": "EC1A 1BB",
-                "addressCountry": "GB"
-              },
-              "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": 51.5074,
-                "longitude": -0.1278
-              },
-              "url": "https://okleevo.com"
-            },
-            {
-              "@context": "https://schema.org",
               "@type": "FAQPage",
               "mainEntity": [
                 {
                   "@type": "Question",
-                  "name": "How much does Okleevo cost for UK businesses?",
+                  "name": "How much does Okleevo cost?",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Okleevo costs a flat fee of £9.99 per month for UK SMEs. There are no hidden fees or tier limits, and 10 user seats are included."
+                    "text": "Okleevo starts at $49/month (Starter, 5 seats), with Growth at $99/month (12 seats) and Scale at $199/month (25 seats). Annual billing is discounted. Additional seats are billed per seat beyond each plan's allotment."
                   }
                 },
                 {
                   "@type": "Question",
-                  "name": "Is Okleevo MTD compliant for UK taxation?",
+                  "name": "Do my clients need an Okleevo account to book a call or join a meeting?",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Yes! Okleevo is designed specifically for UK SMEs and supports double-entry bookkeeping, VAT tracking, and MTD-compliant reporting structures."
+                    "text": "No. Clients book through your branded public booking page, upload files directly to an isolated, malware-scanned storage bucket, and join the video call with a one-time access code emailed to them — no account, login, or download required."
                   }
                 },
                 {
                   "@type": "Question",
-                  "name": "What modules are included in the all-in-one platform?",
+                  "name": "Is Okleevo built for distributed, global teams?",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Okleevo includes 23 integrated business modules, covering Invoicing, CRM, booking calendar, campaigns, tasks, suppliers, inventory, e-signature, video collaboration, staff collaboration, a built-in Mail Engine for sending and receiving email without external providers, and AI tools."
+                    "text": "Yes. Okleevo is a borderless workspace: team chat and voice huddles, timezone-aware async task boards, AI meeting transcription, and a lean CRM pipeline, all in one platform for remote-first teams and global agencies."
                   }
                 }
               ]
@@ -164,34 +148,52 @@ export default function Home() {
         <HeroAnimation />
       </section>
 
-      {/* Interactive Mockup Preview Section */}
-      <div data-ai-section="preview">
-        <DashboardPreviewRegion initialConfig={config} />
-      </div>
+      {/* Interactive Two-Layer Product Demo */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6" data-ai-section="preview">
+        <div className="max-w-3xl mx-auto text-center mb-10">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+            One workspace. Two completely separate worlds.
+          </h2>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            Your team&apos;s private HQ and your client&apos;s booking experience never overlap — see both below.
+          </p>
+        </div>
+        <ProductDemoSimulator />
+      </section>
+
+      {/* Scroll-driven feature pipelines */}
+      <section className="py-16 sm:py-20 bg-white/40 backdrop-blur-sm border-y border-gray-100" data-ai-section="pipelines">
+        <ScrollFeatureFlow />
+      </section>
 
       {/* Benefits Section */}
       <section data-ai-section="features">
         <FeaturesBentoGrid />
       </section>
 
-      {/* Regional UK SME Focus (SEO/GEO/Local) */}
-      <section className="py-12 bg-white/40 backdrop-blur-sm border-y border-gray-100 print:hidden" data-ai-section="uk-coverage">
+      {/* Trust & Infrastructure */}
+      <section className="py-16 px-6 bg-white/40 backdrop-blur-sm" data-ai-section="trust">
+        <TrustBadges />
+      </section>
+
+      {/* Global Coverage (SEO/GEO) */}
+      <section className="py-12 bg-white/40 backdrop-blur-sm border-y border-gray-100 print:hidden" data-ai-section="global-coverage">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-orange-600 mb-4">
-            Proudly Supporting UK Businesses Nationwide
+            Trusted by Remote-First Teams Across 40+ Countries
           </p>
           <p className="text-gray-600 max-w-2xl mx-auto text-sm leading-relaxed mb-6">
-            Okleevo's platform is optimized for local UK tax structures, VAT rules, and MTD accounting standards. 
-            Empowering small businesses, contractors, and agencies across all major hubs.
+            Okleevo is built for distributed teams, digital agencies, and global consultancies — no regional
+            lock-in, no local-only pricing. One workspace, wherever your team and clients are.
           </p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-semibold text-gray-400">
-            <span>London</span> • <span>Birmingham</span> • <span>Manchester</span> • <span>Leeds</span> • 
-            <span>Glasgow</span> • <span>Sheffield</span> • <span>Liverpool</span> • <span>Newcastle</span> • 
-            <span>Bristol</span> • <span>Belfast</span> • <span>Cardiff</span> • <span>Edinburgh</span>
+            <span>New York</span> • <span>London</span> • <span>Toronto</span> • <span>Berlin</span> •
+            <span>Singapore</span> • <span>Sydney</span> • <span>Dubai</span> • <span>Lagos</span> •
+            <span>São Paulo</span> • <span>Nairobi</span> • <span>Manila</span> • <span>Remote-First</span>
           </div>
         </div>
       </section>
-      
+
       {/* CTA */}
       <section className="py-20 px-6" data-ai-section="cta" aria-label="Call to Action">
         <div className="max-w-7xl mx-auto">
@@ -201,10 +203,10 @@ export default function Home() {
               className="inline-block px-10 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
               style={{ backgroundColor: '#fc6813' }}
             >
-              Start Your Free Trial Today
+              Start Your Borderless Workspace →
             </Link>
             <p className="mt-4 text-gray-600">
-              No credit card required • 14-day free trial • 10 User Seats Included
+              No credit card required • 14-day free trial • 5 seats included on Starter
             </p>
           </div>
         </div>
@@ -222,12 +224,12 @@ export default function Home() {
               className="h-10 w-auto" 
             />
           </Link>
-          <p className="text-gray-500 mb-4">Everything included. 10 User Seats Included.</p>
+          <p className="text-gray-500 mb-4">Team chat, async projects, and client bookings — all in one workspace.</p>
           <p className="text-sm text-indigo-400 font-bold mb-8">
-            10 seats included – allows multiple users on one account, suitable for SMEs with small or large teams.
+            Starts at 5 seats – scale seat-by-seat as your distributed team grows.
           </p>
           <p className="text-gray-400 mb-6">
-            The all-in-one business platform designed specifically for UK SMEs
+            The borderless workspace for distributed teams and global agencies
           </p>
           <div className="flex justify-center gap-6 text-sm">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>

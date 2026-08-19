@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { calculateTrialEndDate, TRIAL_PERIOD_DAYS } from '@/lib/utils/subscription';
+import { syncGlobalSubscriptionSeats } from './global-billing';
 
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeKey ? new Stripe(stripeKey, { apiVersion: '2023-10-16' }) : null;
@@ -50,6 +51,16 @@ export async function syncSubscriptionWithSeats(businessId: string, seatCount: n
 
   if (!business) {
     throw new Error('Business not found');
+  }
+
+  // Global pivot: a workspace that has upgraded to a USD tier (Starter/
+  // Growth/Scale) is billed through a completely different Stripe price
+  // structure — route it to the tier-aware sync instead of the legacy flat
+  // -plan seat tiers below. Every existing subscriber has planTier unset,
+  // so this is a no-op for them and the rest of this function is unchanged.
+  if (business.subscription?.planTier) {
+    await syncGlobalSubscriptionSeats(businessId);
+    return;
   }
 
   // If no Stripe customer, create one

@@ -4,12 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { 
-  TrendingUp, Users, FileText, CheckSquare, 
+  TrendingUp, Users, CheckSquare,
   DollarSign, Calendar, Clock, ArrowUpRight, ArrowDownRight,
-  Sparkles, Plus, BarChart3, Activity, Target,
-  Zap, Award, Bell, Mail,
-  Shield, Briefcase, AlertCircle, X,
-  Building2, UsersRound, AtSign, Cpu, Circle, LineChart, Settings
+  FileEdit, Plus, BarChart3, Activity, Target,
+  Zap, Award, Bell, Mail, PenTool,
+  Briefcase, AlertCircle, X,
+  UsersRound, Circle, LineChart, Settings
 } from 'lucide-react';
 import { usePresence } from '@/components/hooks/use-presence';
 
@@ -295,12 +295,12 @@ export default function DashboardPage() {
   };
 
   const quickActions = [
-    { 
-      name: 'Create Invoice', 
-      icon: FileText, 
+    {
+      name: 'Team Huddle',
+      icon: UsersRound,
       gradient: 'from-blue-500 to-cyan-500',
-      description: 'Generate new invoice',
-      href: '/dashboard/invoicing'
+      description: 'Start a voice huddle',
+      href: '/dashboard/collaboration'
     },
     { 
       name: 'Add Customer', 
@@ -316,12 +316,12 @@ export default function DashboardPage() {
       description: 'Create task',
       href: '/dashboard/tasks'
     },
-    { 
-      name: 'AI Content', 
-      icon: Sparkles, 
+    {
+      name: 'AI Notes',
+      icon: FileEdit,
       gradient: 'from-orange-500 to-red-500',
-      description: 'Generate content',
-      href: '/dashboard/ai-content'
+      description: 'Summarize a meeting',
+      href: '/dashboard/ai-notes'
     },
     { 
       name: 'Send Campaign', 
@@ -344,12 +344,12 @@ export default function DashboardPage() {
       description: 'Schedule appointment',
       href: '/dashboard/booking'
     },
-    { 
-      name: 'Compliance', 
-      icon: Shield, 
+    {
+      name: 'E-Signature',
+      icon: PenTool,
       gradient: 'from-amber-500 to-orange-500',
-      description: 'Regulatory tracking',
-      href: '/dashboard/compliance'
+      description: 'Send for signature',
+      href: '/dashboard/e-signature'
     }
   ];
 
@@ -363,57 +363,38 @@ export default function DashboardPage() {
   ) => (
     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
       {/* Company Name with Icon */}
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813 0%, #ff8a47 100%)' }}>
+      <div className="flex items-center gap-4 min-w-0">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-sm shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813 0%, #ff8a47 100%)' }}>
           {companyName.charAt(0).toUpperCase()}
         </div>
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">ORGANISATION</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Active Workspace</span>
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight truncate">{companyName}</h2>
+          <div className="flex items-center gap-2 mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+            <span className="capitalize truncate">{industry}</span>
+            <span className="text-gray-300 dark:text-gray-600">·</span>
+            <span className="shrink-0">{seatCount}/{maxSeats} seats</span>
+            <span className="text-gray-300 dark:text-gray-600 hidden sm:inline">·</span>
+            <span className="hidden sm:inline truncate">{email}</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{companyName}</h2>
         </div>
       </div>
 
-      {/* Info Pills & Actions */}
-      <div className="flex flex-wrap items-center gap-2.5">
-        {/* Industry */}
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold">
-          <Cpu className="w-3.5 h-3.5" />
-          <span className="capitalize">{industry}</span>
-        </span>
-
-        {/* Employees */}
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-semibold">
+      {/* Action Triggers */}
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          onClick={() => router.push('/dashboard/collaboration')}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+        >
           <UsersRound className="w-3.5 h-3.5" />
-          <span>{seatCount} / {maxSeats} Seats Used</span>
-        </span>
-
-        {/* Email */}
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 rounded-full text-xs font-medium truncate max-w-[200px] sm:max-w-none">
-          <AtSign className="w-3.5 h-3.5 text-gray-400" />
-          <span>{email}</span>
-        </span>
-
-        {/* Action Triggers */}
-        <div className="flex items-center gap-2 pl-2">
-          <button
-            onClick={() => router.push('/dashboard/collaboration')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
-          >
-            <UsersRound className="w-3.5 h-3.5" />
-            <span>Team Hub</span>
-          </button>
-          <button
-            onClick={() => router.push('/dashboard/settings')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
-          >
-            <Settings className="w-3.5 h-3.5 text-gray-500" />
-            <span>Settings</span>
-          </button>
-        </div>
+          <span>Team Hub</span>
+        </button>
+        <button
+          onClick={() => router.push('/dashboard/settings')}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+        >
+          <Settings className="w-3.5 h-3.5 text-gray-500" />
+          <span>Settings</span>
+        </button>
       </div>
     </div>
   );
@@ -632,7 +613,7 @@ export default function DashboardPage() {
             ) : (
               <div className="py-12 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                 <p>No recent activity found.</p>
-                <p className="text-xs mt-1">Activities from Invoices, Tasks and CRM will appear here.</p>
+                <p className="text-xs mt-1">Activities from Tasks and CRM will appear here.</p>
               </div>
             )}
           </div>

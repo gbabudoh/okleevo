@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserId } from '@/lib/multi-tenancy';
+import { triggerNewChatMessage } from '@/lib/services/realtime';
 
 /**
  * GET - Fetch chat messages history
@@ -97,6 +98,8 @@ export async function POST(req: Request) {
         }
       }
     });
+
+    triggerNewChatMessage(userId, targetUserId).catch(() => {});
 
     return NextResponse.json(message);
   } catch (err) {

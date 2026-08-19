@@ -3,11 +3,12 @@ import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 import { Task, SubTask, TaskPriority } from '@/lib/prisma-client';
 
-function serialize(t: Task & { subtasks?: SubTask[] }) {
+function serialize(t: Task & { subtasks?: SubTask[]; dependsOn?: { id: string; title: string; status: string }[] }) {
   return {
     ...t,
     status: t.status.toLowerCase(),
     priority: t.priority.toLowerCase(),
+    startDate: t.startDate ? t.startDate.toISOString().split('T')[0] : '',
     dueDate: t.dueDate ? t.dueDate.toISOString().split('T')[0] : '',
     createdAt: t.createdAt.toISOString().split('T')[0],
   };
@@ -17,7 +18,7 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
   try {
     const tasks = await prisma.task.findMany({
       where: { businessId: dataFilter.businessId },
-      include: { subtasks: true },
+      include: { subtasks: true, dependsOn: { select: { id: true, title: true, status: true } } },
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(tasks.map(serialize));
@@ -31,17 +32,19 @@ interface TaskBody {
   title: string;
   description?: string;
   priority?: string;
+  startDate?: string;
   dueDate?: string;
   assignedTo?: string;
   tags?: string | string[];
   subtasks?: { title: string; completed?: boolean }[];
   projectId?: string;
+  dependsOnIds?: string[];
 }
 
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body: TaskBody = await req.json();
-    const { title, description, priority, dueDate, assignedTo, tags, subtasks, projectId } = body;
+    const { title, description, priority, startDate, dueDate, assignedTo, tags, subtasks, projectId, dependsOnIds } = body;
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Task title is required' }, { status: 400 });
@@ -52,6 +55,7 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         title: title.trim(),
         description: description?.trim() || null,
         priority: (priority?.toUpperCase() || 'MEDIUM') as TaskPriority,
+        startDate: startDate ? new Date(startDate) : null,
         dueDate: dueDate ? new Date(dueDate) : null,
         assignedTo: assignedTo || null,
         tags: Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',').map((s: string) => s.trim()) : []),
@@ -63,7 +67,10 @@ export const POST = withMultiTenancy(async (req, { user }) => {
             title: s.title,
             completed: !!s.completed
           })) : []
-        }
+        },
+        ...(Array.isArray(dependsOnIds) && dependsOnIds.length > 0 && {
+          dependsOn: { connect: dependsOnIds.map((depId) => ({ id: depId })) }
+        }),
       },
       include: { subtasks: true }
     });
