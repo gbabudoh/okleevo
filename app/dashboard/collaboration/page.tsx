@@ -465,7 +465,7 @@ function CollaborationHubInner() {
                       }`} />
                     </div>
 
-                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white truncate w-full">
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white break-words leading-tight w-full">
                       {member.firstName} {member.lastName}
                     </h3>
                     
@@ -542,9 +542,9 @@ function CollaborationHubInner() {
                       }`} />
                     </div>
 
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white break-words">
                           {member.firstName} {member.lastName}
                         </p>
                         <span className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">

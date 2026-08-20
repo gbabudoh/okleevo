@@ -8,7 +8,7 @@ import {
   X, LayoutDashboard, Users,
   Inbox, Menu, LogOut, Settings, BookOpen,
   Calendar, MessageSquare, Mail, UsersRound,
-  CheckSquare, FileEdit, BarChart3,
+  CheckSquare, FolderKanban, FileEdit, BarChart3,
   PenTool,
   LifeBuoy, Rocket, Search
 } from 'lucide-react';
@@ -34,6 +34,7 @@ const ALL_SECTIONS = [
   {
     label: 'Productivity',
     items: [
+      { name: 'Projects',      desc: 'Deliverables & Milestones', icon: FolderKanban, href: '/dashboard/projects' },
       { name: 'Tasks',         desc: 'Kanban Boards',     icon: CheckSquare, href: '/dashboard/tasks' },
       { name: 'AI Notes',      desc: 'Meeting Transcripts', icon: FileEdit,    href: '/dashboard/ai-notes' },
       { name: 'KPI Dashboard', desc: 'Realtime Metrics',  icon: BarChart3,   href: '/dashboard/kpi-dashboard' },
