@@ -27,7 +27,7 @@ const ALL_SECTIONS = [
   {
     label: 'Team & Collaboration',
     items: [
-      { name: 'Collaboration', desc: 'Virtual HQ Huddles', icon: UsersRound, href: '/dashboard/collaboration' },
+      { name: 'Collaboration Hub', badge: 'video / messaging', desc: 'video / messaging', icon: UsersRound, href: '/dashboard/collaboration' },
     ],
   },
   {
@@ -47,8 +47,8 @@ const ALL_SECTIONS = [
   },
 ];
 
-function ModuleTile({ name, desc, icon: Icon, href, isActive, onClose }: {
-  name: string; desc: string; icon: React.ElementType; href: string; isActive: boolean; onClose: () => void;
+function ModuleTile({ name, desc, badge, icon: Icon, href, isActive, onClose }: {
+  name: string; desc?: string; badge?: string; icon: React.ElementType; href: string; isActive: boolean; onClose: () => void;
 }) {
   return (
     <Link
@@ -73,9 +73,15 @@ function ModuleTile({ name, desc, icon: Icon, href, isActive, onClose }: {
         <div className={`text-xs font-extrabold truncate ${isActive ? 'text-orange-600 dark:text-orange-400' : 'text-slate-900 dark:text-white'}`}>
           {name}
         </div>
-        <div className="text-[10px] font-medium text-slate-400 truncate">
-          {desc}
-        </div>
+        {badge ? (
+          <span className="mt-1 inline-flex items-center w-fit px-1.5 py-0.5 rounded-md text-[9px] font-semibold tracking-wide bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/70 dark:border-slate-700/60 group-hover:bg-orange-50 group-hover:text-orange-600 group-hover:border-orange-200/80 transition-all leading-none">
+            {badge}
+          </span>
+        ) : desc ? (
+          <div className="text-[10px] font-medium text-slate-400 truncate">
+            {desc}
+          </div>
+        ) : null}
       </div>
       {isActive && (
         <motion.span
@@ -196,6 +202,7 @@ function MobileMenuDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                         key={item.name}
                         name={item.name}
                         desc={item.desc}
+                        badge={'badge' in item ? (item as { badge?: string }).badge : undefined}
                         icon={item.icon}
                         href={item.href}
                         isActive={pathname === item.href || (Boolean(pathname) && pathname!.startsWith(item.href + '/'))}
