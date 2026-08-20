@@ -450,14 +450,14 @@ export default function DashboardPage() {
             </div>
           </div>
           
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
             {presence.presence.map((member) => (
               <div
                 key={member.userId}
-                className="flex flex-col items-center p-3 sm:p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400/80 transition-all shadow-2xs group"
+                className="flex flex-col items-center p-3.5 sm:p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400/80 transition-all shadow-2xs group text-center"
               >
                 <div className="relative mb-2.5">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl flex items-center justify-center font-extrabold text-xs sm:text-sm shadow-2xs overflow-hidden border border-slate-200/80 dark:border-slate-800 group-hover:border-orange-400/80 transition-colors">
+                  <div className="w-12 h-12 sm:w-13 sm:h-13 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl flex items-center justify-center font-extrabold text-xs sm:text-sm shadow-2xs overflow-hidden border border-slate-200/80 dark:border-slate-800 group-hover:border-orange-400/80 transition-colors">
                     {member.image ? (
                       <img src={member.image} alt={`${member.firstName} ${member.lastName}`} className="w-full h-full object-cover" />
                     ) : (
@@ -468,10 +468,12 @@ export default function DashboardPage() {
                     <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-emerald-500 border-2 border-white dark:border-slate-950 rounded-full shadow-xs"></div>
                   )}
                 </div>
-                <p className="text-[11px] sm:text-xs font-extrabold text-slate-900 dark:text-white text-center truncate w-full group-hover:text-orange-500 transition-colors">
-                  {member.firstName} {member.lastName.charAt(0)}.
-                </p>
-                <p className="text-[9px] sm:text-[10px] font-mono font-bold text-center mt-0.5">
+                <div className="w-full min-h-[32px] flex items-center justify-center">
+                  <p className="text-xs font-extrabold text-slate-900 dark:text-white text-center leading-tight break-words group-hover:text-orange-500 transition-colors">
+                    {member.firstName} {member.lastName}
+                  </p>
+                </div>
+                <p className="text-[9px] sm:text-[10px] font-mono font-bold text-center mt-1">
                   {member.isOnline ? (
                     <span className="text-emerald-600 dark:text-emerald-400">● ONLINE</span>
                   ) : (
