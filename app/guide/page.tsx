@@ -322,9 +322,9 @@ export default function PublicUserGuidePage() {
                 <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-900/50 flex items-center justify-center">
                   <Video className="w-4.5 h-4.5" />
                 </div>
-                <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">WebRTC Video &amp; Huddles</h3>
+                <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">Instant HD Video Meetings</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Instant peer-to-peer team huddles and guest video meetings without downloading separate apps.
+                  Studio-grade team video calls and client meeting rooms without downloading separate apps or paying Zoom licenses.
                 </p>
               </div>
 

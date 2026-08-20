@@ -1788,7 +1788,7 @@ function SettingsPageInner() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
               {[
-                { id: 'collaboration', label: 'Collaboration Hub', icon: MessageSquare, category: 'Communication', desc: 'Real-time team messaging, channels, and WebRTC video meetings.' },
+                { id: 'collaboration', label: 'Collaboration Hub', icon: MessageSquare, category: 'Communication', desc: 'Real-time team messaging, channels, and HD video meetings.' },
                 { id: 'tasks', label: 'Tasks', icon: CheckSquare, category: 'Productivity', desc: 'Task management, subtasks, and deadline tracking.' },
                 { id: 'ai-notes', label: 'Notes', icon: FileEdit, category: 'Productivity', desc: 'Smart note-taking, AI document summaries, and rich text.' },
                 { id: 'kpi-dashboard', label: 'KPI Dashboard', icon: BarChart3, category: 'Analytics', desc: 'Executive metrics, revenue tracking, and financial performance.' },

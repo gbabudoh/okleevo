@@ -325,7 +325,7 @@ function CollaborationHubInner() {
               <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5">
                 General HQ Main Room
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Instant HD WebRTC video & voice huddle for all team members.</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Instant HD video & voice meeting room for all team members.</p>
             </div>
           </div>
 

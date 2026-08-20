@@ -175,7 +175,7 @@ export default function PublicBookingPage() {
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-slate-500">Meeting Room</span>
-              <span className="font-mono font-extrabold text-orange-500">WebRTC Encrypted Room</span>
+              <span className="font-mono font-extrabold text-orange-500">Secure Video Meeting Room</span>
             </div>
           </div>
 
@@ -271,7 +271,7 @@ export default function PublicBookingPage() {
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  { id: 'video', label: 'Video Call', desc: 'WebRTC Virtual Room', icon: Video },
+                  { id: 'video', label: 'Video Call', desc: 'Secure Virtual Room', icon: Video },
                   { id: 'phone', label: 'Phone Call', desc: 'Direct phone dial-in', icon: Phone },
                   { id: 'in-person', label: 'In-Person', desc: 'Office consultation', icon: MapPin },
                 ].map(fmt => {
@@ -502,7 +502,7 @@ export default function PublicBookingPage() {
 
               <div className="flex items-center justify-center gap-2 text-[11px] font-medium text-slate-400">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Instant email confirmation · Encrypted WebRTC Meeting</span>
+                <span>Instant email confirmation · Encrypted HD Video Meeting</span>
               </div>
             </div>
           </form>

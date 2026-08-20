@@ -13,7 +13,7 @@
 ## Core Platform Pillars & Capabilities
 
 ### 1. Virtual HQ & Real-Time Team Collaboration
-- **Collaboration Hub:** Instant WebRTC audio/video meetings, multi-channel team chat, direct messaging, screen sharing, and live presence.
+- **Collaboration Hub:** Instant HD video meetings, multi-channel team chat, direct messaging, screen sharing, and live presence.
 - **Mail Engine:** Centralized transactional email dispatch and automated client communications.
 
 ### 2. Async Productivity & Work Management

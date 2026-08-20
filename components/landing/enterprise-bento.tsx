@@ -40,15 +40,15 @@ export function EnterpriseBento() {
                   <Video className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
-                  Module 01 • WebRTC Engine
+                  Module 01 • Collaboration & Video Hub
                 </span>
               </div>
 
               <h3 className="text-2xl font-extrabold text-slate-900 mt-6">
-                Borderless Voice Huddles & Real-time Chat
+                Instant HD Video Meetings & Team Messaging
               </h3>
               <p className="mt-2 text-slate-600 text-sm max-w-xl leading-relaxed font-normal">
-                Launch sub-second HD video calls directly inside team chat channels. No external link invites or software installations required.
+                Launch studio-quality HD video meetings directly inside team channels. Zero external links, zero downloads, and zero Zoom license fees.
               </p>
             </div>
 

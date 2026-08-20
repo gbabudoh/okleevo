@@ -299,8 +299,8 @@ function HuddlesView() {
           <span className="bg-slate-100 border border-slate-200 text-slate-700 px-2 py-0.5 rounded text-[10px] font-mono">4 Participants</span>
         </div>
         <div className="flex items-center gap-2 text-slate-500 text-[11px] font-medium">
-          <span>HD 1080p WebRTC</span>
-          <span>• Encryption Active</span>
+          <span>1080p Studio HD</span>
+          <span>• Encrypted Meeting</span>
         </div>
       </div>
 

@@ -16,11 +16,11 @@ export function EnterpriseFaqFooter() {
     },
     {
       q: "Do my clients need an Okleevo account to book or upload files?",
-      a: "No! Clients book through your branded public booking link, upload files directly into isolated, malware-scanned storage buckets, and join video huddles via a one-time access code — zero signup required."
+      a: "No! Clients book through your branded public booking link, upload files directly into isolated, malware-scanned storage buckets, and join video meetings via a one-time access code — zero signup required."
     },
     {
       q: "Is Okleevo built for distributed, global teams?",
-      a: "Yes. Okleevo is a borderless workspace combining real-time WebRTC voice huddles, timezone-aware Kanban boards, AI meeting transcription, and zero-trust file vaults into one unified engine."
+      a: "Yes. Okleevo is a borderless workspace combining studio-grade HD video meetings, timezone-aware Kanban boards, AI meeting transcription, and zero-trust file vaults into one unified engine."
     },
     {
       q: "How does the zero-trust malware scanning work?",

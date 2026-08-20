@@ -26,8 +26,8 @@ export const modules: ModuleCatalogueEntry[] = [
     icon: UsersRound,
     group: 'Virtual HQ',
     color: 'from-orange-500 to-amber-600',
-    desc: 'Instant WebRTC audio/video meetings, screen sharing, and persistent team messaging without separate Slack or Zoom licenses.',
-    features: ['WebRTC Video Calls', 'Multi-channel Chat', 'Live Presence'],
+    desc: 'Instant HD video meetings, screen sharing, and persistent team messaging without separate Slack or Zoom licenses.',
+    features: ['1080p HD Video Meetings', 'Multi-channel Chat', 'Live Presence'],
     route: '/dashboard/collaboration',
   },
 

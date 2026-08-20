@@ -139,14 +139,14 @@ export function PricingComparison() {
           </thead>
           <tbody>
             <tr className="border-b border-gray-100">
-              <th scope="row" className="py-4 font-medium text-gray-900">Internal Huddles & Chat</th>
+              <th scope="row" className="py-4 font-medium text-gray-900">Team Messaging & Chat</th>
               <td className="py-4">Slack ($8.75/user)</td>
               <td className="py-4 text-emerald-600 font-semibold">Included (Virtual HQ)</td>
             </tr>
             <tr className="border-b border-gray-100">
-              <th scope="row" className="py-4 font-medium text-gray-900">Video Infrastructure</th>
+              <th scope="row" className="py-4 font-medium text-gray-900">Video Conferencing</th>
               <td className="py-4">Zoom ($14.99/user)</td>
-              <td className="py-4 text-emerald-600 font-semibold">Included (Browser WebRTC)</td>
+              <td className="py-4 text-emerald-600 font-semibold">Included (Built-in HD Video)</td>
             </tr>
             <tr className="border-b border-gray-100">
               <th scope="row" className="py-4 font-medium text-gray-900">External Scheduling</th>

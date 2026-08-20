@@ -244,7 +244,7 @@ const BookingFormFields = ({
           onChange={e => onChange({ type: e.target.value as 'in-person' | 'video' | 'phone' })}
           className={selectCls}
         >
-          <option value="video">🎥 Video Call (WebRTC Virtual HQ)</option>
+          <option value="video">🎥 Video Call (Okleevo Virtual HQ)</option>
           <option value="phone">📞 Phone Call</option>
           <option value="in-person">🏢 In-Person Meeting</option>
         </select>
@@ -277,7 +277,7 @@ const BookingFormFields = ({
             ⚡ Encrypted Okleevo Video Link Auto-Generated
           </p>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium">
-            A unique WebRTC room link (<span className="font-mono text-orange-600 dark:text-orange-400 font-bold">okleevo.com/room/...</span>) and calendar invite will be automatically dispatched to <span className="font-bold text-slate-700 dark:text-slate-200">{data.email || 'the client'}</span>.
+            A unique secure room link (<span className="font-mono text-orange-600 dark:text-orange-400 font-bold">okleevo.com/room/...</span>) and calendar invite will be automatically dispatched to <span className="font-bold text-slate-700 dark:text-slate-200">{data.email || 'the client'}</span>.
           </p>
         </div>
       </div>

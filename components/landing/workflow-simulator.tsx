@@ -18,11 +18,11 @@ export function WorkflowSimulator() {
     },
     {
       number: "02",
-      title: "Sub-Second WebRTC Video Huddle",
-      description: "Click to launch a broadcast-quality HD video call straight from your workspace chat. High-definition screen sharing and noise suppression built-in.",
+      title: "Instant HD Video Meetings",
+      description: "Click to launch studio-quality HD video meetings straight from your workspace chat. High-definition screen sharing, crystal audio, and secure rooms built-in.",
       icon: Video,
-      highlight: "No App Download • HD 1080p • Live Waveforms",
-      metric: "< 15ms Latency"
+      highlight: "Zero App Downloads • 1080p HD • Screen Share",
+      metric: "Instant 1-Click Launch"
     },
     {
       number: "03",

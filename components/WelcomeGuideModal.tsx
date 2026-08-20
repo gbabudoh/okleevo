@@ -157,8 +157,8 @@ export default function WelcomeGuideModal({ isOpen, onClose, businessName }: Wel
                       <Video className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">WebRTC Video & Huddles</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Hop on instant HD video calls and persistent voice huddles directly inside your Virtual HQ.</p>
+                      <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">Instant HD Video Meetings</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Hop on studio-grade HD video meetings and live team rooms directly inside your Virtual HQ.</p>
                     </div>
                   </div>
                 </div>
