@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   Calendar, Clock, Plus, X, Mail, Phone, MapPin, Video,
   CheckCircle, Edit, Trash2, Search, TrendingUp, CalendarCheck,
-  ChevronDown, Loader2, User, Link as LinkIcon
+  ChevronDown, Loader2, User, Link as LinkIcon, ExternalLink, Copy, Check
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import StatusModal from '@/components/StatusModal';
@@ -209,29 +210,52 @@ export default function BookingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
+  const { data: session } = useSession();
   const [statusModal, setStatusModal] = useState({ isOpen: false, title: '', message: '', type: 'success' as 'success' | 'error' });
   const [contacts, setContacts] = useState<CrmContact[]>([]);
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
-    fetch('/api/user/me')
+    // 1. Check session user businessId
+    const sessBizId = (session?.user as any)?.businessId;
+    if (sessBizId) {
+      setBusinessId(sessBizId);
+      return;
+    }
+
+    // 2. Fallback to /api/user/profile
+    fetch('/api/user/profile')
       .then(res => res.ok ? res.json() : null)
-      .then(user => {
-        if (user?.businessId) setBusinessId(user.businessId);
+      .then(data => {
+        if (data?.business?.id) setBusinessId(data.business.id);
+        else if (data?.businessId) setBusinessId(data.businessId);
       })
       .catch(() => {});
-  }, []);
+  }, [session]);
+
+  const getPublicBookingUrl = () => {
+    if (!businessId) return '';
+    return `${window.location.origin}/booking/${businessId}`;
+  };
 
   const handleCopyBookingLink = () => {
-    if (!businessId) return;
-    const url = `${window.location.origin}/book/${businessId}`;
+    const url = getPublicBookingUrl();
+    if (!url) return;
     navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 3000);
     setStatusModal({
       isOpen: true,
-      title: 'Booking Link Copied!',
-      message: 'Share this link with clients so they can schedule appointments with you.',
+      title: 'Public Booking Link Copied!',
+      message: `Your client booking link is:\n${url}\n\nClients can use this link to schedule video, phone, or in-person appointments with you.`,
       type: 'success',
     });
+  };
+
+  const handleOpenBookingPage = () => {
+    const url = getPublicBookingUrl();
+    if (url) window.open(url, '_blank');
   };
 
   const fetchBookings = useCallback(async () => {
@@ -369,12 +393,23 @@ export default function BookingPage() {
               <button
                 type="button"
                 onClick={handleCopyBookingLink}
-                disabled={!businessId}
-                className="flex items-center gap-2 px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:border-orange-400 hover:text-orange-600 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                className="flex items-center gap-2 px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:border-orange-400 hover:text-orange-600 transition-all cursor-pointer shadow-2xs active:scale-95"
+                title="Copy client booking link"
               >
-                <LinkIcon className="w-4 h-4 text-orange-500" />
-                <span>Booking Link</span>
+                {copiedLink ? <Check className="w-4 h-4 text-emerald-500" /> : <LinkIcon className="w-4 h-4 text-orange-500" />}
+                <span>{copiedLink ? 'Link Copied!' : 'Copy Booking Link'}</span>
               </button>
+
+              <button
+                type="button"
+                onClick={handleOpenBookingPage}
+                className="flex items-center gap-2 px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:border-orange-400 hover:text-orange-600 transition-all cursor-pointer shadow-2xs active:scale-95"
+                title="Preview public client booking page in new tab"
+              >
+                <ExternalLink className="w-4 h-4 text-slate-400" />
+                <span>Preview Page</span>
+              </button>
+
               <button
                 id="tour-booking-new"
                 type="button"
@@ -392,16 +427,23 @@ export default function BookingPage() {
             <button
               type="button"
               onClick={handleCopyBookingLink}
-              disabled={!businessId}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-700 dark:text-slate-300 active:bg-slate-100 disabled:opacity-40"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-700 dark:text-slate-300 active:bg-slate-100 shadow-2xs"
             >
-              <LinkIcon className="w-3.5 h-3.5 text-orange-500" />
-              <span>Copy Link</span>
+              {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <LinkIcon className="w-3.5 h-3.5 text-orange-500" />}
+              <span>{copiedLink ? 'Copied!' : 'Copy Link'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenBookingPage}
+              className="p-2.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-slate-600 dark:text-slate-300 active:bg-slate-100 shadow-2xs shrink-0"
+              title="Preview public booking page"
+            >
+              <ExternalLink className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-2xl text-xs font-extrabold shadow-2xs active:scale-95"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-2xl text-xs font-extrabold shadow-2xs active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New Booking</span>
