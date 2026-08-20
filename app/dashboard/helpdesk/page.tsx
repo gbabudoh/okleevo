@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import {
   MessageSquare, Clock, Plus, X, AlertCircle, CheckCircle,
   Timer, Search, Send, Eye, Edit, Trash2, TrendingUp,
-  Zap, User, Loader2, ChevronDown, Link as LinkIcon, Lock
+  Zap, User, Loader2, ChevronDown, Link as LinkIcon, Lock,
+  Copy, Check, ExternalLink, Sparkles, ShieldCheck
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import StatusModal from '@/components/StatusModal';
@@ -99,16 +100,17 @@ export default function HelpdeskPage() {
   const [searchTerm, setSearchTerm]         = useState('');
   const [filterStatus, setFilterStatus]     = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
+  const [newTicket, setNewTicket]           = useState(blankTicket());
+  const [savingTicket, setSavingTicket]     = useState(false);
+  const [teamMembers, setTeamMembers]       = useState<TeamMember[]>([]);
   const [replyMessage, setReplyMessage]     = useState('');
   const [replyInternal, setReplyInternal]   = useState(false);
   const [isReplying, setIsReplying]         = useState(false);
-  const [newTicket, setNewTicket]           = useState(blankTicket());
-  const [teamMembers, setTeamMembers]       = useState<TeamMember[]>([]);
+  const [statusModal, setStatusModal]       = useState<{ isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info' }>({
+    isOpen: false, title: '', message: '', type: 'info',
+  });
   const [businessId, setBusinessId]         = useState<string | null>(null);
-  const [savingTicket, setSavingTicket]     = useState(false);
-  const [statusModal, setStatusModal] = useState<{
-    isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info';
-  }>({ isOpen: false, title: '', message: '', type: 'success' });
+  const [copiedSupportLink, setCopiedSupportLink] = useState(false);
 
   const fetchTickets = useCallback(async () => {
     try {
@@ -131,11 +133,26 @@ export default function HelpdeskPage() {
     }).catch(() => {});
   }, []);
 
+  const getPublicSupportUrl = () => {
+    if (!businessId || typeof window === 'undefined') return '';
+    return `${window.location.origin}/helpdesk/${businessId}`;
+  };
+
   const handleCopySupportLink = async () => {
-    if (!businessId) return;
-    const link = `${window.location.origin}/helpdesk/${businessId}`;
-    await navigator.clipboard.writeText(link);
-    setStatusModal({ isOpen: true, title: 'Link Copied', message: 'Your public support request link has been copied to your clipboard.', type: 'info' });
+    const url = getPublicSupportUrl();
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedSupportLink(true);
+      setTimeout(() => setCopiedSupportLink(false), 2500);
+    } catch {
+      setStatusModal({ isOpen: true, title: 'Link Copied', message: 'Your public support link has been copied.', type: 'info' });
+    }
+  };
+
+  const handleOpenSupportPortal = () => {
+    const url = getPublicSupportUrl();
+    if (url) window.open(url, '_blank');
   };
 
   const handleCreateTicket = async () => {
@@ -326,6 +343,47 @@ export default function HelpdeskPage() {
               <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">{s.value}</p>
             </div>
           ))}
+        </div>
+
+        {/* ── Quick-Share Public Support Portal Dock ── */}
+        <div className="bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent border border-orange-200/60 dark:border-orange-900/40 rounded-3xl p-4 sm:p-6 relative overflow-hidden shadow-2xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1 max-w-xl">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold font-mono bg-orange-100 dark:bg-orange-950/80 text-orange-600 dark:text-orange-400 border border-orange-200/80 dark:border-orange-900/60">
+                  <Sparkles className="w-3 h-3 text-orange-500" /> Public Support Intake
+                </span>
+              </div>
+              <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+                Client Support &amp; Ticket Intake Portal
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
+                Share your branded support link on emails, WhatsApp, or invoices. Inquiries automatically create CRM contacts and alert your team.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleCopySupportLink}
+                disabled={!businessId}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:border-orange-400 hover:text-orange-600 transition shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40"
+              >
+                {copiedSupportLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 text-orange-500" />}
+                <span>{copiedSupportLink ? 'Copied Support Link!' : 'Copy Support Link'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleOpenSupportPortal}
+                disabled={!businessId}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-xl text-xs font-extrabold hover:opacity-95 transition shadow-2xs cursor-pointer active:scale-95 disabled:opacity-40"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Preview Portal ↗</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* ── Search & Filter Dock ── */}

@@ -54,6 +54,14 @@ export async function POST(
       return NextResponse.json({ error: 'This business cannot accept requests right now' }, { status: 400 });
     }
 
+    const parsedPriority = (() => {
+      const p = (body.priority || '').toUpperCase();
+      if (p === 'URGENT') return TicketPriority.URGENT;
+      if (p === 'HIGH') return TicketPriority.HIGH;
+      if (p === 'LOW') return TicketPriority.LOW;
+      return TicketPriority.MEDIUM;
+    })();
+
     const ticket = await prisma.ticket.create({
       data: {
         businessId,
@@ -61,8 +69,8 @@ export async function POST(
         subject: subject.trim(),
         customerName: customer.trim(),
         customerEmail: email.trim(),
-        priority: TicketPriority.MEDIUM,
-        category: category?.trim() || 'Support',
+        priority: parsedPriority,
+        category: category?.trim() || 'General Support',
         description: description.trim(),
         status: TicketStatus.OPEN,
         type: 'CUSTOMER',
@@ -71,7 +79,11 @@ export async function POST(
 
     notifyTicketEvent(ticket, business.name, 'received').catch(() => {});
 
-    return NextResponse.json({ success: true, id: ticket.id });
+    return NextResponse.json({
+      success: true,
+      id: ticket.id,
+      ticketNumber: `TKT-${ticket.id.slice(-6).toUpperCase()}`
+    });
   } catch (error) {
     console.error('Error submitting public ticket:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
