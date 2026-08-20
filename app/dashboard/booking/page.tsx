@@ -267,18 +267,43 @@ const BookingFormFields = ({
       </div>
     )}
 
-    <div>
-      <label className={labelCls}>
-        Meeting Room / Location {data.type !== 'in-person' && <span className="text-slate-400 font-normal">(optional)</span>}
-      </label>
-      <input
-        type="text"
-        value={data.location || ''}
-        onChange={e => onChange({ location: e.target.value })}
-        className={inputCls}
-        placeholder={data.type === 'video' ? 'Virtual HQ Meeting Room (Auto-assigned)' : 'e.g. Conference Room A or Office Address'}
-      />
-    </div>
+    {data.type === 'video' ? (
+      <div className="p-3.5 bg-orange-50/70 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-900/60 rounded-2xl flex items-start gap-3">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+          <Video className="w-4 h-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+            ⚡ Encrypted Okleevo Video Link Auto-Generated
+          </p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium">
+            A unique WebRTC room link (<span className="font-mono text-orange-600 dark:text-orange-400 font-bold">okleevo.com/room/...</span>) and calendar invite will be automatically dispatched to <span className="font-bold text-slate-700 dark:text-slate-200">{data.email || 'the client'}</span>.
+          </p>
+        </div>
+      </div>
+    ) : data.type === 'in-person' ? (
+      <div>
+        <label className={labelCls}>Physical Office Address / Meeting Room *</label>
+        <input
+          type="text"
+          value={data.location || ''}
+          onChange={e => onChange({ location: e.target.value })}
+          className={inputCls}
+          placeholder="e.g. Boardroom 3, 100 Bishopsgate, London"
+        />
+      </div>
+    ) : (
+      <div>
+        <label className={labelCls}>Phone Dial-in Number (Optional)</label>
+        <input
+          type="text"
+          value={data.location || ''}
+          onChange={e => onChange({ location: e.target.value })}
+          className={inputCls}
+          placeholder="e.g. We will call the client at provided phone number"
+        />
+      </div>
+    )}
 
     <div>
       <label className={labelCls}>Internal Agenda & Notes</label>
@@ -288,6 +313,12 @@ const BookingFormFields = ({
         className={`${inputCls} h-20 resize-none`}
         placeholder="Key objectives, talking points, or prep notes..."
       />
+    </div>
+
+    {/* Reassurance Banner */}
+    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-900/60 rounded-2xl text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+      <span>Auto-syncs to CRM and emails a live calendar invite (.ics) to the client upon saving.</span>
     </div>
   </div>
 );
