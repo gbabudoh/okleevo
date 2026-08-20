@@ -9,6 +9,7 @@ import PusherClient, { type Channel } from 'pusher-js';
 import {
   Video, Phone, MessageSquare,
   Loader2, ShieldCheck, UsersRound, Send, X,
+  Radio, Search
 } from 'lucide-react';
 import MeetingRoom from '@/components/collaboration/MeetingRoom';
 import { startOutgoingRingtone, stopOutgoingRingtone } from '@/lib/audio/ringtone';
@@ -22,6 +23,7 @@ interface TeamMember {
   lastName: string;
   email: string;
   role: string;
+  image?: string | null;
   isOnline: boolean;
   lastActivity: string;
 }
@@ -37,12 +39,12 @@ interface ChatMessage {
 }
 
 const AVATAR_GRADIENTS = [
+  'from-orange-500 to-amber-600',
   'from-indigo-600 to-violet-600',
   'from-blue-600 to-cyan-600',
-  'from-purple-600 to-pink-600',
   'from-emerald-600 to-teal-600',
-  'from-amber-600 to-orange-600',
-  'from-rose-600 to-red-600',
+  'from-purple-600 to-pink-600',
+  'from-amber-600 to-rose-600',
 ];
 
 function CollaborationHubInner() {
@@ -50,6 +52,7 @@ function CollaborationHubInner() {
   const { data: session } = useSession();
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeMeeting, setActiveMeeting] = useState<{
     token: string;
     wsUrl: string;
@@ -67,11 +70,7 @@ function CollaborationHubInner() {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const pusherRef = useRef<PusherClient | null>(null);
 
-  // Real-time push (Pusher) — purely a "something changed" signal; message
-  // data always comes from fetchChatMessages below. If NEXT_PUBLIC_PUSHER_*
-  // isn't configured, this is a no-op and chat behaves exactly as it did
-  // before (3s polling), matching lib/services/realtime.ts's server-side
-  // no-op fallback.
+  // Real-time push (Pusher)
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_PUSHER_KEY;
     const cluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
@@ -114,10 +113,6 @@ function CollaborationHubInner() {
       channel.bind('new-message', () => fetchChatMessages(activeChatMember.userId));
     }
 
-    // Polling is now a fallback, not the primary mechanism, once realtime
-    // push is live — a much longer interval is enough to recover from a
-    // dropped/missed event. Without Pusher configured this stays the sole
-    // delivery mechanism, at its original 3s cadence.
     const pollMs = channel ? 20000 : 3000;
     const interval = setInterval(() => {
       fetchChatMessages(activeChatMember.userId);
@@ -139,7 +134,6 @@ function CollaborationHubInner() {
     const content = newMessageContent.trim();
     setNewMessageContent('');
 
-    // Optimistic UI updates
     const optimisticMsg = {
       id: 'temp_' + Date.now(),
       senderId: session?.user?.id || 'me',
@@ -248,24 +242,27 @@ function CollaborationHubInner() {
   }
 
   const onlineCount = team.filter(m => m.isOnline).length;
+  const filteredTeam = team.filter(m =>
+    `${m.firstName} ${m.lastName} ${m.email} ${m.role}`.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-24 md:pb-12 text-slate-900 dark:text-slate-100">
+    <div className="max-w-7xl mx-auto space-y-6 pb-24 md:pb-12 text-slate-900 dark:text-slate-100">
       <TourProvider moduleId="collaboration" steps={collaborationTourSteps} />
 
       {/* ── Enterprise Workspace Header ── */}
-      <div id="tour-collaboration-header" className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      <div id="tour-collaboration-header" className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
           <div className="flex items-start gap-4">
-            <div className="p-3.5 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 rounded-xl shrink-0 text-indigo-600 dark:text-indigo-400 shadow-xs">
-              <UsersRound className="w-6 h-6 stroke-[1.75]" />
+            <div className="p-4 bg-orange-50 dark:bg-orange-950/50 border border-orange-200/60 dark:border-orange-900/50 rounded-2xl shrink-0 text-orange-600 dark:text-orange-400 shadow-xs">
+              <UsersRound className="w-7 h-7 stroke-[1.75]" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                   Team Collaboration Workspace
                 </h1>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                   E2E Encrypted Org
                 </span>
@@ -280,140 +277,173 @@ function CollaborationHubInner() {
                   ]}
                 />
               </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-2xl">
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl font-normal leading-relaxed">
                 Encrypted HD video meetings, voice huddles, and persistent team chat scoped exclusively to your organization domain.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300">
-              <span className="relative flex h-2 w-2">
+          <div className="flex flex-wrap items-center gap-3 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs">
+              <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              <span>{onlineCount} of {team.length} Active</span>
+              <span>{onlineCount} of {team.length} Active Members</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── HQ Room Card (sole entry point for the org-wide room) ── */}
-      <div className="rounded-2xl bg-indigo-50/60 border border-indigo-100 p-5 shadow-xs relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
-              <Video className="w-5 h-5 text-indigo-600" />
+      {/* ── HQ Room Pod (sole entry point for org-wide room) ── */}
+      <div className="rounded-3xl bg-gradient-to-r from-orange-50/70 via-white to-amber-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-slate-850 border border-orange-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-sm relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500 text-white flex items-center justify-center shrink-0 shadow-md">
+              <Radio className="w-6 h-6 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="relative flex h-1.5 w-1.5">
+                <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                 </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">HQ Room · Ready</span>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">HQ ROOM · BROADCAST READY</span>
               </div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight mt-0.5">
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5">
                 General HQ Main Room
               </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Instant HD WebRTC video & voice huddle for all team members.</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => startMeeting('general_hq', false, true)}
-              className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2.5 rounded-2xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer active:scale-95"
             >
-              <Phone className="w-3.5 h-3.5 text-indigo-500" />
+              <Phone className="w-4 h-4 text-orange-500" />
               <span>Voice Huddle</span>
             </button>
             <button
               onClick={() => startMeeting('general_hq', true, true)}
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+              className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs transition-all flex items-center gap-2 shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer"
             >
-              <Video className="w-3.5 h-3.5" />
+              <Video className="w-4 h-4" />
               <span>Join Video Call</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── Team Section Header & Grid ── */}
+      {/* ── Team Directory Section ── */}
       <div id="tour-collaboration-team" className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <UsersRound className="w-4 h-4 text-slate-400" />
-            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight">
+        
+        {/* Directory Top Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 rounded-2xl shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <UsersRound className="w-5 h-5 text-orange-500" />
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
               Organization Team Directory
             </h2>
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700 font-mono">
+              {team.length} Member{team.length !== 1 ? 's' : ''}
+            </span>
           </div>
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-            {team.length} Member{team.length !== 1 ? 's' : ''}
-          </span>
+
+          {/* Search Field */}
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, role, email..."
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-orange-500 transition"
+            />
+          </div>
         </div>
 
+        {/* Directory List Container */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">
-            <Loader2 className="w-7 h-7 text-indigo-600 animate-spin" />
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Syncing presence...</p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800">
+            <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Syncing team presence...</p>
           </div>
-        ) : team.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center p-6">
+        ) : filteredTeam.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 text-center p-6">
             <UsersRound className="w-10 h-10 text-slate-300 dark:text-slate-700" />
-            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">No team members available</h3>
-            <p className="text-xs text-slate-400 max-w-sm">Invite team members to your organization to start collaborating in real-time.</p>
+            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">No matching team members found</h3>
+            <p className="text-xs text-slate-400 max-w-sm">Try searching with a different name or role.</p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
-            {team.map((member, idx) => {
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl divide-y divide-slate-100 dark:divide-slate-800/80 overflow-hidden shadow-xs">
+            {filteredTeam.map((member, idx) => {
               const gradient = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length];
               return (
                 <div
                   key={member.userId}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                  className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-orange-50/30 dark:hover:bg-slate-800/40 transition-colors group"
                 >
-                  {/* Avatar */}
-                  <div className="relative shrink-0">
-                    <div className={`w-9 h-9 rounded-lg bg-linear-to-br ${gradient} flex items-center justify-center text-white text-xs font-bold`}>
-                      {member.firstName.charAt(0)}{member.lastName.charAt(0)}
+                  {/* Left: Member info with image avatar or gradient fallback */}
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="relative shrink-0">
+                      {member.image ? (
+                        <img
+                          src={member.image}
+                          alt={`${member.firstName} ${member.lastName}`}
+                          className="w-11 h-11 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
+                        />
+                      ) : (
+                        <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-sm font-extrabold shadow-sm`}>
+                          {member.firstName.charAt(0)}{member.lastName.charAt(0)}
+                        </div>
+                      )}
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 ${
+                        member.isOnline ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-slate-300 dark:bg-slate-700'
+                      }`} />
                     </div>
-                    <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-900 ${
-                      member.isOnline ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
-                    }`} />
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                          {member.firstName} {member.lastName}
+                        </p>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          {member.role || 'Member'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5 font-medium">
+                        {member.email} • {member.isOnline ? <span className="text-emerald-600 font-bold">Online</span> : <span className="text-slate-400">Offline</span>}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Name, role, status */}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                      {member.firstName} {member.lastName}
-                    </p>
-                    <p className="text-xs text-slate-400 truncate">
-                      {member.role || 'Member'} · {member.isOnline ? 'Online' : 'Offline'}
-                    </p>
-                  </div>
-
-                  {/* Icon-only actions */}
-                  <div className="flex items-center gap-1 shrink-0">
+                  {/* Right: Micro Action Dock */}
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => startMeeting(`call_${member.userId}`, true, true)}
-                      className="p-2 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+                      className="px-3 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-orange-100/70 dark:hover:bg-orange-950/50 hover:text-orange-600 dark:hover:text-orange-400 transition-all font-semibold text-xs flex items-center gap-1.5 cursor-pointer border border-slate-200/80 dark:border-slate-700"
                       title="Start Video Call"
                     >
-                      <Video className="w-4 h-4" />
+                      <Video className="w-4 h-4 text-orange-500" />
+                      <span className="hidden sm:inline">Video</span>
                     </button>
                     <button
                       onClick={() => startMeeting(`call_${member.userId}`, false, true)}
-                      className="p-2 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                      className="px-3 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-emerald-100/70 dark:hover:bg-emerald-950/50 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all font-semibold text-xs flex items-center gap-1.5 cursor-pointer border border-slate-200/80 dark:border-slate-700"
                       title="Start Voice Call"
                     >
-                      <Phone className="w-4 h-4" />
+                      <Phone className="w-4 h-4 text-emerald-500" />
+                      <span className="hidden sm:inline">Voice</span>
                     </button>
                     <button
                       onClick={() => setActiveChatMember(member)}
-                      className="p-2 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+                      className="px-3 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-100/70 dark:hover:bg-indigo-950/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-semibold text-xs flex items-center gap-1.5 cursor-pointer border border-slate-200/80 dark:border-slate-700"
                       title="Open Direct Chat"
                     >
-                      <MessageSquare className="w-4 h-4" />
+                      <MessageSquare className="w-4 h-4 text-indigo-500" />
+                      <span className="hidden sm:inline">Chat</span>
                     </button>
                   </div>
                 </div>
@@ -440,15 +470,23 @@ function CollaborationHubInner() {
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
               <div className="flex items-center gap-3">
                 <div className="relative shrink-0">
-                  <div className="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm">
-                    {activeChatMember.firstName.charAt(0)}{activeChatMember.lastName.charAt(0)}
-                  </div>
+                  {activeChatMember.image ? (
+                    <img
+                      src={activeChatMember.image}
+                      alt={`${activeChatMember.firstName} ${activeChatMember.lastName}`}
+                      className="w-10 h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-xs"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-sm shadow-xs">
+                      {activeChatMember.firstName.charAt(0)}{activeChatMember.lastName.charAt(0)}
+                    </div>
+                  )}
                   {activeChatMember.isOnline && (
                     <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
                   )}
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
                     {activeChatMember.firstName} {activeChatMember.lastName}
                   </h3>
                   <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wide">
@@ -469,7 +507,7 @@ function CollaborationHubInner() {
             <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50 dark:bg-slate-900/20 custom-scrollbar">
               {loadingChat && chatMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-400">
-                  <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                  <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
                   <p className="text-xs font-bold uppercase tracking-widest text-[9px]">Loading chat history...</p>
                 </div>
               ) : chatMessages.length === 0 ? (
@@ -490,12 +528,12 @@ function CollaborationHubInner() {
                     >
                       <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-xs ${
                         isMe 
-                          ? 'bg-indigo-600 text-white rounded-tr-none' 
-                          : 'bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-800 rounded-tl-none'
+                          ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-tr-none font-medium' 
+                          : 'bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-800 rounded-tl-none font-medium'
                       }`}>
                         <p className="leading-relaxed break-words">{msg.content}</p>
                         <p className={`text-[9px] font-medium mt-1 text-right ${
-                          isMe ? 'text-indigo-200' : 'text-slate-400'
+                          isMe ? 'text-orange-100' : 'text-slate-400'
                         }`}>
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -519,12 +557,12 @@ function CollaborationHubInner() {
                 onFocus={() => setIsInputFocused(true)}
                 onBlur={() => setIsInputFocused(false)}
                 placeholder={`Message ${activeChatMember.firstName}...`}
-                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
               />
               <button 
                 type="submit"
                 disabled={!newMessageContent.trim()}
-                className="p-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 dark:disabled:bg-slate-900 text-white disabled:text-slate-400 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+                className="p-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:bg-slate-100 dark:disabled:bg-slate-900 text-white disabled:text-slate-400 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -543,4 +581,3 @@ export default function CollaborationHub() {
     </Suspense>
   );
 }
-

@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   CheckCircle2, Clock, CreditCard, Shield, Zap,
-  ArrowRight, LayoutDashboard, AlertCircle, RefreshCw,
+  ArrowRight, LayoutDashboard, AlertCircle, RefreshCw, X, ArrowLeft,
 } from "lucide-react";
 
 type SubInfo = {
@@ -23,16 +23,17 @@ type SubInfo = {
 };
 
 const FEATURES = [
-  "Invoicing & Accounting",
-  "CRM & Customer Management",
-  "AI Content & Notes",
-  "HR Records & Compliance",
-  "Inventory & Suppliers",
-  "Helpdesk & Forms",
-  "Email Campaigns",
-  "E-Signature & Micro Pages",
-  "KPI Dashboard & Cashflow",
-  "20+ integrated modules",
+  "Team Chat & Huddles",
+  "Tasks",
+  "Notes",
+  "KPI Dashboard",
+  "Projects",
+  "CRM Pipeline",
+  "Booking Pages",
+  "Mail Engine",
+  "Helpdesk",
+  "E-Signatures",
+  "Campaigns",
 ];
 
 function BillingContent() {
@@ -111,10 +112,17 @@ function BillingContent() {
       </div>
 
       <div className="w-full max-w-lg relative z-10 space-y-4">
-        {/* Logo */}
-        <div className="text-center mb-2">
-          <Link href="/dashboard">
-            <Image src="/logo.png" alt="Okleevo" width={140} height={36} className="h-9 w-auto mx-auto" />
+        {/* Top Header Navigation */}
+        <div className="flex items-center justify-between px-1">
+          <Link
+            href="/dashboard/settings?tab=billing"
+            className="inline-flex items-center gap-2 text-xs font-extrabold text-slate-500 hover:text-orange-600 transition-colors bg-white/60 hover:bg-white px-3.5 py-2 rounded-2xl border border-slate-200/80 shadow-2xs backdrop-blur-md"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Back
+          </Link>
+          <Link href="/dashboard/settings?tab=billing" className="shrink-0">
+            <Image src="/logo.png" alt="Okleevo" width={130} height={34} className="h-8 w-auto" />
           </Link>
         </div>
 
@@ -150,18 +158,28 @@ function BillingContent() {
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
-          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden"
+          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden relative"
         >
           {/* Header stripe */}
-          <div className="bg-gradient-to-r from-orange-500 to-[#ff8c42] px-8 py-6 text-white">
+          <div className="bg-gradient-to-r from-orange-500 to-[#ff8c42] px-8 py-6 text-white relative">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-xs font-semibold uppercase tracking-widest mb-1">Monthly Plan</p>
-                <h1 className="text-3xl font-black tracking-tight">£9.99</h1>
-                <p className="text-orange-100 text-sm mt-0.5">per month · cancel anytime</p>
+                <p className="text-orange-100 text-xs font-mono font-extrabold uppercase tracking-widest mb-1">Monthly Plan</p>
+                <h1 className="text-4xl font-black font-mono tracking-tight">£9.99</h1>
+                <p className="text-orange-100 text-xs font-bold mt-1">per month · cancel anytime</p>
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-                <Zap className="w-7 h-7 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-2xs">
+                  <Zap className="w-7 h-7 text-white" />
+                </div>
+                <Link
+                  href="/dashboard/settings?tab=billing"
+                  title="Return to Subscription Settings"
+                  aria-label="Return to Subscription Settings"
+                  className="w-10 h-10 rounded-2xl bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-all shadow-2xs backdrop-blur-sm cursor-pointer active:scale-95 border border-white/30"
+                >
+                  <X className="w-5 h-5" />
+                </Link>
               </div>
             </div>
           </div>
@@ -171,24 +189,24 @@ function BillingContent() {
             {!loading && sub && (
               <div className="mb-6">
                 {sub.status === "TRIAL" && sub.isActive && (
-                  <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-100 rounded-xl w-fit">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm font-semibold text-blue-700">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200/60 text-amber-700 rounded-full w-fit text-xs font-mono font-extrabold uppercase">
+                    <Clock className="w-4 h-4 text-amber-500" />
+                    <span>
                       {sub.daysLeft === 1 ? "1 day left" : `${sub.daysLeft} days`} remaining in free trial
                     </span>
                   </div>
                 )}
                 {isExpired && (
-                  <div className="flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-100 rounded-xl w-fit">
-                    <AlertCircle className="w-4 h-4 text-red-500" />
-                    <span className="text-sm font-semibold text-red-700">Your free trial has ended</span>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 border border-rose-200/60 text-rose-700 rounded-full w-fit text-xs font-mono font-extrabold uppercase">
+                    <AlertCircle className="w-4 h-4 text-rose-500" />
+                    <span>Your free trial has ended</span>
                   </div>
                 )}
                 {isActive && (
-                  <div className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-100 rounded-xl w-fit">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200/60 text-emerald-700 rounded-full w-fit text-xs font-mono font-extrabold uppercase">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span className="text-sm font-semibold text-emerald-700">
-                      Subscription active
+                    <span>
+                      Subscription Active
                       {sub.cancelAtPeriodEnd && sub.currentPeriodEnd
                         ? ` · cancels ${new Date(sub.currentPeriodEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
                         : sub.currentPeriodEnd
@@ -198,27 +216,29 @@ function BillingContent() {
                   </div>
                 )}
                 {sub.status === "PAST_DUE" && (
-                  <div className="flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-100 rounded-xl w-fit">
-                    <AlertCircle className="w-4 h-4 text-red-500" />
-                    <span className="text-sm font-semibold text-red-700">Payment failed — please update your payment method</span>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 border border-rose-200/60 text-rose-700 rounded-full w-fit text-xs font-mono font-extrabold uppercase">
+                    <AlertCircle className="w-4 h-4 text-rose-500" />
+                    <span>Payment failed — please update your payment method</span>
                   </div>
                 )}
               </div>
             )}
 
             {/* Features */}
-            <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 mb-7">
+            <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-7">
               {FEATURES.map((f) => (
-                <div key={f} className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{f}</span>
+                <div key={f} className="flex items-center gap-2 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/60">
+                  <div className="w-4 h-4 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-xs text-slate-800 font-extrabold truncate">{f}</span>
                 </div>
               ))}
             </div>
 
             {/* Error */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-sm font-medium text-red-700">
+              <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200/60 rounded-2xl text-xs font-bold text-rose-700">
                 {error}
               </div>
             )}
@@ -226,13 +246,13 @@ function BillingContent() {
             {/* CTA */}
             {loading ? (
               <div className="flex items-center justify-center py-4">
-                <RefreshCw className="w-5 h-5 text-gray-400 animate-spin" />
+                <RefreshCw className="w-5 h-5 text-orange-500 animate-spin" />
               </div>
             ) : isActive && !sub?.cancelAtPeriodEnd ? (
               <button
                 onClick={handleManage}
                 disabled={actionLoading}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg border-2 border-gray-200 text-gray-700 hover:border-orange-300 hover:text-orange-600 transition-all disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-extrabold text-base border-2 border-slate-200 text-slate-700 hover:border-orange-400 hover:text-orange-600 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
               >
                 <CreditCard className="w-5 h-5" />
                 {actionLoading ? "Opening portal..." : "Manage Subscription"}
@@ -241,7 +261,7 @@ function BillingContent() {
               <button
                 onClick={handleManage}
                 disabled={actionLoading}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg bg-gradient-to-r from-orange-500 to-[#ff8c42] text-white shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-extrabold text-base bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
               >
                 <RefreshCw className="w-5 h-5" />
                 {actionLoading ? "Opening portal..." : "Resume Subscription"}
@@ -250,17 +270,17 @@ function BillingContent() {
               <button
                 onClick={handleSubscribe}
                 disabled={actionLoading}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg bg-gradient-to-r from-orange-500 to-[#ff8c42] text-white shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-extrabold text-base bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
               >
                 <CreditCard className="w-5 h-5" />
-                {actionLoading ? "Redirecting to Stripe..." : needsPayment ? "Subscribe for £9.99/month" : "Start Subscription · £9.99/mo"}
+                {actionLoading ? "Redirecting to Stripe..." : needsPayment ? "Subscribe for $39/month" : "Start Subscription · $39/mo"}
                 {!actionLoading && <ArrowRight className="w-4 h-4" />}
               </button>
             )}
 
             {/* Fine print */}
-            <div className="mt-4 flex items-center justify-center gap-4 text-xs text-gray-400">
-              <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Secured by Stripe</span>
+            <div className="mt-4 flex items-center justify-center gap-3 text-xs font-mono font-bold text-slate-400">
+              <span className="flex items-center gap-1"><Shield className="w-3.5 h-3.5 text-orange-500" /> Secured by Stripe</span>
               <span>·</span>
               <span>Cancel anytime</span>
               <span>·</span>
@@ -268,19 +288,6 @@ function BillingContent() {
             </div>
           </div>
         </motion.div>
-
-        {/* Back to dashboard */}
-        {(isActive || (sub?.status === "TRIAL" && sub?.isActive)) && (
-          <div className="text-center">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-orange-600 transition-colors"
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              Back to Dashboard
-            </Link>
-          </div>
-        )}
       </div>
     </div>
   );

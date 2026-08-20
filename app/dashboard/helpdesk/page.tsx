@@ -248,88 +248,105 @@ export default function HelpdeskPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 pb-24 sm:pb-8">
       <TourProvider moduleId="helpdesk" steps={helpdeskTourSteps} />
 
       {/* Mobile FAB */}
       <button
         type="button"
         onClick={() => setShowCreateModal(true)}
-        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-linear-to-r from-indigo-600 to-violet-700 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-transform"
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-full shadow-lg shadow-orange-500/30 flex items-center justify-center z-40 active:scale-95 transition-transform"
       >
         <Plus className="w-7 h-7" />
       </button>
 
-      {/* Sticky header */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-          <div className="p-2 bg-indigo-600 rounded-xl shrink-0">
-            <MessageSquare className="w-5 h-5 text-white" />
+      {/* ── Glassmorphic Sticky Header ── */}
+      <div className="sticky top-0 z-40 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-2xs">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">
+                  Helpdesk Support Hub
+                </h1>
+                <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold font-mono bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/40 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" /> Active Queue
+                </span>
+              </div>
+              <p className="text-xs font-bold text-slate-400 truncate hidden sm:block mt-0.5">
+                Manage support tickets and customer requests
+              </p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Helpdesk</h1>
-            <p className="text-xs text-gray-500 hidden sm:block">Manage support tickets and customer requests</p>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleCopySupportLink}
+              disabled={!businessId}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition cursor-pointer shrink-0 shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <LinkIcon className="w-4 h-4 text-orange-500" />
+              <span className="hidden sm:inline">Support Link</span>
+            </button>
+            <button
+              id="tour-helpdesk-new-button"
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 px-4.5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm shadow-orange-500/20 transition-all cursor-pointer shrink-0 active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">New Ticket</span>
+              <span className="sm:hidden">New</span>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleCopySupportLink}
-            disabled={!businessId}
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <LinkIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Support Link</span>
-          </button>
-          <button
-            id="tour-helpdesk-new-button"
-            type="button"
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">New Ticket</span>
-            <span className="sm:hidden">New</span>
-          </button>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-        {/* Stats */}
-        <div id="tour-helpdesk-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        {/* ── High-Performance Telemetry Pods ── */}
+        <div id="tour-helpdesk-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total Tickets', value: stats.total,      icon: MessageSquare, bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600' },
-            { label: 'Open',          value: stats.open,        icon: AlertCircle,   bgGrad: 'bg-gradient-to-br from-rose-500 to-red-600' },
-            { label: 'Active',        value: stats.inProgress,  icon: Timer,         bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
-            { label: 'Resolved',      value: stats.resolved,    icon: CheckCircle,   bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+            { label: 'Total Tickets', value: stats.total,      icon: MessageSquare, bgGrad: 'from-orange-500 to-amber-600' },
+            { label: 'Open',          value: stats.open,        icon: AlertCircle,   bgGrad: 'from-rose-500 to-red-600' },
+            { label: 'Active',        value: stats.inProgress,  icon: Timer,         bgGrad: 'from-amber-500 to-orange-500' },
+            { label: 'Resolved',      value: stats.resolved,    icon: CheckCircle,   bgGrad: 'from-emerald-500 to-teal-600' },
           ].map((s, i) => (
-            <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
+            <div key={i} className="bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-orange-300 transition-all group">
               <div className="flex items-center justify-between mb-3">
-                <div className={`p-2.5 ${s.bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
-                  <s.icon className="w-4.5 h-4.5" />
+                <div className={`w-10 h-10 rounded-2xl bg-gradient-to-r ${s.bgGrad} flex items-center justify-center text-white shadow-2xs group-hover:scale-105 transition-transform`}>
+                  <s.icon className="w-5 h-5" />
                 </div>
               </div>
-              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{s.label}</p>
-              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{s.value}</p>
+              <p className="text-[10px] font-mono font-extrabold text-slate-400 uppercase tracking-widest mb-1">{s.label}</p>
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">{s.value}</p>
             </div>
           ))}
         </div>
 
-        {/* Search + filters */}
-        <div id="tour-helpdesk-search" className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+        {/* ── Search & Filter Dock ── */}
+        <div id="tour-helpdesk-search" className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs p-3.5 flex flex-col sm:flex-row gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search tickets…"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 transition-all"
             />
           </div>
           <div className="flex gap-2">
-            <div className="relative flex-1 sm:w-36">
-              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 appearance-none cursor-pointer pr-8 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all">
+            <div className="relative flex-1 sm:w-40">
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 outline-none appearance-none cursor-pointer pr-9 focus:border-orange-500 transition-all"
+              >
                 <option value="all">All Status</option>
                 <option value="open">Open</option>
                 <option value="pending">Pending</option>
@@ -337,110 +354,126 @@ export default function HelpdeskPage() {
                 <option value="resolved">Resolved</option>
                 <option value="closed">Closed</option>
               </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
-            <div className="relative flex-1 sm:w-36">
-              <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)}
-                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 appearance-none cursor-pointer pr-8 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all">
+            <div className="relative flex-1 sm:w-40">
+              <select
+                value={filterPriority}
+                onChange={e => setFilterPriority(e.target.value)}
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 outline-none appearance-none cursor-pointer pr-9 focus:border-orange-500 transition-all"
+              >
                 <option value="all">All Priority</option>
                 <option value="urgent">Urgent</option>
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
                 <option value="low">Low</option>
               </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
           </div>
         </div>
 
-        {/* Ticket list */}
+        {/* ── Ticket List Cards & Sleek Empty State ── */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
-            <p className="text-sm text-gray-500 font-medium">Loading tickets…</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="w-9 h-9 text-orange-500 animate-spin" />
+            <p className="text-xs font-bold text-slate-400">Loading support tickets…</p>
           </div>
         ) : filteredTickets.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+          <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs p-12 sm:p-16 text-center">
+            <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-amber-600 rounded-3xl flex items-center justify-center text-white mx-auto mb-4 shadow-2xs">
+              <MessageSquare className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-              {searchTerm || filterStatus !== 'all' || filterPriority !== 'all' ? 'No matching tickets' : 'No tickets yet'}
+            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-1.5">
+              {searchTerm || filterStatus !== 'all' || filterPriority !== 'all' ? 'No matching tickets' : 'No support tickets yet'}
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+            <p className="text-xs font-bold text-slate-400 max-w-sm mx-auto mb-6">
               {searchTerm || filterStatus !== 'all' || filterPriority !== 'all'
-                ? 'Try adjusting your search or filters.'
-                : 'Create your first support ticket to get started.'}
+                ? 'Try adjusting your search query or filter options to find support tickets.'
+                : 'Create your first support ticket or share your customer portal link to receive requests.'}
             </p>
             {!searchTerm && filterStatus === 'all' && filterPriority === 'all' && (
-              <button type="button" onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer">
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm shadow-orange-500/20 transition-all cursor-pointer active:scale-95"
+              >
                 <Plus className="w-4 h-4" /> New Ticket
               </button>
             )}
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {filteredTickets.map(ticket => {
               const sc = statusCfg[ticket.status] ?? statusCfg.closed;
               const pc = priorityCfg[ticket.priority] ?? priorityCfg.medium;
               const PIcon = pc.icon;
               return (
-                <div key={ticket.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                  {/* Top row */}
-                  <div className="flex items-start gap-3">
+                <div key={ticket.id} className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs p-5 hover:border-orange-300 transition-all group">
+                  {/* Top Row */}
+                  <div className="flex items-start gap-4">
                     <div className="relative shrink-0">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
-                        <MessageSquare className="w-5 h-5 text-white" />
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center font-mono font-extrabold text-sm shadow-2xs">
+                        {ticket.customer.charAt(0).toUpperCase()}
                       </div>
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${sc.dot}`} />
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-slate-950 ${sc.dot}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2 justify-between flex-wrap">
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-gray-900 leading-tight truncate">{ticket.subject}</p>
-                          <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                            <User className="w-3 h-3" /> {ticket.customer}
+                          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-tight truncate">
+                            {ticket.subject}
+                          </h3>
+                          <p className="text-xs font-bold text-slate-400 mt-1 flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-slate-400" /> {ticket.customer}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${sc.badge}`}>{sc.label}</span>
-                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center gap-1 ${pc.badge}`}>
+                        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                          <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full ${sc.badge}`}>{sc.label}</span>
+                          <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full flex items-center gap-1 ${pc.badge}`}>
                             <PIcon className="w-3 h-3" /> {pc.label}
                           </span>
                         </div>
                       </div>
-                      {/* Meta */}
-                      <div className="flex items-center gap-3 mt-2 flex-wrap">
-                        <span className="text-[10px] font-semibold bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-md">
+                      {/* Meta Tags */}
+                      <div className="flex items-center gap-3 mt-3 flex-wrap">
+                        <span className="text-[10px] font-mono font-extrabold bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg border border-orange-200/60 dark:border-orange-900/40">
                           #{ticket.id.slice(-6).toUpperCase()}
                         </span>
-                        <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-md font-medium">{ticket.category}</span>
-                        <span className="text-[10px] text-gray-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {new Date(ticket.updatedAt).toLocaleDateString()}
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
+                          {ticket.category}
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-slate-400 flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" /> {new Date(ticket.updatedAt).toLocaleDateString()}
                         </span>
                         {(ticket.responses ?? 0) > 0 && (
-                          <span className="text-[10px] text-gray-400">{ticket.responses} replies</span>
+                          <span className="text-[10px] font-mono font-bold text-slate-400">{ticket.responses} replies</span>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-1.5 mt-3 pt-3 border-t border-gray-50">
-                    <button type="button"
+                  {/* Actions Bar */}
+                  <div className="flex gap-2 mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-900">
+                    <button
+                      type="button"
                       onClick={() => fetchTicketDetails(ticket.id)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer">
-                      <Eye className="w-3.5 h-3.5" /> View
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-orange-50/80 dark:bg-orange-950/40 hover:bg-orange-100 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/40 rounded-2xl text-xs font-extrabold transition-colors cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> View Ticket
                     </button>
-                    <button type="button"
+                    <button
+                      type="button"
                       onClick={() => { setEditTicket(ticket); setShowEditModal(true); }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl text-xs font-semibold transition-colors cursor-pointer">
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-extrabold transition-colors cursor-pointer"
+                    >
                       <Edit className="w-3.5 h-3.5" /> Edit
                     </button>
-                    <button type="button"
+                    <button
+                      type="button"
                       onClick={() => { setDeletingTicket(ticket); setShowDeleteModal(true); }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-semibold transition-colors cursor-pointer">
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-500 border border-rose-100 dark:border-rose-900/40 rounded-2xl text-xs font-extrabold transition-colors cursor-pointer"
+                    >
                       <Trash2 className="w-3.5 h-3.5" /> Delete
                     </button>
                   </div>
@@ -528,9 +561,12 @@ export default function HelpdeskPage() {
 
             <ModalFooter>
               <CancelBtn onClick={() => { setShowCreateModal(false); setNewTicket(blankTicket()); }} />
-              <button type="button" onClick={handleCreateTicket}
+              <button
+                type="button"
+                onClick={handleCreateTicket}
                 disabled={savingTicket || !newTicket.subject || !newTicket.customer || !newTicket.email}
-                className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2">
+                className="flex-2 py-3 px-5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs active:scale-95"
+              >
                 {savingTicket ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 {savingTicket ? 'Creating...' : 'Create Ticket'}
               </button>
@@ -714,9 +750,12 @@ export default function HelpdeskPage() {
 
             <ModalFooter>
               <CancelBtn onClick={() => { setShowEditModal(false); setEditTicket(null); }} />
-              <button type="button" onClick={handleUpdateTicket}
+              <button
+                type="button"
+                onClick={handleUpdateTicket}
                 disabled={savingTicket}
-                className="flex-2 py-3 px-5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2">
+                className="flex-2 py-3 px-5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs active:scale-95"
+              >
                 {savingTicket ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                 {savingTicket ? 'Saving...' : 'Save Changes'}
               </button>

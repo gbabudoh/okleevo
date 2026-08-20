@@ -58,6 +58,8 @@ export async function GET() {
         phone: true,
         role: true,
         status: true,
+        avatar: true,
+        image: true,
         createdAt: true,
         lastLoginAt: true,
       },

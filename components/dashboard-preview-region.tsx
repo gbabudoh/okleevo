@@ -444,7 +444,7 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                 </div>
               </div>
               <span className="px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-mono font-medium rounded-md">
-                23 Modules
+                23 Integrated Tools
               </span>
             </div>
 

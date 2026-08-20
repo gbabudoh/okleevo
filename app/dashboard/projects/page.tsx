@@ -64,16 +64,28 @@ function ProjectCard({
   const reviewCount = tasks.filter(t => t.status === 'REVIEW').length;
   const doneCount = tasks.filter(t => t.status === 'DONE').length;
 
+  const getStatusDot = (s: Project['status']) => {
+    switch (s) {
+      case 'ACTIVE': return 'bg-emerald-500';
+      case 'ON_HOLD': return 'bg-amber-500';
+      case 'COMPLETED': return 'bg-indigo-500';
+      case 'ARCHIVED': return 'bg-slate-400';
+    }
+  };
+
   return (
     <div
       onClick={() => router.push(`/dashboard/projects/${project.id}`)}
-      className="group relative bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-4 shadow-xs"
+      className="group relative bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-850 rounded-3xl p-6 hover:border-orange-300 dark:hover:border-orange-900/60 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-5 shadow-2xs"
     >
       {/* Header Row */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            <div className="w-6 h-6 rounded-lg bg-orange-50 dark:bg-orange-950/60 text-orange-500 border border-orange-200/60 dark:border-orange-900/40 flex items-center justify-center shrink-0">
+              <FolderKanban className="w-3.5 h-3.5" />
+            </div>
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
               {project.name}
             </h3>
           </div>
@@ -84,20 +96,21 @@ function ProjectCard({
           )}
         </div>
 
-        <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold border shrink-0 ${statusBadge(project.status)}`}>
-          {project.status.replace('_', ' ')}
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border shrink-0 ${statusBadge(project.status)}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(project.status)}`} />
+          <span>{project.status.replace('_', ' ')}</span>
         </span>
       </div>
 
       {/* Task Count & Due Date */}
-      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-1">
-        <span className="flex items-center gap-1 font-semibold text-[11px]">
-          <Link2 className="w-3.5 h-3.5 text-indigo-500" />
+      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-1 font-mono">
+        <span className="flex items-center gap-1.5 font-bold text-[11px]">
+          <Link2 className="w-3.5 h-3.5 text-orange-500" />
           {taskCount === 0 ? 'No tasks linked' : `${taskCount} task${taskCount === 1 ? '' : 's'} linked`}
         </span>
 
         {project.dueDate && (
-          <span className={`flex items-center gap-1 text-[11px] font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-400'}`}>
+          <span className={`flex items-center gap-1 text-[11px] font-bold ${isOverdue ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`}>
             <CalendarClock className="w-3.5 h-3.5" />
             {isOverdue ? 'Overdue: ' : ''}{new Date(project.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
           </span>
@@ -106,41 +119,41 @@ function ProjectCard({
 
       {/* Task status breakdown */}
       {taskCount > 0 && (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
             {todoCount > 0 && <div className="h-full bg-slate-300 dark:bg-slate-600" style={{ width: `${(todoCount / taskCount) * 100}%` }} />}
-            {inProgressCount > 0 && <div className="h-full bg-indigo-500" style={{ width: `${(inProgressCount / taskCount) * 100}%` }} />}
+            {inProgressCount > 0 && <div className="h-full bg-orange-500" style={{ width: `${(inProgressCount / taskCount) * 100}%` }} />}
             {reviewCount > 0 && <div className="h-full bg-amber-500" style={{ width: `${(reviewCount / taskCount) * 100}%` }} />}
             {doneCount > 0 && <div className="h-full bg-emerald-500" style={{ width: `${(doneCount / taskCount) * 100}%` }} />}
           </div>
           {inProgressCount > 0 && (
-            <p className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400">{inProgressCount} in progress</p>
+            <p className="text-[10px] font-bold font-mono text-orange-600 dark:text-orange-400">{inProgressCount} in progress</p>
           )}
         </div>
       )}
 
       {/* Footer Action Bar */}
-      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-1.5 text-xs">
-          <div className="w-6 h-6 rounded-md bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] flex items-center justify-center">
+      <div className="pt-3 border-t border-slate-100 dark:border-slate-850 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-2 text-xs">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 text-white font-extrabold text-[10px] font-mono flex items-center justify-center shadow-xs">
             {project.owner ? `${project.owner.firstName[0]}${project.owner.lastName[0]}` : '—'}
           </div>
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
             {project.owner ? `${project.owner.firstName} ${project.owner.lastName}` : 'Unassigned'}
           </span>
         </div>
 
         <div className="flex items-center gap-1">
           <button type="button" title="Edit" onClick={() => onEdit(project)}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg transition-colors cursor-pointer">
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer">
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button type="button" title={project.status === 'ARCHIVED' ? 'Unarchive' : 'Archive'} onClick={() => onArchiveToggle(project)}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg transition-colors cursor-pointer">
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer">
             {project.status === 'ARCHIVED' ? <ArchiveRestore className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
           </button>
           <button type="button" title="Delete" onClick={() => onDelete(project)}
-            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer">
+            className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -281,23 +294,23 @@ export default function ProjectsPage() {
     <div className="min-h-screen space-y-6 pb-24 sm:pb-12 text-slate-900 dark:text-slate-100">
 
       {/* ── Header ── */}
-      <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+      <div className="rounded-3xl bg-gradient-to-r from-orange-50/70 via-white to-amber-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-slate-850 border border-orange-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="p-3.5 bg-linear-to-br from-indigo-600 to-purple-600 rounded-xl shrink-0 text-white shadow-md">
+            <div className="p-3.5 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl shrink-0 text-white shadow-md shadow-orange-500/20">
               <FolderKanban className="w-6 h-6 stroke-2" />
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  Projects & Delivery Tracking
+                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  Projects &amp; Delivery Tracking
                 </h1>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/40">
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200/60 dark:border-orange-900/40">
+                  <ShieldCheck className="w-3.5 h-3.5 text-orange-500" />
                   Okleevo Enterprise Engine v2.0
                 </span>
               </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
                 Track project timelines, milestones, and task delivery across your distributed team.
               </p>
             </div>
@@ -307,10 +320,10 @@ export default function ProjectsPage() {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+              className="p-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 border border-slate-200/80 dark:border-slate-700 rounded-2xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs"
               title="Refresh"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-orange-500' : ''}`} />
             </button>
 
             {/* User Guide Button & Hover Tooltip */}
@@ -319,16 +332,16 @@ export default function ProjectsPage() {
                 onClick={() => setShowUserGuideModal(true)}
                 onMouseEnter={() => setGuideHovered(true)}
                 onMouseLeave={() => setGuideHovered(false)}
-                className="px-3.5 py-2.5 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+                className="px-4 py-2.5 bg-orange-50 dark:bg-orange-950/60 hover:bg-orange-100 border border-orange-200 dark:border-orange-900/60 text-orange-700 dark:text-orange-300 font-extrabold text-xs rounded-2xl transition-all cursor-pointer shadow-2xs flex items-center gap-2"
               >
-                <BookOpen className="w-4 h-4 text-purple-600" />
+                <BookOpen className="w-4 h-4 text-orange-500" />
                 <span>User Guide</span>
-                <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
               </button>
 
               {guideHovered && !showUserGuideModal && (
-                <div className="absolute right-0 top-full mt-2 w-72 p-3 bg-slate-900 text-white text-xs rounded-xl shadow-2xl z-50 pointer-events-none space-y-1 animate-in fade-in zoom-in-95 duration-150 border border-slate-800">
-                  <div className="flex items-center gap-1.5 text-purple-400 font-bold">
+                <div className="absolute right-0 top-full mt-2 w-72 p-3.5 bg-slate-900 text-white text-xs rounded-2xl shadow-2xl z-50 pointer-events-none space-y-1 animate-in fade-in zoom-in-95 duration-150 border border-slate-800">
+                  <div className="flex items-center gap-1.5 text-orange-400 font-bold">
                     <BookOpen className="w-3.5 h-3.5" />
                     <span>Quick Guide Preview</span>
                   </div>
@@ -341,7 +354,7 @@ export default function ProjectsPage() {
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-2"
+              className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-extrabold text-xs rounded-2xl transition-all cursor-pointer shadow-md shadow-orange-500/20 flex items-center gap-2 active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span>New Project</span>
@@ -350,109 +363,78 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      {/* ── Summary Stats ── */}
+      {/* ── Summary Telemetry Pods ── */}
       {summary && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center shrink-0">
-              <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xs flex items-center gap-4 hover:border-orange-300 dark:hover:border-orange-900/50 transition-all">
+            <div className="w-11 h-11 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-orange-500 flex items-center justify-center shrink-0 border border-orange-200/60 dark:border-orange-900/40">
+              <Layers className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{summary.totalProjects}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Total Projects</p>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div>
-              <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{summary.activeCount}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active</p>
+            <div className="min-w-0">
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.totalProjects}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">Total Projects</p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
-              <Clock3 className="w-5 h-5 text-amber-500" />
+          <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xs flex items-center gap-4 hover:border-emerald-300 dark:hover:border-emerald-900/50 transition-all">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-200/60">
+              <CheckCircle2 className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{summary.onHoldCount}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">On Hold</p>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center shrink-0">
-              <CheckCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <div>
-              <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{summary.completedCount}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Completed</p>
+            <div className="min-w-0">
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.activeCount}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">Active</p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-5 h-5 text-rose-500" />
+          <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xs flex items-center gap-4 hover:border-amber-300 dark:hover:border-amber-900/50 transition-all">
+            <div className="w-11 h-11 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-500 flex items-center justify-center shrink-0 border border-amber-200/60">
+              <Clock3 className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">{summary.overdueCount}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Overdue</p>
+            <div className="min-w-0">
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.onHoldCount}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">On Hold</p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xs flex items-center gap-4 hover:border-indigo-300 dark:hover:border-indigo-900/50 transition-all">
+            <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-200/60">
+              <CheckCheck className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.completedCount}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">Completed</p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xs flex items-center gap-4 hover:border-rose-300 dark:hover:border-rose-900/50 transition-all">
+            <div className="w-11 h-11 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-500 flex items-center justify-center shrink-0 border border-rose-200/60">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.overdueCount}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">Overdue</p>
             </div>
           </div>
         </div>
       )}
 
       {/* ── Navigation Toolbar: Search, Status Filters, & View Switcher ── */}
-      <div className="space-y-3">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3.5 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search projects by title, client name, or linked tasks..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs font-semibold outline-none border border-slate-200/80 dark:border-slate-700/80 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
-            />
-          </div>
-
-          {/* View Mode Switcher */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-xs' : 'text-slate-500'
-              }`}
-            >
-              <Grid className="w-3.5 h-3.5" />
-              <span>Cards Grid</span>
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-xs' : 'text-slate-500'
-              }`}
-            >
-              <List className="w-3.5 h-3.5" />
-              <span>Table</span>
-            </button>
-            <button
-              onClick={() => setViewMode('board')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'board' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs' : 'text-slate-500'
-              }`}
-            >
-              <Target className="w-3.5 h-3.5" />
-              <span>Milestone Board</span>
-            </button>
-          </div>
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+        
+        {/* Search Input */}
+        <div className="flex-1 relative min-w-0">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search projects by title, client name, or linked tasks..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl text-xs font-bold outline-none border border-slate-200/80 dark:border-slate-700/80 focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-orange-500/10 transition-all text-slate-900 dark:text-white"
+          />
         </div>
 
-        {/* Status Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+        {/* Status Filter Chips — Scrollbar-Free */}
+        <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shrink-0">
           {['all', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'ARCHIVED'].map(statusKey => {
             const isActive = selectedStatus === statusKey;
             const count = statusKey === 'all' ? projects.length : projects.filter(p => p.status === statusKey).length;
@@ -461,15 +443,15 @@ export default function ProjectsPage() {
               <button
                 key={statusKey}
                 onClick={() => setSelectedStatus(statusKey)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border ${
+                className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                   isActive
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                    : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm shadow-orange-500/20'
+                    : 'bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 <span>{statusKey === 'all' ? 'All Projects' : statusKey.replace('_', ' ')}</span>
-                <span className={`px-1.5 py-0.2 text-[10px] rounded-full font-extrabold ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                <span className={`px-2 py-0.5 text-[10px] rounded-full font-mono font-extrabold ${
+                  isActive ? 'bg-white/20 text-white' : 'bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                 }`}>
                   {count}
                 </span>
@@ -477,17 +459,51 @@ export default function ProjectsPage() {
             );
           })}
         </div>
+
+        {/* View Mode Switcher Dock */}
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl shrink-0">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              viewMode === 'grid' ? 'bg-white dark:bg-slate-950 text-orange-600 dark:text-orange-400 shadow-2xs font-extrabold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+            title="Cards Grid"
+          >
+            <Grid className="w-3.5 h-3.5" />
+            <span>Cards Grid</span>
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              viewMode === 'table' ? 'bg-white dark:bg-slate-950 text-purple-600 shadow-2xs font-extrabold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+            title="Structured Table"
+          >
+            <List className="w-3.5 h-3.5" />
+            <span>Table</span>
+          </button>
+          <button
+            onClick={() => setViewMode('board')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              viewMode === 'board' ? 'bg-white dark:bg-slate-950 text-amber-600 shadow-2xs font-extrabold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+            title="Milestone Board"
+          >
+            <Target className="w-3.5 h-3.5" />
+            <span>Milestone Board</span>
+          </button>
+        </div>
       </div>
 
       {/* ── Main View Workspace ── */}
       {loading ? (
         <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Loading Projects...</p>
         </div>
       ) : filteredProjects.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-12 text-center space-y-4 shadow-xs">
-          <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto text-slate-400">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-12 text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 bg-orange-50 dark:bg-orange-950/60 text-orange-500 rounded-2xl flex items-center justify-center mx-auto">
             <FolderKanban className="w-6 h-6" />
           </div>
           <div className="space-y-1">
@@ -498,7 +514,7 @@ export default function ProjectsPage() {
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs inline-flex items-center gap-2"
+            className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold text-xs rounded-2xl transition-all cursor-pointer shadow-md inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             <span>Create First Project</span>
@@ -506,33 +522,36 @@ export default function ProjectsPage() {
         </div>
       ) : viewMode === 'table' ? (
         /* ── Table View ── */
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
+        <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xs overflow-hidden">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-slate-400 uppercase font-bold text-[10px]">
+            <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-800 text-slate-400 uppercase font-extrabold text-[10px] tracking-wider">
               <tr>
-                <th className="px-5 py-3">Project Name</th>
-                <th className="px-5 py-3">Client</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3">Due Date</th>
-                <th className="px-5 py-3">Tasks</th>
+                <th className="px-5 py-4">Project Name</th>
+                <th className="px-5 py-4">Client</th>
+                <th className="px-5 py-4">Status</th>
+                <th className="px-5 py-4">Due Date</th>
+                <th className="px-5 py-4">Tasks</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
               {filteredProjects.map(p => (
                 <tr
                   key={p.id}
                   onClick={() => router.push(`/dashboard/projects/${p.id}`)}
-                  className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors cursor-pointer font-medium text-slate-800 dark:text-slate-200"
+                  className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors cursor-pointer font-medium text-slate-800 dark:text-slate-200"
                 >
-                  <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">{p.name}</td>
-                  <td className="px-5 py-3.5 text-slate-500">{p.contact?.company || p.contact?.name || 'Direct Enterprise'}</td>
-                  <td className="px-5 py-3.5">
-                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${statusBadge(p.status)}`}>
+                  <td className="px-5 py-4 font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <div className="w-2 h-2 rounded-full bg-orange-500" />
+                    <span>{p.name}</span>
+                  </td>
+                  <td className="px-5 py-4 text-slate-500 font-medium">{p.contact?.company || p.contact?.name || 'Direct Enterprise'}</td>
+                  <td className="px-5 py-4">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${statusBadge(p.status)}`}>
                       {p.status.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5 text-slate-500">{p.dueDate ? new Date(p.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</td>
-                  <td className="px-5 py-3.5 text-slate-400">
+                  <td className="px-5 py-4 text-slate-500 font-mono font-medium">{p.dueDate ? new Date(p.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</td>
+                  <td className="px-5 py-4 text-slate-500 font-mono font-bold">
                     {p._count?.tasks || 0}
                   </td>
                 </tr>
@@ -542,29 +561,44 @@ export default function ProjectsPage() {
         </div>
       ) : viewMode === 'board' ? (
         /* ── Milestone & Status Board ── */
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {['ACTIVE', 'ON_HOLD', 'COMPLETED', 'ARCHIVED'].map(statusKey => {
-            const columnProjects = filteredProjects.filter(p => p.status === statusKey);
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+          {[
+            { label: 'ACTIVE', dot: 'bg-emerald-500' },
+            { label: 'ON_HOLD', dot: 'bg-amber-500' },
+            { label: 'COMPLETED', dot: 'bg-indigo-500' },
+            { label: 'ARCHIVED', dot: 'bg-slate-400' },
+          ].map(col => {
+            const columnProjects = filteredProjects.filter(p => p.status === col.label);
 
             return (
-              <div key={statusKey} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800 space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">{statusKey.replace('_', ' ')}</h4>
-                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+              <div key={col.label} className="bg-slate-50/70 dark:bg-slate-900/60 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 space-y-4 flex flex-col justify-between">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${col.dot}`} />
+                    <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 tracking-tight">{col.label.replace('_', ' ')}</h4>
+                  </div>
+                  <span className="text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                     {columnProjects.length}
                   </span>
                 </div>
 
-                <div className="space-y-3">
-                  {columnProjects.map(p => (
-                    <ProjectCard
-                      key={p.id}
-                      project={p}
-                      onEdit={setEditingProject}
-                      onArchiveToggle={handleArchiveToggle}
-                      onDelete={setDeletingProject}
-                    />
-                  ))}
+                <div className="space-y-3 flex-1">
+                  {columnProjects.length === 0 ? (
+                    <div className="py-8 px-4 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 flex flex-col items-center justify-center gap-1.5">
+                      <FolderKanban className="w-5 h-5 text-slate-300 dark:text-slate-600" />
+                      <p className="text-xs font-medium text-slate-400">No projects in this stage</p>
+                    </div>
+                  ) : (
+                    columnProjects.map(p => (
+                      <ProjectCard
+                        key={p.id}
+                        project={p}
+                        onEdit={setEditingProject}
+                        onArchiveToggle={handleArchiveToggle}
+                        onDelete={setDeletingProject}
+                      />
+                    ))
+                  )}
                 </div>
               </div>
             );
@@ -572,7 +606,7 @@ export default function ProjectsPage() {
         </div>
       ) : (
         /* ── Cards Grid View ── */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map(p => (
             <ProjectCard
               key={p.id}

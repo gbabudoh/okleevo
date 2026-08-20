@@ -364,35 +364,37 @@ export default function DashboardPage() {
     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
       {/* Company Name with Icon */}
       <div className="flex items-center gap-4 min-w-0">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-sm shrink-0" style={{ background: 'linear-gradient(135deg, #fc6813 0%, #ff8a47 100%)' }}>
+        <div className="w-13 h-13 rounded-2xl flex items-center justify-center text-white font-extrabold text-xl shadow-2xs shrink-0 bg-gradient-to-r from-orange-500 to-amber-600">
           {companyName.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight truncate">{companyName}</h2>
-          <div className="flex items-center gap-2 mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-            <span className="capitalize truncate">{industry}</span>
-            <span className="text-gray-300 dark:text-gray-600">·</span>
-            <span className="shrink-0">{seatCount}/{maxSeats} seats</span>
-            <span className="text-gray-300 dark:text-gray-600 hidden sm:inline">·</span>
-            <span className="hidden sm:inline truncate">{email}</span>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">{companyName}</h2>
+          <div className="flex items-center gap-2 mt-1 text-xs font-bold text-slate-400">
+            <span className="capitalize truncate text-slate-600 dark:text-slate-300">{industry}</span>
+            <span className="text-slate-300 dark:text-slate-700">·</span>
+            <span className="shrink-0 px-2.5 py-0.5 rounded-full bg-orange-50 dark:bg-orange-950/60 border border-orange-200/60 text-orange-600 dark:text-orange-400 font-mono font-extrabold uppercase text-[10px]">
+              {seatCount} / {maxSeats} seats
+            </span>
+            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+            <span className="hidden sm:inline truncate font-mono text-slate-400">{email}</span>
           </div>
         </div>
       </div>
 
       {/* Action Triggers */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-3 shrink-0">
         <button
           onClick={() => router.push('/dashboard/collaboration')}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold transition-all shadow-sm shadow-orange-500/20 active:scale-95 cursor-pointer"
         >
-          <UsersRound className="w-3.5 h-3.5" />
+          <UsersRound className="w-4 h-4" />
           <span>Team Hub</span>
         </button>
         <button
           onClick={() => router.push('/dashboard/settings')}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl text-xs font-extrabold border border-slate-200/80 dark:border-slate-800 transition-all cursor-pointer shadow-2xs"
         >
-          <Settings className="w-3.5 h-3.5 text-gray-500" />
+          <Settings className="w-4 h-4 text-slate-400" />
           <span>Settings</span>
         </button>
       </div>
@@ -400,17 +402,17 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="space-y-4 sm:space-y-8 pb-8">
+    <div className="space-y-6 sm:space-y-8 pb-8">
       {/* Company Header */}
-      <div className="rounded-3xl p-5 sm:p-6 md:p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-gray-100 dark:border-slate-800 shadow-sm relative overflow-hidden">
+      <div className="rounded-3xl p-6 sm:p-7 md:p-8 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 shadow-2xs relative overflow-hidden">
         {/* Decorative background glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
         
         <div className="relative z-10">
           {loading ? (
             <div className="flex items-center gap-3 py-4">
-              <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-gray-500 text-base">Loading workspace details…</p>
+              <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-slate-400 text-xs font-mono font-bold">Loading workspace details…</p>
             </div>
           ) : userData && userData.business ? (
             renderCompanyInfo(
@@ -434,15 +436,17 @@ export default function DashboardPage() {
 
       {/* Team Collaboration Widget */}
       {presence && presence.presence && presence.presence.length > 0 && (
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-slate-800 p-5 sm:p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Users className="w-5 h-5 text-indigo-600" />
-              Team Presence
+        <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+                <Users className="w-4 h-4" />
+              </div>
+              Team Presence & Activity
             </h2>
-            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-gray-100 dark:border-slate-700">
-              <Circle className={`w-2 h-2 ${presence.onlineCount > 0 ? 'fill-green-500 text-green-500' : 'fill-gray-400 text-gray-400'}`} />
-              <span>{presence.onlineCount} of {presence.totalCount} online</span>
+            <div className="flex items-center gap-2 text-[10px] font-mono font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200/60 uppercase">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{presence.onlineCount} OF {presence.totalCount} ONLINE</span>
             </div>
           </div>
           
@@ -450,37 +454,41 @@ export default function DashboardPage() {
             {presence.presence.map((member) => (
               <div
                 key={member.userId}
-                className="flex flex-col items-center p-3.5 rounded-2xl bg-gray-50/50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all"
+                className="flex flex-col items-center p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400/80 transition-all shadow-2xs group"
               >
-                <div className="relative mb-2">
-                  <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-base shadow-sm">
-                    {member.firstName.charAt(0)}{member.lastName.charAt(0)}
+                <div className="relative mb-2.5">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center text-white font-extrabold text-sm shadow-2xs overflow-hidden border border-orange-200/40">
+                    {member.image ? (
+                      <img src={member.image} alt={`${member.firstName} ${member.lastName}`} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{member.firstName.charAt(0)}{member.lastName.charAt(0)}</span>
+                    )}
                   </div>
                   {member.isOnline && (
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-950 rounded-full shadow-xs"></div>
                   )}
                 </div>
-                <p className="text-xs font-bold text-gray-900 dark:text-white text-center truncate w-full">
+                <p className="text-xs font-extrabold text-slate-900 dark:text-white text-center truncate w-full group-hover:text-orange-500 transition-colors">
                   {member.firstName} {member.lastName.charAt(0)}.
                 </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 text-center mt-0.5">
+                <p className="text-[10px] font-mono font-bold text-center mt-0.5">
                   {member.isOnline ? (
-                    <span className="text-green-600 dark:text-green-400 font-semibold">● Online</span>
+                    <span className="text-emerald-600 dark:text-emerald-400">● ONLINE</span>
                   ) : (
-                    <span className="text-gray-400">Offline</span>
+                    <span className="text-slate-400 uppercase">OFFLINE</span>
                   )}
                 </p>
               </div>
             ))}
           </div>
           
-          <div className="mt-4 p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="text-xs text-indigo-900 dark:text-indigo-200 font-medium">
-              <strong>Collaboration Hub:</strong> Team data, HD video calls, and voice channels are active for {userData?.business?.name || 'your organisation'}.
+          <div className="mt-5 p-4 bg-orange-50/40 dark:bg-orange-950/20 rounded-3xl border border-orange-200/60 dark:border-orange-900/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+            <p className="text-xs text-slate-700 dark:text-slate-300 font-bold leading-relaxed">
+              <strong className="text-orange-600 dark:text-orange-400">Collaboration Hub:</strong> Team data, HD video calls, and voice channels are active for {userData?.business?.name || 'your organisation'}.
             </p>
             <button 
               onClick={() => router.push('/dashboard/collaboration')}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl transition-all shadow-sm shadow-orange-500/20 active:scale-95 cursor-pointer shrink-0"
             >
               <UsersRound className="w-3.5 h-3.5" />
               <span>Open Collaboration Hub</span>
@@ -489,6 +497,7 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Telemetry KPI Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
@@ -499,45 +508,47 @@ export default function DashboardPage() {
           return (
             <div
               key={index}
-              className={`relative bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 md:p-6 border border-gray-100 dark:border-slate-800 hover:shadow-lg transition-all cursor-pointer overflow-hidden group ${isHydrating ? 'opacity-70' : 'opacity-100'}`}
+              className={`relative bg-white dark:bg-slate-950 rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400/80 transition-all cursor-pointer overflow-hidden group shadow-2xs ${isHydrating ? 'opacity-70' : 'opacity-100'}`}
             >
-                {/* Background decoration */}
-                <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-5 rounded-full group-hover:scale-150 transition-transform`} />
-                
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2.5 rounded-2xl bg-gradient-to-br ${stat.gradient} shadow-md`}>
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
-                      isZeroChange 
-                        ? 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400' 
-                        : stat.trend === 'up' 
-                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60' 
-                          : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/60'
-                    }`}>
-                      {!isZeroChange && <TrendIcon className="w-3.5 h-3.5" />}
-                      <span>{isZeroChange ? 'No change' : stat.change}</span>
-                    </div>
+              {/* Background decoration */}
+              <div className="absolute -right-8 -top-8 w-32 h-32 bg-orange-500/5 rounded-full group-hover:scale-150 transition-transform pointer-events-none" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+                    <Icon className="w-5 h-5" />
                   </div>
-                  
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-1 uppercase tracking-wider">{stat.title}</p>
-                  <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-1.5 tracking-tight">{stat.value}</p>
-                  <p className="text-[11px] text-gray-400 font-medium">{stat.period}</p>
+                  <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold uppercase border ${
+                    isZeroChange 
+                      ? 'bg-slate-100 dark:bg-slate-900 text-slate-400 border-slate-200/60 dark:border-slate-800' 
+                      : stat.trend === 'up' 
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-900/40' 
+                        : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-200/60 dark:border-rose-900/40'
+                  }`}>
+                    {!isZeroChange && <TrendIcon className="w-3 h-3" />}
+                    <span>{isZeroChange ? 'NO CHANGE' : stat.change}</span>
+                  </div>
                 </div>
+                
+                <p className="text-xs text-slate-400 font-extrabold uppercase tracking-wider font-mono mb-1">{stat.title}</p>
+                <p className="text-3xl sm:text-4xl font-extrabold font-mono text-slate-900 dark:text-white mb-1 tracking-tight">{stat.value}</p>
+                <p className="text-[10px] text-slate-400 font-mono font-bold uppercase">{stat.period}</p>
               </div>
-            );
+            </div>
+          );
         })}
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 sm:mb-6">
-          <Zap className="w-6 h-6 text-yellow-500" />
-          Quick Actions
+      {/* Quick Actions Hub */}
+      <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">
+        <h2 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5 mb-6">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+            <Zap className="w-4 h-4" />
+          </div>
+          Quick Actions & Short-Cuts
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             
@@ -545,17 +556,14 @@ export default function DashboardPage() {
               <button
                 key={index}
                 onClick={() => router.push(action.href)}
-                className="group relative p-3 sm:p-6 rounded-2xl border border-white/40 bg-white/40 hover:bg-white/60 hover:border-transparent hover:shadow-2xl transition-all text-center overflow-hidden cursor-pointer"
+                className="group relative p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-950 hover:border-orange-400/80 transition-all text-center overflow-hidden cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
               >
-                {/* Hover gradient background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                
                 <div className="relative">
-                  <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
-                    <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center mx-auto mb-3 shadow-2xs group-hover:scale-110 transition-transform">
+                    <Icon className="w-6 h-6" />
                   </div>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white group-hover:text-white transition-colors mb-1">{action.name}</p>
-                  <p className="text-xs text-gray-500 group-hover:text-white group-hover:text-opacity-90 transition-colors">{action.description}</p>
+                  <p className="text-xs font-extrabold text-slate-900 dark:text-white group-hover:text-orange-500 transition-colors mb-1 truncate">{action.name}</p>
+                  <p className="text-[10px] font-bold text-slate-400 group-hover:text-slate-500 transition-colors truncate">{action.description}</p>
                 </div>
               </button>
             );
@@ -564,24 +572,26 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Recent Activity - Takes 2 columns */}
-        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Activity className="w-6 h-6 text-blue-600" />
-              Recent Activity
+        <div className="lg:col-span-2 bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-900">
+            <h2 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+                <Activity className="w-4 h-4" />
+              </div>
+              Recent Workspace Activity
             </h2>
-            <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+            <button className="text-xs font-extrabold text-orange-500 hover:text-orange-600 flex items-center gap-1 cursor-pointer">
               View All
-              <ArrowUpRight className="w-4 h-4" />
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {isDashboardLoading ? (
               [1, 2, 3].map((i) => (
-                <div key={i} className="h-20 bg-gray-100 animate-pulse rounded-xl"></div>
+                <div key={i} className="h-16 bg-slate-100 dark:bg-slate-900 animate-pulse rounded-2xl" />
               ))
             ) : recentActivity.length > 0 ? (
               recentActivity.map((activity, index) => {
@@ -590,86 +600,91 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={index}
-                    className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer group"
+                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400/80 transition-all cursor-pointer group shadow-2xs"
                   >
-                    <div className={`p-3 rounded-xl ${activity.bg} group-hover:scale-110 transition-transform`}>
-                      <Icon className={`w-5 h-5 ${activity.color}`} />
+                    <div className="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-orange-500 flex items-center justify-center shrink-0 border border-orange-200/60">
+                      <Icon className="w-5 h-5" />
                     </div>
                     
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{activity.title}</p>
-                      <p className="text-sm text-gray-600">{activity.client}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-extrabold text-slate-900 dark:text-white group-hover:text-orange-500 transition-colors truncate">{activity.title}</p>
+                      <p className="text-[10px] font-mono font-bold text-slate-400 truncate">{activity.client}</p>
                     </div>
                     
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       {activity.amount && (
-                        <p className="font-bold text-gray-900 dark:text-white mb-1">{activity.amount}</p>
+                        <p className="text-xs font-extrabold font-mono text-slate-900 dark:text-white mb-0.5">{activity.amount}</p>
                       )}
-                      <p className="text-xs text-gray-500">{activity.time}</p>
+                      <p className="text-[10px] font-mono font-bold text-slate-400">{activity.time}</p>
                     </div>
                   </div>
                 );
               })
             ) : (
-              <div className="py-12 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                <p>No recent activity found.</p>
-                <p className="text-xs mt-1">Activities from Tasks and CRM will appear here.</p>
+              <div className="py-12 text-center text-slate-400 bg-slate-50/60 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                <p className="text-xs font-mono font-bold">No recent activity recorded.</p>
+                <p className="text-[10px] font-mono text-slate-400 mt-1">Activities from Tasks, Invoices, and CRM will appear here.</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Upcoming Tasks - Takes 1 column */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <CheckSquare className="w-5 h-5 text-green-600" />
+        <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-900">
+            <h2 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+                <CheckSquare className="w-4 h-4" />
+              </div>
               Upcoming Tasks
             </h2>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Plus className="w-5 h-5 text-gray-600" />
+            <button 
+              onClick={() => router.push('/dashboard/tasks')}
+              className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-orange-50 text-slate-500 hover:text-orange-500 flex items-center justify-center transition-colors cursor-pointer border border-slate-200/80 dark:border-slate-800"
+            >
+              <Plus className="w-4 h-4" />
             </button>
           </div>
           
           <div className="space-y-4">
             {isDashboardLoading ? (
               [1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-gray-100 animate-pulse rounded-xl"></div>
+                <div key={i} className="h-20 bg-slate-100 dark:bg-slate-900 animate-pulse rounded-2xl" />
               ))
             ) : upcomingTasks.length > 0 ? (
               upcomingTasks.map((task, index) => {
                 const priorityColors = {
-                  high: 'bg-red-100 text-red-700 border-red-200',
-                  medium: 'bg-orange-100 text-orange-700 border-orange-200',
-                  low: 'bg-green-100 text-green-700 border-green-200'
+                  high: 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-200/60 dark:border-rose-900/40',
+                  medium: 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border-amber-200/60 dark:border-amber-900/40',
+                  low: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-900/40'
                 };
                 
                 return (
                   <div
                     key={index}
-                    className="p-4 rounded-xl border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer group"
+                    className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400/80 transition-all cursor-pointer group shadow-2xs"
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">{task.title}</p>
-                        <p className="text-xs text-gray-500">{task.category}</p>
+                    <div className="flex items-start justify-between mb-3 gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-extrabold text-slate-900 dark:text-white group-hover:text-orange-500 transition-colors mb-0.5 truncate">{task.title}</p>
+                        <p className="text-[10px] font-mono font-bold text-slate-400 uppercase">{task.category}</p>
                       </div>
-                      <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${priorityColors[task.priority as keyof typeof priorityColors] || 'bg-gray-100'}`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-mono font-extrabold uppercase border shrink-0 ${priorityColors[task.priority as keyof typeof priorityColors] || 'bg-slate-100 text-slate-500'}`}>
                         {task.priority.toUpperCase()}
                       </span>
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-600 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                      <div className="flex items-center justify-between text-[10px] font-mono font-bold">
+                        <span className="text-slate-400 flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-orange-500" />
                           {task.dueDate}
                         </span>
-                        <span className="font-bold text-gray-900 dark:text-white">{task.progress}%</span>
+                        <span className="text-slate-900 dark:text-white font-extrabold">{task.progress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div className="w-full bg-slate-200/80 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all"
+                          className="h-full bg-gradient-to-r from-orange-500 to-amber-600 rounded-full transition-all"
                           style={{ width: `${task.progress}%` }}
                         />
                       </div>
@@ -678,9 +693,9 @@ export default function DashboardPage() {
                 );
               })
             ) : (
-              <div className="py-12 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                <p>All caught up!</p>
-                <p className="text-xs mt-1">No pending tasks found.</p>
+              <div className="py-12 text-center text-slate-400 bg-slate-50/60 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                <p className="text-xs font-mono font-bold">All caught up!</p>
+                <p className="text-[10px] font-mono text-slate-400 mt-1">No pending tasks assigned.</p>
               </div>
             )}
           </div>
@@ -688,86 +703,90 @@ export default function DashboardPage() {
       </div>
 
       {/* Performance Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
         {[
           { label: 'Monthly Revenue', value: stats[0]?.value || '£0', change: stats[0]?.change || '0%', sub: 'vs last month', icon: LineChart },
           { label: 'Customer Growth', value: stats[1]?.change || '0%', change: stats[1]?.value || '0', sub: 'new customers', icon: Users },
           { label: 'Conversion Rate', value: stats[2]?.value || '0', change: stats[2]?.change || '0%', sub: 'improvement', icon: Target },
         ].map(({ label, value, change, sub, icon: Icon }) => (
-          <div key={label} className="bg-white rounded-xl p-5 sm:p-6 border border-gray-200">
+          <div key={label} className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
-              <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200">
-                <Icon className="w-5 h-5 text-gray-500" />
+              <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wider font-mono">{label}</p>
+              <div className="w-9 h-9 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-orange-500 flex items-center justify-center border border-orange-200/60">
+                <Icon className="w-4 h-4" />
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-3">{value}</p>
+            <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white mb-3">{value}</p>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-1.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+              <span className="inline-flex items-center gap-1 text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 uppercase">
                 <TrendingUp className="w-3 h-3" />
                 {change}
               </span>
-              <span className="text-sm text-gray-500">{sub}</span>
+              <span className="text-xs font-bold text-slate-400">{sub}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        {/* Top Performing Products */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2">
-            <Award className="w-5 h-5 text-yellow-500" />
-            Top Performing
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+        {/* Top Performing Items */}
+        <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">
+          <h2 className="text-sm font-extrabold text-slate-900 dark:text-white mb-6 flex items-center gap-2.5 pb-4 border-b border-slate-100 dark:border-slate-900">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+              <Award className="w-4 h-4" />
+            </div>
+            Top Performing Services
           </h2>
           
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {!isDashboardLoading && recentActivity.filter(a => a.type === 'invoice').length > 0 ? (
               recentActivity.filter(a => a.type === 'invoice').slice(0, 3).map((item, index) => (
-                <div key={index} className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-lg transition-all">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold shadow-lg`}>
-                    {index + 1}
+                <div key={index} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 flex items-center justify-center text-white font-extrabold text-xs shadow-2xs shrink-0 font-mono">
+                    #{index + 1}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900 dark:text-white">{item.resource || 'Premium Item'}</p>
-                    <p className="text-sm text-gray-600">{item.amount || '£0'} revenue</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{item.resource || 'Premium Item'}</p>
+                    <p className="text-[10px] font-mono font-bold text-slate-400">{item.amount || '£0'} revenue</p>
                   </div>
-                  <div className="text-right">
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm font-bold">
+                  <div className="text-right shrink-0">
+                    <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 rounded-full text-[9px] font-mono font-extrabold uppercase">
                       ACTIVE
                     </span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="py-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                <p className="text-sm">No sales data yet.</p>
+              <div className="py-8 text-center text-slate-400 bg-slate-50/60 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                <p className="text-xs font-mono font-bold">No sales data yet recorded.</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Notifications */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 p-4 sm:p-6 shadow-lg">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-red-500 cursor-pointer" />
-            Notifications
+        <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">
+          <h2 className="text-sm font-extrabold text-slate-900 dark:text-white mb-6 flex items-center gap-2.5 pb-4 border-b border-slate-100 dark:border-slate-900">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+              <Bell className="w-4 h-4" />
+            </div>
+            System Notifications
             {notifications.length > 0 && (
-              <span className="ml-auto px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+              <span className="ml-auto px-2.5 py-0.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white text-[10px] font-mono font-extrabold rounded-full shadow-2xs">
                 {notifications.length}
               </span>
             )}
           </h2>
           
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {notifications.length > 0 ? (
               notifications.map((notification) => {
                 const colors: Record<string, { bg: string, text: string, border: string, icon: React.ElementType }> = {
-                  error: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', icon: Bell },
-                  info: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', icon: Bell },
-                  success: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200', icon: CheckSquare },
-                  warning: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', icon: AlertCircle }
+                  error: { bg: 'bg-rose-50 dark:bg-rose-950/60', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-200/60 dark:border-rose-900/40', icon: Bell },
+                  info: { bg: 'bg-slate-50 dark:bg-slate-900/40', text: 'text-orange-500', border: 'border-slate-200/80 dark:border-slate-800', icon: Bell },
+                  success: { bg: 'bg-emerald-50 dark:bg-emerald-950/60', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200/60 dark:border-emerald-900/40', icon: CheckSquare },
+                  warning: { bg: 'bg-amber-50 dark:bg-amber-950/60', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200/60 dark:border-amber-900/40', icon: AlertCircle }
                 };
                 const colorScheme = colors[notification.type] || colors.info;
                 const Icon = colorScheme.icon;
@@ -775,21 +794,21 @@ export default function DashboardPage() {
                 return (
                   <div 
                     key={notification.id} 
-                    className={`flex items-start gap-3 p-4 rounded-xl border ${colorScheme.border} ${colorScheme.bg} hover:shadow-lg transition-all cursor-pointer group`}
+                    className={`flex items-start gap-3.5 p-4 rounded-2xl border ${colorScheme.border} ${colorScheme.bg} transition-all cursor-pointer group shadow-2xs`}
                   >
-                    <div className={`p-2 bg-white rounded-lg ${colorScheme.text} shadow-sm`}>
-                      <Icon className="w-5 h-5" />
+                    <div className={`p-2 rounded-xl bg-white dark:bg-slate-950 ${colorScheme.text} border border-slate-200/60 dark:border-slate-800 shrink-0`}>
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">{notification.title}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{notification.message}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{notification.title}</p>
+                      <p className="text-[10px] font-bold text-slate-400 mt-0.5 leading-relaxed">{notification.message}</p>
                     </div>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         markAsRead(notification.id);
                       }}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      className="text-slate-400 hover:text-rose-500 transition-colors p-1"
                       title="Mark as read"
                     >
                       <X className="w-4 h-4" />
@@ -798,8 +817,8 @@ export default function DashboardPage() {
                 );
               })
             ) : (
-              <div className="py-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                <p className="text-sm">No new notifications.</p>
+              <div className="py-8 text-center text-slate-400 bg-slate-50/60 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                <p className="text-xs font-mono font-bold">No new notifications.</p>
               </div>
             )}
           </div>

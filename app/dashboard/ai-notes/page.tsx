@@ -280,14 +280,14 @@ export default function AINotesPage() {
     return (
       <div
         onClick={() => setSelectedNote(note)}
-        className="group relative bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-4"
+        className="group relative bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 hover:border-orange-300 dark:hover:border-orange-900/60 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-4"
       >
         <div className="flex items-start justify-between gap-3">
-          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${tc.gradient} flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform`}>
+          <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${tc.gradient} flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform`}>
             <Icon className="w-5 h-5" />
           </div>
           <div className="flex items-center gap-1.5">
-            {note.isPinned && <Pin className="w-3.5 h-3.5 text-indigo-500 fill-indigo-500" />}
+            {note.isPinned && <Pin className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />}
             <button
               onClick={e => { e.stopPropagation(); handleToggleStar(note.id); }}
               className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
@@ -298,7 +298,7 @@ export default function AINotesPage() {
         </div>
 
         <div className="space-y-1.5 flex-1">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-2">
             {note.title}
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed line-clamp-3">
@@ -307,15 +307,15 @@ export default function AINotesPage() {
         </div>
 
         {note.aiSummary && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-950/60 rounded-xl border border-purple-100 dark:border-purple-900/40">
-            <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-            <p className="text-[10px] font-bold text-purple-700 dark:text-purple-300 truncate">{note.aiSummary}</p>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-950/60 rounded-xl border border-orange-200/60 dark:border-orange-900/40">
+            <Sparkles className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 shrink-0" />
+            <p className="text-[10px] font-bold text-orange-700 dark:text-orange-300 truncate">{note.aiSummary}</p>
           </div>
         )}
 
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-          <span className="text-[10px] font-bold text-slate-400">{note.date.toLocaleDateString()}</span>
-          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">
+          <span className="text-[10px] font-bold font-mono text-slate-400">{note.date.toLocaleDateString()}</span>
+          <span className="text-[10px] font-extrabold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2.5 py-0.5 rounded-full border border-orange-200/60">
             {tc.name}
           </span>
         </div>
@@ -327,23 +327,23 @@ export default function AINotesPage() {
     <div className="min-h-screen space-y-6 pb-24 sm:pb-12 text-slate-900 dark:text-slate-100">
 
       {/* ── Enterprise Header Shell ── */}
-      <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-50/70 via-white to-amber-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-slate-850 border border-orange-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
           <div className="flex items-start gap-4">
-            <div className="p-3.5 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shrink-0 text-white shadow-md">
-              <FileText className="w-6 h-6 stroke-[2]" />
+            <div className="p-4 bg-orange-500 text-white rounded-2xl shrink-0 shadow-md">
+              <FileText className="w-7 h-7 stroke-[2]" />
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                   Notes & Knowledge Operating System
                 </h1>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/40">
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800/80">
+                  <ShieldCheck className="w-3.5 h-3.5 text-orange-500" />
                   Okleevo Neural Engine v2.0
                 </span>
               </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl font-normal leading-relaxed">
                 Notion-grade document workspace, color-coded Post-it boards, and Okleevo AI summary synthesis.
               </p>
             </div>
@@ -352,14 +352,14 @@ export default function AINotesPage() {
           <div className="flex items-center gap-3 shrink-0 flex-wrap">
             <button
               onClick={() => { setNewNoteType('posted'); setShowNewModal(true); }}
-              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-2"
+              className="px-4 py-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-xs rounded-2xl transition-all cursor-pointer shadow-xs flex items-center gap-2"
             >
               <StickyNote className="w-4 h-4" />
               <span>+ Quick Posted Sticky</span>
             </button>
             <button
               onClick={() => { setNewNoteType('document'); setShowNewModal(true); }}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-2"
+              className="px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold text-xs rounded-2xl transition-all cursor-pointer shadow-md shadow-orange-500/20 flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               <span>+ New Notion Doc</span>
@@ -369,20 +369,20 @@ export default function AINotesPage() {
       </div>
 
       {/* ── Stats Row ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Notes', value: notes.length, icon: FileText, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-950/60' },
+          { label: 'Total Notes', value: notes.length, icon: FileText, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-950/60' },
           { label: 'Starred & Pinned', value: notes.filter(n => n.isStarred || n.isPinned).length, icon: Star, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-950/60' },
           { label: 'Posted Stickies', value: notes.filter(n => n.type === 'posted').length, icon: StickyNote, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-950/60' },
           { label: 'AI Action Items', value: notes.reduce((a, n) => a + (n.actionItems?.length || 0), 0), icon: CheckSquare, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/60' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center shrink-0`}>
-              <Icon className={`w-5 h-5 ${color}`} />
+          <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-orange-300 dark:hover:border-orange-900/50 transition-all flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-2xl ${bg} flex items-center justify-center shrink-0 shadow-xs`}>
+              <Icon className={`w-6 h-6 ${color}`} />
             </div>
             <div>
-              <p className="text-lg font-extrabold text-slate-900 dark:text-white leading-none">{value}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">{label}</p>
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{value}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1.5">{label}</p>
             </div>
           </div>
         ))}
@@ -390,7 +390,7 @@ export default function AINotesPage() {
 
       {/* ── Navigation Toolbar: Search, Filters, & View Mode ── */}
       <div className="space-y-3">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 shadow-2xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between min-w-0 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 shadow-2xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between min-w-0 overflow-hidden">
           <div className="flex-1 min-w-0 relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
@@ -398,7 +398,7 @@ export default function AINotesPage() {
               placeholder="Search notes by title, tag, or content snippet..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs font-semibold outline-none border border-slate-200/80 dark:border-slate-700/80 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs font-medium outline-none border border-slate-200/80 dark:border-slate-700/80 focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
             />
           </div>
 
@@ -406,9 +406,9 @@ export default function AINotesPage() {
             <button
               type="button"
               onClick={() => setShowStarredOnly(!showStarredOnly)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border shrink-0 whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border shrink-0 whitespace-nowrap ${
                 showStarredOnly
-                  ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300'
+                  ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300 shadow-xs'
                   : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-400'
               }`}
             >
@@ -420,8 +420,8 @@ export default function AINotesPage() {
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-2xs' : 'text-slate-500'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-2xs font-extrabold' : 'text-slate-500'
                 }`}
                 title="Notion Grid View"
               >
@@ -431,8 +431,8 @@ export default function AINotesPage() {
               </button>
               <button
                 onClick={() => setViewMode('posted')}
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  viewMode === 'posted' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-2xs' : 'text-slate-500'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  viewMode === 'posted' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-2xs font-extrabold' : 'text-slate-500'
                 }`}
                 title="Posted Board View"
               >
@@ -442,8 +442,8 @@ export default function AINotesPage() {
               </button>
               <button
                 onClick={() => setViewMode('table')}
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-2xs' : 'text-slate-500'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-2xs font-extrabold' : 'text-slate-500'
                 }`}
                 title="Table View"
               >
@@ -458,10 +458,10 @@ export default function AINotesPage() {
         <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
           <button
             onClick={() => setSelectedType('all')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${
+            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
               selectedType === 'all'
-                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
             }`}
           >
             All Notes ({notes.length})
@@ -475,15 +475,15 @@ export default function AINotesPage() {
               <button
                 key={t.id}
                 onClick={() => setSelectedType(t.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border ${
+                className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 ${
                   isActive
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                    : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm'
+                    : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{t.name}</span>
-                <span className={`px-1.5 py-0.2 text-[10px] rounded-full font-extrabold ${
+                <span className={`px-2 py-0.5 text-[10px] rounded-full font-mono font-extrabold ${
                   isActive ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                 }`}>
                   {count}
@@ -496,24 +496,24 @@ export default function AINotesPage() {
 
       {/* ── Main Notes Grid / Canvas / Table ── */}
       {loading ? (
-        <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Loading Knowledge Base...</p>
+        <div className="py-20 text-center flex flex-col items-center justify-center gap-3 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800">
+          <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading Knowledge Base...</p>
         </div>
       ) : filteredNotes.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-12 text-center space-y-4 shadow-xs">
-          <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto text-slate-400">
-            <FileText className="w-6 h-6" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-12 text-center space-y-4 shadow-xs">
+          <div className="w-14 h-14 bg-orange-50 dark:bg-orange-950/50 rounded-2xl flex items-center justify-center mx-auto text-orange-500 border border-orange-200/60">
+            <FileText className="w-7 h-7" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">No Notes Found</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">No Notes Found</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
               Create your first Notion document or quick Posted sticky note to begin organizing your team knowledge.
             </p>
           </div>
           <button
             onClick={() => setShowNewModal(true)}
-            className="px-4 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs inline-flex items-center gap-2"
+            className="px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold text-xs rounded-2xl transition-all cursor-pointer shadow-md shadow-orange-500/20 inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             <span>Create First Note</span>
@@ -648,32 +648,41 @@ export default function AINotesPage() {
       {/* ── Create Note Modal ── */}
       {showNewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs" onClick={() => setShowNewModal(false)} />
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Create New Knowledge Note</h3>
-              <button onClick={() => setShowNewModal(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
+          <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-xs" onClick={() => setShowNewModal(false)} />
+          <div className="relative w-full max-w-lg bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col transform animate-in slide-in-from-bottom-6 duration-300">
+            {/* Modal Header */}
+            <div className="px-6 py-4.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-orange-500 text-white rounded-xl shadow-xs">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">Create New Knowledge Note</h3>
+              </div>
+              <button 
+                onClick={() => setShowNewModal(false)} 
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 flex-1 overflow-y-auto max-h-[75vh]">
+            <div className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[75vh]">
               {/* Type Selection */}
               <div>
                 <label className={labelCls}>Note Type</label>
-                <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+                <div className="flex flex-wrap gap-2 pt-1">
                   {NOTE_TYPES.map(t => (
                     <button
                       key={t.id}
                       type="button"
                       onClick={() => setNewNoteType(t.id as any)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${
+                      className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                         newNoteType === t.id
-                          ? 'bg-indigo-600 text-white border-indigo-600'
-                          : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                          ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm'
+                          : 'bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
                       }`}
                     >
-                      {t.name}
+                      <span>{t.name}</span>
                     </button>
                   ))}
                 </div>
@@ -681,16 +690,16 @@ export default function AINotesPage() {
 
               {/* Color picker if Posted */}
               {newNoteType === 'posted' && (
-                <div>
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 rounded-2xl space-y-2">
                   <label className={labelCls}>Posted Sticky Color</label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     {STICKY_COLORS.map(c => (
                       <button
                         key={c.id}
                         type="button"
                         onClick={() => setNewStickyColor(c.id)}
-                        className={`w-7 h-7 rounded-full border-2 transition-transform ${c.badge} ${
-                          newStickyColor === c.id ? 'scale-110 border-slate-900' : 'border-transparent'
+                        className={`w-8 h-8 rounded-full border-2 transition-all cursor-pointer ${c.badge} ${
+                          newStickyColor === c.id ? 'scale-110 border-orange-500 ring-2 ring-orange-500/40 shadow-sm' : 'border-transparent hover:scale-105'
                         }`}
                         title={c.name}
                       />
@@ -706,7 +715,7 @@ export default function AINotesPage() {
                   placeholder="Document or Sticky Headline..."
                   value={newTitle}
                   onChange={e => setNewTitle(e.target.value)}
-                  className={inputCls}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-medium outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
                 />
               </div>
 
@@ -717,7 +726,7 @@ export default function AINotesPage() {
                   value={newContent}
                   onChange={e => setNewContent(e.target.value)}
                   rows={5}
-                  className={`${inputCls} resize-none`}
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-medium outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white resize-none leading-relaxed"
                 />
               </div>
 
@@ -729,7 +738,7 @@ export default function AINotesPage() {
                     placeholder="strategy, launch, Q4..."
                     value={newTags}
                     onChange={e => setNewTags(e.target.value)}
-                    className={inputCls}
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-medium outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
@@ -737,7 +746,7 @@ export default function AINotesPage() {
                   <select
                     value={assignedMember}
                     onChange={e => setAssignedMember(e.target.value)}
-                    className={`${inputCls} cursor-pointer`}
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-bold outline-none focus:border-orange-500 transition-all text-slate-900 dark:text-white cursor-pointer"
                   >
                     <option value="">Unassigned</option>
                     {teamMembers.map(m => (
@@ -747,23 +756,24 @@ export default function AINotesPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3 p-3 bg-purple-50/60 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40 rounded-xl">
-                <label className="flex items-center gap-2 cursor-pointer">
+              {/* AI Copilot Assist Container */}
+              <div className="flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-orange-50/70 via-white to-amber-50/60 dark:from-slate-900 dark:to-slate-850 border border-orange-200/80 dark:border-slate-800 rounded-2xl">
+                <label className="flex items-center gap-2.5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={showAIAssist}
                     onChange={e => setShowAIAssist(e.target.checked)}
-                    className="w-4 h-4 accent-purple-600 cursor-pointer"
+                    className="w-4 h-4 accent-orange-500 cursor-pointer rounded"
                   />
-                  <span className="text-xs font-bold text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" /> AI Assist (summary & action items)
+                  <span className="text-xs font-extrabold text-orange-900 dark:text-orange-300 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-orange-500" /> AI Assist (summary & action items)
                   </span>
                 </label>
                 {showAIAssist && (
                   <select
                     value={selectedEngine}
                     onChange={e => setSelectedEngine(e.target.value as 'deep' | 'fast')}
-                    className="text-xs font-semibold px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800 rounded-lg cursor-pointer text-purple-900 dark:text-purple-200"
+                    className="text-xs font-bold px-3 py-1.5 bg-white dark:bg-slate-900 border border-orange-200 dark:border-orange-800 rounded-xl cursor-pointer text-orange-900 dark:text-orange-300 shadow-2xs"
                   >
                     {availableEngines.map(e => (
                       <option key={e.id} value={e.id} title={e.description}>{e.name}</option>
@@ -773,23 +783,24 @@ export default function AINotesPage() {
               </div>
 
               {assistError && (
-                <div className="px-3 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-xl text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                <div className="px-4 py-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-2xl text-[11px] font-bold text-amber-800 dark:text-amber-300">
                   {assistError}
                 </div>
               )}
             </div>
 
-            <div className="px-5 pt-3 pb-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-3">
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowNewModal(false)}
-                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300"
+                className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreate}
                 disabled={creatingNote || !newTitle.trim()}
-                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-2"
+                className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:opacity-40 text-white font-extrabold text-xs rounded-2xl transition-all cursor-pointer flex items-center gap-2 shadow-md shadow-orange-500/20 active:scale-95"
               >
                 {creatingNote ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 <span>Save Note</span>

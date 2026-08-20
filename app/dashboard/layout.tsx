@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
   LayoutDashboard, X, Inbox,
@@ -287,15 +287,16 @@ export default function DashboardLayout({
     }
   };
 
-  // Scroll to top on route change
+  // Scroll to top on route change or search param tab change
+  const searchParams = useSearchParams();
   useEffect(() => {
     // Scroll both window and main content area to top
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const mainContent = document.getElementById('main-content');
     if (mainContent) {
-      mainContent.scrollTo(0, 0);
+      mainContent.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
@@ -383,7 +384,7 @@ export default function DashboardLayout({
                       className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors w-full text-left cursor-pointer"
                     >
                       <Compass className="w-4 h-4 text-emerald-600" />
-                      <span>Module Guide</span>
+                      <span>Tool Guide</span>
                     </button>
                   )}
                   <Link

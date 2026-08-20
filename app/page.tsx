@@ -1,20 +1,21 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { HeroAnimation } from "@/components/hero-animation";
-import { FeaturesBentoGrid } from "@/components/features-bento-grid";
-import { ProductDemoSimulator } from "@/components/product-demo/ProductDemoSimulator";
-import { ScrollFeatureFlow } from "@/components/scroll-feature-flow";
-import { TrustBadges } from "@/components/trust-badges";
+import { EnterpriseNav } from "@/components/landing/enterprise-nav";
+import { EnterpriseHero } from "@/components/landing/enterprise-hero";
+import { InteractiveDashboardDemo } from "@/components/landing/interactive-dashboard-demo";
+import { TelemetryStrip } from "@/components/landing/telemetry-strip";
+import { EnterpriseBento } from "@/components/landing/enterprise-bento";
+import { WorkflowSimulator } from "@/components/landing/workflow-simulator";
+import { TrustMarquee } from "@/components/landing/trust-marquee";
+import { EnterpriseFaqFooter } from "@/components/landing/enterprise-faq-footer";
 
 export default function Home() {
   const { data: session, status } = useSession();
-  const isLoggedIn = status === "authenticated" && session?.user;
+  const isLoggedIn = status === "authenticated" && Boolean(session?.user);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50" data-ai-landing-page="true">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-orange-500 selection:text-white" data-ai-landing-page="true">
       {/* Schema Markup (SEO, GEO & Local Search) */}
       <script
         type="application/ld+json"
@@ -86,167 +87,32 @@ export default function Home() {
         }}
       />
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100" data-ai-nav="true" aria-label="Main Navigation">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-12 sm:h-16">
+      {/* Enterprise Nav Bar */}
+      <EnterpriseNav isLoggedIn={isLoggedIn} />
 
-          {/* Logo */}
-          <Link href="/" className="shrink-0 flex items-center">
-            <Image
-              src="/logo.png"
-              alt="Okleevo"
-              width={100}
-              height={28}
-              className="h-6 sm:h-8 w-auto"
-              priority
-            />
-          </Link>
+      {/* Main Homepage Sections */}
+      <main>
+        {/* Enterprise Hero Section */}
+        <EnterpriseHero />
 
-          {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-7 text-sm font-medium text-gray-500">
-            <Link href="#home" className="hover:text-gray-900 transition-colors">Home</Link>
-            <Link href="#benefits" className="hover:text-gray-900 transition-colors">Benefits</Link>
-            <Link href="/pricing" className="hover:text-gray-900 transition-colors">Pricing</Link>
-            <Link href="/guide" className="hover:text-gray-900 transition-colors">Guide</Link>
-          </div>
+        {/* Live Interactive Floating Dashboard Demo Flow */}
+        <InteractiveDashboardDemo />
 
-          {/* CTA */}
-          <div className="flex items-center gap-2 shrink-0">
-            {isLoggedIn ? (
-              <Link
-                href="/dashboard"
-                className="text-xs sm:text-sm font-semibold text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all active:scale-95"
-                style={{ backgroundColor: '#fc6813' }}
-              >
-                <span className="sm:hidden">Dashboard</span>
-                <span className="hidden sm:inline">Go to Dashboard</span>
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/access"
-                  className="text-xs sm:text-sm font-medium text-gray-500 hover:text-gray-900 px-2 sm:px-3 py-1.5 transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/onboarding"
-                  className="text-xs sm:text-sm font-semibold text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all active:scale-95"
-                  style={{ backgroundColor: '#fc6813' }}
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
+        {/* Enterprise Telemetry Strip */}
+        <TelemetryStrip />
 
-        </div>
-      </nav>
+        {/* Spotlight Enterprise Bento Grid */}
+        <EnterpriseBento />
 
-      {/* Hero Section */}
-      <section id="home" className="pt-20 sm:pt-24 pb-10 sm:pb-20 px-4 sm:px-6 relative overflow-hidden" data-ai-section="hero">
-        <HeroAnimation />
-      </section>
+        {/* Step-by-Step Workflow Simulator */}
+        <WorkflowSimulator />
 
-      {/* Interactive Two-Layer Product Demo */}
-      <section className="py-16 sm:py-20 px-4 sm:px-6" data-ai-section="preview">
-        <div className="max-w-3xl mx-auto text-center mb-10">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-            One workspace. Two completely separate worlds.
-          </h2>
-          <p className="text-lg text-gray-600 leading-relaxed">
-            Your team&apos;s private HQ and your client&apos;s booking experience never overlap — see both below.
-          </p>
-        </div>
-        <ProductDemoSimulator />
-      </section>
+        {/* Social Proof & Testimonials */}
+        <TrustMarquee />
+      </main>
 
-      {/* Scroll-driven feature pipelines */}
-      <section className="py-16 sm:py-20 bg-white/40 backdrop-blur-sm border-y border-gray-100" data-ai-section="pipelines">
-        <ScrollFeatureFlow />
-      </section>
-
-      {/* Benefits Section */}
-      <section data-ai-section="features">
-        <FeaturesBentoGrid />
-      </section>
-
-      {/* Trust & Infrastructure */}
-      <section className="py-16 px-6 bg-white/40 backdrop-blur-sm" data-ai-section="trust">
-        <TrustBadges />
-      </section>
-
-      {/* Global Coverage (SEO/GEO) */}
-      <section className="py-12 bg-white/40 backdrop-blur-sm border-y border-gray-100 print:hidden" data-ai-section="global-coverage">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-sm font-semibold uppercase tracking-wider text-orange-600 mb-4">
-            Trusted by Remote-First Teams Across 40+ Countries
-          </p>
-          <p className="text-gray-600 max-w-2xl mx-auto text-sm leading-relaxed mb-6">
-            Okleevo is built for distributed teams, digital agencies, and global consultancies — no regional
-            lock-in, no local-only pricing. One workspace, wherever your team and clients are.
-          </p>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-semibold text-gray-400">
-            <span>New York</span> • <span>London</span> • <span>Toronto</span> • <span>Berlin</span> •
-            <span>Singapore</span> • <span>Sydney</span> • <span>Dubai</span> • <span>Lagos</span> •
-            <span>São Paulo</span> • <span>Nairobi</span> • <span>Manila</span> • <span>Remote-First</span>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 px-6" data-ai-section="cta" aria-label="Call to Action">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <Link
-              href="/onboarding"
-              className="inline-block px-10 py-4 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-              style={{ backgroundColor: '#fc6813' }}
-            >
-              Start Your Borderless Workspace →
-            </Link>
-            <p className="mt-4 text-gray-600">
-              No credit card required • 14-day free trial • 5 seats included on Starter
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-12 px-6 bg-gray-900 text-gray-300" data-ai-footer="true" aria-label="Site Footer">
-        <div className="max-w-7xl mx-auto text-center">
-          <Link href="/" className="flex items-center justify-center gap-2 mb-4">
-            <Image 
-              src="/logo.png" 
-              alt="Okleevo" 
-              width={150} 
-              height={40} 
-              className="h-10 w-auto" 
-            />
-          </Link>
-          <p className="text-gray-500 mb-4">Team chat, async projects, and client bookings — all in one workspace.</p>
-          <p className="text-sm text-indigo-400 font-bold mb-8">
-            Starts at 5 seats – scale seat-by-seat as your distributed team grows.
-          </p>
-          <p className="text-gray-400 mb-6">
-            The borderless workspace for distributed teams and global agencies
-          </p>
-          <div className="flex justify-center gap-6 text-sm">
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
-            <Link href="/guide" className="hover:text-white transition-colors">User Guide</Link>
-            <Link 
-              href={isLoggedIn ? "/dashboard/helpdesk" : "/support"} 
-              className="hover:text-white transition-colors"
-            >
-              Support
-            </Link>
-          </div>
-          <p className="mt-6 text-sm text-gray-500">
-            © 2025 Okleevo. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      {/* Enterprise FAQ & Dark Footer */}
+      <EnterpriseFaqFooter />
     </div>
   );
 }

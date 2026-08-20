@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserId } from '@/lib/multi-tenancy';
+import { getPresignedUrl } from '@/lib/services/minio';
 
 export const runtime = 'nodejs';
 
@@ -69,6 +70,8 @@ export async function GET() {
         lastName: true,
         email: true,
         role: true,
+        avatar: true,
+        image: true,
         lastLoginAt: true,
       },
     });
@@ -80,34 +83,52 @@ export async function GET() {
     const now = new Date();
     const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
 
-    const presence = allUsers.map(user => {
-      // If this is the current user making the request, they're online
-      const isCurrentUser = user.id === userId;
+    const presence = await Promise.all(
+      allUsers.map(async (user) => {
+        // If this is the current user making the request, they're online
+        const isCurrentUser = user.id === userId;
 
-      // For JWT and DB sessions, use lastLoginAt as the heartbeat indicator
-      // Heartbeat updates lastLoginAt every 15 seconds
-      const recentlyActive = user.lastLoginAt &&
-        new Date(user.lastLoginAt) > twoMinutesAgo;
+        // For JWT and DB sessions, use lastLoginAt as the heartbeat indicator
+        // Heartbeat updates lastLoginAt every 15 seconds
+        const recentlyActive = user.lastLoginAt &&
+          new Date(user.lastLoginAt) > twoMinutesAgo;
 
-      // User is online if they are current user or sent a heartbeat recently
-      const isOnline = isCurrentUser || recentlyActive;
+        // User is online if they are current user or sent a heartbeat recently
+        const isOnline = isCurrentUser || recentlyActive;
 
-      // Get the most recent session for this user
-      const userSessions = activeSessions.filter(s => s.userId === user.id);
-      const lastActivity = userSessions.length > 0
-        ? userSessions[0].expires
-        : user.lastLoginAt;
+        // Get the most recent session for this user
+        const userSessions = activeSessions.filter(s => s.userId === user.id);
+        const lastActivity = userSessions.length > 0
+          ? userSessions[0].expires
+          : user.lastLoginAt;
 
-      return {
-        userId: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-        isOnline: isOnline,
-        lastActivity: lastActivity,
-      };
-    });
+        const rawImage = user.avatar ?? user.image;
+        let imageUrl: string | null = null;
+        if (rawImage) {
+          if (rawImage.startsWith('http://') || rawImage.startsWith('https://') || rawImage.startsWith('data:')) {
+            imageUrl = rawImage;
+          } else {
+            try {
+              imageUrl = await getPresignedUrl(rawImage);
+            } catch (err) {
+              console.warn(`Failed to generate MinIO presigned URL for avatar key "${rawImage}":`, err);
+              imageUrl = null;
+            }
+          }
+        }
+
+        return {
+          userId: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          image: imageUrl,
+          isOnline: isOnline,
+          lastActivity: lastActivity,
+        };
+      })
+    );
 
     // Debug: Log presence data
     console.log(`Presence check for business ${currentUser.businessId}: ${presence.filter(p => p.isOnline).length} online, ${presence.length} total.`);

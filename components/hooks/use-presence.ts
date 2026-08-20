@@ -6,6 +6,7 @@ interface PresenceUser {
   lastName: string;
   email: string;
   role: string;
+  image?: string | null;
   isOnline: boolean;
   lastActivity: string | Date | null;
 }

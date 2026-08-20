@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { ShieldCheck, Globe2 } from "lucide-react";
+import { ShieldCheck, Globe2, Lock } from "lucide-react";
 import { InternalHqMock } from "./InternalHqMock";
 import { ExternalPortalMock } from "./ExternalPortalMock";
 
@@ -55,10 +55,16 @@ export function ProductDemoSimulator() {
       {/* Demo container — an app window in the same light theme as the real dashboard */}
       <div className="relative w-full h-[480px] sm:h-[520px] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
         {/* Browser chrome */}
-        <div className="flex items-center gap-1.5 px-4 py-3 border-b border-gray-100 bg-white">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-          <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-white">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+          </div>
+          <div className="hidden sm:flex flex-1 items-center gap-1.5 px-3 py-1 bg-gray-50 border border-gray-100 rounded-md text-[11px] font-medium text-gray-400 max-w-xs">
+            <Lock className="w-3 h-3 text-gray-300 shrink-0" />
+            <span className="truncate">app.okleevo.com/{activeLayer === "internal" ? "dashboard" : "book/acme-co"}</span>
+          </div>
         </div>
 
         <div className="absolute inset-0 top-[41px]">

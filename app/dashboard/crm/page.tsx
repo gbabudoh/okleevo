@@ -90,10 +90,10 @@ interface ReceivedEmail {
   folder?: string;
 }
 
-const labelCls = "block text-xs font-semibold text-gray-600 mb-1 sm:mb-1.5";
-const inputCls = "w-full px-3 py-1.5 sm:py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm outline-none";
-const selectCls = "w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm outline-none";
-const modalHeaderCls = "px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100";
+const labelCls = "block text-[10px] font-extrabold font-mono uppercase tracking-widest text-slate-400 dark:text-slate-400 mb-1.5";
+const inputCls = "w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all";
+const selectCls = "w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white cursor-pointer outline-none focus:border-orange-500 transition-all";
+const modalHeaderCls = "px-6 py-4 flex items-center justify-between shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60";
 
 function TagInput({ value, onChange, placeholder }: {
   value: string[];
@@ -118,11 +118,11 @@ function TagInput({ value, onChange, placeholder }: {
   };
 
   return (
-    <div className="w-full min-h-[42px] px-2.5 py-1.5 border border-gray-200 rounded-xl bg-white flex flex-wrap items-center gap-1.5 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
+    <div className="w-full min-h-[46px] px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-900 flex flex-wrap items-center gap-1.5 focus-within:border-orange-500 focus-within:bg-white dark:focus-within:bg-slate-950 transition-all">
       {value.map(tag => (
-        <span key={tag} className="flex items-center gap-1 bg-indigo-50 text-indigo-700 text-xs font-semibold pl-2 pr-1 py-1 rounded-lg">
+        <span key={tag} className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200/60 text-xs font-extrabold pl-2.5 pr-1.5 py-1 rounded-full">
           {tag}
-          <button type="button" onClick={() => onChange(value.filter(t => t !== tag))} className="hover:text-indigo-900 cursor-pointer">
+          <button type="button" onClick={() => onChange(value.filter(t => t !== tag))} className="hover:text-orange-800 cursor-pointer">
             <X className="w-3 h-3" />
           </button>
         </span>
@@ -134,7 +134,7 @@ function TagInput({ value, onChange, placeholder }: {
         onKeyDown={handleKeyDown}
         onBlur={commitDraft}
         placeholder={value.length === 0 ? placeholder : ''}
-        className="flex-1 min-w-[80px] outline-none text-sm bg-transparent border-none p-0.5"
+        className="flex-1 min-w-[80px] outline-none text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 bg-transparent border-none p-1"
       />
     </div>
   );
@@ -153,20 +153,20 @@ function ReportBar({ label, valueLabel, subLabel, pct, colorClass }: {
       onBlur={() => setHover(false)}
       tabIndex={0}
     >
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 capitalize truncate max-w-[60%]">{label}</span>
-        <span className="text-xs font-bold text-gray-900 dark:text-white">
-          {valueLabel}{subLabel && <span className="text-gray-400 font-medium"> · {subLabel}</span>}
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 capitalize truncate max-w-[60%]">{label}</span>
+        <span className="text-xs font-extrabold font-mono text-slate-900 dark:text-white">
+          {valueLabel}{subLabel && <span className="text-slate-400 font-mono font-medium"> · {subLabel}</span>}
         </span>
       </div>
-      <div className="h-2 rounded-full bg-gray-100 dark:bg-slate-800 overflow-hidden cursor-default">
+      <div className="h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden cursor-default p-0.5">
         <div
-          className={`h-full rounded-full ${colorClass} transition-all duration-200 ${hover ? 'brightness-110 shadow-[0_0_0_2px_rgba(0,0,0,0.04)]' : ''}`}
+          className={`h-full rounded-full ${colorClass} transition-all duration-300 ${hover ? 'brightness-110 shadow-xs' : ''}`}
           style={{ width: `${Math.max(pct, 2)}%` }}
         />
       </div>
       {hover && (
-        <div className="absolute -top-8 left-0 z-20 px-2.5 py-1.5 rounded-lg bg-gray-900 dark:bg-slate-700 text-white text-[11px] font-semibold whitespace-nowrap shadow-lg pointer-events-none animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute -top-8 left-0 z-20 px-3 py-1 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-mono font-extrabold whitespace-nowrap shadow-lg pointer-events-none animate-in fade-in zoom-in-95 duration-100 border border-slate-700">
           <span className="capitalize">{label}</span>: {valueLabel}{subLabel ? ` (${subLabel})` : ''}
         </div>
       )}
@@ -740,93 +740,111 @@ export default function CRMPage() {
   };
 
   const DetailPanel = ({ client }: { client: Client }) => (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-indigo-50/50 dark:bg-indigo-950/20 shrink-0">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-950">
+      {/* ── Glassmorphic Drawer Header ── */}
+      <div className="px-5 py-4 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/60 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-mono font-extrabold text-sm flex items-center justify-center shrink-0 shadow-2xs">
             {client.name[0]}
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight truncate">{client.name}</h3>
-            <p className="text-[11px] text-gray-400 truncate">{client.company}</p>
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight truncate">{client.name}</h3>
+            <p className="text-xs font-bold text-slate-400 truncate flex items-center gap-1 mt-0.5">
+              <Building2 className="w-3 h-3 text-slate-400 shrink-0" /> {client.company}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <button onClick={() => { setEditingClient(client); setShowEditModal(true); setSelectedClient(null); }}
-            className="p-2 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-lg transition-colors text-indigo-500 cursor-pointer">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => { setEditingClient(client); setShowEditModal(true); setSelectedClient(null); }}
+            className="p-2 hover:bg-slate-200/80 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-500 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+            title="Edit Client"
+          >
             <Edit className="w-4 h-4" />
           </button>
-          <button onClick={() => { setDeletingClient(client); setShowDeleteModal(true); setSelectedClient(null); }}
-            className="p-2 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors text-rose-400 cursor-pointer">
+          <button
+            onClick={() => { setDeletingClient(client); setShowDeleteModal(true); setSelectedClient(null); }}
+            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors text-rose-500 cursor-pointer"
+            title="Delete Client"
+          >
             <Trash2 className="w-4 h-4" />
           </button>
-          <button onClick={() => setSelectedClient(null)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-gray-400 cursor-pointer">
+          <button
+            onClick={() => setSelectedClient(null)}
+            className="p-2 hover:bg-slate-200/80 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+            title="Close"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
-        {(['communication', 'info', 'notes'] as const).map((tab) => (
-          <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2.5 text-[11px] font-bold uppercase tracking-wide transition-colors border-b-2 cursor-pointer ${
-              activeTab === tab ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-            }`}>
-            {tab}
-          </button>
-        ))}
+      {/* ── Segmented Control Tab Switcher ── */}
+      <div className="p-3 border-b border-slate-100 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+          {(['communication', 'info', 'notes'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+                activeTab === tab
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-4">
+      {/* ── Tab Content Workspace ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {activeTab === 'communication' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {loadingTimeline ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <Loader2 className="w-7 h-7 text-indigo-600 animate-spin" />
-                <p className="text-[11px] text-gray-400 font-medium">Loading emails...</p>
+                <Loader2 className="w-7 h-7 text-orange-500 animate-spin" />
+                <p className="text-xs font-bold text-slate-400">Loading emails...</p>
               </div>
             ) : emailTimeline.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-12 h-12 bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <Mail className="w-6 h-6 text-gray-300 dark:text-slate-600" />
+              <div className="text-center py-12 space-y-2">
+                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-900 rounded-2xl flex items-center justify-center mx-auto text-slate-300 dark:text-slate-600">
+                  <Mail className="w-6 h-6" />
                 </div>
-                <p className="text-sm font-semibold text-gray-400">No emails found</p>
+                <p className="text-xs font-bold text-slate-400">No emails logged yet.</p>
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-slate-800 rounded-xl w-fit mb-3">
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 w-fit mb-4">
                   {[{ id: 'all', label: 'All', icon: Clock }, { id: 'RECEIVED', label: 'Inbox', icon: InboxIcon }, { id: 'SENT', label: 'Sent', icon: SendIcon }].map((item) => (
                     <button key={item.id} onClick={() => setCommFilter(item.id as 'all' | 'SENT' | 'RECEIVED')}
-                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all cursor-pointer ${
-                        commFilter === item.id ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wide transition-all cursor-pointer ${
+                        commFilter === item.id ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
                       }`}>
                       <item.icon className="w-3 h-3" />
-                      {item.label}
-                      <span className={`px-1 rounded text-[9px] ${commFilter === item.id ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400' : 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-gray-400'}`}>
+                      <span>{item.label}</span>
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-mono ${commFilter === item.id ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
                         {item.id === 'all' ? emailTimeline.length : emailTimeline.filter(e => e.type === item.id).length}
                       </span>
                     </button>
                   ))}
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {emailTimeline.filter(item => commFilter === 'all' || item.type === commFilter).map((item) => (
-                    <div key={item.id} className={`p-3.5 rounded-xl border ${
-                      item.type === 'SENT' ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/40' : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 shadow-sm'
+                    <div key={item.id} className={`p-4 rounded-2xl border transition-all ${
+                      item.type === 'SENT' ? 'bg-orange-50/50 dark:bg-orange-950/20 border-orange-200/60 dark:border-orange-900/40' : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-2xs'
                     }`}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                          item.type === 'SENT' ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white'
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                          item.type === 'SENT' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white' : 'bg-slate-800 text-white'
                         }`}>
                           {item.type === 'SENT' ? 'Outgoing' : 'Incoming'}
                         </span>
-                        <span className="text-[10px] text-gray-400">{new Date(item.date).toLocaleDateString()}</span>
+                        <span className="text-[10px] font-mono font-bold text-slate-400">{new Date(item.date).toLocaleDateString()}</span>
                       </div>
-                      <h4 className="text-xs font-bold text-gray-900 dark:text-white mb-1">{item.subject}</h4>
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body) }} />
+                      <h4 className="text-xs font-extrabold text-slate-900 dark:text-white mb-1">{item.subject}</h4>
+                      <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body) }} />
                     </div>
                   ))}
                 </div>
@@ -836,13 +854,15 @@ export default function CRMPage() {
         )}
 
         {activeTab === 'info' && (
-          <div className="space-y-3">
-            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
-              <p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Pipeline Stage</p>
+          <div className="space-y-4">
+            
+            {/* Pipeline Stage Card */}
+            <div className="p-4 bg-slate-50/70 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-2">
+              <p className="text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest">Pipeline Stage</p>
               <select
                 value={client.pipelineStage}
                 onChange={(e) => handleStageChange(client.id, e.target.value as Client['pipelineStage'])}
-                className="w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-gray-900 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-extrabold text-slate-900 dark:text-white cursor-pointer outline-none focus:border-orange-500 transition"
               >
                 <option value="new">New</option>
                 <option value="contacted">Contacted</option>
@@ -852,65 +872,82 @@ export default function CRMPage() {
                 <option value="closed-lost">Closed Lost</option>
               </select>
             </div>
-            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
-              <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Email</p>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white break-all">{client.email}</p>
+
+            {/* Email Card */}
+            <div className="p-4 bg-slate-50/70 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-1">
+              <p className="text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest">Email Address</p>
+              <p className="text-xs font-extrabold text-slate-900 dark:text-white font-mono break-all">{client.email}</p>
             </div>
-            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
-              <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Phone</p>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">{client.phone || 'N/A'}</p>
+
+            {/* Phone Card */}
+            <div className="p-4 bg-slate-50/70 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-1">
+              <p className="text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest">Phone Number</p>
+              <p className="text-xs font-extrabold text-slate-900 dark:text-white font-mono">{client.phone || 'N/A'}</p>
             </div>
+
+            {/* Tags Card */}
             {client.tags && client.tags.length > 0 && (
-              <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
-                <p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Tags</p>
+              <div className="p-4 bg-slate-50/70 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-2">
+                <p className="text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest">Tags</p>
                 <div className="flex flex-wrap gap-1.5">
                   {client.tags.map(tag => (
-                    <span key={tag} className="px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-[11px] font-semibold">{tag}</span>
+                    <span key={tag} className="px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 text-orange-600 dark:text-orange-400 text-[10px] font-extrabold">{tag}</span>
                   ))}
                 </div>
               </div>
             )}
-            <div className="p-4 bg-emerald-600 rounded-xl text-white">
-              <p className="text-[10px] font-bold uppercase opacity-80 mb-1">Revenue Value</p>
-              <p className="text-2xl font-bold">£{client.revenue.toLocaleString()}</p>
+
+            {/* ── Revenue Telemetry Pod ── */}
+            <div className="p-5 bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-2 hover:border-orange-300 transition-all">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest">Revenue Value</p>
+                <PoundSterling className="w-4 h-4 text-orange-500" />
+              </div>
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">
+                £{client.revenue.toLocaleString()}
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <div className="p-1 bg-indigo-100 dark:bg-indigo-950 rounded"><SendIcon className="w-3 h-3 text-indigo-600 dark:text-indigo-400" /></div>
-                  <span className="text-[9px] font-bold uppercase text-gray-400">Last Sent</span>
+
+            {/* ── Dual Telemetry: Last Sent / Received ── */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-4 bg-slate-50/70 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="p-1 bg-orange-50 dark:bg-orange-950/60 text-orange-500 rounded-lg"><SendIcon className="w-3 h-3" /></div>
+                  <span className="text-[9px] font-extrabold font-mono uppercase text-slate-400">Last Sent</span>
                 </div>
                 {emailTimeline.find(e => e.type === 'SENT')
-                  ? <p className="text-xs font-semibold text-gray-900 dark:text-white">{new Date(emailTimeline.find(e => e.type === 'SENT')!.date).toLocaleDateString()}</p>
-                  : <p className="text-[11px] text-gray-400 font-medium">None</p>}
+                  ? <p className="text-xs font-extrabold font-mono text-slate-900 dark:text-white">{new Date(emailTimeline.find(e => e.type === 'SENT')!.date).toLocaleDateString()}</p>
+                  : <p className="text-[11px] font-bold text-slate-400">None</p>}
               </div>
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <div className="p-1 bg-indigo-100 dark:bg-indigo-950 rounded"><InboxIcon className="w-3 h-3 text-indigo-600 dark:text-indigo-400" /></div>
-                  <span className="text-[9px] font-bold uppercase text-gray-400">Last Rcvd</span>
+
+              <div className="p-4 bg-slate-50/70 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="p-1 bg-orange-50 dark:bg-orange-950/60 text-orange-500 rounded-lg"><InboxIcon className="w-3 h-3" /></div>
+                  <span className="text-[9px] font-extrabold font-mono uppercase text-slate-400">Last Rcvd</span>
                 </div>
                 {emailTimeline.find(e => e.type === 'RECEIVED')
-                  ? <p className="text-xs font-semibold text-gray-900 dark:text-white">{new Date(emailTimeline.find(e => e.type === 'RECEIVED')!.date).toLocaleDateString()}</p>
-                  : <p className="text-[11px] text-gray-400 font-medium">None</p>}
+                  ? <p className="text-xs font-extrabold font-mono text-slate-900 dark:text-white">{new Date(emailTimeline.find(e => e.type === 'RECEIVED')!.date).toLocaleDateString()}</p>
+                  : <p className="text-[11px] font-bold text-slate-400">None</p>}
               </div>
             </div>
+
           </div>
         )}
 
         {activeTab === 'notes' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <textarea
               value={noteDraft}
               onChange={(e) => setNoteDraft(e.target.value)}
               placeholder="Add notes about this client…"
               rows={10}
-              className="w-full px-3.5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all resize-none"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 transition-all resize-none"
             />
             <button
               type="button"
               disabled={savingNote || noteDraft === (client.notes || '')}
               onClick={() => handleSaveNote(client.id)}
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
+              className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all active:scale-95"
             >
               {savingNote ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save Notes'}
             </button>
@@ -918,13 +955,13 @@ export default function CRMPage() {
         )}
       </div>
 
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-800 shrink-0">
+      {/* ── Elevated Footer CTA ── */}
+      <div className="p-4 border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
         <button
           onClick={() => { setExcludedFromBulk(0); setEmailData(prev => ({ ...prev, to: client.email })); setShowEmailModal(true); }}
-          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
+          className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-orange-500/20 transition-all active:scale-95"
         >
-          <Mail className="w-4 h-4" /> Email Contact
+          <Mail className="w-4 h-4" /> <span>Email Contact</span>
         </button>
       </div>
     </div>
@@ -1222,20 +1259,20 @@ export default function CRMPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 pb-24 sm:pb-8">
       <TourProvider moduleId="crm" steps={crmTourSteps} />
 
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-            <div className="p-1.5 sm:p-2 bg-indigo-600 rounded-xl shrink-0">
-              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+      {/* Sticky Glass Top Bar & Header */}
+      <div className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-orange-500 border border-orange-200/60 dark:border-orange-900/40 flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5" />
             </div>
-            <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
-              <div className="min-w-0 shrink-0">
-                <h1 className="text-sm sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">CRM</h1>
-                <p className="text-[11px] text-gray-400 font-medium hidden sm:block">Manage relationships & track pipeline</p>
+            <div className="min-w-0 flex items-center gap-3 shrink-0">
+              <div className="min-w-0 shrink-0 space-y-0.5">
+                <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight whitespace-nowrap">CRM & Client Operations</h1>
+                <p className="text-xs font-bold text-slate-400 hidden sm:block">Manage relationships & track pipeline deals</p>
               </div>
               <ModuleGuideBanner
                 moduleId="crm"
@@ -1249,7 +1286,7 @@ export default function CRMPage() {
               />
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -1259,35 +1296,37 @@ export default function CRMPage() {
                 setEmailData({ to: eligible.map(c => c.email).join(', '), subject: 'Update from Your Company', message: 'Dear valued clients,\n\n\n\nBest regards,\nYour Company' });
                 setShowEmailModal(true);
               }}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
             >
-              <Mail className="w-4 h-4" /> Bulk Email
+              <Mail className="w-4 h-4 text-orange-500" />
+              <span>Bulk Email</span>
             </button>
             <button
               id="tour-crm-add-button"
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl shadow-sm shadow-orange-500/20 transition-all cursor-pointer active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Client</span>
               <span className="sm:hidden">Add</span>
             </button>
+          </div>
         </div>
       </div>
-    </div>
 
       {/* Mobile FAB */}
       <button
         onClick={() => setShowAddModal(true)}
-        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer hover:bg-indigo-700"
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-full shadow-2xl flex items-center justify-center z-30 active:scale-95 transition-all cursor-pointer"
       >
         <Plus className="w-8 h-8" />
       </button>
 
-      <div className="px-4 sm:px-6 space-y-4 pt-4">
-        {/* CRM Section Tabs */}
-        <div className="flex items-center gap-1 sm:gap-1.5 bg-white dark:bg-slate-900 border border-gray-200/80 dark:border-slate-800 rounded-2xl p-1.5 max-w-full overflow-x-auto scrollbar-hide shrink-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6 pt-6">
+        
+        {/* ── CRM Section Tabs Dock ── */}
+        <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shrink-0">
           {([
             ['contacts', 'Contacts', Contact],
             ['companies', 'Companies', Building2],
@@ -1295,62 +1334,64 @@ export default function CRMPage() {
             ['calendar', 'Calendar', CalendarDays],
           ] as const).map(([id, label, Icon]) => (
             <button key={id} type="button" onClick={() => setCrmSection(id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
-                crmSection === id ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                crmSection === id
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm shadow-orange-500/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800'
               }`}>
-              <Icon className="w-3.5 h-3.5" /> {label}
+              <Icon className="w-4 h-4" /> {label}
             </button>
           ))}
         </div>
 
         {crmSection === 'contacts' && (<>
-        {/* Stats */}
-        <div id="tour-crm-stats" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        {/* ── High-Performance CRM Telemetry Pods ── */}
+        <div id="tour-crm-stats" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
-            { label: 'All Clients', value: clients.length, sub: 'Total database', icon: Users, bgGrad: 'bg-gradient-to-br from-indigo-500 to-indigo-600' },
-            { label: 'Active', value: activeClients, sub: 'Currently engaged', icon: Star, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
-            { label: 'New Leads', value: leadClients, sub: 'Opportunities', icon: TrendingUp, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
-            { label: 'Pipeline Value', value: `£${(pipelineValue / 1000).toFixed(1)}k`, sub: 'Open deals', icon: Wallet, bgGrad: 'bg-gradient-to-br from-cyan-500 to-indigo-600' },
-            { label: 'Win Rate', value: `${winRate}%`, sub: `${wonCount} won · ${lostCount} lost`, icon: Trophy, bgGrad: 'bg-gradient-to-br from-rose-500 to-pink-600' },
-            { label: 'Total Revenue', value: `£${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Lifetime value', icon: PoundSterling, bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
-          ].map(({ label, value, sub, icon: Icon, bgGrad }) => (
-            <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`p-2.5 ${bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
-                  <Icon className="w-4.5 h-4.5" />
-                </div>
+            { label: 'All Clients', value: clients.length, sub: 'Total database', icon: Users },
+            { label: 'Active', value: activeClients, sub: 'Currently engaged', icon: Star },
+            { label: 'New Leads', value: leadClients, sub: 'Opportunities', icon: TrendingUp },
+            { label: 'Pipeline Value', value: `£${(pipelineValue / 1000).toFixed(1)}k`, sub: 'Open deals', icon: Wallet },
+            { label: 'Win Rate', value: `${winRate}%`, sub: `${wonCount} won · ${lostCount} lost`, icon: Trophy },
+            { label: 'Total Revenue', value: `£${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Lifetime value', icon: PoundSterling },
+          ].map(({ label, value, sub, icon: Icon }) => (
+            <div key={label} className="bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-orange-300 transition-all flex flex-col justify-between space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest font-mono">{label}</p>
+                <Icon className="w-4 h-4 text-orange-500" />
               </div>
-              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{label}</p>
-              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{value}</p>
-              <p className="text-[11px] font-medium text-gray-400 mt-1">{sub}</p>
+              <div>
+                <p className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{value}</p>
+              </div>
+              <p className="text-[11px] font-bold text-slate-400">{sub}</p>
             </div>
           ))}
         </div>
 
-        {/* Search & Filter */}
-        <div id="tour-crm-search" className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3">
+        {/* ── Toolbar: Search & Filter ── */}
+        <div id="tour-crm-search" className="bg-white dark:bg-slate-950 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search clients or companies..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm text-gray-900 placeholder:text-gray-400 transition-all outline-none"
+              className="w-full pl-11 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 transition-all outline-none"
             />
           </div>
-          <div className="flex gap-2">
-            <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
+          <div className="flex items-center gap-3">
+            <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800">
               <button onClick={() => setViewMode('board')} title="Pipeline board"
-                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'board' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600'}`}>
+                className={`p-2 rounded-xl transition-all cursor-pointer ${viewMode === 'board' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-600'}`}>
                 <Kanban className="w-4 h-4" />
               </button>
               <button onClick={() => setViewMode('grid')} title="Card grid"
-                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600'}`}>
+                className={`p-2 rounded-xl transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-600'}`}>
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button onClick={() => setViewMode('list')} title="Table"
-                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600'}`}>
+                className={`p-2 rounded-xl transition-all cursor-pointer ${viewMode === 'list' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-600'}`}>
                 <List className="w-4 h-4" />
               </button>
             </div>
@@ -1358,14 +1399,14 @@ export default function CRMPage() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full appearance-none pl-3 pr-8 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 cursor-pointer focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full appearance-none pl-4 pr-9 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer focus:border-orange-500 outline-none"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="lead">Lead</option>
                 <option value="inactive">Inactive</option>
               </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
             </div>
           </div>
         </div>
@@ -1417,65 +1458,126 @@ export default function CRMPage() {
         </>)}
 
         {crmSection === 'companies' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {companyStats.length === 0 ? (
-              <div className="col-span-full bg-white dark:bg-slate-900 rounded-2xl p-12 border border-gray-100 dark:border-slate-800 shadow-sm text-center">
-                <Building2 className="w-10 h-10 text-gray-200 dark:text-slate-700 mx-auto mb-3" />
-                <p className="text-sm font-semibold text-gray-400">No companies yet</p>
+          <div className="space-y-5">
+            {/* Accounts Header Banner */}
+            <div className="bg-slate-50/70 dark:bg-slate-900/60 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-orange-500" />
+                  <span>Accounts & Corporate Clients</span>
+                </h3>
+                <p className="text-xs font-bold text-slate-400 mt-0.5">Manage enterprise organizations and track lifetime account revenue.</p>
               </div>
-            ) : companyStats.map((co) => (
-              <button
-                key={co.company}
-                type="button"
-                onClick={() => { setSearchTerm(co.company); setCrmSection('contacts'); setViewMode('list'); }}
-                className="text-left bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-gray-200 dark:hover:border-slate-700 transition-all cursor-pointer group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2.5 bg-gradient-to-br from-slate-500 to-slate-700 rounded-xl text-white shrink-0 group-hover:scale-105 transition-transform">
-                    <Building2 className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate">{co.company}</h3>
-                    <p className="text-[11px] text-gray-400">{co.count} contact{co.count === 1 ? '' : 's'}</p>
-                  </div>
+              <div className="px-3 py-1.5 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-extrabold font-mono shrink-0 shadow-2xs">
+                {companyStats.length} Corporate Account{companyStats.length === 1 ? '' : 's'}
+              </div>
+            </div>
+
+            {/* Companies Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {companyStats.length === 0 ? (
+                <div className="col-span-full bg-white dark:bg-slate-950 rounded-3xl p-12 border border-slate-200/80 dark:border-slate-800 shadow-2xs text-center space-y-3">
+                  <Building2 className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto" />
+                  <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">No companies registered yet</h4>
+                  <p className="text-xs font-bold text-slate-400">Add clients with company names to populate your enterprise account directory.</p>
                 </div>
-                <p className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">£{co.revenue.toLocaleString()}</p>
-                <p className="text-[11px] font-medium text-gray-400 mt-0.5">Total revenue</p>
-              </button>
-            ))}
+              ) : companyStats.map((co) => (
+                <button
+                  key={co.company}
+                  type="button"
+                  onClick={() => { setSearchTerm(co.company); setCrmSection('contacts'); setViewMode('list'); }}
+                  className="text-left bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-orange-400 dark:hover:border-orange-500 transition-all cursor-pointer group flex flex-col justify-between space-y-5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-3 bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl text-white shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                        <Building2 className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">{co.company}</h3>
+                        <p className="text-xs font-bold text-slate-400 truncate mt-0.5">Enterprise Client</p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-[10px] font-extrabold font-mono text-slate-600 dark:text-slate-400 shrink-0">
+                      {co.count} contact{co.count === 1 ? '' : 's'}
+                    </span>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-900">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest">Total Account Revenue</span>
+                      <span className="text-xs font-extrabold text-orange-500 group-hover:translate-x-1 transition-transform">View Contacts →</span>
+                    </div>
+                    <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white mt-1">
+                      £{co.revenue.toLocaleString()}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
         {crmSection === 'reports' && (
-          <div className="space-y-3.5">
-            <div className="flex justify-end gap-2">
-              <button type="button" onClick={handleExportReportsCSV}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-                <Download className="w-3.5 h-3.5" /> Export CSV
-              </button>
-              <button type="button" onClick={handleExportReportsPDF}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-                <FileText className="w-3.5 h-3.5" /> Export PDF
-              </button>
+          <div className="space-y-5">
+            {/* Analytics Header & Export Banner */}
+            <div className="bg-slate-50/70 dark:bg-slate-900/60 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-orange-500" />
+                  <span>Pipeline Analytics & Financial Intelligence</span>
+                </h3>
+                <p className="text-xs font-bold text-slate-400 mt-0.5">Real-time telemetry, stage breakdown, relationship composition, and corporate leaders.</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button type="button" onClick={handleExportReportsCSV}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:border-orange-400 hover:text-orange-600 transition-all cursor-pointer shadow-2xs active:scale-95">
+                  <Download className="w-4 h-4 text-orange-500" /> <span>Export CSV</span>
+                </button>
+                <button type="button" onClick={handleExportReportsPDF}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm shadow-orange-500/20 transition-all cursor-pointer active:scale-95">
+                  <FileText className="w-4 h-4" /> <span>Export PDF</span>
+                </button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-              {/* Pipeline by Stage */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">Pipeline by Stage</h3>
-                <p className="text-[11px] text-gray-400 mb-4">Revenue and deal count per stage</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Pipeline by Stage Card */}
+              <div className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">Pipeline by Stage</h3>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5">Revenue and deal count per stage</p>
+                </div>
                 <div className="space-y-4">
-                  {stageStats.map((s) => (
-                    <ReportBar key={s.stage} label={s.label} valueLabel={`£${s.revenue.toLocaleString()}`} subLabel={`${s.count} deal${s.count === 1 ? '' : 's'}`}
-                      pct={(s.revenue / maxStageRevenue) * 100} colorClass="bg-indigo-500" />
-                  ))}
+                  {stageStats.map((s) => {
+                    const gradientMap: Record<string, string> = {
+                      new: 'bg-gradient-to-r from-slate-400 to-slate-500',
+                      contacted: 'bg-gradient-to-r from-blue-500 to-cyan-500',
+                      proposal: 'bg-gradient-to-r from-yellow-400 to-amber-400',
+                      negotiation: 'bg-gradient-to-r from-purple-500 to-indigo-600',
+                      'closed-won': 'bg-gradient-to-r from-emerald-500 to-teal-500',
+                      'closed-lost': 'bg-gradient-to-r from-rose-500 to-pink-600',
+                    };
+                    return (
+                      <ReportBar
+                        key={s.stage}
+                        label={s.label}
+                        valueLabel={`£${s.revenue.toLocaleString()}`}
+                        subLabel={`${s.count} deal${s.count === 1 ? '' : 's'}`}
+                        pct={(s.revenue / maxStageRevenue) * 100}
+                        colorClass={gradientMap[s.stage] || 'bg-gradient-to-r from-orange-500 to-amber-600'}
+                      />
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Status Breakdown */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">Status Breakdown</h3>
-                <p className="text-[11px] text-gray-400 mb-4">Clients by relationship status</p>
+              {/* Status Breakdown Card */}
+              <div className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">Status Breakdown</h3>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5">Clients by relationship status</p>
+                </div>
                 <DonutChart
                   totalLabel="Clients"
                   segments={statusStats.map(s => ({
@@ -1484,17 +1586,19 @@ export default function CRMPage() {
                 />
               </div>
 
-              {/* Top Companies by Revenue */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-xs lg:col-span-2">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">Top Companies by Revenue</h3>
-                <p className="text-[11px] text-gray-400 mb-4">Highest-value accounts</p>
+              {/* Top Companies by Revenue Card */}
+              <div className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs lg:col-span-2 space-y-4">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">Top Companies by Revenue</h3>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5">Highest-value accounts</p>
+                </div>
                 {topCompanies.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-6">No data yet</p>
+                  <p className="text-xs font-bold text-slate-400 text-center py-6">No corporate data logged yet</p>
                 ) : (
                   <div className="space-y-4">
                     {topCompanies.map((co) => (
                       <ReportBar key={co.company} label={co.company} valueLabel={`£${co.revenue.toLocaleString()}`} subLabel={`${co.count} contact${co.count === 1 ? '' : 's'}`}
-                        pct={(co.revenue / maxCompanyRevenue) * 100} colorClass="bg-indigo-500" />
+                        pct={(co.revenue / maxCompanyRevenue) * 100} colorClass="bg-gradient-to-r from-orange-500 to-amber-600" />
                     ))}
                   </div>
                 )}
@@ -1504,56 +1608,70 @@ export default function CRMPage() {
         )}
 
         {crmSection === 'calendar' && (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-xs overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+            {/* Glassmorphic Calendar Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 gap-4">
               <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setCalendarMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
-                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white w-36 text-center">
-                  {calendarMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
-                </h3>
-                <button type="button" onClick={() => setCalendarMonth(m => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
-                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                <div className="p-2.5 bg-orange-50 dark:bg-orange-950/60 text-orange-500 rounded-2xl border border-orange-200/60 dark:border-orange-900/40">
+                  <CalendarDays className="w-5 h-5" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setCalendarMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
+                    className="p-2 hover:bg-slate-200/80 dark:hover:bg-slate-800 rounded-xl cursor-pointer text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <h3 className="text-base font-extrabold font-mono text-slate-900 dark:text-white min-w-[140px] text-center tracking-tight">
+                    {calendarMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                  </h3>
+                  <button type="button" onClick={() => setCalendarMonth(m => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
+                    className="p-2 hover:bg-slate-200/80 dark:hover:bg-slate-800 rounded-xl cursor-pointer text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400">
-                  <span className="w-2 h-2 rounded-full bg-indigo-500" /> Last contact
+
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="flex items-center gap-2 text-xs font-extrabold font-mono text-slate-400">
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-2xs" /> Last Contact Activity
                 </span>
                 <button type="button" onClick={() => setCalendarMonth(new Date())}
-                  className="px-3 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 cursor-pointer transition-colors">
+                  className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-2xs transition-all cursor-pointer active:scale-95">
                   Today
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-7 border-b border-gray-100 dark:border-slate-800">
+            {/* Calendar Day Column Headers */}
+            <div className="grid grid-cols-7 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                <div key={d} className="py-2 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wide">{d}</div>
+                <div key={d} className="py-3 text-center text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest">{d}</div>
               ))}
             </div>
+
+            {/* Month Days Grid */}
             <div className="grid grid-cols-7">
               {calendarCells.map(({ date, inMonth, dayClients }, i) => {
                 const isToday = date.toDateString() === new Date().toDateString();
                 return (
-                  <div key={i} className={`min-h-[92px] border-b border-r border-gray-50 dark:border-slate-800/60 p-1.5 ${inMonth ? '' : 'bg-gray-50/50 dark:bg-slate-950/40'}`}>
-                    <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-bold mb-1 ${
-                      isToday ? 'bg-indigo-600 text-white' : inMonth ? 'text-gray-700 dark:text-gray-300' : 'text-gray-300 dark:text-slate-700'
-                    }`}>
-                      {date.getDate()}
-                    </span>
-                    <div className="space-y-0.5">
+                  <div key={i} className={`min-h-[105px] border-b border-r border-slate-100 dark:border-slate-850 p-2 transition-colors ${inMonth ? 'bg-white dark:bg-slate-950' : 'bg-slate-50/50 dark:bg-slate-950/50'}`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-mono font-extrabold transition-transform ${
+                        isToday
+                          ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs scale-105'
+                          : inMonth ? 'text-slate-800 dark:text-slate-200' : 'text-slate-300 dark:text-slate-700'
+                      }`}>
+                        {date.getDate()}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
                       {dayClients.slice(0, 2).map(c => (
                         <button key={c.id} type="button" onClick={() => { setSelectedClient(c); setCrmSection('contacts'); setViewMode('board'); }}
-                          className="w-full text-left px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-[10px] font-semibold truncate cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors">
+                          className="w-full text-left px-2 py-1 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 text-[10px] font-extrabold truncate cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/60 transition-all shadow-2xs">
                           {c.name}
                         </button>
                       ))}
                       {dayClients.length > 2 && (
-                        <p className="text-[9px] font-bold text-gray-400 px-1.5">+{dayClients.length - 2} more</p>
+                        <p className="text-[9px] font-extrabold font-mono text-slate-400 px-1.5">+{dayClients.length - 2} more</p>
                       )}
                     </div>
                   </div>
@@ -1584,20 +1702,20 @@ export default function CRMPage() {
 
       {/* Add Client Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
-            <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white dark:bg-slate-950 rounded-3xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-slate-200/80 dark:border-slate-800 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
+            <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /></div>
             <div className={modalHeaderCls}>
               <div>
-                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Add new client</h2>
-                <p className="text-[11px] text-gray-500 font-medium">Fill in the client details</p>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Add new client</h2>
+                <p className="text-xs font-bold text-slate-400">Fill in the client details</p>
               </div>
-              <button onClick={() => setShowAddModal(false)} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowAddModal(false)} className="p-2 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-all cursor-pointer text-slate-400 hover:text-slate-900 dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto px-5 py-1.5 sm:py-6 space-y-2 sm:space-y-5">
-              <div className="grid grid-cols-2 gap-2">
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Full name *</label>
                   <input type="text" placeholder="John Smith" value={newClient.name} onChange={(e) => setNewClient({...newClient, name: e.target.value})}
@@ -1609,7 +1727,7 @@ export default function CRMPage() {
                     className={inputCls} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Phone</label>
                   <input type="tel" placeholder="+44 20 1234 5678" value={newClient.phone} onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
@@ -1621,7 +1739,7 @@ export default function CRMPage() {
                     className={inputCls} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Client type</label>
                   <select value={newClient.clientType} onChange={(e) => setNewClient({...newClient, clientType: e.target.value as 'business' | 'individual'})}
@@ -1650,13 +1768,13 @@ export default function CRMPage() {
                 <TagInput value={newClient.tags} onChange={(tags) => setNewClient({...newClient, tags})} placeholder="Type a tag and press Enter" />
               </div>
             </div>
-            <div className="shrink-0 bg-white border-t border-gray-100 px-5 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-2.5 mb-1.5 sm:mb-0">
+            <div className="shrink-0 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-200/80 dark:border-slate-800 p-5 flex flex-row gap-3">
               <button type="button" onClick={() => setShowAddModal(false)}
-                className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
+                className="flex-1 py-3 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
                 Cancel
               </button>
               <button type="button" onClick={handleAddClient}
-                className="flex-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
+                className="flex-2 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl shadow-sm shadow-orange-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95">
                 <Plus className="w-4 h-4" /> Add Client
               </button>
             </div>
@@ -1666,20 +1784,20 @@ export default function CRMPage() {
 
       {/* Edit Client Modal */}
       {showEditModal && editingClient && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
-            <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white dark:bg-slate-950 rounded-3xl w-full sm:max-w-lg shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden border border-slate-200/80 dark:border-slate-800 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
+            <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0"><div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /></div>
             <div className={modalHeaderCls}>
               <div>
-                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Edit client</h2>
-                <p className="text-[11px] text-gray-500 font-medium">Update client details</p>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Edit client</h2>
+                <p className="text-xs font-bold text-slate-400">Update client details</p>
               </div>
-              <button onClick={() => { setShowEditModal(false); setEditingClient(null); }} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+              <button onClick={() => { setShowEditModal(false); setEditingClient(null); }} className="p-2 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-all cursor-pointer text-slate-400 hover:text-slate-900 dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto px-5 py-1.5 sm:py-6 space-y-2 sm:space-y-5">
-              <div className="grid grid-cols-2 gap-2">
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Full name *</label>
                   <input type="text" value={editingClient.name} onChange={(e) => setEditingClient({...editingClient, name: e.target.value})}
@@ -1691,7 +1809,7 @@ export default function CRMPage() {
                     className={inputCls} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Phone</label>
                   <input type="tel" value={editingClient.phone || ''} onChange={(e) => setEditingClient({...editingClient, phone: e.target.value})}
@@ -1703,7 +1821,7 @@ export default function CRMPage() {
                     className={inputCls} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Client type</label>
                   <select value={editingClient.clientType} onChange={(e) => setEditingClient({...editingClient, clientType: e.target.value as 'business' | 'individual'})}
@@ -1745,13 +1863,13 @@ export default function CRMPage() {
                   className={inputCls} />
               </div>
             </div>
-            <div className="shrink-0 bg-white border-t border-gray-100 px-5 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-2.5 mb-1.5 sm:mb-0">
+            <div className="shrink-0 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-200/80 dark:border-slate-800 p-5 flex flex-row gap-3">
               <button type="button" onClick={() => { setShowEditModal(false); setEditingClient(null); }}
-                className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer active:scale-[0.98]">
+                className="flex-1 py-3 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
                 Cancel
               </button>
               <button type="button" onClick={handleEditClient}
-                className="flex-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
+                className="flex-2 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl shadow-sm shadow-orange-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95">
                 <Edit className="w-4 h-4" /> Save Changes
               </button>
             </div>

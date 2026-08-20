@@ -1,7 +1,9 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import type { MouseEvent as ReactMouseEvent } from "react";
+import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
 import {
   Globe2,
   Users,
@@ -9,8 +11,10 @@ import {
   Sparkles,
   ShieldCheck,
   ArrowRight,
+  Lock,
+  Zap,
 } from "lucide-react";
-import { InternalHqMock } from "@/components/product-demo/InternalHqMock";
+import { ProductDemoSimulator } from "@/components/product-demo/ProductDemoSimulator";
 
 const featureCards = [
   { icon: Calendar,    text: "Frictionless Client Bookings — zero-login for guests", color: "text-orange-500", bg: "bg-orange-50" },
@@ -20,28 +24,116 @@ const featureCards = [
   { icon: Users,       text: "Team Huddles Included — No Extra Zoom or Slack",      color: "text-indigo-500", bg: "bg-indigo-50" },
 ];
 
-// A static, non-interactive snapshot of the real dashboard — reuses the same
-// InternalHqMock component as the interactive Product Demo Simulator below,
-// so the hero preview matches the actual product instead of an invented
-// aesthetic. pointer-events-none since this is a passive preview, not a demo.
-function HeroPreview() {
+// Slowly drifting blurred color blobs behind the hero — a light, airy
+// mesh (not a dark gradient hero), respects reduced-motion preference.
+function GradientMesh() {
+  const shouldReduceMotion = useReducedMotion();
+  const blobs = [
+    { className: "bg-orange-300/30 w-[420px] h-[420px] sm:w-[520px] sm:h-[520px]", style: { top: "-12%", left: "-8%" }, dur: 22, delay: 0, path: { x: [0, 50, -20, 0], y: [0, -30, 25, 0] } },
+    { className: "bg-indigo-300/30 w-[380px] h-[380px] sm:w-[460px] sm:h-[460px]", style: { top: "10%", right: "-10%" }, dur: 26, delay: 2, path: { x: [0, -40, 20, 0], y: [0, 35, -20, 0] } },
+    { className: "bg-purple-300/25 w-[340px] h-[340px] sm:w-[420px] sm:h-[420px]", style: { bottom: "-14%", left: "28%" }, dur: 20, delay: 4, path: { x: [0, 30, -30, 0], y: [0, -25, 30, 0] } },
+  ];
+
   return (
-    <div className="relative w-[600px] h-[420px] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden pointer-events-none">
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-gray-100 bg-white">
-        <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-        <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-        <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
-      </div>
-      <div className="absolute inset-0 top-[41px]">
-        <InternalHqMock />
-      </div>
+    <div className="absolute inset-0 -z-10 overflow-hidden">
+      {blobs.map((b, i) => (
+        <motion.div
+          key={i}
+          className={`absolute rounded-full blur-3xl ${b.className}`}
+          style={b.style}
+          animate={shouldReduceMotion ? undefined : { x: b.path.x, y: b.path.y }}
+          transition={{ duration: b.dur, delay: b.delay, repeat: Infinity, ease: "easeInOut" }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Small pill badges that drift with the mouse, layered above the tilted
+// demo window for a sense of depth. Purely decorative — pointer-events
+// disabled so they never intercept clicks on the real demo underneath.
+function FloatingBadge({ icon: Icon, label, className, depth, mx, my }: {
+  icon: typeof Lock;
+  label: string;
+  className: string;
+  depth: number;
+  mx: ReturnType<typeof useSpring>;
+  my: ReturnType<typeof useSpring>;
+}) {
+  const x = useTransform(mx, (v) => v * depth);
+  const y = useTransform(my, (v) => v * depth);
+
+  return (
+    <motion.div
+      style={{ x, y }}
+      className={`hidden md:flex absolute items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-gray-100 shadow-lg text-xs font-semibold text-gray-700 pointer-events-none z-10 ${className}`}
+    >
+      <Icon className="w-3.5 h-3.5 text-indigo-500" />
+      {label}
+    </motion.div>
+  );
+}
+
+// Wraps the demo in a subtle 3D perspective tilt that follows the cursor —
+// rests at a gentle default angle, straightens toward the viewer on hover.
+function TiltedDemo({ children }: { children: React.ReactNode }) {
+  const shouldReduceMotion = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+
+  const rotateX = useMotionValue(4);
+  const rotateY = useMotionValue(-7);
+  const springRotateX = useSpring(rotateX, { stiffness: 150, damping: 22 });
+  const springRotateY = useSpring(rotateY, { stiffness: 150, damping: 22 });
+
+  const badgeX = useMotionValue(0);
+  const badgeY = useMotionValue(0);
+  const springBadgeX = useSpring(badgeX, { stiffness: 120, damping: 20 });
+  const springBadgeY = useSpring(badgeY, { stiffness: 120, damping: 20 });
+
+  const handleMouseMove = (e: ReactMouseEvent<HTMLDivElement>) => {
+    if (shouldReduceMotion) return;
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return;
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    rotateY.set(-7 + px * 12);
+    rotateX.set(4 - py * 10);
+    badgeX.set(px * 16);
+    badgeY.set(py * 16);
+  };
+
+  const handleMouseLeave = () => {
+    rotateX.set(4);
+    rotateY.set(-7);
+    badgeX.set(0);
+    badgeY.set(0);
+  };
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative"
+      style={{ perspective: 1600 }}
+    >
+      <motion.div
+        style={shouldReduceMotion ? undefined : { rotateX: springRotateX, rotateY: springRotateY, transformStyle: "preserve-3d" }}
+        className="drop-shadow-[0_35px_60px_-15px_rgba(79,70,229,0.25)]"
+      >
+        {children}
+      </motion.div>
+
+      <FloatingBadge icon={Lock} label="AES-256 Encrypted" className="-top-4 -right-4 sm:-right-8" depth={0.6} mx={springBadgeX} my={springBadgeY} />
+      <FloatingBadge icon={Zap} label="Live Sync Active" className="-bottom-4 -left-4 sm:-left-8" depth={0.9} mx={springBadgeX} my={springBadgeY} />
     </div>
   );
 }
 
 export function HeroAnimation() {
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-7xl mx-auto">
+    <div className="relative flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-7xl mx-auto">
+      <GradientMesh />
 
       {/* ── Text – first on mobile, right column on desktop ── */}
       <motion.div
@@ -51,7 +143,7 @@ export function HeroAnimation() {
         transition={{ duration: 0.8, delay: 0.3 }}
       >
         <motion.h2
-          className="text-2xl sm:text-3xl lg:text-5xl font-bold text-gray-900 leading-tight"
+          className="text-3xl sm:text-4xl lg:text-6xl font-extrabold text-gray-900 leading-[1.05] tracking-tight"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
@@ -123,18 +215,16 @@ export function HeroAnimation() {
       </motion.div>
 
       {/* ── Preview – second on mobile, left column on desktop ── */}
-      <div className="order-2 lg:order-1 relative w-full h-[220px] sm:h-[300px] lg:h-[500px] overflow-hidden">
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="scale-[0.48] sm:scale-[0.65] md:scale-[0.78] lg:scale-100 origin-center transition-transform">
-            <HeroPreview />
-          </div>
-        </motion.div>
-      </div>
+      <motion.div
+        className="order-2 lg:order-1 w-full"
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <TiltedDemo>
+          <ProductDemoSimulator />
+        </TiltedDemo>
+      </motion.div>
 
     </div>
   );

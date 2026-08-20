@@ -32,19 +32,19 @@ interface CrmContact {
   phone?: string;
 }
 
-const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium bg-white';
+const inputCls = 'w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all';
 const selectCls = `${inputCls} appearance-none cursor-pointer`;
-const labelCls = 'block text-xs font-semibold text-gray-600 mb-1';
-const modalHeaderCls = 'px-5 sm:px-6 py-3 sm:py-5 flex items-center justify-between shrink-0 border-b border-gray-100';
+const labelCls = 'block text-[10px] font-extrabold font-mono uppercase tracking-widest text-slate-400 dark:text-slate-400 mb-1.5';
+const modalHeaderCls = 'px-6 py-4 flex items-center justify-between shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60';
 
 const ModalHandle = () => (
   <div className="flex justify-center pt-2 pb-0 sm:hidden shrink-0">
-    <div className="w-10 h-1 rounded-full bg-gray-300" />
+    <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
   </div>
 );
 
 const ModalFooter = ({ children }: { children: ReactNode }) => (
-  <div className="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 pt-3.5 pb-8 sm:pb-5 flex flex-row gap-2.5 mb-1.5 sm:mb-0">
+  <div className="shrink-0 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-200/80 dark:border-slate-800 p-5 flex flex-row gap-3">
     {children}
   </div>
 );
@@ -53,24 +53,24 @@ const CancelBtn = ({ onClick }: { onClick: () => void }) => (
   <button
     type="button"
     onClick={onClick}
-    className="flex-1 py-3 px-5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer"
+    className="flex-1 py-3 px-5 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
   >
     Cancel
   </button>
 );
 
 const statusConfig = {
-  confirmed: { label: 'Confirmed', dot: 'bg-emerald-500', badge: 'bg-emerald-100 text-emerald-700' },
-  pending:   { label: 'Pending',   dot: 'bg-amber-400',   badge: 'bg-amber-100 text-amber-700' },
-  cancelled: { label: 'Cancelled', dot: 'bg-red-400',     badge: 'bg-red-100 text-red-600' },
-  completed: { label: 'Completed', dot: 'bg-blue-500',    badge: 'bg-blue-100 text-blue-700' },
+  confirmed: { label: 'Confirmed', dot: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60' },
+  pending:   { label: 'Pending',   dot: 'bg-yellow-400',   badge: 'bg-yellow-50 text-amber-700 dark:bg-yellow-950/40 dark:text-yellow-400 border border-yellow-200/60' },
+  cancelled: { label: 'Cancelled', dot: 'bg-rose-500',     badge: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200/60' },
+  completed: { label: 'Completed', dot: 'bg-blue-500',    badge: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-200/60' },
 };
 
 const typeIcon = (type: string) => {
-  if (type === 'video')     return <Video className="w-3.5 h-3.5" />;
-  if (type === 'phone')     return <Phone className="w-3.5 h-3.5" />;
-  if (type === 'in-person') return <MapPin className="w-3.5 h-3.5" />;
-  return <Calendar className="w-3.5 h-3.5" />;
+  if (type === 'video')     return <Video className="w-3.5 h-3.5 text-orange-500" />;
+  if (type === 'phone')     return <Phone className="w-3.5 h-3.5 text-orange-500" />;
+  if (type === 'in-person') return <MapPin className="w-3.5 h-3.5 text-orange-500" />;
+  return <Calendar className="w-3.5 h-3.5 text-orange-500" />;
 };
 
 const initials = (name: string) =>
@@ -90,8 +90,8 @@ const BookingFormFields = ({
   onChange: (patch: Partial<Booking>) => void;
   contacts?: CrmContact[];
 }) => (
-  <div className="space-y-2 sm:space-y-4">
-    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+  <div className="space-y-3 sm:space-y-4">
+    <div className="grid grid-cols-2 gap-3">
       <div>
         <label className={labelCls}>Client name *</label>
         <input type="text" list="crm-contacts" value={data.client}
@@ -111,7 +111,7 @@ const BookingFormFields = ({
           </datalist>
         )}
         {contacts.length > 0 && (
-          <p className="text-[10px] text-gray-400 mt-1">Start typing to pick an existing CRM contact</p>
+          <p className="text-[10px] font-mono font-bold text-slate-400 mt-1">Start typing to pick an existing CRM contact</p>
         )}
       </div>
       <div>
@@ -175,7 +175,7 @@ const BookingFormFields = ({
     )}
     <div>
       <label className={labelCls}>
-        Location {data.type !== 'in-person' && <span className="text-gray-400 font-normal">(in-person only)</span>}
+        Location {data.type !== 'in-person' && <span className="text-slate-400 font-normal">(in-person only)</span>}
       </label>
       <input type="text" value={data.location || ''}
         onChange={e => onChange({ location: e.target.value })}
@@ -186,7 +186,7 @@ const BookingFormFields = ({
     <div>
       <label className={labelCls}>Notes</label>
       <textarea value={data.notes || ''} onChange={e => onChange({ notes: e.target.value })}
-        className={`${inputCls} h-16 sm:h-20 resize-none`} placeholder="Additional details..." />
+        className={`${inputCls} h-20 resize-none`} placeholder="Additional details..." />
     </div>
   </div>
 );
@@ -198,46 +198,71 @@ export default function BookingPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal]     = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [editBooking, setEditBooking]         = useState<Booking | null>(null);
   const [deletingBooking, setDeletingBooking] = useState<Booking | null>(null);
-  const [filterStatus, setFilterStatus]       = useState('all');
-  const [searchTerm, setSearchTerm]           = useState('');
-  const [newBooking, setNewBooking]           = useState(blankBooking());
-  const [contacts, setContacts]               = useState<CrmContact[]>([]);
-  const [businessId, setBusinessId]           = useState<string | null>(null);
-  const [savingBooking, setSavingBooking]     = useState(false);
-  const [statusModal, setStatusModal] = useState<{
-    isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info';
-  }>({ isOpen: false, title: '', message: '', type: 'success' });
+
+  const [newBooking, setNewBooking] = useState(blankBooking());
+  const [savingBooking, setSavingBooking] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  const [statusModal, setStatusModal] = useState({ isOpen: false, title: '', message: '', type: 'success' as 'success' | 'error' });
+  const [contacts, setContacts] = useState<CrmContact[]>([]);
+  const [businessId, setBusinessId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/user/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(user => {
+        if (user?.businessId) setBusinessId(user.businessId);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleCopyBookingLink = () => {
+    if (!businessId) return;
+    const url = `${window.location.origin}/book/${businessId}`;
+    navigator.clipboard.writeText(url);
+    setStatusModal({
+      isOpen: true,
+      title: 'Booking Link Copied!',
+      message: 'Share this link with clients so they can schedule appointments with you.',
+      type: 'success',
+    });
+  };
 
   const fetchBookings = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const res = await fetch('/api/bookings');
       if (res.ok) setBookings(await res.json());
-    } catch { /* silent */ } finally { setLoading(false); }
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   useEffect(() => {
-    fetch('/api/crm').then(res => res.json()).then(data => {
-      if (Array.isArray(data)) setContacts(data.map((c: { id: string; name: string; email: string; phone?: string }) => ({ id: c.id, name: c.name, email: c.email, phone: c.phone })));
-    }).catch(() => {});
-    fetch('/api/business').then(res => res.json()).then(data => {
-      if (data?.id) setBusinessId(data.id);
-    }).catch(() => {});
+    fetch('/api/crm/clients')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        if (Array.isArray(data)) {
+          setContacts(data.map((c: { id: string; name: string; email: string; phone?: string }) => ({
+            id: c.id, name: c.name, email: c.email, phone: c.phone,
+          })));
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const handleCopyBookingLink = async () => {
-    if (!businessId) return;
-    const link = `${window.location.origin}/booking/${businessId}`;
-    await navigator.clipboard.writeText(link);
-    setStatusModal({ isOpen: true, title: 'Link Copied', message: 'Your public booking request link has been copied to your clipboard.', type: 'info' });
-  };
-
   const handleCreateBooking = async () => {
+    if (!newBooking.client || !newBooking.email || !newBooking.service || !newBooking.date || !newBooking.time) return;
     setSavingBooking(true);
     try {
       const res = await fetch('/api/bookings', {
@@ -245,13 +270,18 @@ export default function BookingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newBooking),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to create booking');
-      setBookings(prev => [data, ...prev]);
-      setShowAddModal(false);
-      setNewBooking(blankBooking());
-    } catch (error: unknown) {
-      setStatusModal({ isOpen: true, title: 'Could Not Create Booking', message: error instanceof Error ? error.message : 'Failed to create booking.', type: 'error' });
+      if (res.ok) {
+        const data = await res.json();
+        setBookings(prev => [data, ...prev]);
+        setShowAddModal(false);
+        setNewBooking(blankBooking());
+        setStatusModal({ isOpen: true, title: 'Booking Created', message: `Appointment for ${data.client} has been booked.`, type: 'success' });
+      } else {
+        const err = await res.json();
+        setStatusModal({ isOpen: true, title: 'Booking Failed', message: err.error || 'Failed to create booking', type: 'error' });
+      }
+    } catch {
+      setStatusModal({ isOpen: true, title: 'Error', message: 'Something went wrong', type: 'error' });
     } finally {
       setSavingBooking(false);
     }
@@ -262,17 +292,19 @@ export default function BookingPage() {
     setSavingBooking(true);
     try {
       const res = await fetch(`/api/bookings/${editBooking.id}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editBooking),
       });
-      const updated = await res.json();
-      if (!res.ok) throw new Error(updated.error || 'Failed to update booking');
-      setBookings(prev => prev.map(b => b.id === updated.id ? updated : b));
-      setShowEditModal(false);
-      setEditBooking(null);
-    } catch (error: unknown) {
-      setStatusModal({ isOpen: true, title: 'Could Not Save Changes', message: error instanceof Error ? error.message : 'Failed to update booking.', type: 'error' });
+      if (res.ok) {
+        const updated = await res.json();
+        setBookings(prev => prev.map(b => b.id === updated.id ? updated : b));
+        setShowEditModal(false);
+        setEditBooking(null);
+        setStatusModal({ isOpen: true, title: 'Booking Updated', message: `Booking for ${updated.client} was updated.`, type: 'success' });
+      }
+    } catch {
+      setStatusModal({ isOpen: true, title: 'Error', message: 'Failed to update booking', type: 'error' });
     } finally {
       setSavingBooking(false);
     }
@@ -284,17 +316,21 @@ export default function BookingPage() {
       const res = await fetch(`/api/bookings/${deletingBooking.id}`, { method: 'DELETE' });
       if (res.ok) {
         setBookings(prev => prev.filter(b => b.id !== deletingBooking.id));
-        setShowDeleteModal(false);
-        setDeletingBooking(null);
+        setStatusModal({ isOpen: true, title: 'Booking Deleted', message: 'The booking was deleted successfully.', type: 'success' });
       }
-    } catch { /* silent */ }
+    } catch {
+      setStatusModal({ isOpen: true, title: 'Error', message: 'Failed to delete booking', type: 'error' });
+    } finally {
+      setShowDeleteModal(false);
+      setDeletingBooking(null);
+    }
   };
 
   const filteredBookings = bookings.filter(b => {
-    const matchSearch = b.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        b.service.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchFilter = filterStatus === 'all' || b.status === filterStatus;
-    return matchSearch && matchFilter;
+    const q = searchTerm.toLowerCase();
+    const matchQ = b.client.toLowerCase().includes(q) || b.service.toLowerCase().includes(q) || b.email.toLowerCase().includes(q);
+    const matchS = filterStatus === 'all' || b.status === filterStatus;
+    return matchQ && matchS;
   });
 
   const totalBookings     = bookings.length;
@@ -303,88 +339,94 @@ export default function BookingPage() {
   const completedCount    = bookings.filter(b => b.status === 'completed').length;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 pb-24 sm:pb-8">
 
       {/* Mobile FAB */}
       <button
         type="button"
         onClick={() => setShowAddModal(true)}
-        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-linear-to-r from-indigo-600 to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-transform"
+        className="sm:hidden fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-transform"
       >
         <Plus className="w-7 h-7" />
       </button>
 
-      {/* Sticky header */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-          <div className="p-2 bg-indigo-600 rounded-xl shrink-0">
-            <Calendar className="w-5 h-5 text-white" />
+      {/* ── Glassmorphic Sticky Header ── */}
+      <div className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="p-2.5 bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl text-white shrink-0 shadow-2xs">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">Bookings & Appointment Hub</h1>
+              <p className="text-xs font-bold text-slate-400 truncate hidden sm:block">Manage client schedules, automated bookings, and service appointments.</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Bookings</h1>
-            <p className="text-xs text-gray-500 hidden sm:block">Manage appointments and schedule</p>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleCopyBookingLink}
+              disabled={!businessId}
+              className="flex items-center gap-2 px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:border-orange-400 hover:text-orange-600 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+            >
+              <LinkIcon className="w-4 h-4 text-orange-500" />
+              <span className="hidden sm:inline">Booking Link</span>
+            </button>
+            <button
+              id="tour-booking-new"
+              type="button"
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm shadow-orange-500/20 transition-all cursor-pointer active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">New Booking</span>
+              <span className="sm:hidden">New</span>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleCopyBookingLink}
-            disabled={!businessId}
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <LinkIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Booking Link</span>
-          </button>
-          <button
-            id="tour-booking-new"
-            type="button"
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-600 hover:from-indigo-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">New Booking</span>
-            <span className="sm:hidden">New</span>
-          </button>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-        {/* Stats */}
-        <div id="tour-booking-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        {/* ── High-Performance Telemetry Pods ── */}
+        <div id="tour-booking-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total Bookings', value: totalBookings,  icon: CalendarCheck, bgGrad: 'bg-gradient-to-br from-indigo-500 to-indigo-600' },
-            { label: 'Confirmed',      value: confirmedCount, icon: CheckCircle,   bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
-            { label: 'Upcoming',       value: upcomingCount,  icon: Clock,         bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600' },
-            { label: 'Completed',      value: completedCount, icon: TrendingUp,    bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600' },
+            { label: 'Total Bookings', value: totalBookings,  icon: CalendarCheck, color: 'text-orange-500' },
+            { label: 'Confirmed',      value: confirmedCount, icon: CheckCircle,   color: 'text-emerald-500' },
+            { label: 'Upcoming',       value: upcomingCount,  icon: Clock,         color: 'text-blue-500' },
+            { label: 'Completed',      value: completedCount, icon: TrendingUp,    color: 'text-amber-500' },
           ].map((s, i) => (
-            <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`p-2.5 ${s.bgGrad} rounded-xl w-fit group-hover:scale-105 transition-transform text-white shadow-xs`}>
-                  <s.icon className="w-4.5 h-4.5" />
+            <div key={i} className="bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-orange-400 dark:hover:border-orange-500 transition-all group flex flex-col justify-between space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest">{s.label}</p>
+                <div className={`p-2 bg-slate-50 dark:bg-slate-900 rounded-xl ${s.color} group-hover:scale-110 transition-transform`}>
+                  <s.icon className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{s.label}</p>
-              <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{s.value}</p>
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">
+                {s.value}
+              </p>
             </div>
           ))}
         </div>
 
-        {/* Search + Filter */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+        {/* ── Search + Filter Dock ── */}
+        <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-3.5 flex flex-col sm:flex-row gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search clients or services…"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
+              className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 dark:text-white rounded-2xl text-xs font-bold outline-none border border-slate-200/80 dark:border-slate-800 focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all placeholder:text-slate-400"
             />
           </div>
-          <div className="relative sm:w-48">
+          <div className="relative sm:w-52">
             <select
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value)}
-              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-800 dark:text-white rounded-xl text-sm outline-none border border-gray-100 dark:border-slate-700 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all appearance-none cursor-pointer pr-8"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 dark:text-white rounded-2xl text-xs font-bold outline-none border border-slate-200/80 dark:border-slate-800 focus:border-orange-500 transition-all appearance-none cursor-pointer pr-9"
             >
               <option value="all">All Statuses</option>
               <option value="confirmed">Confirmed</option>
@@ -392,101 +434,103 @@ export default function BookingPage() {
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           </div>
         </div>
 
-        {/* Booking list */}
+        {/* ── Booking List / Empty State Workspace ── */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
-            <p className="text-sm text-gray-500 font-medium">Loading bookings…</p>
+            <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+            <p className="text-xs font-bold text-slate-400">Loading bookings…</p>
           </div>
         ) : filteredBookings.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+          <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-12 text-center space-y-4">
+            <div className="w-14 h-14 bg-gradient-to-r from-orange-500 to-amber-600 rounded-3xl flex items-center justify-center mx-auto text-white shadow-2xs">
+              <Calendar className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-              {searchTerm || filterStatus !== 'all' ? 'No matching bookings' : 'No bookings yet'}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
-              {searchTerm || filterStatus !== 'all'
-                ? 'Try adjusting your search or filter.'
-                : 'Create your first booking to get started.'}
-            </p>
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                {searchTerm || filterStatus !== 'all' ? 'No matching bookings' : 'No bookings yet'}
+              </h3>
+              <p className="text-xs font-bold text-slate-400 mt-1">
+                {searchTerm || filterStatus !== 'all'
+                  ? 'Try adjusting your search or filter.'
+                  : 'Create your first booking to get started.'}
+              </p>
+            </div>
             {!searchTerm && filterStatus === 'all' && (
               <button
                 type="button"
                 onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-600 hover:from-indigo-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm shadow-orange-500/20 transition-all cursor-pointer active:scale-95"
               >
                 <Plus className="w-4 h-4" /> New Booking
               </button>
             )}
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredBookings.map(booking => {
               const sc = statusConfig[booking.status] ?? statusConfig.pending;
               return (
-                <div key={booking.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                  <div className="flex items-start gap-3">
-                    {/* Avatar */}
+                <div key={booking.id} className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-5 hover:border-orange-400 transition-all flex flex-col justify-between space-y-4 group">
+                  <div className="flex items-start gap-3.5">
+                    {/* Avatar Badge */}
                     <div className="relative shrink-0">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-sm font-bold">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-mono font-extrabold text-sm flex items-center justify-center shadow-2xs">
                         {initials(booking.client)}
                       </div>
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${sc.dot}`} />
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-slate-950 ${sc.dot}`} />
                     </div>
 
-                    {/* Main info */}
+                    {/* Main Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 flex-wrap">
-                        <div>
-                          <p className="text-sm font-bold text-gray-900 leading-tight">{booking.client}</p>
-                          <p className="text-xs text-gray-500 font-medium">{booking.service}</p>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">{booking.client}</p>
+                          <p className="text-xs font-bold text-slate-400 truncate mt-0.5">{booking.service}</p>
                         </div>
-                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${sc.badge}`}>
+                        <span className={`text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full shrink-0 ${sc.badge}`}>
                           {sc.label}
                         </span>
                       </div>
 
-                      {/* Meta row */}
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
-                        <span className="flex items-center gap-1 text-xs text-gray-500">
-                          <Calendar className="w-3.5 h-3.5 text-gray-400" /> {booking.date}
+                      {/* Meta Row */}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 pt-3 border-t border-slate-100 dark:border-slate-900">
+                        <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                          <Calendar className="w-3.5 h-3.5 text-orange-500" /> {booking.date}
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-gray-500">
-                          <Clock className="w-3.5 h-3.5 text-gray-400" /> {booking.time} · {booking.duration}m
+                        <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                          <Clock className="w-3.5 h-3.5 text-orange-500" /> {booking.time} · {booking.duration}m
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-gray-400 capitalize">
-                          {typeIcon(booking.type)} {booking.type}
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-slate-400 capitalize">
+                          {typeIcon(booking.type)} <span>{booking.type}</span>
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-1.5 mt-3 pt-3 border-t border-gray-50">
+                  {/* Actions Footer */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-900">
                     <button
                       type="button"
                       onClick={() => { setSelectedBooking(booking); setShowDetailModal(true); }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                      className="flex-1 py-2 px-3 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-extrabold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <User className="w-3.5 h-3.5" /> Details
                     </button>
                     <button
                       type="button"
                       onClick={() => { setEditBooking(booking); setShowEditModal(true); }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                      className="flex-1 py-2 px-3 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-extrabold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Edit className="w-3.5 h-3.5" /> Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => { setDeletingBooking(booking); setShowDeleteModal(true); }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                      className="flex-1 py-2 px-3 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-500 rounded-xl text-xs font-extrabold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Delete
                     </button>
@@ -500,21 +544,21 @@ export default function BookingPage() {
 
       {/* ── Add Booking Modal ── */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-slate-950 w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <ModalHandle />
             <div className={modalHeaderCls}>
               <div>
-                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">New booking</h2>
-                <p className="text-[11px] text-gray-500 font-medium">Fill in the booking details</p>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">New booking</h2>
+                <p className="text-xs font-bold text-slate-400">Fill in the booking details</p>
               </div>
               <button type="button" onClick={() => { setShowAddModal(false); setNewBooking(blankBooking()); }}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                className="p-2 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-all cursor-pointer text-slate-400 hover:text-slate-900 dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5">
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               <BookingFormFields
                 data={newBooking}
                 onChange={patch => setNewBooking(prev => ({ ...prev, ...patch }))}
@@ -528,7 +572,7 @@ export default function BookingPage() {
                 type="button"
                 onClick={handleCreateBooking}
                 disabled={savingBooking || !newBooking.client || !newBooking.email || !newBooking.service || !newBooking.date || !newBooking.time}
-                className="flex-2 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="flex-2 py-3 px-5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs active:scale-95"
               >
                 {savingBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 {savingBooking ? 'Creating...' : 'Create Booking'}
@@ -540,21 +584,21 @@ export default function BookingPage() {
 
       {/* ── Edit Booking Modal ── */}
       {showEditModal && editBooking && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-slate-950 w-full sm:max-w-lg flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <ModalHandle />
             <div className={modalHeaderCls}>
               <div>
-                <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Edit booking</h2>
-                <p className="text-[11px] text-gray-500 font-medium">Update booking details</p>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Edit booking</h2>
+                <p className="text-xs font-bold text-slate-400">Update booking details</p>
               </div>
               <button type="button" onClick={() => { setShowEditModal(false); setEditBooking(null); }}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                className="p-2 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-all cursor-pointer text-slate-400 hover:text-slate-900 dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5">
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               <BookingFormFields
                 data={editBooking}
                 onChange={patch => setEditBooking(prev => prev ? { ...prev, ...patch } : prev)}
@@ -568,7 +612,7 @@ export default function BookingPage() {
                 type="button"
                 onClick={handleSaveEdit}
                 disabled={savingBooking}
-                className="flex-2 py-3 px-5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="flex-2 py-3 px-5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs active:scale-95"
               >
                 {savingBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                 {savingBooking ? 'Saving...' : 'Save Changes'}
@@ -577,75 +621,74 @@ export default function BookingPage() {
           </div>
         </div>
       )}
-
       {/* ── Detail Modal ── */}
       {showDetailModal && selectedBooking && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white w-full sm:max-w-md flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-2xl shadow-2xl border border-white/20 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-slate-950 w-full sm:max-w-md flex flex-col overflow-hidden max-h-[92dvh] sm:max-h-[92vh] rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 transform animate-in slide-in-from-bottom-10 duration-300 -translate-y-6 sm:translate-y-0">
             <ModalHandle />
             <div className={modalHeaderCls}>
-              <h2 className="text-sm sm:text-lg font-bold text-gray-900 tracking-tight">Booking details</h2>
+              <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Booking details</h2>
               <button type="button" onClick={() => setShowDetailModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-600">
+                className="p-2 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-all cursor-pointer text-slate-400 hover:text-slate-900 dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 py-1.5 sm:py-5 space-y-3 sm:space-y-4">
-              {/* Avatar + name */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {/* Avatar + Name */}
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-lg sm:text-xl font-bold shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white text-base font-mono font-extrabold flex items-center justify-center shrink-0 shadow-2xs">
                   {initials(selectedBooking.client)}
                 </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold text-gray-900">{selectedBooking.client}</h3>
-                  <p className="text-xs sm:text-sm text-gray-500">{selectedBooking.service}</p>
-                  <span className={`inline-block mt-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${statusConfig[selectedBooking.status]?.badge ?? 'bg-gray-100 text-gray-600'}`}>
+                <div className="min-w-0">
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white truncate">{selectedBooking.client}</h3>
+                  <p className="text-xs font-bold text-slate-400 truncate mt-0.5">{selectedBooking.service}</p>
+                  <span className={`inline-block mt-1.5 text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full ${statusConfig[selectedBooking.status]?.badge ?? 'bg-slate-100 text-slate-600'}`}>
                     {statusConfig[selectedBooking.status]?.label ?? selectedBooking.status}
                   </span>
                 </div>
               </div>
 
-              {/* Date / time / type */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <div className="bg-indigo-50 rounded-xl p-2.5 sm:p-3 border border-indigo-100">
-                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide mb-1">Date</p>
-                  <p className="text-xs sm:text-sm font-bold text-indigo-900">{selectedBooking.date}</p>
+              {/* Date / Time / Type */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800">
+                  <p className="text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest mb-1">Date</p>
+                  <p className="text-xs font-extrabold font-mono text-slate-900 dark:text-white">{selectedBooking.date}</p>
                 </div>
-                <div className="bg-indigo-50 rounded-xl p-2.5 sm:p-3 border border-indigo-100">
-                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide mb-1">Time</p>
-                  <p className="text-xs sm:text-sm font-bold text-indigo-900">{selectedBooking.time} · {selectedBooking.duration}m</p>
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800">
+                  <p className="text-[10px] font-extrabold font-mono text-slate-400 uppercase tracking-widest mb-1">Time</p>
+                  <p className="text-xs font-extrabold font-mono text-slate-900 dark:text-white">{selectedBooking.time} · {selectedBooking.duration}m</p>
                 </div>
               </div>
 
-              {/* Contact info */}
-              <div className="bg-gray-50 rounded-xl p-3 sm:p-3.5 border border-gray-100 space-y-2 sm:space-y-2.5">
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700">
-                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
-                  <span className="font-medium break-all">{selectedBooking.email}</span>
+              {/* Contact Info */}
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
+                <div className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+                  <Mail className="w-4 h-4 text-orange-500 shrink-0" />
+                  <span className="font-mono font-bold break-all">{selectedBooking.email}</span>
                 </div>
                 {selectedBooking.phone && (
-                  <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700">
-                    <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
-                    <span className="font-medium">{selectedBooking.phone}</span>
+                  <div className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+                    <Phone className="w-4 h-4 text-orange-500 shrink-0" />
+                    <span className="font-mono font-bold">{selectedBooking.phone}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700 capitalize">
+                <div className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 capitalize">
                   {typeIcon(selectedBooking.type)}
-                  <span className="font-medium">{selectedBooking.type}</span>
+                  <span className="font-bold">{selectedBooking.type}</span>
                 </div>
                 {selectedBooking.location && (
-                  <div className="flex items-center gap-2.5 text-xs sm:text-sm text-gray-700">
-                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
-                    <span className="font-medium">{selectedBooking.location}</span>
+                  <div className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+                    <MapPin className="w-4 h-4 text-orange-500 shrink-0" />
+                    <span className="font-bold">{selectedBooking.location}</span>
                   </div>
                 )}
               </div>
 
               {selectedBooking.notes && (
-                <div className="bg-yellow-50 rounded-xl p-3 sm:p-3.5 border border-yellow-100">
-                  <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wide mb-1">Notes</p>
-                  <p className="text-xs sm:text-sm text-gray-700 font-medium leading-relaxed">{selectedBooking.notes}</p>
+                <div className="bg-orange-50 dark:bg-orange-950/40 rounded-2xl p-4 border border-orange-200/60 dark:border-orange-900/40">
+                  <p className="text-[10px] font-extrabold font-mono text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-1">Notes</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-bold leading-relaxed">{selectedBooking.notes}</p>
                 </div>
               )}
             </div>
@@ -654,14 +697,14 @@ export default function BookingPage() {
               <button
                 type="button"
                 onClick={() => setShowDetailModal(false)}
-                className="flex-1 py-3 px-5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+                className="flex-1 py-3 px-5 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Close
               </button>
               <button
                 type="button"
                 onClick={() => { setShowDetailModal(false); setEditBooking(selectedBooking); setShowEditModal(true); }}
-                className="flex-2 py-3 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="flex-2 py-3 px-5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs active:scale-95"
               >
                 <Edit className="w-4 h-4" /> Edit Booking
               </button>

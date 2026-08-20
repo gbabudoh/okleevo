@@ -217,31 +217,31 @@ export default function ESignaturePage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-24 md:pb-12 font-sans text-slate-900">
+    <div className="max-w-7xl mx-auto space-y-6 pb-24 md:pb-12 font-sans text-slate-900 dark:text-slate-100">
 
-      {/* ── STICKY MODULE HEADER ─────────────────────────────────────── */}
-      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-2xs">
-        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 space-y-2.5 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20">
-              <FileSignature className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+      {/* ── Glassmorphic Sticky Header ── */}
+      <div className="sticky top-0 z-40 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-2xs">
+        <div className="px-3.5 sm:px-6 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+              <FileSignature className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight truncate">
+              <div className="flex items-center gap-2">
+                <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">
                   E-Signature Studio
                 </h1>
-                <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0">
+                <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold uppercase bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/40 shrink-0">
                   eIDAS / ESIGN
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 truncate hidden sm:block">
+              <p className="text-xs font-bold text-slate-400 truncate hidden sm:block mt-0.5">
                 Legally binding electronic signatures &amp; document workflows
               </p>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center justify-end gap-2 shrink-0">
             <ModuleGuideBanner
               moduleId="e-signature"
               moduleName="E-Signature"
@@ -254,16 +254,16 @@ export default function ESignaturePage() {
             />
             <button
               onClick={() => setShowSignSelfModal(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer shrink-0"
+              className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 text-xs font-extrabold transition cursor-pointer shrink-0 shadow-2xs"
             >
-              <PenTool className="w-4 h-4 text-slate-600 cursor-pointer" />
+              <PenTool className="w-4 h-4 text-orange-500" />
               <span>Sign Yourself</span>
             </button>
             <button
               onClick={() => setShowNewRequestModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition cursor-pointer whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold shadow-sm shadow-orange-500/20 transition cursor-pointer whitespace-nowrap shrink-0 active:scale-95"
             >
-              <Plus className="w-4 h-4 cursor-pointer" />
+              <Plus className="w-4 h-4" />
               <span>Request Signatures</span>
             </button>
           </div>
@@ -272,13 +272,13 @@ export default function ESignaturePage() {
 
       <div className="px-4 sm:px-6 space-y-6">
 
-        {/* ── KPI METRICS SUMMARY GRID ───────────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        {/* ── High-Performance Telemetry Pods ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { id: 'all',       label: 'Total Managed',  badge: 'All Envelopes', value: stats.total,    icon: Layers,        iconCls: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
-            { id: 'signed',    label: 'Legally Sealed', badge: 'Fully Executed',value: stats.signed,   icon: ShieldCheck,   iconCls: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-            { id: 'pending',   label: 'Out for Sign',  badge: 'Awaiting Sign',  value: stats.pending,  icon: Clock,         iconCls: 'bg-amber-50 text-amber-600 border-amber-100' },
-            { id: 'draft',     label: 'In Preparation', badge: 'Drafts & Templates',value: stats.draft,    icon: FileText,      iconCls: 'bg-purple-50 text-purple-600 border-purple-100' },
+            { id: 'all',       label: 'Total Managed',  badge: 'All Envelopes', value: stats.total,    icon: Layers,        iconCls: 'from-orange-500 to-amber-600' },
+            { id: 'signed',    label: 'Legally Sealed', badge: 'Fully Executed',value: stats.signed,   icon: ShieldCheck,   iconCls: 'from-emerald-500 to-teal-600' },
+            { id: 'pending',   label: 'Out for Sign',  badge: 'Awaiting Sign',  value: stats.pending,  icon: Clock,         iconCls: 'from-amber-500 to-orange-500' },
+            { id: 'draft',     label: 'In Preparation', badge: 'Drafts & Templates',value: stats.draft,    icon: FileText,      iconCls: 'from-indigo-500 to-purple-600' },
           ].map((item) => {
             const isSelected = selectedStatus === item.id;
             const Icon = item.icon;
@@ -286,46 +286,46 @@ export default function ESignaturePage() {
               <button
                 key={item.id}
                 onClick={() => setSelectedStatus(isSelected ? 'all' : item.id)}
-                className={`bg-white rounded-2xl p-4 sm:p-4.5 border text-left transition-all cursor-pointer flex flex-col justify-between space-y-3 group ${
-                  isSelected ? 'border-indigo-600 ring-2 ring-indigo-600/20 shadow-md' : 'border-slate-200/80 shadow-2xs hover:shadow-md hover:border-slate-300'
+                className={`bg-white dark:bg-slate-950 rounded-3xl p-5 border text-left transition-all cursor-pointer flex flex-col justify-between space-y-3 group ${
+                  isSelected ? 'border-orange-500 ring-2 ring-orange-500/20 shadow-md' : 'border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:border-orange-300'
                 }`}
               >
                 <div className="flex items-center justify-between gap-1.5">
-                  <div className={`p-2 rounded-xl border ${item.iconCls} transition-transform group-hover:scale-105 shrink-0`}>
-                    <Icon className="w-4 h-4" />
+                  <div className={`w-10 h-10 rounded-2xl bg-gradient-to-r ${item.iconCls} flex items-center justify-center text-white shadow-2xs group-hover:scale-105 transition-transform shrink-0`}>
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100 truncate max-w-[100px]">
+                  <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-slate-800 truncate max-w-[100px]">
                     {item.badge}
                   </span>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 truncate">{item.label}</p>
-                  <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-0.5 truncate">{item.value}</h3>
+                  <p className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400 truncate">{item.label}</p>
+                  <h3 className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white mt-1 truncate">{item.value}</h3>
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* ── DRAG & DROP QUICK START BANNER ───────────────────────────── */}
-        <div className="bg-indigo-50/60 border border-indigo-100 rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+        {/* ── Instant Workflow Hero Banner ── */}
+        <div className="bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent border border-orange-200/60 dark:border-orange-900/40 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xs">
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-indigo-200 text-indigo-700 text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-orange-200/80 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 text-xs font-extrabold shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-orange-500" />
                 <span>Instant Workflow</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Upload &amp; Dispatch Documents in Seconds
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
                 Drag any PDF, Word document, or image into Okleevo to automatically attach legal signature fields, assign signers, and generate cryptographic audit trails.
               </p>
             </div>
 
             {/* Quick Templates Buttons */}
             <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
-              <label className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95">
+              <label className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold shadow-sm shadow-orange-500/20 transition-all cursor-pointer active:scale-95">
                 <Upload className="w-4 h-4" />
                 <span>Upload PDF / Word</span>
                 <input
@@ -349,17 +349,17 @@ export default function ESignaturePage() {
                   setNewDocType('Mutual NDA');
                   setShowNewRequestModal(true);
                 }}
-                className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition-all cursor-pointer active:scale-95"
+                className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-slate-950 hover:bg-slate-100 text-slate-700 dark:text-slate-300 text-xs font-extrabold border border-slate-200/80 dark:border-slate-800 transition-all cursor-pointer shadow-2xs active:scale-95"
               >
-                <FileCode className="w-4 h-4 text-indigo-600" />
+                <FileCode className="w-4 h-4 text-orange-500" />
                 <span>NDA Template</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* ── CONTROLS & FILTER BAR ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-xs">
+        {/* ── Search & Filter Dock ── */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-950 p-3.5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
           {/* Search */}
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -368,11 +368,11 @@ export default function ESignaturePage() {
               placeholder="Search envelopes by name, type, or ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 transition-all"
             />
           </div>
 
-          {/* Status Pills */}
+          {/* Status Filter Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide max-w-full">
             {[
               { id: 'all', label: 'All' },
@@ -385,8 +385,10 @@ export default function ESignaturePage() {
                 <button
                   key={tab.id}
                   onClick={() => setSelectedStatus(tab.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
-                    active ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:bg-slate-100'
+                  className={`px-4 py-2 rounded-2xl text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                    active
+                      ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900'
                   }`}
                 >
                   {tab.label}
@@ -396,17 +398,17 @@ export default function ESignaturePage() {
           </div>
 
           {/* View Toggle */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 self-end sm:self-auto">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl shrink-0 self-end sm:self-auto border border-slate-200/60 dark:border-slate-800">
             <button
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-400'}`}
+              className={`p-1.5 rounded-xl transition-colors cursor-pointer ${viewMode === 'list' ? 'bg-white dark:bg-slate-950 text-orange-500 shadow-2xs' : 'text-slate-400'}`}
               title="List View"
             >
               <List className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-400'}`}
+              className={`p-1.5 rounded-xl transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-white dark:bg-slate-950 text-orange-500 shadow-2xs' : 'text-slate-400'}`}
               title="Grid View"
             >
               <Grid className="w-4 h-4" />
@@ -414,21 +416,21 @@ export default function ESignaturePage() {
           </div>
         </div>
 
-        {/* ── DOCUMENT MASTER TABLE / GRID ───────────────────────────────── */}
+        {/* ── DOCUMENT MASTER TABLE / GRID ── */}
         {filteredDocuments.length === 0 ? (
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-12 text-center space-y-4 shadow-xs">
-            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto">
+          <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-12 sm:p-16 text-center space-y-4 shadow-2xs">
+            <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-2xs">
               <FileSignature className="w-8 h-8" />
             </div>
-            <div className="max-w-md mx-auto space-y-1">
-              <h3 className="text-lg font-bold text-slate-900">No Document Envelopes Found</h3>
-              <p className="text-xs text-slate-500">
+            <div className="max-w-md mx-auto space-y-1.5">
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">No Document Envelopes Found</h3>
+              <p className="text-xs font-bold text-slate-400">
                 {searchQuery ? 'No signature requests matched your search filters.' : 'Get started by creating your first legally-binding e-signature request.'}
               </p>
             </div>
             <button
               onClick={() => setShowNewRequestModal(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md hover:bg-indigo-700 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white text-xs font-extrabold shadow-sm shadow-orange-500/20 hover:from-orange-600 hover:to-amber-700 transition-all cursor-pointer active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span>Create Signature Request</span>
@@ -436,37 +438,37 @@ export default function ESignaturePage() {
           </div>
         ) : viewMode === 'list' ? (
           /* List View */
-          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xs overflow-hidden">
             <div className="overflow-x-auto scrollbar-hide">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="px-5 py-3.5">Envelope &amp; Document</th>
-                    <th className="px-4 py-3.5">Category</th>
-                    <th className="px-4 py-3.5">Signer Status</th>
-                    <th className="px-4 py-3.5">Status</th>
-                    <th className="px-4 py-3.5 text-right">Actions</th>
+                  <tr className="bg-slate-50/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-800 text-[10px] font-mono font-extrabold text-slate-400 uppercase tracking-widest">
+                    <th className="px-5 py-4">Envelope &amp; Document</th>
+                    <th className="px-4 py-4">Category</th>
+                    <th className="px-4 py-4">Signer Status</th>
+                    <th className="px-4 py-4">Status</th>
+                    <th className="px-4 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-900 text-xs">
                   {filteredDocuments.map((doc) => {
                     const statusCfg = STATUS_CONFIGS[doc.status];
                     return (
-                      <tr key={doc.id} className="hover:bg-slate-50/60 transition-colors group">
+                      <tr key={doc.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-900/60 transition-colors group">
                         <td className="px-5 py-4 min-w-[240px]">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 font-bold">
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-2xl flex items-center justify-center shrink-0 font-extrabold shadow-2xs">
                               <FileText className="w-5 h-5" />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">{doc.name}</p>
-                              <p className="text-[10px] text-slate-400 font-mono mt-0.5">{doc.id} • {doc.pages} pages</p>
+                              <p className="font-extrabold text-slate-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">{doc.name}</p>
+                              <p className="text-[10px] text-slate-400 font-mono font-bold mt-0.5">{doc.id} • {doc.pages} pages</p>
                             </div>
                           </div>
                         </td>
 
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-semibold">
+                          <span className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800 text-[11px] font-extrabold">
                             {doc.type}
                           </span>
                         </td>
@@ -477,7 +479,7 @@ export default function ESignaturePage() {
                               {doc.recipients.map((r, i) => (
                                 <div
                                   key={i}
-                                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white relative ${
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono font-extrabold text-white relative ${
                                     r.status === 'signed' ? 'bg-emerald-600' : 'bg-amber-500'
                                   }`}
                                   title={`${r.name} (${r.role}) - ${r.status}`}
@@ -489,14 +491,14 @@ export default function ESignaturePage() {
                                 </div>
                               ))}
                             </div>
-                            <p className="text-[10px] text-slate-400 font-medium">
+                            <p className="text-[10px] text-slate-400 font-mono font-bold">
                               {doc.recipients.filter(r => r.status === 'signed').length} of {doc.recipients.length} signed
                             </p>
                           </div>
                         </td>
 
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${statusCfg.bg}`}>
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold border ${statusCfg.bg}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
                             {statusCfg.label}
                           </span>
@@ -506,27 +508,24 @@ export default function ESignaturePage() {
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => setSelectedDocument(doc)}
-                              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                              className="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800 transition-colors cursor-pointer shadow-2xs"
                               title="Inspect Envelope"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => setShowAuditModal(doc)}
-                              className="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors cursor-pointer"
+                              className="p-2.5 rounded-2xl bg-orange-50 dark:bg-orange-950/60 hover:bg-orange-100 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/40 transition-colors cursor-pointer shadow-2xs"
                               title="Legal Audit Certificate"
                             >
                               <ShieldCheck className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => {
-                                setDeletingDocument(doc);
-                                setShowDeleteModal(true);
-                              }}
-                              className="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors cursor-pointer"
-                              title="Delete Envelope"
+                              onClick={() => showNotify(`Downloading ${doc.name}...`)}
+                              className="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800 transition-colors cursor-pointer shadow-2xs"
+                              title="Download Signed PDF"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Download className="w-4 h-4" />
                             </button>
                           </div>
                         </td>
@@ -543,40 +542,40 @@ export default function ESignaturePage() {
             {filteredDocuments.map((doc) => {
               const statusCfg = STATUS_CONFIGS[doc.status];
               return (
-                <div key={doc.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                <div key={doc.id} className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-2xs hover:border-orange-300 transition-all flex flex-col justify-between space-y-4 group">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-2xs">
                         <FileText className="w-5 h-5" />
                       </div>
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${statusCfg.bg}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${statusCfg.bg}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
                         {statusCfg.label}
                       </span>
                     </div>
 
                     <div>
-                      <h3 className="font-bold text-slate-900 text-sm leading-snug line-clamp-2">{doc.name}</h3>
-                      <p className="text-[11px] text-slate-400 font-mono mt-1">{doc.id} • {doc.type}</p>
+                      <h3 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug line-clamp-2 group-hover:text-orange-500 transition-colors">{doc.name}</h3>
+                      <p className="text-[10px] text-slate-400 font-mono font-bold mt-1">{doc.id} • {doc.type}</p>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-100 space-y-3">
-                    <div className="flex items-center justify-between text-xs text-slate-500">
+                  <div className="pt-3.5 border-t border-slate-100 dark:border-slate-900 space-y-3">
+                    <div className="flex items-center justify-between text-xs text-slate-400 font-mono font-bold">
                       <span>Signers</span>
-                      <span className="font-semibold text-slate-700">{doc.recipients.filter(r => r.status === 'signed').length} / {doc.recipients.length}</span>
+                      <span className="font-extrabold text-slate-900 dark:text-white">{doc.recipients.filter(r => r.status === 'signed').length} / {doc.recipients.length}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setSelectedDocument(doc)}
-                        className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                        className="flex-1 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800 text-xs font-extrabold transition-colors cursor-pointer shadow-2xs"
                       >
                         Inspect
                       </button>
                       <button
                         onClick={() => setShowAuditModal(doc)}
-                        className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+                        className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold shadow-sm shadow-orange-500/20 transition-all cursor-pointer active:scale-95"
                       >
                         Audit Log
                       </button>
@@ -588,49 +587,64 @@ export default function ESignaturePage() {
           </div>
         )}
 
-        {/* ── LEGAL & TRUST FOOTER BAR ──────────────────────────────────── */}
-        <div className="bg-white rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs border border-slate-200/80 shadow-xs">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0" />
+        {/* ── LEGAL & TRUST FOOTER BAR ── */}
+        <div className="bg-white dark:bg-slate-950 rounded-3xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40 flex items-center justify-center shrink-0 shadow-2xs">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
             <div>
-              <p className="font-bold text-slate-900">eIDAS &amp; ESIGN Act Legal Compliance Guarantee</p>
-              <p className="text-slate-500 text-[11px]">All envelopes contain cryptographic SHA-256 integrity hashes &amp; UTC timestamped Audit Certificates.</p>
+              <p className="font-extrabold text-slate-900 dark:text-white">eIDAS &amp; ESIGN Act Legal Compliance Guarantee</p>
+              <p className="text-slate-400 font-bold text-[11px] mt-0.5">All envelopes contain cryptographic SHA-256 integrity hashes &amp; UTC timestamped Audit Certificates.</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="px-3 py-1 rounded-lg bg-slate-100 text-slate-600 font-mono text-[10px]">AES-256 Encrypted</span>
-            <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px]">Audit Sealed</span>
+            <span className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-mono font-extrabold text-[10px] border border-slate-200/60 dark:border-slate-800">
+              AES-256 Encrypted
+            </span>
           </div>
         </div>
 
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SIGN YOURSELF MODAL
-      ══════════════════════════════════════════════════════════════ */}
+      {/* ── Adopt Official Digital Signature Modal ── */}
       {showSignSelfModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                  <PenTool className="w-4 h-4" />
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-950 rounded-3xl w-full max-w-lg shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/60">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                  <PenTool className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-slate-900 text-base">Adopt Official Digital Signature</h3>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 dark:text-white text-base leading-snug">
+                    Adopt Official Digital Signature
+                  </h3>
+                  <p className="text-[11px] font-mono font-bold text-slate-400">
+                    Legally binding eIDAS &amp; ESIGN compliance certificate
+                  </p>
+                </div>
               </div>
-              <button onClick={() => setShowSignSelfModal(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer">
+              <button
+                onClick={() => setShowSignSelfModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 overflow-y-auto">
-              <div className="flex gap-1.5 p-1 bg-slate-100 rounded-xl w-fit">
+            <div className="p-6 space-y-5 overflow-y-auto">
+              {/* Segmented Mode Switcher Tabs */}
+              <div className="flex gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl w-full">
                 {(['draw', 'type', 'upload'] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setSignatureType(t)}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
-                      signatureType === t ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500'
+                    className={`flex-1 py-2 rounded-xl text-xs font-extrabold capitalize transition-all cursor-pointer ${
+                      signatureType === t
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800'
                     }`}
                   >
                     {t}
@@ -638,8 +652,8 @@ export default function ESignaturePage() {
                 ))}
               </div>
 
-              {/* Signature Canvas / Type / Upload */}
-              <div className="border-2 border-dashed border-slate-200 rounded-2xl h-44 flex items-center justify-center bg-slate-50/50 relative overflow-hidden">
+              {/* Signature Canvas / Type / Upload Container */}
+              <div className="border-2 border-dashed border-slate-200/80 dark:border-slate-800 rounded-3xl h-48 flex items-center justify-center bg-slate-50/50 dark:bg-slate-900/40 relative overflow-hidden shadow-2xs">
                 {signatureType === 'draw' && (
                   <>
                     <canvas
@@ -651,14 +665,21 @@ export default function ESignaturePage() {
                       onTouchStart={startDrawing}
                       onTouchMove={draw}
                       onTouchEnd={stopDrawing}
-                      className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
+                      className="absolute inset-0 w-full h-full cursor-crosshair touch-none z-10"
                     />
+                    {/* Baseline Guide */}
+                    <div className="absolute bottom-8 left-8 right-8 border-b-2 border-dashed border-orange-300/40 dark:border-orange-900/40 pointer-events-none flex items-center justify-between pb-1">
+                      <span className="text-[10px] font-mono font-bold text-orange-400/80 uppercase tracking-widest">x Sign Here</span>
+                      <span className="text-[10px] font-mono text-slate-300 dark:text-slate-700">Digital Pad</span>
+                    </div>
                     {!isDrawing && !lastPoint && (
-                      <span className="text-xs text-slate-400 font-medium pointer-events-none">Draw your signature here</span>
+                      <span className="text-xs font-bold text-slate-400 pointer-events-none z-0">
+                        Draw your signature above using your mouse or touch screen
+                      </span>
                     )}
                     <button
                       onClick={clearCanvas}
-                      className="absolute top-2 right-2 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-slate-50"
+                      className="absolute top-3 right-3 px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-xl text-[10px] font-mono font-extrabold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shadow-2xs z-20 cursor-pointer"
                     >
                       Clear
                     </button>
@@ -666,43 +687,53 @@ export default function ESignaturePage() {
                 )}
 
                 {signatureType === 'type' && (
-                  <div className="w-full px-6 text-center">
+                  <div className="w-full px-6 text-center space-y-2">
                     <input
                       type="text"
                       placeholder="Type your full legal name"
                       value={typedSignature}
                       onChange={(e) => setTypedSignature(e.target.value)}
-                      className="w-full text-center text-3xl text-slate-900 bg-transparent outline-none font-serif italic"
+                      className="w-full text-center text-3xl sm:text-4xl text-slate-900 dark:text-white bg-transparent outline-none font-serif italic"
                     />
+                    <p className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Cursive Legal Font Preview</p>
                   </div>
                 )}
 
                 {signatureType === 'upload' && (
-                  <div className="text-center space-y-2">
-                    <Upload className="w-8 h-8 text-slate-400 mx-auto" />
-                    <p className="text-xs text-slate-500 font-medium">Upload transparent PNG signature image</p>
+                  <div className="text-center space-y-2.5 p-4">
+                    <div className="w-12 h-12 bg-orange-50 dark:bg-orange-950/60 text-orange-500 rounded-2xl flex items-center justify-center mx-auto shadow-2xs">
+                      <Upload className="w-6 h-6" />
+                    </div>
+                    <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">Upload transparent PNG signature image</p>
+                    <p className="text-[10px] font-mono text-slate-400">Max size 5MB · Transparent background recommended</p>
                   </div>
                 )}
               </div>
 
-              {/* Consent check */}
-              <label className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
+              {/* eIDAS / ESIGN Legal Consent Container */}
+              <label className="flex items-start gap-3.5 p-4 bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/40 rounded-2xl cursor-pointer">
                 <input
                   type="checkbox"
                   checked={eSignConsent}
                   onChange={(e) => setESignConsent(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                  className="mt-0.5 w-4 h-4 rounded text-orange-500 focus:ring-orange-400 cursor-pointer"
                 />
-                <span className="text-xs text-slate-600 leading-relaxed">
-                  I agree that this electronic signature is intended to be my binding legal signature under eIDAS (EU/UK No 910/2014) and US ESIGN Act.
-                </span>
+                <div className="space-y-1">
+                  <p className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-orange-500" /> Legally Binding Signature Consent
+                  </p>
+                  <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
+                    I agree that this electronic signature is intended to be my binding legal signature under eIDAS (EU/UK No 910/2014) and US ESIGN Act.
+                  </p>
+                </div>
               </label>
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 flex items-center justify-end gap-2.5">
               <button
                 onClick={() => setShowSignSelfModal(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200"
+                className="px-4 py-2.5 rounded-2xl text-xs font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -712,7 +743,7 @@ export default function ESignaturePage() {
                   setShowSignSelfModal(false);
                   showNotify('Official signature adopted and saved to profile', 'success');
                 }}
-                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 transition-colors shadow-md shadow-indigo-600/20"
+                className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold disabled:opacity-40 transition-all shadow-sm shadow-orange-500/20 active:scale-95 cursor-pointer"
               >
                 Adopt &amp; Save Signature
               </button>

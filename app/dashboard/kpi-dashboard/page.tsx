@@ -298,26 +298,29 @@ export default function KPIDashboardPage() {
   };
 
   const getStatusBadge = (progress?: number) => {
-    if (progress === undefined) return { label: 'Active', color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' };
-    if (progress >= 85) return { label: 'On Track', color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200' };
-    if (progress >= 50) return { label: 'At Risk', color: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200' };
-    return { label: 'Behind Target', color: 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200' };
+    if (progress === undefined) return { label: 'Active', dot: 'bg-slate-400', badgeCls: 'bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200' };
+    if (progress >= 85) return { label: 'On Track', dot: 'bg-emerald-500', badgeCls: 'bg-emerald-50/80 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200/60' };
+    if (progress >= 50) return { label: 'At Risk', dot: 'bg-amber-500', badgeCls: 'bg-amber-50/80 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200/60' };
+    return { label: 'Behind Target', dot: 'bg-rose-500', badgeCls: 'bg-rose-50/80 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200/60' };
   };
 
-  /* Render Mini SVG Sparkline */
-  const renderSparkline = (data?: number[], colorClass: string = 'stroke-indigo-500') => {
+  /* Render Mini SVG Sparkline with Area Fill */
+  const renderSparkline = (data?: number[], strokeClass: string = 'stroke-orange-500', fillClass: string = 'fill-orange-500/10') => {
     if (!data || data.length === 0) return null;
     const max = Math.max(...data, 1);
     const min = Math.min(...data, 0);
-    const points = data.map((val, idx) => {
+    const pts = data.map((val, idx) => {
       const x = (idx / (data.length - 1)) * 100;
-      const y = 30 - ((val - min) / (max - min || 1)) * 26;
-      return `${x},${y}`;
-    }).join(' ');
+      const y = 26 - ((val - min) / (max - min || 1)) * 20;
+      return { x, y };
+    });
+    const pointsStr = pts.map(p => `${p.x},${p.y}`).join(' ');
+    const areaStr = `0,28 ${pointsStr} 100,28`;
 
     return (
-      <svg className="w-24 h-8 overflow-visible" viewBox="0 0 100 30">
-        <polyline fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={points} className={colorClass} />
+      <svg className="w-20 h-7 overflow-hidden shrink-0" viewBox="0 0 100 28" preserveAspectRatio="none">
+        <polygon points={areaStr} className={fillClass} />
+        <polyline fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={pointsStr} className={strokeClass} />
       </svg>
     );
   };
@@ -334,27 +337,29 @@ export default function KPIDashboardPage() {
       )}
 
       {/* ── Enterprise Header Shell ── */}
-      <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shrink-0 text-white shadow-md">
-              <BarChart3 className="w-5 h-5 stroke-[2]" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-50/70 via-white to-amber-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-slate-850 border border-orange-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="p-4 bg-orange-500 text-white rounded-2xl shrink-0 shadow-md">
+              <BarChart3 className="w-7 h-7 stroke-[2]" />
             </div>
-            <div>
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
-                KPI &amp; Strategic Performance
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+            <div className="space-y-1">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  KPI &amp; Strategic Performance
+                </h1>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800/80">
+                  <ShieldCheck className="w-3.5 h-3.5 text-orange-500" />
+                  Okleevo Enterprise Engine
+                </span>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl font-normal leading-relaxed">
                 Real-time target variance tracking, velocity sparklines &amp; growth telemetry
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/40">
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-              Okleevo Enterprise Engine
-            </span>
             <ModuleGuideBanner
               moduleId="kpi-dashboard"
               moduleName="KPIs &amp; Performance"
@@ -369,12 +374,12 @@ export default function KPIDashboardPage() {
         </div>
 
         {/* Header Actions */}
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex-wrap">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-200/60 dark:border-slate-800 flex-wrap relative z-10">
+          <div className="flex items-center gap-2.5">
             <select
               value={timeRange}
               onChange={e => setTimeRange(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
+              className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer shadow-xs focus:border-orange-500 transition-all"
             >
               <option value="today">Timeframe: Today</option>
               <option value="week">Timeframe: This Week</option>
@@ -386,7 +391,7 @@ export default function KPIDashboardPage() {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+              className="p-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-xs"
               title="Synchronize Data"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -394,7 +399,7 @@ export default function KPIDashboardPage() {
 
             <button
               onClick={handleExportCSV}
-              className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+              className="p-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-xs"
               title="Export Report CSV"
             >
               <Download className="w-4 h-4" />
@@ -403,7 +408,7 @@ export default function KPIDashboardPage() {
 
           <button
             onClick={() => setShowAddKPI(true)}
-            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold text-xs rounded-2xl transition-all cursor-pointer shadow-md shadow-orange-500/20 flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
             <span>Add Target KPI</span>
@@ -412,195 +417,194 @@ export default function KPIDashboardPage() {
       </div>
 
       {/* ── Summary Velocity Stats ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Velocity Score', value: `${calculateOverallPerformance()}%`, sub: 'Avg Target Achievement', icon: Gauge, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-950/60' },
+          { label: 'Velocity Score', value: `${calculateOverallPerformance()}%`, sub: 'Avg Target Achievement', icon: Gauge, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-950/60' },
           { label: 'Trending Up', value: kpis.filter(k => k.changeType === 'increase').length, sub: 'Metrics Accelerated', icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/60' },
           { label: 'On Target Goals', value: kpis.filter(k => k.progress !== undefined && k.progress >= 85).length, sub: `of ${kpis.length} Targets`, icon: Target, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-950/60' },
           { label: 'Active Streams', value: kpis.length, sub: 'Live Telemetry', icon: Layers, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-950/60' },
         ].map(stat => (
-          <div key={stat.label} className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center gap-3 min-w-0">
-            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${stat.bg} flex items-center justify-center shrink-0`}>
-              <stat.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.color}`} />
+          <div key={stat.label} className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs hover:border-orange-300 dark:hover:border-orange-900/50 transition-all flex items-center gap-4 min-w-0">
+            <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center shrink-0 shadow-xs`}>
+              <stat.icon className={`w-6 h-6 ${stat.color}`} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight truncate">{stat.value}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate mt-0.5">{stat.label}</p>
+              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-tight truncate">{stat.value}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider truncate mt-1">{stat.label}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* ── Toolbar: Category Filters & View Switcher ── */}
-      <div className="space-y-3">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between overflow-hidden">
-          
-          {/* Category Chips Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar min-w-0">
-            {metricCategories.map(cat => {
-              const isActive = selectedCategory === cat.id;
-              const Icon = cat.icon;
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        
+        {/* Category Chips Bar — Auto-Wrapping & Scrollbar-Free */}
+        <div className="flex flex-wrap items-center gap-2.5 min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          {metricCategories.map(cat => {
+            const isActive = selectedCategory === cat.id;
+            const Icon = cat.icon;
 
-              return (
-                <div
-                  key={cat.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setSelectedCategory(cat.id); }}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border shrink-0 ${
-                    isActive
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                      : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{cat.name}</span>
-                  <span className={`px-1.5 py-0.2 text-[10px] rounded-full font-extrabold ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                  }`}>
-                    {cat.count}
-                  </span>
-                  {cat.dest && (
-                    <button
-                      onClick={e => { e.stopPropagation(); router.push(cat.dest!); }}
-                      title={`Open ${cat.name} module`}
-                      className={`p-0.5 rounded-md transition-colors ${isActive ? 'hover:bg-white/20 text-white/80' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'}`}
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* 4-Way View Switcher Bar — Responsive Scrollable Container */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shrink-0 overflow-x-auto max-w-full scrollbar-none">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                viewMode === 'grid' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-              }`}
-              title="Scorecard Grid View"
-            >
-              <Grid className="w-3.5 h-3.5 shrink-0" />
-              <span>Scorecards</span>
-            </button>
-            <button
-              onClick={() => setViewMode('chart')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                viewMode === 'chart' ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-              }`}
-              title="Comparative Analytics Chart"
-            >
-              <LineChart className="w-3.5 h-3.5 shrink-0" />
-              <span>Analytics</span>
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                viewMode === 'table' ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-              }`}
-              title="Structured Data Table"
-            >
-              <List className="w-3.5 h-3.5 shrink-0" />
-              <span>Table</span>
-            </button>
-            <button
-              onClick={() => setViewMode('goals')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                viewMode === 'goals' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-              }`}
-              title="Goal OKR Matrix"
-            >
-              <Target className="w-3.5 h-3.5 shrink-0" />
-              <span>OKR Goals</span>
-            </button>
-          </div>
-
+            return (
+              <div
+                key={cat.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedCategory(cat.id)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setSelectedCategory(cat.id); }}
+                className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+                  isActive
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm shadow-orange-500/20'
+                    : 'bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{cat.name}</span>
+                <span className={`px-2 py-0.5 text-[10px] rounded-full font-mono font-extrabold ${
+                  isActive ? 'bg-white/20 text-white' : 'bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                }`}>
+                  {cat.count}
+                </span>
+                {cat.dest && (
+                  <button
+                    onClick={e => { e.stopPropagation(); router.push(cat.dest!); }}
+                    title={`Open ${cat.name} module`}
+                    className={`p-0.5 rounded-md transition-colors ${isActive ? 'hover:bg-white/20 text-white/80' : 'hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400'}`}
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
+
+        {/* 4-Way View Switcher Dock */}
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl shrink-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              viewMode === 'grid' ? 'bg-white dark:bg-slate-950 text-orange-600 dark:text-orange-400 shadow-2xs font-extrabold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+            title="Scorecard Grid View"
+          >
+            <Grid className="w-3.5 h-3.5" />
+            <span>Scorecards</span>
+          </button>
+          <button
+            onClick={() => setViewMode('chart')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              viewMode === 'chart' ? 'bg-white dark:bg-slate-950 text-purple-600 shadow-2xs font-extrabold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+            title="Comparative Analytics Chart"
+          >
+            <LineChart className="w-3.5 h-3.5" />
+            <span>Analytics</span>
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              viewMode === 'table' ? 'bg-white dark:bg-slate-950 text-emerald-600 shadow-2xs font-extrabold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+            title="Structured Data Table"
+          >
+            <List className="w-3.5 h-3.5" />
+            <span>Table</span>
+          </button>
+          <button
+            onClick={() => setViewMode('goals')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              viewMode === 'goals' ? 'bg-white dark:bg-slate-950 text-amber-600 shadow-2xs font-extrabold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+            title="Goal OKR Matrix"
+          >
+            <Target className="w-3.5 h-3.5" />
+            <span>OKR Goals</span>
+          </button>
+        </div>
+
       </div>
 
       {/* ── Main View Workspace ── */}
       {loading ? (
         <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-orange-500 animate-spin" />
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Loading Executive Telemetry...</p>
         </div>
       ) : filteredKPIs.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-12 text-center space-y-4 shadow-xs">
-          <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto text-slate-400">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-12 text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 bg-orange-50 dark:bg-orange-950/60 text-orange-500 rounded-2xl flex items-center justify-center mx-auto">
             <BarChart3 className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">No Target KPIs in Category</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">No Target KPIs in Selected Category</h3>
           <button
             onClick={() => setShowAddKPI(true)}
-            className="px-4 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-xs"
+            className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold text-xs rounded-2xl shadow-md"
           >
             + Create KPI Target
           </button>
         </div>
       ) : viewMode === 'table' ? (
         /* ── 1. Structured Data Table ── */
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
+        <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xs overflow-hidden">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-slate-400 uppercase font-bold text-[10px]">
+            <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-800 text-slate-400 uppercase font-extrabold text-[10px] tracking-wider">
               <tr>
-                <th className="px-5 py-3">Metric Name</th>
-                <th className="px-5 py-3">Category</th>
-                <th className="px-5 py-3">Actual Value</th>
-                <th className="px-5 py-3">Change</th>
-                <th className="px-5 py-3">Target</th>
-                <th className="px-5 py-3">Progress</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3 text-right">Actions</th>
+                <th className="px-5 py-4">Metric Name</th>
+                <th className="px-5 py-4">Category</th>
+                <th className="px-5 py-4">Actual Value</th>
+                <th className="px-5 py-4">Change</th>
+                <th className="px-5 py-4">Target</th>
+                <th className="px-5 py-4">Progress</th>
+                <th className="px-5 py-4">Status</th>
+                <th className="px-5 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
               {filteredKPIs.map(kpi => {
                 const st = getStatusBadge(kpi.progress);
                 return (
-                  <tr key={kpi.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 font-medium">
-                    <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-indigo-600" />
+                  <tr key={kpi.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 font-medium transition-colors">
+                    <td className="px-5 py-4 font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
+                      <div className="w-2 h-2 rounded-full bg-orange-500" />
                       <span>{kpi.name}</span>
                     </td>
-                    <td className="px-5 py-3.5 uppercase text-[10px] font-bold text-slate-400">{kpi.category}</td>
-                    <td className="px-5 py-3.5 font-extrabold text-slate-900 dark:text-white">{kpi.value}</td>
-                    <td className="px-5 py-3.5">
+                    <td className="px-5 py-4 uppercase text-[10px] font-mono font-extrabold text-slate-400">{kpi.category}</td>
+                    <td className="px-5 py-4 font-extrabold font-mono text-slate-900 dark:text-white">{kpi.value}</td>
+                    <td className="px-5 py-4">
                       {(!kpi.custom || kpi.change !== 0) ? (
-                        <span className={`inline-flex items-center gap-1 text-[11px] font-bold ${kpi.changeType === 'increase' ? 'text-emerald-600' : kpi.changeType === 'decrease' ? 'text-rose-600' : 'text-slate-400'}`}>
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-mono font-bold ${kpi.changeType === 'increase' ? 'text-emerald-600' : kpi.changeType === 'decrease' ? 'text-rose-600' : 'text-slate-400'}`}>
                           {kpi.changeType === 'increase' ? <TrendingUp className="w-3 h-3" /> : kpi.changeType === 'decrease' ? <TrendingDown className="w-3 h-3" /> : null}
                           {kpi.change > 0 ? '+' : ''}{kpi.change}%
                         </span>
                       ) : <span className="text-slate-300 dark:text-slate-600">—</span>}
                     </td>
-                    <td className="px-5 py-3.5 text-slate-500">{kpi.target || 'N/A'}</td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                          <div className="bg-indigo-600 h-full rounded-full" style={{ width: `${Math.min(100, kpi.progress || 0)}%` }} />
+                    <td className="px-5 py-4 text-slate-500 font-medium">{kpi.target || 'N/A'}</td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-24 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                          <div className="bg-gradient-to-r from-orange-500 to-amber-500 h-full rounded-full" style={{ width: `${Math.min(100, kpi.progress || 0)}%` }} />
                         </div>
-                        <span className="text-[10px] font-bold">{kpi.progress}%</span>
+                        <span className="text-[10px] font-mono font-extrabold text-slate-700 dark:text-slate-300">{kpi.progress}%</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${st.color}`}>
-                        {st.label}
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${st.badgeCls}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                        <span>{st.label}</span>
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openAnalysisModal(kpi)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-indigo-600" title="Okleevo AI Intelligence">
+                        <button onClick={() => openAnalysisModal(kpi)} className="p-1.5 hover:bg-orange-50 dark:hover:bg-orange-950/40 rounded-xl text-orange-500 transition-colors" title="Okleevo AI Intelligence">
                           <Sparkles className="w-4 h-4" />
                         </button>
                         {kpi.custom && (
                           <>
-                            <button onClick={() => openEditModal(kpi)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500" title="Edit">
+                            <button onClick={() => openEditModal(kpi)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-500" title="Edit">
                               <Edit3 className="w-4 h-4" />
                             </button>
-                            <button onClick={() => openDeleteModal(kpi)} className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-rose-500" title="Delete">
+                            <button onClick={() => openDeleteModal(kpi)} className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl text-rose-500" title="Delete">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </>
@@ -615,27 +619,30 @@ export default function KPIDashboardPage() {
         </div>
       ) : viewMode === 'chart' ? (
         /* ── 2. Comparative Analytics View ── */
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-850 pb-4">
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Metric Comparative Analytics</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">7-day performance velocity across tracked KPIs</p>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">Metric Comparative Analytics</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Velocity sparklines &amp; real-time performance telemetry across active KPIs</p>
             </div>
-            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-extrabold text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-3 py-1 rounded-full border border-orange-200/60">
               Telemetry Synchronized
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredKPIs.slice(0, 4).map(kpi => (
-              <div key={kpi.id} className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {filteredKPIs.map(kpi => (
+              <div key={kpi.id} className="bg-slate-50/70 dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-850 space-y-4 hover:border-orange-300 dark:hover:border-orange-900/50 transition-all">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">{kpi.name}</span>
-                  <span className="text-xs font-extrabold text-indigo-600">{kpi.value}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-orange-500" />
+                    <span className="text-xs font-extrabold text-slate-900 dark:text-white">{kpi.name}</span>
+                  </div>
+                  <span className="text-sm font-extrabold font-mono text-slate-900 dark:text-white">{kpi.value}</span>
                 </div>
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-[10px] font-bold text-slate-400">Velocity Sparkline:</span>
-                  {renderSparkline(kpi.trend, 'stroke-indigo-600')}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800">
+                  <span className="text-[10px] font-extrabold uppercase text-slate-400 font-mono">7-Day Velocity:</span>
+                  {renderSparkline(kpi.trend, 'stroke-orange-500', 'fill-orange-500/10')}
                 </div>
               </div>
             ))}
@@ -643,41 +650,67 @@ export default function KPIDashboardPage() {
         </div>
       ) : viewMode === 'goals' ? (
         /* ── 3. Goal Progress OKR Matrix ── */
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {['On Track (85%+)', 'At Risk (50-84%)', 'Behind Target (<50%)'].map((columnLabel, idx) => {
-            const minP = idx === 0 ? 85 : idx === 1 ? 50 : 0;
-            const maxP = idx === 0 ? 1000 : idx === 1 ? 84.9 : 49.9;
-            const columnKPIs = filteredKPIs.filter(k => (k.progress || 0) >= minP && (k.progress || 0) <= maxP);
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { label: 'On Track (85%+)', min: 85, max: 1000, dot: 'bg-emerald-500' },
+            { label: 'At Risk (50-84%)', min: 50, max: 84.9, dot: 'bg-amber-500' },
+            { label: 'Behind Target (<50%)', min: 0, max: 49.9, dot: 'bg-rose-500' },
+          ].map((col) => {
+            const columnKPIs = filteredKPIs.filter(k => (k.progress || 0) >= col.min && (k.progress || 0) <= col.max);
 
             return (
-              <div key={columnLabel} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800 space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">{columnLabel}</h4>
-                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+              <div key={col.label} className="bg-slate-50/70 dark:bg-slate-900/60 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 space-y-4 flex flex-col justify-between">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${col.dot}`} />
+                    <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 tracking-tight">{col.label}</h4>
+                  </div>
+                  <span className="text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                     {columnKPIs.length}
                   </span>
                 </div>
 
-                <div className="space-y-3">
-                  {columnKPIs.map(kpi => (
-                    <div key={kpi.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">{kpi.name}</span>
-                        <span className="text-xs font-extrabold text-indigo-600">{kpi.progress}%</span>
-                      </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div className="bg-indigo-600 h-full rounded-full" style={{ width: `${Math.min(100, kpi.progress || 0)}%` }} />
-                      </div>
+                <div className="space-y-3 flex-1">
+                  {columnKPIs.length === 0 ? (
+                    <div className="py-8 px-4 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 flex flex-col items-center justify-center gap-1.5">
+                      <Target className="w-5 h-5 text-slate-300 dark:text-slate-600" />
+                      <p className="text-xs font-medium text-slate-400">No metrics in this goal tier</p>
                     </div>
-                  ))}
+                  ) : (
+                    columnKPIs.map(kpi => {
+                      const Icon = kpi.icon || Activity;
+                      return (
+                        <div key={kpi.id} className="bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-850 shadow-2xs space-y-3 hover:border-orange-300 dark:hover:border-orange-900/60 transition-all">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-850 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-750 flex items-center justify-center shrink-0">
+                                <Icon className="w-3.5 h-3.5" />
+                              </div>
+                              <span className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{kpi.name}</span>
+                            </div>
+                            <span className="text-xs font-extrabold font-mono text-orange-600 dark:text-orange-400 shrink-0">{kpi.progress}%</span>
+                          </div>
+
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-gradient-to-r from-orange-500 to-amber-500 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, kpi.progress || 0)}%` }} />
+                          </div>
+
+                          <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                            <span>Target: {kpi.target || 'N/A'}</span>
+                            <span className="uppercase font-mono">{kpi.category}</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
       ) : (
-        /* ── 4. Scorecard Grid View ── */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        /* ── 4. Scorecard Grid View (Minimalist Masterpiece) ── */
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredKPIs.map(kpi => {
             const Icon = kpi.icon || Activity;
             const st = getStatusBadge(kpi.progress);
@@ -685,33 +718,46 @@ export default function KPIDashboardPage() {
             return (
               <div
                 key={kpi.id}
-                className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs hover:border-indigo-300 dark:hover:border-indigo-800 transition-all flex flex-col justify-between space-y-4 relative group"
+                className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-850 rounded-3xl p-6 shadow-2xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between space-y-5 group"
               >
-                {/* Header Row */}
-                <div className="flex items-center justify-between">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${kpi.gradient} flex items-center justify-center text-white shadow-xs`}>
-                    <Icon className="w-5 h-5" />
+                {/* Top Row: Micro Icon, Category & Status Dot */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1.5 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-850 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-750 flex items-center justify-center shrink-0">
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 font-mono">
+                        {kpi.category}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug">
+                      {kpi.name}
+                    </h3>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${st.color}`}>
-                      {st.label}
+                  <div className="flex items-center gap-1 shrink-0 pt-0.5">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${st.badgeCls}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                      <span>{st.label}</span>
                     </span>
+
                     <button
                       onClick={() => openAnalysisModal(kpi)}
-                      className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-indigo-600 transition-colors"
+                      className="p-1 hover:bg-orange-50 dark:hover:bg-orange-950/40 rounded-lg text-slate-400 hover:text-orange-500 transition-colors cursor-pointer"
                       title="Okleevo AI Intelligence"
                     >
-                      <Sparkles className="w-4 h-4" />
+                      <Sparkles className="w-3.5 h-3.5" />
                     </button>
-                    {kpi.custom ? (
+
+                    {kpi.custom && (
                       <div className="relative" ref={activeMenuKPId === kpi.id ? menuRef : undefined}>
                         <button
                           onClick={() => setActiveMenuKPId(activeMenuKPId === kpi.id ? null : kpi.id)}
-                          className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"
+                          className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors cursor-pointer"
                           title="More Actions"
                         >
-                          <MoreVertical className="w-4 h-4" />
+                          <MoreVertical className="w-3.5 h-3.5" />
                         </button>
                         {activeMenuKPId === kpi.id && (
                           <div className="absolute right-0 top-7 z-10 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg overflow-hidden">
@@ -730,38 +776,41 @@ export default function KPIDashboardPage() {
                           </div>
                         )}
                       </div>
-                    ) : (
-                      <span title="Computed live from real business data — not editable" className="p-1 text-slate-300 dark:text-slate-600">
-                        <ShieldCheck className="w-4 h-4" />
-                      </span>
                     )}
                   </div>
                 </div>
 
-                {/* Values, Change & Sparkline */}
-                <div className="space-y-2">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{kpi.category} &bull; {kpi.name}</p>
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{kpi.value}</span>
-                    {kpi.trend && kpi.trend.length > 0 && renderSparkline(kpi.trend, 'stroke-indigo-600')}
-                  </div>
+                {/* Middle Row: Large Value & Clean Trend Badge */}
+                <div className="space-y-2 py-1">
+                  <span className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight block">
+                    {kpi.value}
+                  </span>
+
                   {(!kpi.custom || kpi.change !== 0) && (
-                    <span className={`inline-flex items-center gap-1 text-[11px] font-bold ${kpi.changeType === 'increase' ? 'text-emerald-600' : kpi.changeType === 'decrease' ? 'text-rose-600' : 'text-slate-400'}`}>
-                      {kpi.changeType === 'increase' ? <TrendingUp className="w-3 h-3" /> : kpi.changeType === 'decrease' ? <TrendingDown className="w-3 h-3" /> : null}
-                      {kpi.change > 0 ? '+' : ''}{kpi.change}% vs last month
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`inline-flex items-center gap-1 text-[11px] font-mono font-bold ${
+                        kpi.changeType === 'increase'
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : kpi.changeType === 'decrease'
+                          ? 'text-rose-600 dark:text-rose-400'
+                          : 'text-slate-400'
+                      }`}>
+                        {kpi.changeType === 'increase' ? <TrendingUp className="w-3.5 h-3.5" /> : kpi.changeType === 'decrease' ? <TrendingDown className="w-3.5 h-3.5" /> : null}
+                        <span>{kpi.change > 0 ? '+' : ''}{kpi.change}% vs last month</span>
+                      </span>
+                    </div>
                   )}
                 </div>
 
-                {/* Target Progress Bar */}
+                {/* Bottom Row: Micro Target Progress Meter */}
                 {kpi.target && (
-                  <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center justify-between text-[11px] font-bold">
-                      <span className="text-slate-400">Target: {kpi.target}</span>
-                      <span className="text-indigo-600 dark:text-indigo-400">{kpi.progress}%</span>
+                  <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-850">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                      <span>Target: {kpi.target}</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">{kpi.progress}% achieved</span>
                     </div>
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                      <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, kpi.progress || 0)}%` }} />
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                      <div className="bg-gradient-to-r from-orange-500 to-amber-500 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, kpi.progress || 0)}%` }} />
                     </div>
                   </div>
                 )}
