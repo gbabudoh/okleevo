@@ -308,6 +308,10 @@ function SettingsPageInner() {
             language: 'English',
             avatar: data.avatar || data.image || '',
           });
+          setSecurity(prev => ({
+            ...prev,
+            twoFactorEnabled: data.twoFactorEnabled ?? false,
+          }));
           const fetchedModules = data.business?.enabledModules || [];
           const defaultAll = [
             'dashboard', 'crm', 'booking', 'helpdesk', 'campaigns',
@@ -573,11 +577,101 @@ function SettingsPageInner() {
   }
 
   const [security, setSecurity] = useState<SecuritySettings>({
-    twoFactorEnabled: true,
+    twoFactorEnabled: false,
     emailNotifications: true,
     smsNotifications: false,
     loginAlerts: true
   });
+
+  // 2FA Verification & Management State
+  const [show2FAVerifyModal, setShow2FAVerifyModal] = useState(false);
+  const [show2FADisableModal, setShow2FADisableModal] = useState(false);
+  const [twoFactorCodeInput, setTwoFactorCodeInput] = useState('');
+  const [twoFactorPasswordInput, setTwoFactorPasswordInput] = useState('');
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+  const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
+
+  const handleToggle2FA = async () => {
+    if (!security.twoFactorEnabled) {
+      // Send verification email to user
+      setTwoFactorLoading(true);
+      setTwoFactorError(null);
+      setTwoFactorCodeInput('');
+      try {
+        const res = await fetch('/api/auth/2fa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'send-enable-code' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to send verification code');
+        setShow2FAVerifyModal(true);
+      } catch (err: unknown) {
+        showToast(err instanceof Error ? err.message : 'Failed to send verification code', 'error');
+      } finally {
+        setTwoFactorLoading(false);
+      }
+    } else {
+      // Prompt password before disabling
+      setTwoFactorError(null);
+      setTwoFactorPasswordInput('');
+      setShow2FADisableModal(true);
+    }
+  };
+
+  const handleConfirmEnable2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (twoFactorCodeInput.trim().length !== 6) {
+      setTwoFactorError('Please enter the complete 6-digit verification code.');
+      return;
+    }
+    setTwoFactorLoading(true);
+    setTwoFactorError(null);
+    try {
+      const res = await fetch('/api/auth/2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verify-enable', code: twoFactorCodeInput.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Invalid verification code');
+      setSecurity(prev => ({ ...prev, twoFactorEnabled: true }));
+      setShow2FAVerifyModal(false);
+      setTwoFactorCodeInput('');
+      showToast('Two-Factor Authentication is now enabled!', 'success');
+    } catch (err: unknown) {
+      setTwoFactorError(err instanceof Error ? err.message : 'Invalid code');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleConfirmDisable2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!twoFactorPasswordInput) {
+      setTwoFactorError('Please enter your password to confirm.');
+      return;
+    }
+    setTwoFactorLoading(true);
+    setTwoFactorError(null);
+    try {
+      const res = await fetch('/api/auth/2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disable', password: twoFactorPasswordInput }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Incorrect password');
+      setSecurity(prev => ({ ...prev, twoFactorEnabled: false }));
+      setShow2FADisableModal(false);
+      setTwoFactorPasswordInput('');
+      showToast('Two-Factor Authentication has been disabled.', 'success');
+    } catch (err: unknown) {
+      setTwoFactorError(err instanceof Error ? err.message : 'Incorrect password');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
 
   const [notifications, setNotifications] = useState<NotificationSettings>({
     emailDigest: true,
@@ -1301,28 +1395,38 @@ function SettingsPageInner() {
                 <h3 className="text-sm font-extrabold text-slate-900 dark:text-white mb-1">Two-Factor Authentication</h3>
                 <p className="text-xs font-bold text-slate-400 mb-5 leading-relaxed">Secure your account with an extra layer of 2FA protection.</p>
 
-                <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 mb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300">2FA Status</span>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold uppercase border ${
-                      security.twoFactorEnabled 
-                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-900/40' 
-                        : 'bg-slate-100 dark:bg-slate-900 text-slate-500 border-slate-200/60'
-                    }`}>
-                      {security.twoFactorEnabled ? 'Enabled' : 'Disabled'}
-                    </span>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer w-full">
-                    <input
-                      type="checkbox"
-                      checked={security.twoFactorEnabled}
-                      onChange={(e) => setSecurity({ ...security, twoFactorEnabled: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-full h-9 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-xl peer peer-checked:bg-gradient-to-r peer-checked:from-orange-500 peer-checked:to-amber-600 transition-all flex items-center px-1">
-                      <div className={`w-7 h-7 bg-white rounded-lg shadow-sm transition-transform ${security.twoFactorEnabled ? 'translate-x-[calc(100%-1.75rem)]' : 'translate-x-0'}`}></div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 mb-4 flex items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-extrabold text-slate-900 dark:text-white">Email 2FA</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-extrabold uppercase border ${
+                        security.twoFactorEnabled 
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-900/40' 
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200/60'
+                      }`}>
+                        {security.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                      </span>
                     </div>
-                  </label>
+                    <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+                      Sends a secure 6-digit PIN to {profile.email || 'your email'} whenever signing in.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleToggle2FA}
+                    disabled={twoFactorLoading}
+                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
+                      security.twoFactorEnabled
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-600'
+                        : 'bg-slate-300 dark:bg-slate-700'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                        security.twoFactorEnabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
                 </div>
                 <p className="text-[10px] font-mono font-bold text-slate-400">Enrolling 2FA enforces multi-factor verification at sign-in.</p>
               </div>
@@ -2358,6 +2462,127 @@ Confidential - For Personal Use Only
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enable 2FA Verification Modal */}
+      {show2FAVerifyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-950 rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200/80 dark:border-slate-800 shadow-2xl space-y-5 transform animate-in fade-in zoom-in duration-200">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 bg-orange-500/10 text-orange-500 rounded-2xl flex items-center justify-center mx-auto border border-orange-500/20 shadow-sm">
+                <Shield className="w-6 h-6" />
+              </div>
+              <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">Enable Two-Factor Authentication</h2>
+              <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                We emailed a 6-digit verification code to <strong className="text-slate-700 dark:text-slate-200">{profile.email}</strong>. Enter it below to activate 2FA protection.
+              </p>
+            </div>
+
+            <form onSubmit={handleConfirmEnable2FA} className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-mono font-extrabold text-slate-400 uppercase tracking-wider text-center mb-1.5">
+                  Enter 6-Digit PIN
+                </label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  autoFocus
+                  value={twoFactorCodeInput}
+                  onChange={e => {
+                    setTwoFactorCodeInput(e.target.value.replace(/\D/g, '').slice(0, 6));
+                    setTwoFactorError(null);
+                  }}
+                  placeholder="000000"
+                  className="w-full text-center tracking-[10px] text-2xl font-mono font-black py-3 bg-slate-50 dark:bg-slate-900 border-2 border-orange-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 rounded-2xl outline-none transition text-slate-900 dark:text-white"
+                  required
+                />
+              </div>
+
+              {twoFactorError && (
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 text-xs font-bold text-rose-600 rounded-xl text-center">
+                  {twoFactorError}
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShow2FAVerifyModal(false)}
+                  className="flex-1 py-2.5 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-extrabold text-xs rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={twoFactorCodeInput.length !== 6 || twoFactorLoading}
+                  className="flex-2 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:opacity-40 text-white font-extrabold text-xs rounded-2xl shadow-sm transition cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
+                >
+                  {twoFactorLoading ? 'Verifying...' : 'Activate 2FA'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Disable 2FA Password Confirmation Modal */}
+      {show2FADisableModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-950 rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200/80 dark:border-slate-800 shadow-2xl space-y-5 transform animate-in fade-in zoom-in duration-200">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center mx-auto border border-rose-500/20 shadow-sm">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">Disable Two-Factor Auth?</h2>
+              <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                Please enter your account password to confirm turning off 2FA protection.
+              </p>
+            </div>
+
+            <form onSubmit={handleConfirmDisable2FA} className="space-y-4">
+              <div>
+                <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  autoFocus
+                  value={twoFactorPasswordInput}
+                  onChange={e => {
+                    setTwoFactorPasswordInput(e.target.value);
+                    setTwoFactorError(null);
+                  }}
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white rounded-2xl outline-none focus:border-orange-500 transition"
+                  required
+                />
+              </div>
+
+              {twoFactorError && (
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 text-xs font-bold text-rose-600 rounded-xl text-center">
+                  {twoFactorError}
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShow2FADisableModal(false)}
+                  className="flex-1 py-2.5 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-extrabold text-xs rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!twoFactorPasswordInput || twoFactorLoading}
+                  className="flex-2 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-40 text-white font-extrabold text-xs rounded-2xl shadow-sm transition cursor-pointer active:scale-95"
+                >
+                  {twoFactorLoading ? 'Disabling...' : 'Confirm Disable'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

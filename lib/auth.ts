@@ -3,6 +3,7 @@ import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { send2FAEmail } from "@/lib/services/email";
 
 const config = {
   providers: [
@@ -11,6 +12,7 @@ const config = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        code: { label: "2FA Code", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -64,6 +66,54 @@ const config = {
           }
 
           console.log('[AUTH] ✅ Password is VALID!');
+
+          // 2FA Verification Check
+          if (user.twoFactorEnabled) {
+            const submittedCode = credentials?.code ? String(credentials.code).trim() : '';
+
+            if (!submittedCode) {
+              // Generate 6-digit random code
+              const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+              const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+              await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                  twoFactorCode: generatedOtp,
+                  twoFactorExpires: expires,
+                },
+              });
+
+              // Dispatch security email
+              send2FAEmail(user.email, generatedOtp, user.firstName).catch(err => {
+                console.error('[AUTH] ❌ Failed to send 2FA email:', err);
+              });
+
+              console.log('[AUTH] ⚠️ 2FA Required for user:', email);
+              throw new Error('2FA_REQUIRED');
+            }
+
+            // Verify submitted 6-digit code
+            const isCodeValid =
+              user.twoFactorCode === submittedCode &&
+              user.twoFactorExpires !== null &&
+              new Date(user.twoFactorExpires) > new Date();
+
+            if (!isCodeValid) {
+              console.log('[AUTH] ❌ Invalid or expired 2FA code');
+              throw new Error('INVALID_2FA_CODE');
+            }
+
+            // Clear one-time code upon successful verification
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                twoFactorCode: null,
+                twoFactorExpires: null,
+              },
+            });
+            console.log('[AUTH] ✅ 2FA Code Verified Successfully!');
+          }
 
           // Update last login
           try {

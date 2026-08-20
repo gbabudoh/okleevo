@@ -394,3 +394,38 @@ export async function sendInvoiceEmail(email: string, invoiceId: string, invoice
     text: `You have a new invoice: ${invoiceId}. View at: ${url}`,
   });
 }
+
+export async function send2FAEmail(email: string, code: string, firstName?: string): Promise<EmailResult> {
+  const name = firstName || 'there';
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #0f172a; border-radius: 24px; padding: 36px 28px; color: #ffffff; border: 1px solid #1e293b;">
+      <div style="text-align: center; margin-bottom: 28px;">
+        <span style="font-size: 22px; font-weight: 900; letter-spacing: 2px; color: #ffffff;">OKLEEVO<span style="color: #f97316;">.</span></span>
+      </div>
+      <div style="background: #1e293b; border-radius: 20px; padding: 28px 20px; border: 1px solid #334155; text-align: center;">
+        <h2 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0 0 12px 0;">Two-Factor Verification Code</h2>
+        <p style="font-size: 13px; color: #94a3b8; margin: 0 0 20px 0; line-height: 1.5;">
+          Hello ${name}, here is your single-use security code to access your Okleevo account:
+        </p>
+        <div style="background: #0f172a; border: 2px dashed #f97316; border-radius: 14px; padding: 16px 24px; display: inline-block; margin-bottom: 20px;">
+          <span style="font-family: monospace; font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #f97316;">${code}</span>
+        </div>
+        <p style="font-size: 11px; color: #64748b; margin: 0;">
+          This code will expire in <strong>10 minutes</strong>. If you did not attempt to sign in, please change your password immediately.
+        </p>
+      </div>
+      <p style="text-align: center; font-size: 11px; color: #475569; margin-top: 20px;">
+        Protected by Okleevo Multi-Factor Security System
+      </p>
+    </div>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `🔐 Your Okleevo Verification Code: ${code}`,
+    html,
+    text: `Your Okleevo verification code is: ${code}. It expires in 10 minutes.`,
+    senderName: 'Okleevo Security',
+  });
+}
+

@@ -42,6 +42,11 @@ model User {
   seenTours               String[] @default([]) // Module ids whose onboarding tour has been completed/skipped
   favoriteAiTemplates     String[] @default([]) // AI Content Studio template ids the user has starred
 
+  // Two-Factor Authentication (Email OTP)
+  twoFactorEnabled        Boolean   @default(false)
+  twoFactorCode           String?
+  twoFactorExpires        DateTime?
+
   // Timestamps
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

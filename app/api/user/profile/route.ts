@@ -59,6 +59,7 @@ export async function GET() {
       status: user.status,
       avatar: user.avatar ?? user.image ?? null,
       timezone: user.timezone,
+      twoFactorEnabled: user.twoFactorEnabled ?? false,
       notificationPreferences: user.notificationPreferences,
       business: user.business,
     });

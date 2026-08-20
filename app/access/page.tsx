@@ -3,8 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, CheckCircle2, ShieldCheck, RefreshCw, KeyRound } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 
@@ -14,6 +14,12 @@ function AccessContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
+  
+  // 2FA Verification State
+  const [step, setStep] = useState<'credentials' | '2fa'>('credentials');
+  const [otpCode, setOtpCode] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
@@ -22,6 +28,15 @@ function AccessContent() {
       setSuccessBanner('You already have an account. Sign in below.');
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,7 +52,7 @@ function AccessContent() {
     setError(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -46,31 +61,104 @@ function AccessContent() {
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
+        code: "",
         redirect: false,
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        if (result.error.includes('2FA_REQUIRED')) {
+          setStep('2fa');
+          setError(null);
+          setSuccessBanner(`A 6-digit security code was dispatched to ${formData.email}`);
+          setResendCooldown(30);
+        } else {
+          setError('Invalid email or password');
+        }
       } else {
-        // result.ok === true, or undefined in some NextAuth v5 flows — both mean success
-        const callbackUrl = searchParams.get('callbackUrl');
-        const isAuthUrl = callbackUrl && (
-          callbackUrl.startsWith('/auth') ||
-          callbackUrl.startsWith('/access') ||
-          callbackUrl.startsWith('/login') ||
-          callbackUrl.startsWith('/signin') ||
-          callbackUrl.startsWith('/onboarding') ||
-          callbackUrl.startsWith('/signup') ||
-          callbackUrl.startsWith('/register')
-        );
-        const targetUrl = callbackUrl && callbackUrl.startsWith('/') && !isAuthUrl ? callbackUrl : '/dashboard';
-        window.location.href = targetUrl;
+        proceedToDashboard();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in. Please try again.');
+      if (err instanceof Error && err.message.includes('2FA_REQUIRED')) {
+        setStep('2fa');
+        setError(null);
+        setSuccessBanner(`A 6-digit security code was dispatched to ${formData.email}`);
+        setResendCooldown(30);
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to sign in. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpCode.trim().length !== 6) {
+      setError('Please enter the complete 6-digit verification code.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        code: otpCode.trim(),
+        redirect: false,
+      });
+
+      if (result?.error) {
+        if (result.error.includes('INVALID_2FA_CODE')) {
+          setError('Invalid or expired 6-digit code. Please check your email or request a new code.');
+        } else {
+          setError('Verification failed. Please try again.');
+        }
+      } else {
+        proceedToDashboard();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (resendCooldown > 0 || resending) return;
+    setResending(true);
+    setError(null);
+    try {
+      // Re-trigger credentials check without code to regenerate and dispatch email
+      await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        code: "",
+        redirect: false,
+      });
+      setSuccessBanner(`A new verification code was sent to ${formData.email}`);
+      setResendCooldown(45);
+    } catch {
+      setError('Could not resend verification code. Please try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const proceedToDashboard = () => {
+    const callbackUrl = searchParams.get('callbackUrl');
+    const isAuthUrl = callbackUrl && (
+      callbackUrl.startsWith('/auth') ||
+      callbackUrl.startsWith('/access') ||
+      callbackUrl.startsWith('/login') ||
+      callbackUrl.startsWith('/signin') ||
+      callbackUrl.startsWith('/onboarding') ||
+      callbackUrl.startsWith('/signup') ||
+      callbackUrl.startsWith('/register')
+    );
+    const targetUrl = callbackUrl && callbackUrl.startsWith('/') && !isAuthUrl ? callbackUrl : '/dashboard';
+    window.location.href = targetUrl;
   };
 
   return (
@@ -90,13 +178,17 @@ function AccessContent() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-block mb-6 hover:scale-105 transition-transform">
-            <Image src="/logo.png" alt="Okleevo" width={160} height={42} className="h-10 w-auto" />
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-block mb-5 hover:scale-105 transition-transform">
+            <Image src="/logo.png" alt="Okleevo" width={160} height={42} className="h-10 w-auto" priority />
           </Link>
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome Back</h1>
-            <p className="text-base text-gray-500 font-medium">Sign in to manage your entire business.</p>
+          <div className="space-y-1.5">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              {step === '2fa' ? 'Two-Step Verification' : 'Welcome Back'}
+            </h1>
+            <p className="text-sm text-gray-500 font-medium">
+              {step === '2fa' ? 'Enter the security code sent to your email' : 'Sign in to manage your entire business.'}
+            </p>
           </div>
         </div>
 
@@ -104,120 +196,218 @@ function AccessContent() {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3"
+            className="mb-6 p-3.5 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3"
           >
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-            <p className="text-sm font-medium text-emerald-700">{successBanner}</p>
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            <p className="text-xs font-bold text-emerald-700">{successBanner}</p>
           </motion.div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">
-              Email Address
-            </label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-orange-500">
-                <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
-              </div>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 placeholder:text-gray-400 hover:bg-white hover:border-gray-300"
-                placeholder="you@business.com"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">
-              Password
-            </label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
-              </div>
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full pl-12 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-900 placeholder:text-gray-400 hover:bg-white hover:border-gray-300"
-                placeholder="Enter your password"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-4 flex items-center focus:outline-none group/eye"
-              >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-gray-400 group-hover/eye:text-gray-600 transition-colors" />
-                ) : (
-                  <Eye className="h-5 w-5 text-gray-400 group-hover/eye:text-gray-600 transition-colors" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center cursor-pointer group">
-              <div className="relative flex items-center">
-                <input
-                  type="checkbox"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleInputChange}
-                  className="peer sr-only" 
-                />
-                <div className="w-5 h-5 border-2 border-gray-300 rounded-md peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-all flex items-center justify-center">
-                   <ArrowRight className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 -rotate-45" strokeWidth={4} />
+        <AnimatePresence mode="wait">
+          {step === 'credentials' ? (
+            /* STEP 1: EMAIL & PASSWORD */
+            <motion.form
+              key="credentials-form"
+              initial={{ opacity: 0, x: -15 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 15 }}
+              onSubmit={handleCredentialsSubmit}
+              className="space-y-4 sm:space-y-5"
+            >
+              <div>
+                <label className="block text-xs font-extrabold uppercase font-mono tracking-wider text-gray-600 mb-1.5 ml-1">
+                  Email Address
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-orange-500">
+                    <Mail className="h-4 h-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                  </div>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-bold text-xs text-gray-900 placeholder:text-gray-400 hover:bg-white hover:border-gray-300"
+                    placeholder="you@business.com"
+                    required
+                  />
                 </div>
-                <span className="ml-2.5 text-sm font-medium text-gray-600 group-hover:text-gray-800 transition-colors">Remember me</span>
               </div>
-            </label>
-            <Link
-              href="/forgot-password"
-              className="text-sm font-bold text-orange-600 hover:text-orange-700 hover:underline transition-colors"
-            >
-              Forgot password?
-            </Link>
-          </div>
 
-          {error && (
-            <motion.div 
-               initial={{ opacity: 0, height: 0 }}
-               animate={{ opacity: 1, height: "auto" }}
-               className="p-4 bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-2xl flex items-center gap-3"
+              <div>
+                <label className="block text-xs font-extrabold uppercase font-mono tracking-wider text-gray-600 mb-1.5 ml-1">
+                  Password
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Lock className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full pl-11 pr-11 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-bold text-xs text-gray-900 placeholder:text-gray-400 hover:bg-white hover:border-gray-300"
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center focus:outline-none group/eye cursor-pointer"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400 group-hover/eye:text-gray-600 transition-colors" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400 group-hover/eye:text-gray-600 transition-colors" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-0.5">
+                <label className="flex items-center cursor-pointer group">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={handleInputChange}
+                      className="peer sr-only" 
+                    />
+                    <div className="w-4 h-4 border-2 border-gray-300 rounded-md peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-all flex items-center justify-center">
+                      <ArrowRight className="w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100 -rotate-45" strokeWidth={4} />
+                    </div>
+                    <span className="ml-2 text-xs font-bold text-gray-600 group-hover:text-gray-800 transition-colors">Remember me</span>
+                  </div>
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-bold text-orange-600 hover:text-orange-700 hover:underline transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="p-3.5 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-2.5"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                  <p className="text-xs font-bold text-rose-700">{error}</p>
+                </motion.div>
+              )}
+
+              <button
+                type="submit"
+                disabled={!formData.email || !formData.password || isLoading}
+                className="w-full group relative flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-extrabold text-sm shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none bg-gradient-to-r from-orange-500 to-amber-600 overflow-hidden active:scale-95"
+              >
+                <span className="relative z-10">{isLoading ? 'Authenticating...' : 'Sign In'}</span>
+                {!isLoading && <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />}
+              </button>
+
+              <p className="text-center text-gray-500 mt-6 text-xs font-medium">
+                Don&apos;t have an account?{" "}
+                <Link
+                  href="/onboarding"
+                  className="font-extrabold text-gray-900 hover:text-orange-600 transition-colors ml-1"
+                >
+                  Start Free Trial
+                </Link>
+              </p>
+            </motion.form>
+          ) : (
+            /* STEP 2: 2FA 6-DIGIT EMAIL CODE */
+            <motion.form
+              key="2fa-form"
+              initial={{ opacity: 0, x: 15 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -15 }}
+              onSubmit={handleOtpSubmit}
+              className="space-y-5"
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-              <p className="text-sm font-medium text-red-700">{error}</p>
-            </motion.div>
+              <div className="p-4 bg-orange-50/80 border border-orange-200/80 rounded-2xl text-center space-y-1">
+                <div className="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center mx-auto shadow-sm">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <p className="text-xs font-extrabold text-slate-900 pt-1">
+                  Verification Code Dispatched
+                </p>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  We sent a 6-digit PIN to <strong className="text-slate-800">{formData.email}</strong>. Enter it below to unlock your Virtual HQ.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold uppercase font-mono tracking-wider text-gray-600 mb-1.5 text-center">
+                  Enter 6-Digit PIN
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    autoFocus
+                    value={otpCode}
+                    onChange={e => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      setOtpCode(val);
+                      setError(null);
+                    }}
+                    placeholder="000000"
+                    className="w-full text-center tracking-[12px] text-2xl font-mono font-black py-3.5 bg-gray-50 border-2 border-orange-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 rounded-2xl outline-none transition-all text-slate-900 placeholder:text-gray-300"
+                    required
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400 font-mono text-center mt-1.5">
+                  Code expires in 10 minutes
+                </p>
+              </div>
+
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="p-3.5 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-2.5"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                  <p className="text-xs font-bold text-rose-700">{error}</p>
+                </motion.div>
+              )}
+
+              <button
+                type="submit"
+                disabled={otpCode.length !== 6 || isLoading}
+                className="w-full py-3.5 rounded-2xl text-white font-extrabold text-sm shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-orange-500 to-amber-600 active:scale-95 flex items-center justify-center gap-2"
+              >
+                <KeyRound className="w-4 h-4" />
+                <span>{isLoading ? 'Verifying PIN...' : 'Verify & Sign In →'}</span>
+              </button>
+
+              <div className="flex items-center justify-between text-xs font-bold pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setStep('credentials'); setOtpCode(''); setError(null); }}
+                  className="text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+                >
+                  ← Back to Password
+                </button>
+
+                <button
+                  type="button"
+                  disabled={resendCooldown > 0 || resending}
+                  onClick={handleResendCode}
+                  className="text-orange-600 hover:text-orange-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
+                  <span>{resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}</span>
+                </button>
+              </div>
+            </motion.form>
           )}
-
-          <button
-            type="submit"
-            disabled={!formData.email || !formData.password || isLoading}
-            className="w-full group relative flex items-center justify-center gap-2 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none bg-gradient-to-r from-[#fc6813] to-[#ff8c42] overflow-hidden"
-          >
-            <span className="relative z-10">{isLoading ? 'Signing in...' : 'Sign In'}</span>
-            {!isLoading && <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />}
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-          </button>
-
-          <p className="text-center text-gray-500 mt-8 text-sm font-medium">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/onboarding"
-              className="font-bold text-gray-900 hover:text-orange-600 transition-colors ml-1"
-            >
-              Start Free Trial
-            </Link>
-          </p>
-        </form>
+        </AnimatePresence>
       </motion.div>
     </div>
   );
