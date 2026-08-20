@@ -24,7 +24,7 @@ type SubInfo = {
 
 const FEATURES = [
   "5 Team Seats Included",
-  "Team Messaging & Video Meetings",
+  "Team Messaging & Video Meeting",
   "Tasks & Agile Boards",
   "Notes & Docs",
   "KPI Dashboard",

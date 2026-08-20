@@ -21,7 +21,7 @@ interface ModuleUiMeta {
 // lib/module-catalogue.ts owns *which* ids go in *which* tab; this only
 // owns how each one is drawn.
 const MODULE_UI: Record<string, ModuleUiMeta> = {
-  collaboration: { href: '/dashboard/collaboration', icon: UsersRound, label: 'Team Messaging & Video Meetings' },
+  collaboration: { href: '/dashboard/collaboration', icon: UsersRound, label: 'Team Messaging\n& Video Meeting' },
   tasks: { href: '/dashboard/tasks', icon: CheckSquare, label: 'Tasks' },
   projects: { href: '/dashboard/projects', icon: FolderKanban, label: 'Projects' },
   'ai-notes': { href: '/dashboard/ai-notes', icon: FileEdit, label: 'Notes' },
@@ -62,7 +62,7 @@ function NavItem({
       >
         <Icon className="w-4 h-4" />
       </span>
-      <span className="flex-1 text-sm leading-snug whitespace-normal">{label}</span>
+      <span className="flex-1 text-sm leading-tight whitespace-pre-line">{label}</span>
       {Boolean(badge) && (
         <span className="px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-bold leading-none shrink-0">
           {badge! > 99 ? '99+' : badge}
