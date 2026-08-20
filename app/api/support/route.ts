@@ -31,14 +31,14 @@ export async function POST(req: Request) {
     const userName = `${user.firstName} ${user.lastName}`.trim() || user.name || 'Okleevo User';
     const userEmail = user.email;
 
-    const supportRecipient = process.env.SUPPORT_EMAIL || process.env.EMAIL_FROM || 'support@okleevo.com';
+    const supportEmail = process.env.SUPPORT_EMAIL || 'support@okleevo.com';
 
-    // 1. Email Okleevo Admin / Support Team
+    // 1. Email Okleevo Admin / Support Team directly at support@okleevo.com
     const adminHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
         <div style="background: linear-gradient(135deg, #ea580c, #f59e0b); padding: 24px 28px; color: #ffffff;">
           <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 800; text-transform: uppercase;">
-            New SME Support Inquiry • ${refNumber}
+            New Support Inquiry • ${refNumber}
           </span>
           <h2 style="margin: 12px 0 0 0; font-size: 20px; font-weight: 800;">${subject}</h2>
         </div>
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     `;
 
     await sendEmail({
-      to: supportRecipient,
+      to: supportEmail,
       replyTo: userEmail,
       subject: `🚨 [Support Request ${refNumber}] ${subject} - ${businessName}`,
       html: adminHtml,
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
       senderName: `Okleevo Support Desk`,
     }).catch(err => console.error('Admin support notification failed:', err));
 
-    // 2. Email Confirmation to the SME Client
+    // 2. Email Confirmation to the SME Client with replyTo support@okleevo.com
     const clientHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 540px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
         <div style="background: #ffffff; padding: 24px 24px 16px 24px; border-bottom: 1px solid #f1f5f9; text-align: center;">
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
           </div>
 
           <p style="font-size: 13px; color: #64748b; line-height: 1.5;">
-            An Okleevo specialist will review your details and respond to this email thread directly.
+            An Okleevo specialist will review your details and respond to this email thread directly. You can also reply to this email at <a href="mailto:${supportEmail}" style="color: #ea580c; font-weight: 600;">${supportEmail}</a> at any time.
           </p>
         </div>
         <div style="background: #f8fafc; padding: 16px 24px; text-align: center; border-top: 1px solid #f1f5f9;">
@@ -122,9 +122,10 @@ export async function POST(req: Request) {
 
     await sendEmail({
       to: userEmail,
+      replyTo: supportEmail,
       subject: `Support Request Received: ${subject} [${refNumber}]`,
       html: clientHtml,
-      text: `Hello ${userName},\n\nWe have received your support request "${subject}" (Ref: ${refNumber}). An Okleevo specialist will respond to you shortly.\n\nBest regards,\nOkleevo Support Team`,
+      text: `Hello ${userName},\n\nWe have received your support request "${subject}" (Ref: ${refNumber}). An Okleevo specialist will respond to you shortly.\n\nBest regards,\nOkleevo Support Team (${supportEmail})`,
       senderName: 'Okleevo Support',
     }).catch(err => console.error('Client support confirmation failed:', err));
 
