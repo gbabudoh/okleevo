@@ -49,10 +49,12 @@ const STATUS_CONFIGS = {
 };
 
 const TEMPLATE_PRESETS = [
-  { name: 'Mutual NDA Agreement', category: 'Legal', pages: 4, desc: 'Standard non-disclosure agreement for dual commercial discussions.' },
-  { name: 'Service Level Agreement (SLA)', category: 'Commercial', pages: 8, desc: 'Client engagement terms, deliverables, and payment milestones.' },
-  { name: 'Employment Offer & Contract', category: 'HR', pages: 5, desc: 'UK employment terms with IP assignment & confidentiality provisions.' },
-  { name: 'Board Written Resolution', category: 'Corporate', pages: 2, desc: 'Director consent and written resolution for company records.' },
+  { name: 'Mutual NDA Agreement', category: 'Mutual NDA', pages: 4, desc: 'Standard non-disclosure agreement for dual commercial discussions.' },
+  { name: 'Master Services Agreement (MSA)', category: 'Commercial Agreement', pages: 8, desc: 'Client engagement terms, deliverables, and payment milestones.' },
+  { name: 'Employment & Contractor Agreement', category: 'Employment Contract', pages: 5, desc: 'UK employment & contractor terms with IP assignment & confidentiality.' },
+  { name: 'Service Proposal & SOW', category: 'Service Proposal', pages: 3, desc: 'Project scope, deliverables, payment schedule, and sign-off acceptance.' },
+  { name: 'Board Written Resolution', category: 'Corporate & Board Resolutions', pages: 2, desc: 'Director consent and written resolution for company records.' },
+  { name: 'General / Custom Agreement', category: 'General / Custom Agreement', pages: 2, desc: 'Flexible legal agreement for bespoke business terms and operations.' },
 ];
 
 export default function ESignaturePage() {
@@ -811,11 +813,12 @@ export default function ESignaturePage() {
                       onChange={(e) => setNewDocType(e.target.value)}
                       className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-orange-500 cursor-pointer transition-all"
                     >
-                      <option value="Commercial Agreement">Commercial Agreement</option>
-                      <option value="Mutual NDA">Mutual NDA</option>
-                      <option value="Employment Contract">Employment Contract</option>
-                      <option value="Service Proposal">Service Proposal</option>
-                      <option value="Corporate Governance">Corporate Governance</option>
+                      <option value="Commercial Agreement">Commercial Agreement (MSA, Retainer, Vendor)</option>
+                      <option value="Mutual NDA">Mutual NDA (Confidentiality)</option>
+                      <option value="Employment Contract">Employment &amp; Contractor Contract</option>
+                      <option value="Service Proposal">Service Proposal &amp; Statement of Work</option>
+                      <option value="Corporate &amp; Board Resolutions">Corporate &amp; Board Resolutions</option>
+                      <option value="General / Custom Agreement">General / Custom Agreement</option>
                     </select>
                   </div>
 
