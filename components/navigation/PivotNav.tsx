@@ -62,7 +62,7 @@ function NavItem({
       >
         <Icon className="w-4 h-4" />
       </span>
-      <span className="flex-1 text-sm truncate">{label}</span>
+      <span className="flex-1 text-sm leading-snug whitespace-normal">{label}</span>
       {Boolean(badge) && (
         <span className="px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-bold leading-none shrink-0">
           {badge! > 99 ? '99+' : badge}
