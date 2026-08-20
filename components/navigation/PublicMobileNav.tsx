@@ -17,7 +17,7 @@ export default function PublicMobileNav() {
   const tabs = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Guide', href: '/guide', icon: BookOpen },
-    { name: 'Log In', href: '/auth/login', icon: LogIn },
+    { name: 'Log In', href: '/access', icon: LogIn },
     { name: 'Sign Up', href: '/onboarding', icon: UserPlus },
   ];
 

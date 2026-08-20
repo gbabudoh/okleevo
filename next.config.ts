@@ -14,6 +14,17 @@ const nextConfig: NextConfig = {
     // Number of pages that should be kept simultaneously without being disposed
     pagesBufferLength: 5,
   },
+  async redirects() {
+    return [
+      { source: '/auth/login', destination: '/access', permanent: true },
+      { source: '/login', destination: '/access', permanent: true },
+      { source: '/signin', destination: '/access', permanent: true },
+      { source: '/auth/register', destination: '/onboarding', permanent: true },
+      { source: '/auth/signup', destination: '/onboarding', permanent: true },
+      { source: '/signup', destination: '/onboarding', permanent: true },
+      { source: '/register', destination: '/onboarding', permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

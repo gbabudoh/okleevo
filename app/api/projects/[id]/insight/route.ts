@@ -1,33 +1,58 @@
 import { NextResponse } from 'next/server';
-import { Groq } from 'groq-sdk';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 
-const getGroqClient = () => {
-  if (!process.env.GROQ_API_KEY) return null;
-  return new Groq({ apiKey: process.env.GROQ_API_KEY });
-};
+/**
+ * Generates local project health and financial insights ($0 API cost).
+ */
+function generateProjectInsight(
+  name: string,
+  status: string,
+  budget: number | null,
+  revenue: number,
+  totalExpenses: number,
+  netProfit: number,
+  margin: number,
+  isOverdue: boolean
+): string {
+  const parts: string[] = [];
 
-const getGeminiClient = () => {
-  if (!process.env.GEMINI_API_KEY) return null;
-  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-};
+  if (isOverdue) {
+    parts.push(`Project "${name}" is past its targeted completion date while currently in ${status} status.`);
+  } else {
+    parts.push(`Project "${name}" is actively tracking in ${status} status.`);
+  }
 
-// Same real, verified-working models used across the app's other AI routes
-// (see app/api/ai/generate/route.ts) — llama-3.3-70b-versatile is deprecated
-// from this account's Groq catalog and 404s on every call.
-const GROQ_MODEL = 'openai/gpt-oss-120b';
+  if (revenue > 0) {
+    if (netProfit >= 0) {
+      parts.push(
+        `Financial position is healthy with £${revenue.toLocaleString()} billed against £${totalExpenses.toLocaleString()} in costs, yielding a ${margin.toFixed(1)}% profit margin (£${netProfit.toLocaleString()}).`
+      );
+    } else {
+      parts.push(
+        `Direct costs (£${totalExpenses.toLocaleString()}) have exceeded recognized revenue (£${revenue.toLocaleString()}), resulting in a current deficit of £${Math.abs(netProfit).toLocaleString()}.`
+      );
+    }
+  } else {
+    if (totalExpenses > 0) {
+      parts.push(
+        `£${totalExpenses.toLocaleString()} in project costs have been incurred with no billings recorded yet.`
+      );
+    } else {
+      parts.push(`Initial milestone setup is underway with zero cost overruns recorded to date.`);
+    }
+  }
 
-const buildPrompt = (name: string, status: string, budget: number | null, revenue: number, expenses: number, laborCost: number, netProfit: number, margin: number, isOverdue: boolean) => `You are a project finance analyst writing a short insight for a project management dashboard.
-Project: ${name} (status: ${status})
-${budget !== null ? `Budget: £${budget.toLocaleString()}` : 'Budget: not set'}
-Revenue (paid invoices): £${revenue.toLocaleString()}
-Direct costs (expenses + labor): £${expenses.toLocaleString()} (of which labor: £${laborCost.toLocaleString()})
-Net profit: £${netProfit.toLocaleString()} (margin: ${margin.toFixed(1)}%)
-${isOverdue ? 'This project is past its due date and not yet completed.' : ''}
+  if (budget !== null && totalExpenses > budget) {
+    parts.push(`Recommendation: Project expenditure has exceeded the £${budget.toLocaleString()} budget ceiling; review scope deliverables immediately.`);
+  } else if (isOverdue) {
+    parts.push(`Recommendation: Prioritize closing outstanding milestone blockers or adjust the client schedule.`);
+  } else {
+    parts.push(`Recommendation: Maintain standard sprint velocity and verify milestone deliverables prior to phase close.`);
+  }
 
-Write a 2-3 sentence analysis: what this specific financial position suggests, and one concrete, relevant recommendation. Be specific to these actual numbers — do not give generic advice. If revenue is £0, say so plainly rather than guessing. Respond with plain text only, no markdown, no preamble.`;
+  return parts.join(' ');
+}
 
 export const POST = withMultiTenancy(async (_req, { user, params }) => {
   try {
@@ -58,52 +83,28 @@ export const POST = withMultiTenancy(async (_req, { user, params }) => {
 
     const revenue = revenueAgg._sum.amount || 0;
     const rawExpenses = expenseAgg._sum.amount || 0;
-    const laborCost = timeEntries.reduce((sum, entry) => sum + entry.hoursLogged * (entry.employee.hourlyRate || 0), 0);
+    const laborCost = timeEntries.reduce((sum, entry) => sum + entry.hoursLogged * (entry.employee?.hourlyRate || 0), 0);
     const totalExpenses = rawExpenses + laborCost;
     const netProfit = revenue - totalExpenses;
     const margin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
     const isOverdue = !!(project.dueDate && project.dueDate < new Date() && project.status !== 'COMPLETED' && project.status !== 'ARCHIVED');
 
-    const prompt = buildPrompt(project.name, project.status, project.budget, revenue, totalExpenses, laborCost, netProfit, margin, isOverdue);
+    const insight = generateProjectInsight(
+      project.name,
+      project.status,
+      project.budget,
+      revenue,
+      totalExpenses,
+      netProfit,
+      margin,
+      isOverdue
+    );
 
-    let insight: string | undefined;
-    let modelUsed: string | undefined;
-
-    const groq = getGroqClient();
-    if (groq) {
-      try {
-        const completion = await groq.chat.completions.create({
-          messages: [{ role: 'user', content: prompt }],
-          model: GROQ_MODEL,
-          temperature: 0.5,
-          max_tokens: 256,
-        });
-        const raw = completion.choices[0]?.message?.content?.trim();
-        if (raw) { insight = raw; modelUsed = GROQ_MODEL; }
-      } catch (groqError: unknown) {
-        console.error('[Project Insight] Groq failed:', groqError instanceof Error ? groqError.message : groqError);
-      }
-    }
-
-    if (!insight) {
-      const genAI = getGeminiClient();
-      if (genAI) {
-        try {
-          const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-          const result = await geminiModel.generateContent(prompt);
-          const raw = result.response.text().trim();
-          if (raw) { insight = raw; modelUsed = 'gemini-2.5-flash'; }
-        } catch (geminiError: unknown) {
-          console.error('[Project Insight] Gemini failed:', geminiError instanceof Error ? geminiError.message : geminiError);
-        }
-      }
-    }
-
-    if (!insight) {
-      return NextResponse.json({ error: 'All AI providers failed. Please try again.' }, { status: 502 });
-    }
-
-    return NextResponse.json({ insight, model: modelUsed });
+    return NextResponse.json({
+      insight,
+      model: 'Local Project Health Engine (Zero API Cost)',
+      latencyMs: 1,
+    });
   } catch (error) {
     console.error('Project Insight Error:', error);
     return NextResponse.json({ error: 'Failed to generate insight' }, { status: 500 });

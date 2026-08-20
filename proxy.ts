@@ -66,8 +66,24 @@ const publicRoutes = [
   '/llms.txt',
 ];
 
+const authAliases: Record<string, string> = {
+  '/login': '/access',
+  '/signin': '/access',
+  '/auth/login': '/access',
+  '/signup': '/onboarding',
+  '/register': '/onboarding',
+  '/auth/register': '/onboarding',
+  '/auth/signup': '/onboarding',
+};
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (authAliases[pathname]) {
+    const url = request.nextUrl.clone();
+    url.pathname = authAliases[pathname];
+    return NextResponse.redirect(url);
+  }
 
   const isPublicRoute = publicRoutes.some(route => {
     if (route === '/') return pathname === '/';

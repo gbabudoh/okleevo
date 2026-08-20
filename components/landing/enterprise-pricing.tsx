@@ -144,7 +144,7 @@ export function EnterprisePricing() {
 
                 <div className="mt-8">
                   <Link
-                    href="/signup"
+                    href="/onboarding"
                     className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-xs font-semibold transition-all duration-200 ${
                       plan.popular
                         ? "bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg hover:shadow-[0_6px_25px_rgba(252,104,19,0.4)]"

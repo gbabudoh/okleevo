@@ -1,6 +1,6 @@
 import {
   Users, Calendar, MessageSquare, Mail,
-  CheckSquare, FileEdit, BarChart3, PenTool,
+  CheckSquare, FolderKanban, FileEdit, BarChart3, PenTool,
   UsersRound,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -12,45 +12,131 @@ export interface ModuleCatalogueEntry {
   group: string;
   color: string;
   desc: string;
+  features?: string[];
+  route?: string;
 }
 
 // Single source of truth for the platform's module list — shared by the public
 // marketing catalogue (app/guide) and the in-app guides (app/dashboard/guides).
-//
-// Global pivot cleanup: Invoicing, Accounting, Taxation, Cashflow, Expenses,
-// VAT Tools, Inventory, Suppliers, Micro Pages, Compliance, HR Records, AI
-// Content, and Forms have been retired from the product entirely (no nav
-// entry, route blocked in proxy.ts) — none of them fit the Virtual HQ /
-// Async Productivity / Client Engagement positioning. AI Content was a
-// generic marketing-copy generator with no tie to any pillar (AI Notes —
-// meeting transcription/summaries/action items — is the retained AI story);
-// Forms was never named in the pivot spec and is functionally redundant
-// with the booking page's own guest-intake flow, which already captures
-// name/email/file straight into the CRM pipeline.
-// Existing customer data in these modules is untouched in the database;
-// this only removes them from the catalogue that drives navigation and the
-// Settings module toggle.
 export const modules: ModuleCatalogueEntry[] = [
-  // Growth Engine
-  { id: 'crm', label: 'CRM', icon: Users, group: 'Growth Engine', color: 'from-indigo-400 to-blue-500', desc: 'A centralized hub for your leads and customers. Send direct, branded emails via internal SMTP and track every interaction.' },
-  { id: 'booking', label: 'Booking', icon: Calendar, group: 'Growth Engine', color: 'from-indigo-500 to-purple-500', desc: 'Integrated appointment scheduling that syncs directly with your team calendar.' },
-  { id: 'helpdesk', label: 'Helpdesk', icon: MessageSquare, group: 'Growth Engine', color: 'from-blue-500 to-cyan-500', desc: 'Provide world-class support with a ticket system that organizes customer requests.' },
-  { id: 'campaigns', label: 'Campaigns', icon: Mail, group: 'Growth Engine', color: 'from-indigo-600 to-purple-700', desc: 'Send beautiful bulk email marketing campaigns directly via the Okleevo SMTP engine with performance analytics.' },
+  // Virtual HQ
+  {
+    id: 'collaboration',
+    label: 'Team Chat & Huddles',
+    icon: UsersRound,
+    group: 'Virtual HQ',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Instant WebRTC audio/video huddles, screen sharing, and persistent team messaging without separate Slack or Zoom licenses.',
+    features: ['WebRTC Video Calls', 'Multi-channel Chat', 'Live Presence'],
+    route: '/dashboard/collaboration',
+  },
 
-  // Command Center
-  { id: 'tasks', label: 'Tasks', icon: CheckSquare, group: 'Command Center', color: 'from-purple-400 to-pink-500', desc: 'Collaborative project management. Assign tasks, set deadlines, and track progress in real-time.' },
-  { id: 'ai-notes', label: 'AI Notes', icon: FileEdit, group: 'Command Center', color: 'from-rose-400 to-orange-500', desc: 'Smart note-taking that automatically summarizes meetings and identifies action items.' },
-  { id: 'kpi-dashboard', label: 'KPI Dashboard', icon: BarChart3, group: 'Command Center', color: 'from-purple-600 to-indigo-800', desc: 'Visual business intelligence with real-time charts showing your most important metrics.' },
+  // Async Productivity
+  {
+    id: 'tasks',
+    label: 'Tasks',
+    icon: CheckSquare,
+    group: 'Async Productivity',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Collaborative task and sprint tracking with real-time assignment, deadline SLAs, and checklist execution.',
+    features: ['Kanban Board', 'Due Date Alerts', 'Subtasks'],
+    route: '/dashboard/tasks',
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    icon: FolderKanban,
+    group: 'Async Productivity',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Cross-module project spaces unifying client deliverables, milestones, team roadmaps, and assets.',
+    features: ['Milestone Tracking', 'Asset Vault', 'Team Roadmaps'],
+    route: '/dashboard/projects',
+  },
+  {
+    id: 'ai-notes',
+    label: 'AI Notes',
+    icon: FileEdit,
+    group: 'Async Productivity',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Collaborative note-taking with automated executive summaries, action item extraction, and team brainstorm scratchpads.',
+    features: ['Smart Summaries', 'Action Items', 'Scratchpad'],
+    route: '/dashboard/ai-notes',
+  },
+  {
+    id: 'kpi-dashboard',
+    label: 'KPI Dashboard',
+    icon: BarChart3,
+    group: 'Async Productivity',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Executive business intelligence with live target variance tracking, velocity sparklines, and OKR scorecards.',
+    features: ['Target Variance', '7-Day Sparklines', 'OKR Matrix'],
+    route: '/dashboard/kpi-dashboard',
+  },
 
-  // Operations Hub
-  { id: 'e-signature', label: 'E-Signature', icon: PenTool, group: 'Operations Hub', color: 'from-orange-400 to-rose-500', desc: 'Send and sign legally binding documents electronically without leaving the platform.' },
-
-  // Team & Comms
-  { id: 'mailbox', label: 'Mail Engine', icon: Mail, group: 'Team & Comms', color: 'from-orange-400 to-orange-600', desc: 'Your business email, all in one place — send, receive, and organise messages with CRM context built in.' },
-  { id: 'collaboration', label: 'Collaboration', icon: UsersRound, group: 'Team & Comms', color: 'from-indigo-500 to-violet-600', desc: 'Video-call and message your team without leaving Okleevo — no separate Slack or Zoom subscription, no extra login.' },
+  // Client Engagement
+  {
+    id: 'crm',
+    label: 'CRM Pipeline',
+    icon: Users,
+    group: 'Client Engagement',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Centralized relationship management to track client pipelines, lifecycle stages, deal values, and communication histories.',
+    features: ['Deal Stages', 'Client Histories', 'Custom Fields'],
+    route: '/dashboard/crm',
+  },
+  {
+    id: 'booking',
+    label: 'Booking Pages',
+    icon: Calendar,
+    group: 'Client Engagement',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Zero-login public appointment scheduling that auto-syncs with team availability and feeds leads directly into CRM.',
+    features: ['Public Booking Links', 'Calendar Sync', 'Intake Questions'],
+    route: '/dashboard/booking',
+  },
+  {
+    id: 'mailbox',
+    label: 'Mail Engine',
+    icon: Mail,
+    group: 'Client Engagement',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Dedicated enterprise business email client with internal SMTP dispatch, folder routing, and CRM context overlays.',
+    features: ['Native SMTP Engine', 'CRM Context', 'Labels & Folders'],
+    route: '/dashboard/mailbox',
+  },
+  {
+    id: 'helpdesk',
+    label: 'Helpdesk',
+    icon: MessageSquare,
+    group: 'Client Engagement',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Multi-agent customer support ticket desk with priority routing, internal notes, and resolution telemetry.',
+    features: ['Ticket Queue', 'Priority Triage', 'SLA Response Tracking'],
+    route: '/dashboard/helpdesk',
+  },
+  {
+    id: 'e-signature',
+    label: 'E-Signatures',
+    icon: PenTool,
+    group: 'Client Engagement',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Legally binding eIDAS & ESIGN electronic document execution with cryptographic SHA-256 audit certificates.',
+    features: ['SHA-256 Audit Trail', 'Sequential Routing', 'PDF Template Studio'],
+    route: '/dashboard/e-signature',
+  },
+  {
+    id: 'campaigns',
+    label: 'Campaigns',
+    icon: Mail,
+    group: 'Client Engagement',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Broadcast bulk email marketing campaigns with open/click analytics delivered directly through Okleevo infrastructure.',
+    features: ['Broadcast Dispatch', 'Engagement Analytics', 'Audience Segments'],
+    route: '/dashboard/campaigns',
+  },
 ];
 
-export const moduleGroups = ['All', 'Growth Engine', 'Command Center', 'Operations Hub', 'Team & Comms'];
+export const moduleGroups = ['All', 'Virtual HQ', 'Async Productivity', 'Client Engagement'];
 
 export function getModuleById(id: string): ModuleCatalogueEntry | undefined {
   return modules.find(m => m.id === id);

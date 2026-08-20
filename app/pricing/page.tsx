@@ -158,7 +158,7 @@ export default function PricingPage() {
                     </div>
 
                     <Link
-                      href={isLoggedIn ? "/dashboard" : tier.id === "FREE" ? "/auth/register" : "/auth/register"}
+                      href={isLoggedIn ? "/dashboard" : "/onboarding"}
                       className={`w-full inline-flex items-center justify-center px-5 py-3 rounded-2xl font-extrabold text-xs transition-all cursor-pointer active:scale-95 ${
                         tier.highlight
                           ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-md shadow-orange-500/20"

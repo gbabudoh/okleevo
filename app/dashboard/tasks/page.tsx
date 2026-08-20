@@ -498,15 +498,6 @@ export default function TasksPage() {
                 </div>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold text-xs rounded-2xl transition-all shadow-md shadow-orange-500/20 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Task</span>
-            </button>
           </div>
         </div>
       </div>
@@ -534,25 +525,27 @@ export default function TasksPage() {
       {/* ── Control & Filter Toolbar ── */}
       <div className="space-y-3">
         {/* Preset Filter Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-          {[
-            { id: 'all', label: 'All Tasks' },
-            { id: 'my_tasks', label: 'Assigned to Me' },
-            { id: 'overdue', label: 'Overdue & Urgents' },
-            { id: 'high_priority', label: 'High Priority' },
-          ].map(chip => (
-            <button
-              key={chip.id}
-              onClick={() => setPresetFilter(chip.id as typeof presetFilter)}
-              className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                presetFilter === chip.id
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-              }`}
-            >
-              {chip.label}
-            </button>
-          ))}
+        <div className="w-full overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="inline-flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 min-w-full sm:min-w-0">
+            {[
+              { id: 'all', label: 'All Tasks' },
+              { id: 'my_tasks', label: 'Assigned to Me' },
+              { id: 'overdue', label: 'Overdue & Urgents' },
+              { id: 'high_priority', label: 'High Priority' },
+            ].map(chip => (
+              <button
+                key={chip.id}
+                onClick={() => setPresetFilter(chip.id as typeof presetFilter)}
+                className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer text-center ${
+                  presetFilter === chip.id
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs font-extrabold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Search & View Switcher Toolbar */}
@@ -758,9 +751,9 @@ export default function TasksPage() {
                               <button
                                 type="button"
                                 onClick={() => clearCompleted(col.id)}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg text-left"
+                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-left"
                               >
-                                <Trash2 className="w-3.5 h-3.5" /> Clear Completed
+                                <Trash2 className="w-3.5 h-3.5 text-slate-400" /> Clear Completed
                               </button>
                             </div>
                           </div>
@@ -771,161 +764,149 @@ export default function TasksPage() {
 
                   {/* Task Cards Stack */}
                   <div className="space-y-3">
-                    {colTasks.length === 0 ? (
-                      <div className="py-12 px-4 border-2 border-dashed border-slate-200/80 dark:border-slate-800/80 rounded-2xl text-center flex flex-col items-center justify-center gap-2 bg-white/40 dark:bg-slate-900/40">
-                        <ColIcon className="w-6 h-6 text-slate-300 dark:text-slate-700" />
-                        <p className="text-xs font-semibold text-slate-400">No tasks in {col.label}</p>
-                        <p className="text-[10px] text-slate-400/80">Drag tasks here or type below</p>
-                      </div>
-                    ) : (
-                      colTasks.map(task => {
-                        const progress = calcProgress(task);
-                        const slaBadge = getSLABadge(task.dueDate, task.status);
-                        const isBeingDragged = draggedTaskId === task.id;
+                    {colTasks.map(task => {
+                      const isDragging = draggedTaskId === task.id;
+                      const progress = calcProgress(task);
+                      const slaBadge = getSLABadge(task.dueDate, task.status);
 
-                        return (
-                          <div
-                            key={task.id}
-                            draggable
-                            onDragStart={e => handleDragStart(e, task.id)}
-                            onClick={() => { setSelectedTask(task); setShowDetailModal(true); }}
-                            onMouseLeave={() => activeDropdown === `card-${task.id}` && setActiveDropdown(null)}
-                            className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-800 transition-all group relative space-y-3 ${
-                              isBeingDragged ? 'opacity-40 scale-95' : ''
-                            }`}
-                          >
-                            {/* Urgent indicator */}
-                            {task.priority === 'urgent' && (
-                              <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                            )}
+                      return (
+                        <div
+                          key={task.id}
+                          draggable
+                          onDragStart={e => handleDragStart(e, task.id)}
+                          onClick={() => { setSelectedTask(task); setShowDetailModal(true); }}
+                          className={`group bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-4 shadow-2xs hover:shadow-md hover:border-orange-400/80 transition-all duration-200 cursor-pointer relative space-y-3 ${
+                            isDragging ? 'opacity-40 scale-95' : ''
+                          }`}
+                        >
+                          {/* Top Row: Tags & Menu */}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${priorityBadge(task.priority)}`}>
+                                {task.priority}
+                              </span>
+                              {slaBadge}
+                            </div>
 
-                            {/* Header: Priority Badge & Options */}
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${priorityBadge(task.priority)}`}>
-                                  {task.priority}
-                                </span>
-                                {slaBadge}
-                              </div>
-
-                              <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center gap-1">
+                              <div className="relative">
                                 <button
                                   type="button"
-                                  onClick={e => { e.stopPropagation(); launchHuddleForTask(task.id); }}
-                                  className="p-1 text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg transition-all"
-                                  title="Discuss in Collaboration Huddle"
+                                  onClick={e => { e.stopPropagation(); setActiveDropdown(activeDropdown === `task-${task.id}` ? null : `task-${task.id}`); }}
+                                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
                                 >
-                                  <Video className="w-3.5 h-3.5" />
+                                  <MoreHorizontal className="w-3.5 h-3.5" />
                                 </button>
-                                <div className="relative">
-                                  <button
-                                    type="button"
-                                    onClick={e => { e.stopPropagation(); setActiveDropdown(activeDropdown === `card-${task.id}` ? null : `card-${task.id}`); }}
-                                    className="p-1 text-slate-300 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-all"
-                                  >
-                                    <MoreHorizontal className="w-4 h-4" />
-                                  </button>
-                                  {activeDropdown === `card-${task.id}` && (
-                                    <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-30 overflow-hidden">
-                                      <div className="p-1 space-y-0.5">
-                                        <button
-                                          type="button"
-                                          onClick={e => { e.stopPropagation(); launchHuddleForTask(task.id); setActiveDropdown(null); }}
-                                          className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/40 rounded-lg text-left"
-                                        >
-                                          <Video className="w-3.5 h-3.5" /> Start Huddle
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={e => { e.stopPropagation(); duplicateTask(task); }}
-                                          className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-left"
-                                        >
-                                          <Copy className="w-3.5 h-3.5 text-slate-400" /> Duplicate
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={e => { e.stopPropagation(); setDeletingTask(task); setShowDeleteModal(true); setActiveDropdown(null); }}
-                                          className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg text-left"
-                                        >
-                                          <Trash2 className="w-3.5 h-3.5" /> Delete
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
 
-                            {/* Title & Description */}
-                            <div>
-                              <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                                {task.title}
-                              </h4>
-                              {task.description && (
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed font-normal">
-                                  {task.description}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Subtask Progress */}
-                            {(task.subtasks?.length > 0 || task.status === 'done') && (
-                              <div className="space-y-1">
-                                <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                                  <span>Progress</span>
-                                  <span className="text-orange-600 dark:text-orange-400 font-mono font-bold">{progress}%</span>
-                                </div>
-                                <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                {activeDropdown === `task-${task.id}` && (
                                   <div
-                                    className={`h-full rounded-full transition-all ${progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
-                                    style={{ width: `${progress}%` }}
-                                  />
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Footer: Date & Actions */}
-                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                              <span className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
-                                <Calendar className="w-3.5 h-3.5" />
-                                {task.dueDate || 'No due date'}
-                              </span>
-
-                              <div className="flex items-center gap-2">
-                                {task.assignedTo && (
-                                  <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-[10px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-                                    {initials(task.assignedTo)}
+                                    className="absolute right-0 mt-1 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-30 overflow-hidden"
+                                    onMouseLeave={() => setActiveDropdown(null)}
+                                  >
+                                    <div className="p-1 space-y-0.5">
+                                      <button
+                                        type="button"
+                                        onClick={e => { e.stopPropagation(); launchHuddleForTask(task.id); setActiveDropdown(null); }}
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/40 rounded-lg text-left"
+                                      >
+                                        <Video className="w-3.5 h-3.5" /> Start Huddle
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={e => { e.stopPropagation(); duplicateTask(task); }}
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-left"
+                                      >
+                                        <Copy className="w-3.5 h-3.5 text-slate-400" /> Duplicate
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={e => { e.stopPropagation(); setDeletingTask(task); setShowDeleteModal(true); setActiveDropdown(null); }}
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg text-left"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                                      </button>
+                                    </div>
                                   </div>
                                 )}
-
-                                {/* Column move quick buttons */}
-                                <div className="flex items-center gap-0.5 border-l border-slate-200 dark:border-slate-800 pl-1.5">
-                                  {col.id !== 'todo' && (
-                                    <button
-                                      type="button"
-                                      onClick={e => { e.stopPropagation(); const s = STATUS_COLS; applyStatus(task.id, s[s.findIndex(x => x.id === task.status) - 1].id); }}
-                                      className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 rounded-md transition-all cursor-pointer"
-                                      title="Move back"
-                                    >
-                                      <ArrowRight className="w-3.5 h-3.5 rotate-180" />
-                                    </button>
-                                  )}
-                                  {col.id !== 'done' && (
-                                    <button
-                                      type="button"
-                                      onClick={e => { e.stopPropagation(); const s = STATUS_COLS; applyStatus(task.id, s[s.findIndex(x => x.id === task.status) + 1].id); }}
-                                      className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 rounded-md transition-all cursor-pointer"
-                                      title="Move forward"
-                                    >
-                                      <ArrowRight className="w-3.5 h-3.5" />
-                                    </button>
-                                  )}
-                                </div>
                               </div>
                             </div>
                           </div>
-                        );
-                      })
+
+                          {/* Title & Description */}
+                          <div>
+                            <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                              {task.title}
+                            </h4>
+                            {task.description && (
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed font-normal">
+                                {task.description}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Subtask Progress */}
+                          {(task.subtasks?.length > 0 || task.status === 'done') && (
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                                <span>Progress</span>
+                                <span className="text-orange-600 dark:text-orange-400 font-mono font-bold">{progress}%</span>
+                              </div>
+                              <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all ${progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Footer: Date & Actions */}
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                            <span className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {task.dueDate || 'No due date'}
+                            </span>
+
+                            <div className="flex items-center gap-2">
+                              {task.assignedTo && (
+                                <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-[10px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                                  {initials(task.assignedTo)}
+                                </div>
+                              )}
+
+                              {/* Column move quick buttons */}
+                              <div className="flex items-center gap-0.5 border-l border-slate-200 dark:border-slate-800 pl-1.5">
+                                {col.id !== 'todo' && (
+                                  <button
+                                    type="button"
+                                    onClick={e => { e.stopPropagation(); const s = STATUS_COLS; applyStatus(task.id, s[s.findIndex(x => x.id === task.status) - 1].id); }}
+                                    className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 rounded-md transition-all cursor-pointer"
+                                    title="Move back"
+                                  >
+                                    <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                                  </button>
+                                )}
+                                {col.id !== 'done' && (
+                                  <button
+                                    type="button"
+                                    onClick={e => { e.stopPropagation(); const s = STATUS_COLS; applyStatus(task.id, s[s.findIndex(x => x.id === task.status) + 1].id); }}
+                                    className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 rounded-md transition-all cursor-pointer"
+                                    title="Move forward"
+                                  >
+                                    <ArrowRight className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {colTasks.length === 0 && (
+                      <div className="py-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800/60 bg-slate-50/40 dark:bg-slate-900/20">
+                        <p className="text-xs text-slate-400 font-medium">No tasks in {col.label}</p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -957,156 +938,191 @@ export default function TasksPage() {
         </div>
       )}
 
-      {/* ── 2. List View Table ── */}
+      {/* ── 2. List View Table & Mobile Task Cards ── */}
       {!loading && viewMode === 'list' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
-          {filtered.length === 0 ? (
-            <div className="p-16 text-center text-slate-400">
-              <ListTodo className="w-10 h-10 mx-auto stroke-[1.5] mb-2 text-slate-300" />
-              <p className="text-sm font-semibold">No tasks matching your filter parameters.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[700px]">
-                <thead>
-                  <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-left">
-                    <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Task Title</th>
-                    <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                    <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Priority</th>
-                    <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Assignee</th>
-                    <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Due Date</th>
-                    <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Progress</th>
-                    <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                  {filtered.map(task => {
-                    const sc = statusCfg(task.status);
-                    const StatusIcon = sc.icon;
-                    const progress = calcProgress(task);
-                    const slaBadge = getSLABadge(task.dueDate, task.status);
+        <div className="space-y-4">
+          {/* Mobile Task Cards View (< sm) */}
+          <div className="sm:hidden space-y-3">
+            {filtered.length === 0 ? (
+              <div className="p-10 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800">
+                <ListTodo className="w-8 h-8 mx-auto stroke-[1.5] mb-2 text-slate-300" />
+                <p className="text-xs font-semibold">No tasks matching filters.</p>
+              </div>
+            ) : (
+              filtered.map(task => {
+                const sc = statusCfg(task.status);
+                const StatusIcon = sc.icon;
+                return (
+                  <div
+                    key={task.id}
+                    onClick={() => { setSelectedTask(task); setShowDetailModal(true); }}
+                    className="p-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3 cursor-pointer hover:border-orange-400/80 transition-all"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="text-xs font-extrabold text-slate-900 dark:text-white leading-snug">
+                        {task.title}
+                      </h4>
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-mono font-extrabold uppercase px-2.5 py-0.5 rounded-full shrink-0 ${sc.bg} ${sc.color}`}>
+                        <StatusIcon className="w-3 h-3" /> {sc.label}
+                      </span>
+                    </div>
 
-                    return (
-                      <tr
-                        key={task.id}
-                        onClick={() => { setSelectedTask(task); setShowDetailModal(true); }}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
-                      >
-                        <td className="px-5 py-4">
-                          <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            {task.title}
-                          </p>
-                          {task.description && (
-                            <p className="text-xs text-slate-400 truncate max-w-xs mt-0.5">{task.description}</p>
-                          )}
-                        </td>
-                        <td className="px-5 py-4">
-                          <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${sc.bg} ${sc.color}`}>
-                            <StatusIcon className="w-3 h-3" /> {sc.label}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4">
-                          <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border ${priorityBadge(task.priority)}`}>
-                            {task.priority}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4">
-                          {task.assignedTo ? (
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-[10px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-                                {initials(task.assignedTo)}
+                    {task.description && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{task.description}</p>
+                    )}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] font-mono font-extrabold text-slate-400">
+                      <span className={`px-2 py-0.5 rounded-full border ${priorityBadge(task.priority)}`}>{task.priority}</span>
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {task.dueDate || 'No due date'}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+            {filtered.length === 0 ? (
+              <div className="p-16 text-center text-slate-400">
+                <ListTodo className="w-10 h-10 mx-auto stroke-[1.5] mb-2 text-slate-300" />
+                <p className="text-sm font-semibold">No tasks matching your filter parameters.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse min-w-[700px]">
+                  <thead>
+                    <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-left">
+                      <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Task Title</th>
+                      <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                      <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Priority</th>
+                      <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Assignee</th>
+                      <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Due Date</th>
+                      <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Progress</th>
+                      <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {filtered.map(task => {
+                      const sc = statusCfg(task.status);
+                      const StatusIcon = sc.icon;
+                      const progress = calcProgress(task);
+
+                      return (
+                        <tr
+                          key={task.id}
+                          onClick={() => { setSelectedTask(task); setShowDetailModal(true); }}
+                          className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+                        >
+                          <td className="px-5 py-4">
+                            <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                              {task.title}
+                            </p>
+                            {task.description && (
+                              <p className="text-xs text-slate-400 truncate max-w-xs mt-0.5">{task.description}</p>
+                            )}
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${sc.bg} ${sc.color}`}>
+                              <StatusIcon className="w-3 h-3" /> {sc.label}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border ${priorityBadge(task.priority)}`}>
+                              {task.priority}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4">
+                            {task.assignedTo ? (
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-[10px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                                  {initials(task.assignedTo)}
+                                </div>
+                                <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{task.assignedTo}</span>
                               </div>
-                              <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{task.assignedTo}</span>
+                            ) : (
+                              <span className="text-xs text-slate-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className="text-xs font-mono font-medium text-slate-600 dark:text-slate-300">
+                              {task.dueDate || 'Unscheduled'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">
+                              {progress}%
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={e => { e.stopPropagation(); launchHuddleForTask(task.id); }}
+                                className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/40 rounded-lg transition-all cursor-pointer"
+                                title="Start Huddle"
+                              >
+                                <Video className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={e => { e.stopPropagation(); setDeletingTask(task); setShowDeleteModal(true); }}
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
-                          ) : (
-                            <span className="text-xs text-slate-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-slate-500">{task.dueDate || '—'}</span>
-                            {slaBadge}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <div className="flex items-center gap-2 justify-end">
-                            <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${progress === 100 ? 'bg-emerald-500' : 'bg-indigo-600'}`}
-                                style={{ width: `${progress}%` }}
-                              />
-                            </div>
-                            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 w-8 text-right">{progress}%</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              type="button"
-                              onClick={e => { e.stopPropagation(); launchHuddleForTask(task.id); }}
-                              className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-                              title="Start Task Huddle"
-                            >
-                              <Video className="w-4 h-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={e => { e.stopPropagation(); setDeletingTask(task); setShowDeleteModal(true); }}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* ── 3. Month Calendar View ── */}
       {!loading && viewMode === 'calendar' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-4">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              <Calendar className="w-5 h-5 text-orange-500" />
+              <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
                 {new Date(calendarCursor.year, calendarCursor.month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </h2>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="hidden sm:inline text-xs font-semibold text-slate-400 mr-2">Click any day to schedule a task</span>
               <button type="button" onClick={() => shiftCalendarMonth(-1)}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                 <ChevronLeft className="w-4 h-4 text-slate-500" />
               </button>
               <button type="button" onClick={goToCurrentCalendarMonth}
-                className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                 Today
               </button>
               <button type="button" onClick={() => shiftCalendarMonth(1)}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                 <ChevronRight className="w-4 h-4 text-slate-500" />
               </button>
             </div>
           </div>
 
           {/* Calendar Header Row */}
-          <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs font-extrabold text-slate-400 uppercase tracking-wider">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
               <div key={d} className="py-1">{d}</div>
             ))}
           </div>
 
           {/* Calendar Month Days Grid */}
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {calendarDays.map((cell, idx) => {
               if (!cell) {
-                return <div key={`empty-${idx}`} className="h-28 bg-slate-50/40 dark:bg-slate-900/20 rounded-xl" />;
+                return <div key={`empty-${idx}`} className="h-20 sm:h-28 bg-slate-50/40 dark:bg-slate-900/20 rounded-2xl" />;
               }
 
               const dayTasks = filtered.filter(t => t.dueDate === cell.dateStr);
@@ -1118,38 +1134,50 @@ export default function TasksPage() {
                     setNewTask(prev => ({ ...prev, dueDate: cell.dateStr }));
                     setShowAddModal(true);
                   }}
-                  className={`h-28 p-2 rounded-xl border flex flex-col justify-between transition-all cursor-pointer group ${
+                  className={`h-20 sm:h-28 p-1.5 sm:p-2 rounded-2xl border flex flex-col justify-between transition-all cursor-pointer group ${
                     cell.isToday
-                      ? 'bg-indigo-50/30 dark:bg-indigo-950/20 border-indigo-300 dark:border-indigo-800'
-                      : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 hover:border-indigo-300'
+                      ? 'bg-orange-50/50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-800'
+                      : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 hover:border-orange-400'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
-                      cell.isToday ? 'bg-indigo-600 text-white' : 'text-slate-700 dark:text-slate-300'
+                    <span className={`text-[11px] sm:text-xs font-extrabold w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shrink-0 ${
+                      cell.isToday ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs' : 'text-slate-700 dark:text-slate-300'
                     }`}>
                       {cell.day}
                     </span>
                     {dayTasks.length > 0 && (
-                      <span className="text-[10px] font-bold text-slate-400">
+                      <span className="hidden sm:inline text-[10px] font-mono font-extrabold text-slate-400">
                         {dayTasks.length}
                       </span>
                     )}
+                    {dayTasks.length > 0 && (
+                      <span className="sm:hidden w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+                    )}
                   </div>
 
-                  {/* Task Pills */}
-                  <div className="space-y-1 overflow-y-auto max-h-16 custom-scrollbar">
+                  {/* Task Pills (Desktop text, mobile dot) */}
+                  <div className="hidden sm:block space-y-1 overflow-y-auto max-h-16 custom-scrollbar">
                     {dayTasks.map(t => (
                       <div
                         key={t.id}
                         onClick={(e) => { e.stopPropagation(); setSelectedTask(t); setShowDetailModal(true); }}
-                        className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-semibold text-slate-800 dark:text-slate-200 truncate hover:border-indigo-400 flex items-center gap-1 shadow-2xs"
+                        className="px-1.5 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-semibold text-slate-800 dark:text-slate-200 truncate hover:border-orange-400 flex items-center gap-1 shadow-2xs"
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${statusCfg(t.status).color.replace('text', 'bg')}`} />
                         <span className="truncate">{t.title}</span>
                       </div>
                     ))}
                   </div>
+
+                  {/* Mobile Task Indicator bar */}
+                  {dayTasks.length > 0 && (
+                    <div className="sm:hidden flex items-center justify-center gap-0.5 pt-1">
+                      {dayTasks.slice(0, 3).map(t => (
+                        <span key={t.id} className={`w-1 h-1 rounded-full ${statusCfg(t.status).color.replace('text', 'bg')}`} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -1159,46 +1187,58 @@ export default function TasksPage() {
 
       {/* ── 4. Timeline Gantt Roadmap View ── */}
       {!loading && viewMode === 'timeline' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <BarChart2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                Sprint Deliverables Roadmap Timeline
-              </h2>
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between w-full sm:w-auto">
+              <div className="flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-orange-500" />
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+                  Sprint Deliverables Roadmap Timeline
+                </h2>
+              </div>
+              <span className="sm:hidden text-[10px] font-mono font-extrabold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2.5 py-1 rounded-full border border-orange-200/80 shrink-0">
+                Swipe Timeline →
+              </span>
             </div>
-            <div className="flex items-center gap-1.5">
+
+            <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
               <span className="hidden sm:inline text-xs font-semibold text-slate-400 mr-2">14-Day Rolling Execution View</span>
-              <button type="button" onClick={() => setTimelineOffsetDays(d => d - 7)}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-                <ChevronLeft className="w-4 h-4 text-slate-500" />
-              </button>
-              <button type="button" onClick={() => setTimelineOffsetDays(0)}
-                className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-                Today
-              </button>
-              <button type="button" onClick={() => setTimelineOffsetDays(d => d + 7)}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-                <ChevronRight className="w-4 h-4 text-slate-500" />
-              </button>
+              <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+                <button type="button" onClick={() => setTimelineOffsetDays(d => d - 7)}
+                  className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                  <ChevronLeft className="w-4 h-4 text-slate-500" />
+                </button>
+                <button type="button" onClick={() => setTimelineOffsetDays(0)}
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                  Today
+                </button>
+                <button type="button" onClick={() => setTimelineOffsetDays(d => d + 7)}
+                  className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                  <ChevronRight className="w-4 h-4 text-slate-500" />
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto custom-scrollbar">
-            <div className="min-w-[850px] space-y-3">
+          {/* Unified Timeline Matrix with Date Header on ALL screens */}
+          <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="min-w-[680px] sm:min-w-[850px] space-y-3">
               {/* Timeline Day Header Columns */}
-              <div className="grid grid-cols-14 gap-1 text-center border-b border-slate-100 dark:border-slate-800 pb-2">
+              <div className="grid grid-cols-[160px_repeat(14,minmax(0,1fr))] sm:grid-cols-[224px_repeat(14,minmax(0,1fr))] gap-1 text-center border-b border-slate-100 dark:border-slate-800 pb-2.5 items-center">
+                <div className="text-left text-[11px] font-extrabold text-slate-400 uppercase tracking-wider pl-2">
+                  Deliverable
+                </div>
                 {timelineDays.map(d => (
                   <div
                     key={d.dateStr}
-                    className={`py-1 rounded-lg text-xs ${
+                    className={`py-1.5 rounded-xl text-xs transition-all ${
                       d.isToday
-                        ? 'bg-indigo-600 text-white font-bold'
-                        : 'text-slate-500 dark:text-slate-400 font-medium'
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-extrabold shadow-2xs'
+                        : 'bg-slate-50/60 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold'
                     }`}
                   >
-                    <p className="text-[10px] uppercase">{d.dayName}</p>
-                    <p className="text-xs font-bold">{d.dayNum}</p>
+                    <p className="text-[9px] sm:text-[10px] uppercase font-mono">{d.dayName}</p>
+                    <p className="text-xs font-extrabold">{d.dayNum}</p>
                   </div>
                 ))}
               </div>
@@ -1217,27 +1257,29 @@ export default function TasksPage() {
                     <div
                       key={t.id}
                       onClick={() => { setSelectedTask(t); setShowDetailModal(true); }}
-                      className="group bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-4 cursor-pointer hover:border-indigo-300 transition-all"
+                      className="group bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-2.5 flex items-center justify-between gap-3 cursor-pointer hover:border-orange-400/80 transition-all"
                     >
-                      <div className="w-56 shrink-0 min-w-0">
+                      <div className="w-40 sm:w-56 shrink-0 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${sc.color.replace('text', 'bg')}`} />
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 transition-colors">
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${sc.color.replace('text', 'bg')}`} />
+                          <h4 className="text-xs font-extrabold text-slate-900 dark:text-white truncate group-hover:text-orange-600 transition-colors">
                             {t.title}
                           </h4>
                         </div>
-                        <span className="text-[10px] text-slate-400 block mt-0.5">Due: {t.dueDate || 'Unscheduled'}</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] text-slate-400 font-mono">Due: {t.dueDate || 'Unscheduled'}</span>
+                        </div>
                       </div>
 
                       {/* Timeline Bar Span */}
-                      <div className="flex-1 relative h-6 bg-slate-200/60 dark:bg-slate-800 rounded-lg overflow-hidden flex items-center px-2">
+                      <div className="flex-1 relative h-6 bg-slate-200/60 dark:bg-slate-800 rounded-xl overflow-hidden flex items-center px-2">
                         <div
-                          className={`h-4 rounded-md transition-all flex items-center justify-between px-2 text-[10px] font-bold text-white shadow-xs ${
-                            t.status === 'done' ? 'bg-emerald-500' : 'bg-indigo-600'
+                          className={`h-4.5 rounded-lg transition-all flex items-center justify-between px-2 text-[10px] font-mono font-extrabold text-white shadow-2xs ${
+                            t.status === 'done' ? 'bg-emerald-500' : 'bg-gradient-to-r from-orange-500 to-amber-600'
                           }`}
                           style={{ width: `${Math.max(progress, 35)}%` }}
                         >
-                          <span className="truncate">{t.priority.toUpperCase()}</span>
+                          <span className="truncate mr-1">{t.priority.toUpperCase()}</span>
                           <span>{progress}%</span>
                         </div>
                       </div>
@@ -1379,96 +1421,104 @@ export default function TasksPage() {
             <ModalHandle />
 
             {/* Detail Header */}
-            <div className={`${modalHeaderCls} items-start`}>
-              <div className="flex-1 min-w-0 pr-4">
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editData.title}
-                    onChange={e => setEditData({ ...editData, title: e.target.value })}
-                    className="text-lg font-extrabold text-slate-900 dark:text-white w-full border-b-2 border-orange-500 outline-none pb-1 bg-transparent"
-                  />
-                ) : (
-                  <h2 className="text-lg font-extrabold text-slate-900 dark:text-white leading-snug tracking-tight">
-                    {selectedTask.title}
-                  </h2>
-                )}
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${priorityBadge(selectedTask.priority)}`}>
+            <div className="shrink-0 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 px-5 sm:px-6 py-4 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editData.title}
+                      onChange={e => setEditData({ ...editData, title: e.target.value })}
+                      className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white w-full border-b-2 border-orange-500 outline-none pb-1 bg-transparent"
+                    />
+                  ) : (
+                    <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-snug tracking-tight">
+                      {selectedTask.title}
+                    </h2>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  {isEditing ? (
+                    <button
+                      type="button"
+                      onClick={saveEdit}
+                      className="px-3.5 py-1.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white text-xs font-extrabold rounded-xl hover:from-orange-600 hover:to-amber-700 transition-all cursor-pointer shadow-2xs"
+                    >
+                      Save
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => startEditing(selectedTask)}
+                      className="p-2 hover:bg-slate-200/60 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                      title="Edit deliverable"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setShowDetailModal(false); setIsEditing(false); }}
+                    className="p-2 hover:bg-slate-200/60 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Tags & Action Bar Row */}
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className={`text-[10px] font-mono font-extrabold uppercase px-2.5 py-0.5 rounded-full border ${priorityBadge(selectedTask.priority)}`}>
                     {selectedTask.priority}
                   </span>
                   {selectedTask.assignedTo && (
-                    <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-medium bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-semibold bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
                       <User className="w-3.5 h-3.5 text-orange-500" /> {selectedTask.assignedTo}
                     </span>
                   )}
                   {selectedTask.dueDate && (
-                    <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-medium bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-mono font-semibold bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
                       <Calendar className="w-3.5 h-3.5 text-orange-500" /> {selectedTask.dueDate}
                     </span>
                   )}
                   {getSLABadge(selectedTask.dueDate, selectedTask.status)}
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => launchHuddleForTask(selectedTask.id)}
-                  className="px-3.5 py-2 bg-orange-50 dark:bg-orange-950/60 hover:bg-orange-500 hover:text-white text-orange-600 dark:text-orange-400 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 border border-orange-200 dark:border-orange-800 shadow-xs"
+                  className="px-3 py-1.5 bg-orange-50 dark:bg-orange-950/60 hover:bg-orange-500 hover:text-white text-orange-600 dark:text-orange-400 text-xs font-extrabold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 border border-orange-200/80 dark:border-orange-800 shadow-2xs shrink-0"
                 >
-                  <Video className="w-4 h-4" />
+                  <Video className="w-3.5 h-3.5" />
                   <span>Discuss Huddle</span>
-                </button>
-
-                {isEditing ? (
-                  <button
-                    type="button"
-                    onClick={saveEdit}
-                    className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white text-xs font-bold rounded-xl hover:from-orange-600 hover:to-amber-700 transition-all cursor-pointer shadow-sm"
-                  >
-                    Save
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => startEditing(selectedTask)}
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                    title="Edit deliverable"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => { setShowDetailModal(false); setIsEditing(false); }}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                >
-                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex items-center gap-2 px-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-xs font-bold">
-              {[
-                { id: 'overview', label: 'Overview & Subtasks', icon: Target },
-                { id: 'comments', label: `Discussion (${selectedTask.comments?.length || 0})`, icon: MessageSquare },
-                { id: 'history', label: 'Activity Log', icon: History },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setDetailTab(tab.id as typeof detailTab)}
-                  className={`py-3 px-4 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
-                    detailTab === tab.id
-                      ? 'border-orange-500 text-orange-600 dark:text-orange-400 font-bold'
-                      : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
+            {/* Navigation Tabs Bar */}
+            <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 px-3">
+              <div className="inline-flex items-center gap-1 min-w-full sm:min-w-0">
+                {[
+                  { id: 'overview', label: 'Overview & Subtasks', icon: Target },
+                  { id: 'comments', label: `Discussion (${selectedTask.comments?.length || 0})`, icon: MessageSquare },
+                  { id: 'history', label: 'Activity Log', icon: History },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setDetailTab(tab.id as typeof detailTab)}
+                    className={`flex-1 sm:flex-initial py-3 px-3.5 flex items-center justify-center gap-2 border-b-2 text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer ${
+                      detailTab === tab.id
+                        ? 'border-orange-500 text-orange-600 dark:text-orange-400'
+                        : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <tab.icon className="w-4 h-4 shrink-0" />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Detail Body Content */}
@@ -1538,7 +1588,7 @@ export default function TasksPage() {
                         </button>
                       )}
                     </div>
-                    <div className="grid grid-cols-4 gap-2.5 bg-slate-100/70 dark:bg-slate-900/60 p-2 rounded-2xl border border-slate-200/70 dark:border-slate-800">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-100/70 dark:bg-slate-900/60 p-2 rounded-2xl border border-slate-200/70 dark:border-slate-800">
                       {STATUS_COLS.map(col => {
                         const isActive = selectedTask.status === col.id;
                         const isPending = pendingStatus === col.id && !isActive;
@@ -1548,14 +1598,14 @@ export default function TasksPage() {
                             key={col.id}
                             type="button"
                             onClick={() => setPendingStatus(col.id)}
-                            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all cursor-pointer ${
-                              isActive  ? 'bg-white dark:bg-slate-800 border-orange-500 text-orange-600 dark:text-orange-400 shadow-sm font-extrabold' :
-                              isPending ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 border-dashed text-emerald-600 font-bold' :
-                                          'bg-transparent border-transparent hover:bg-white/60 dark:hover:bg-slate-800/60 text-slate-500 font-semibold'
+                            className={`flex flex-col items-center justify-center gap-1.5 p-2.5 min-h-[64px] rounded-xl border transition-all cursor-pointer ${
+                              isActive  ? 'bg-white dark:bg-slate-800 border-orange-500 text-orange-600 dark:text-orange-400 shadow-2xs font-extrabold' :
+                              isPending ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 border-dashed text-emerald-600 font-extrabold' :
+                                          'bg-transparent border-transparent hover:bg-white/60 dark:hover:bg-slate-800/60 text-slate-500 font-bold'
                             }`}
                           >
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-orange-500' : isPending ? 'text-emerald-500' : 'text-slate-400'}`} />
-                            <span className="text-[10px] uppercase tracking-tight text-center">
+                            <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-orange-500' : isPending ? 'text-emerald-500' : 'text-slate-400'}`} />
+                            <span className="text-[10px] uppercase font-mono font-extrabold tracking-tight text-center leading-none">
                               {col.label}
                             </span>
                           </button>

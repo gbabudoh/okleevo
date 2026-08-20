@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   Mail, Trash2, Search, RefreshCw, Star,
   MoreVertical, Reply, Forward, Paperclip, FileText, Image as ImageIcon,
-  ChevronLeft, Loader2,
+  ChevronLeft, Loader2, ArrowLeft,
   Inbox as InboxIcon, Send as SendIcon,
   Trash as TrashIcon, AlertTriangle as SpamIcon,
   X, Send as SendActionIcon, PenSquare, Upload,
@@ -285,39 +285,45 @@ export default function MailboxPage() {
       <TourProvider moduleId="mailbox" steps={mailboxTourSteps} />
 
       {/* ── Glassmorphic Sticky Header ── */}
-      <div id="tour-mailbox-header" className="shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 px-4 sm:px-6 py-3.5 space-y-2.5 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
-        <div className="flex items-center gap-3.5 min-w-0">
+      <div id="tour-mailbox-header" className="shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           {selectedMessage ? (
             <button
               onClick={() => setSelectedMessage(null)}
-              className="lg:hidden flex items-center justify-center w-9 h-9 bg-slate-200/80 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-300 transition cursor-pointer shrink-0"
+              className="lg:hidden flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm transition active:scale-95 cursor-pointer shrink-0"
+              title="Back to email list"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
             </button>
           ) : (
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-orange-500 border border-orange-200/60 dark:border-orange-900/40 flex items-center justify-center shrink-0 shadow-2xs">
               <Mail className="w-5 h-5" />
             </div>
           )}
           
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">
-                Mail Engine &amp; Inbox
+              <h1 className="text-sm sm:text-base lg:text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">
+                {selectedMessage ? selectedMessage.subject : 'Mail Engine & Inbox'}
               </h1>
-              <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold font-mono bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/40 shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" /> Live Sync
-              </span>
+              {!selectedMessage && (
+                <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold font-mono bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/40 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" /> Live Sync
+                </span>
+              )}
             </div>
-            <p className="text-xs font-bold text-slate-400 truncate hidden sm:block mt-0.5">
-              Send, receive &amp; manage secure business emails
-            </p>
+            {!selectedMessage && (
+              <p className="text-xs font-bold text-slate-400 truncate hidden sm:block mt-0.5">
+                Send, receive &amp; manage secure business emails
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Desktop Search Bar */}
-          <div className="hidden md:flex items-center relative">
+          <div className={`hidden md:flex items-center relative ${selectedMessage ? 'lg:flex' : ''}`}>
             <Search className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
@@ -328,19 +334,21 @@ export default function MailboxPage() {
             />
           </div>
 
-          <ModuleGuideBanner
-            moduleId="mailbox"
-            moduleName="Mailbox Engine"
-            summary="Send, receive, track, and organize inbound and outbound business emails securely."
-            tips={[
-              "Compose rich emails with attachments & verified Postal server domains",
-              "Organize mail by Inbox, Sent, Drafts, Archived, and Spam",
-              "Track real-time delivery status and open notifications"
-            ]}
-          />
+          <div className={selectedMessage ? 'hidden lg:block' : 'block'}>
+            <ModuleGuideBanner
+              moduleId="mailbox"
+              moduleName="Mailbox Engine"
+              summary="Send, receive, track, and organize inbound and outbound business emails securely."
+              tips={[
+                "Compose rich emails with attachments & verified Postal server domains",
+                "Organize mail by Inbox, Sent, Drafts, Archived, and Spam",
+                "Track real-time delivery status and open notifications"
+              ]}
+            />
+          </div>
 
           {/* View Pane Display Menu Dropdown */}
-          <div className="relative">
+          <div className={`relative ${selectedMessage ? 'hidden lg:block' : 'block'}`}>
             <button
               onClick={() => setShowViewMenu(v => !v)}
               className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400 rounded-2xl text-xs font-extrabold text-slate-700 dark:text-slate-300 transition cursor-pointer shadow-2xs"
@@ -437,7 +445,7 @@ export default function MailboxPage() {
 
           <button
             onClick={() => fetchMessages(true)}
-            className="p-2.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-slate-500 hover:text-orange-500 hover:border-orange-400 transition cursor-pointer shadow-2xs"
+            className={`p-2.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-slate-500 hover:text-orange-500 hover:border-orange-400 transition cursor-pointer shadow-2xs ${selectedMessage ? 'hidden sm:block' : 'block'}`}
             title="Sync Mail"
           >
             <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
@@ -446,18 +454,20 @@ export default function MailboxPage() {
           <button
             id="tour-mailbox-compose"
             onClick={() => { setComposeData({ to: '', subject: '', content: '' }); setComposeAttachments([]); setShowCompose(true); }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm shadow-orange-500/20 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+            className={`flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm shadow-orange-500/20 transition-all cursor-pointer whitespace-nowrap active:scale-95 ${selectedMessage ? 'hidden sm:flex' : 'flex'}`}
           >
             <PenSquare className="w-4 h-4" />
             <span>Compose</span>
           </button>
 
-          <button
-            onClick={() => setShowSearch(v => !v)}
-            className="md:hidden p-2.5 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-slate-300 cursor-pointer"
-          >
-            <Search className="w-4 h-4" />
-          </button>
+          {!selectedMessage && (
+            <button
+              onClick={() => setShowSearch(v => !v)}
+              className="md:hidden p-2.5 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-slate-300 cursor-pointer"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -480,8 +490,8 @@ export default function MailboxPage() {
 
       {/* Mobile Folder Tabs */}
       {!selectedMessage && (
-        <div className="lg:hidden shrink-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-b border-slate-200/80 dark:border-slate-800">
-          <div className="flex overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden px-4 sm:px-6 gap-1">
+        <div className="lg:hidden shrink-0 bg-slate-50/50 dark:bg-slate-900/40 p-2 border-b border-slate-200/80 dark:border-slate-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="inline-flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 min-w-full">
             {folders.map((folder) => {
               const isActive = selectedFolder === folder.id;
               const Icon = folder.icon;
@@ -489,14 +499,14 @@ export default function MailboxPage() {
                 <button
                   key={folder.id}
                   onClick={() => { setSelectedFolder(folder.id); setSelectedMessage(null); setSelectedLabel(null); }}
-                  className={`flex items-center gap-2 px-4 py-3 text-xs font-extrabold whitespace-nowrap border-b-2 transition-all cursor-pointer shrink-0 ${
-                    isActive ? "border-orange-500 text-orange-500 bg-orange-50/40 dark:bg-orange-950/40" : "border-transparent text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer ${
+                    isActive ? "bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-orange-500' : 'text-slate-400'}`} />
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
                   <span>{folder.label}</span>
                   {folder.id === 'INBOX' && unreadCount > 0 && (
-                    <span className="px-2 py-0.5 bg-orange-500 text-white rounded-full text-[10px] font-mono font-extrabold leading-none shadow-2xs">
+                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-mono font-extrabold leading-none ${isActive ? 'bg-white text-orange-600' : 'bg-orange-500 text-white'}`}>
                       {unreadCount}
                     </span>
                   )}
@@ -691,17 +701,19 @@ export default function MailboxPage() {
                   : 'lg:flex-[1.8] border-l border-slate-200/80 dark:border-slate-800'
               }`}>
                 {/* Detail header */}
-                <div className="shrink-0 border-b border-slate-200/80 dark:border-slate-800 px-5 py-3.5 flex items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-900/60">
+                <div className="shrink-0 border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-5 py-3 flex items-center justify-between gap-2 sm:gap-3 bg-slate-50/70 dark:bg-slate-900/60">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => updateMessage(selectedMessage.id, { status: 'FLAGGED' })}
+                      onClick={() => updateMessage(selectedMessage.id, { status: selectedMessage.status === 'FLAGGED' ? 'READ' : 'FLAGGED' })}
                       className="p-2.5 bg-white dark:bg-slate-950 hover:bg-amber-50 rounded-2xl text-slate-400 hover:text-amber-500 border border-slate-200/80 dark:border-slate-800 transition-colors cursor-pointer shadow-2xs"
+                      title={selectedMessage.status === 'FLAGGED' ? 'Unstar' : 'Star'}
                     >
                       <Star className={`w-4 h-4 ${selectedMessage.status === 'FLAGGED' ? 'fill-amber-500 text-amber-500' : ''}`} />
                     </button>
                     <button
                       onClick={() => { updateMessage(selectedMessage.id, { folder: 'TRASH' }); setSelectedMessage(null); }}
                       className="p-2.5 bg-white dark:bg-slate-950 hover:bg-rose-50 rounded-2xl text-slate-400 hover:text-rose-500 border border-slate-200/80 dark:border-slate-800 transition-colors cursor-pointer shadow-2xs"
+                      title="Move to Trash"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -713,6 +725,7 @@ export default function MailboxPage() {
                             ? `${MAIL_LABELS.find(l => l.label === selectedMessage.label)?.bgSoft} ${MAIL_LABELS.find(l => l.label === selectedMessage.label)?.text}`
                             : 'bg-white dark:bg-slate-950 text-slate-400 hover:bg-slate-100'
                         }`}
+                        title="Add label"
                       >
                         <Tag className="w-4 h-4" />
                       </button>
@@ -749,7 +762,7 @@ export default function MailboxPage() {
                     {selectedFolder !== 'SENT' && (
                       <button
                         onClick={handleReply}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl transition-all cursor-pointer shadow-2xs active:scale-95"
+                        className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl transition-all cursor-pointer shadow-2xs active:scale-95"
                       >
                         <Reply className="w-4 h-4" /> Reply
                       </button>
@@ -806,7 +819,7 @@ export default function MailboxPage() {
                 </div>
 
                 {/* Scrollable content */}
-                <div className="flex-1 overflow-y-auto px-6 py-6 pb-28 lg:pb-8 space-y-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 sm:py-6 pb-36 lg:pb-8 space-y-5 sm:space-y-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
                     {selectedMessage.subject}
                   </h2>
@@ -954,19 +967,37 @@ export default function MailboxPage() {
                 </div>
 
                 {/* Mobile sticky footer */}
-                <div className="lg:hidden fixed bottom-24 left-0 right-0 z-40 px-4 pb-2">
-                  <div className="flex gap-2 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xl p-2">
+                <div className="lg:hidden fixed bottom-20 sm:bottom-24 left-0 right-0 z-40 px-4 pb-safe pointer-events-none">
+                  <div className="max-w-lg mx-auto flex items-center gap-2 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xl p-2 pointer-events-auto">
                     <button
-                      onClick={handleReply}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl transition-all cursor-pointer active:scale-95"
+                      onClick={() => setSelectedMessage(null)}
+                      className="px-3.5 py-3 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-extrabold rounded-2xl transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+                      title="Close email and return to inbox"
                     >
-                      <Reply className="w-4 h-4" /> Reply
+                      <ArrowLeft className="w-4 h-4" />
+                      <span>Close</span>
+                    </button>
+                    {selectedFolder !== 'SENT' && (
+                      <button
+                        onClick={handleReply}
+                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl transition-all cursor-pointer active:scale-95 shadow-md shadow-orange-500/25"
+                      >
+                        <Reply className="w-4 h-4" /> Reply
+                      </button>
+                    )}
+                    <button
+                      onClick={handleForward}
+                      className="p-3 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl transition-colors cursor-pointer shrink-0"
+                      title="Forward"
+                    >
+                      <Forward className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => { updateMessage(selectedMessage.id, { folder: 'TRASH' }); setSelectedMessage(null); }}
-                      className="px-4 py-3 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-500 rounded-2xl border border-rose-100 dark:border-rose-900/40 transition-colors cursor-pointer"
+                      className="p-3 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-500 rounded-2xl border border-rose-100 dark:border-rose-900/40 transition-colors cursor-pointer shrink-0"
+                      title="Delete"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>

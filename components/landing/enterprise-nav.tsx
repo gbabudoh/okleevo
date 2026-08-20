@@ -104,13 +104,13 @@ export function EnterpriseNav({ isLoggedIn }: EnterpriseNavProps) {
               ) : (
                 <>
                   <Link
-                    href="/auth/login"
+                    href="/access"
                     className="text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-4 py-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
                   >
                     Log In
                   </Link>
                   <Link
-                    href="/auth/register"
+                    href="/onboarding"
                     className="group relative inline-flex items-center justify-center px-5 py-2 text-xs font-semibold text-white transition-all bg-gradient-to-r from-orange-500 to-amber-600 rounded-full shadow-[0_4px_20px_rgba(252,104,19,0.3)] hover:shadow-[0_6px_25px_rgba(252,104,19,0.45)] active:scale-95"
                   >
                     <span>Sign Up</span>
@@ -198,14 +198,14 @@ export function EnterpriseNav({ isLoggedIn }: EnterpriseNavProps) {
                       );
                     })}
                     <Link
-                      href="/auth/login"
+                      href="/access"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-orange-600 hover:bg-orange-50/80 dark:hover:bg-orange-950/30 rounded-2xl transition-all"
                     >
                       Log In
                     </Link>
                     <Link
-                      href="/auth/register"
+                      href="/onboarding"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center px-4 py-3 text-sm font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50/80 dark:hover:bg-orange-950/30 rounded-2xl transition-all"
                     >
@@ -225,7 +225,7 @@ export function EnterpriseNav({ isLoggedIn }: EnterpriseNavProps) {
                     </Link>
                   ) : (
                     <Link
-                      href="/auth/register"
+                      href="/onboarding"
                       onClick={() => setMobileMenuOpen(false)}
                       className="w-full text-center py-3 text-xs font-extrabold text-white bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
                     >

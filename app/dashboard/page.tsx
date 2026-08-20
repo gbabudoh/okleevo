@@ -364,7 +364,7 @@ export default function DashboardPage() {
     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
       {/* Company Name with Icon */}
       <div className="flex items-center gap-4 min-w-0">
-        <div className="w-13 h-13 rounded-2xl flex items-center justify-center text-white font-extrabold text-xl shadow-2xs shrink-0 bg-gradient-to-r from-orange-500 to-amber-600">
+        <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center text-slate-800 dark:text-white bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-800 font-extrabold text-xl shadow-2xs shrink-0">
           {companyName.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0">
@@ -437,27 +437,27 @@ export default function DashboardPage() {
       {/* Team Collaboration Widget */}
       {presence && presence.presence && presence.presence.length > 0 && (
         <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-5 gap-2">
             <h2 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+              <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center shadow-xs">
                 <Users className="w-4 h-4" />
               </div>
-              Team Presence & Activity
+              <span>Team Presence & Activity</span>
             </h2>
-            <div className="flex items-center gap-2 text-[10px] font-mono font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200/60 uppercase">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="flex items-center gap-1.5 text-[10px] font-mono font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200/60 uppercase shrink-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
               <span>{presence.onlineCount} OF {presence.totalCount} ONLINE</span>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
             {presence.presence.map((member) => (
               <div
                 key={member.userId}
-                className="flex flex-col items-center p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400/80 transition-all shadow-2xs group"
+                className="flex flex-col items-center p-3 sm:p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400/80 transition-all shadow-2xs group"
               >
                 <div className="relative mb-2.5">
-                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center text-white font-extrabold text-sm shadow-2xs overflow-hidden border border-orange-200/40">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl flex items-center justify-center font-extrabold text-xs sm:text-sm shadow-2xs overflow-hidden border border-slate-200/80 dark:border-slate-800 group-hover:border-orange-400/80 transition-colors">
                     {member.image ? (
                       <img src={member.image} alt={`${member.firstName} ${member.lastName}`} className="w-full h-full object-cover" />
                     ) : (
@@ -465,13 +465,13 @@ export default function DashboardPage() {
                     )}
                   </div>
                   {member.isOnline && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-950 rounded-full shadow-xs"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-emerald-500 border-2 border-white dark:border-slate-950 rounded-full shadow-xs"></div>
                   )}
                 </div>
-                <p className="text-xs font-extrabold text-slate-900 dark:text-white text-center truncate w-full group-hover:text-orange-500 transition-colors">
+                <p className="text-[11px] sm:text-xs font-extrabold text-slate-900 dark:text-white text-center truncate w-full group-hover:text-orange-500 transition-colors">
                   {member.firstName} {member.lastName.charAt(0)}.
                 </p>
-                <p className="text-[10px] font-mono font-bold text-center mt-0.5">
+                <p className="text-[9px] sm:text-[10px] font-mono font-bold text-center mt-0.5">
                   {member.isOnline ? (
                     <span className="text-emerald-600 dark:text-emerald-400">● ONLINE</span>
                   ) : (
@@ -515,7 +515,7 @@ export default function DashboardPage() {
               
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+                  <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-orange-100 dark:group-hover:bg-orange-950/80 group-hover:text-orange-600 flex items-center justify-center transition-colors">
                     <Icon className="w-5 h-5" />
                   </div>
                   <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold uppercase border ${
@@ -542,7 +542,7 @@ export default function DashboardPage() {
       {/* Quick Actions Hub */}
       <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">
         <h2 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5 mb-6">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center shadow-xs">
             <Zap className="w-4 h-4" />
           </div>
           Quick Actions & Short-Cuts
@@ -556,11 +556,11 @@ export default function DashboardPage() {
               <button
                 key={index}
                 onClick={() => router.push(action.href)}
-                className="group relative p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-950 hover:border-orange-400/80 transition-all text-center overflow-hidden cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
+                className="group relative p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-900 hover:border-orange-400/80 transition-all text-center overflow-hidden cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
               >
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center mx-auto mb-3 shadow-2xs group-hover:scale-110 transition-transform">
-                    <Icon className="w-6 h-6" />
+                  <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-orange-100 dark:group-hover:bg-orange-950/80 group-hover:text-orange-600 dark:group-hover:text-orange-400 flex items-center justify-center mx-auto mb-3 transition-colors shrink-0">
+                    <Icon className="w-5 h-5" />
                   </div>
                   <p className="text-xs font-extrabold text-slate-900 dark:text-white group-hover:text-orange-500 transition-colors mb-1 truncate">{action.name}</p>
                   <p className="text-[10px] font-bold text-slate-400 group-hover:text-slate-500 transition-colors truncate">{action.description}</p>

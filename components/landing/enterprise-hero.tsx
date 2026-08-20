@@ -58,7 +58,7 @@ export function EnterpriseHero() {
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto sm:max-w-none"
         >
           <Link
-            href="/signup"
+            href="/onboarding"
             className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white font-semibold text-sm shadow-[0_6px_25px_rgba(252,104,19,0.35)] hover:shadow-[0_8px_35px_rgba(252,104,19,0.5)] transition-all duration-300 active:scale-95 group"
           >
             <span>Start 14-Day Free Trial</span>

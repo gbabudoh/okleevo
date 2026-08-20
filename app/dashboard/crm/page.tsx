@@ -1264,16 +1264,16 @@ export default function CRMPage() {
 
       {/* Sticky Glass Top Bar & Header */}
       <div className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-orange-500 border border-orange-200/60 dark:border-orange-900/40 flex items-center justify-center shrink-0">
-              <Users className="w-5 h-5" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-orange-500 border border-orange-200/60 dark:border-orange-900/40 flex items-center justify-center shrink-0">
+              <Users className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
             </div>
-            <div className="min-w-0 flex items-center gap-3 shrink-0">
-              <div className="min-w-0 shrink-0 space-y-0.5">
-                <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight whitespace-nowrap">CRM & Client Operations</h1>
-                <p className="text-xs font-bold text-slate-400 hidden sm:block">Manage relationships & track pipeline deals</p>
-              </div>
+            <div className="min-w-0 flex items-center gap-2">
+              <h1 className="text-sm sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
+                <span className="sm:hidden">CRM & Client Ops</span>
+                <span className="hidden sm:inline">CRM & Client Operations</span>
+              </h1>
               <ModuleGuideBanner
                 moduleId="crm"
                 moduleName="CRM & Pipeline"
@@ -1286,7 +1286,7 @@ export default function CRMPage() {
               />
             </div>
           </div>
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -1305,7 +1305,7 @@ export default function CRMPage() {
               id="tour-crm-add-button"
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl shadow-sm shadow-orange-500/20 transition-all cursor-pointer active:scale-95"
+              className="flex items-center gap-1.5 px-3 sm:px-5 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-extrabold rounded-2xl shadow-sm shadow-orange-500/20 transition-all cursor-pointer active:scale-95 shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Client</span>
@@ -1326,22 +1326,26 @@ export default function CRMPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6 pt-6">
         
         {/* ── CRM Section Tabs Dock ── */}
-        <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shrink-0">
-          {([
-            ['contacts', 'Contacts', Contact],
-            ['companies', 'Companies', Building2],
-            ['reports', 'Reports', BarChart3],
-            ['calendar', 'Calendar', CalendarDays],
-          ] as const).map(([id, label, Icon]) => (
-            <button key={id} type="button" onClick={() => setCrmSection(id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
-                crmSection === id
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm shadow-orange-500/20'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800'
-              }`}>
-              <Icon className="w-4 h-4" /> {label}
-            </button>
-          ))}
+        <div className="w-full overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="inline-flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 min-w-full sm:min-w-0">
+            {([
+              ['contacts', 'Contacts', Contact],
+              ['companies', 'Companies', Building2],
+              ['reports', 'Reports', BarChart3],
+              ['calendar', 'Calendar', CalendarDays],
+            ] as const).map(([id, label, Icon]) => (
+              <button key={id} type="button" onClick={() => setCrmSection(id)}
+                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  crmSection === id
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm shadow-orange-500/20 font-extrabold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {crmSection === 'contacts' && (<>

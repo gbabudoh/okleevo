@@ -48,6 +48,7 @@ export function PipelineBoard({
 }) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
+  const [mobileStage, setMobileStage] = useState<string>('all');
 
   if (loading) {
     return (
@@ -58,56 +59,95 @@ export function PipelineBoard({
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      {STAGES.map((stage) => {
-        const stageClients = clients.filter((c) => c.pipelineStage === stage.id);
-        const stageValue = stageClients.reduce((sum, c) => sum + c.revenue, 0);
-        const isOver = overStage === stage.id;
-
-        const stageDragStyle = !isOver
-          ? 'border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60'
-          : stage.id === 'new'
-          ? 'bg-slate-100/90 dark:bg-slate-800/80 border-2 border-dashed border-slate-400 dark:border-slate-500 shadow-md shadow-slate-400/10 scale-[1.01]'
-          : stage.id === 'contacted'
-          ? 'bg-blue-50/90 dark:bg-blue-950/50 border-2 border-dashed border-blue-500 shadow-md shadow-blue-500/15 scale-[1.01]'
-          : stage.id === 'proposal'
-          ? 'bg-yellow-50/90 dark:bg-yellow-950/50 border-2 border-dashed border-yellow-400 dark:border-yellow-500 shadow-md shadow-yellow-400/20 scale-[1.01]'
-          : stage.id === 'negotiation'
-          ? 'bg-purple-50/90 dark:bg-purple-950/50 border-2 border-dashed border-purple-500 shadow-md shadow-purple-500/15 scale-[1.01]'
-          : stage.id === 'closed-won'
-          ? 'bg-emerald-50/90 dark:bg-emerald-950/50 border-2 border-dashed border-emerald-500 shadow-md shadow-emerald-500/15 scale-[1.01]'
-          : 'bg-rose-50/90 dark:bg-rose-950/50 border-2 border-dashed border-rose-500 shadow-md shadow-rose-500/15 scale-[1.01]';
-
-        const stageCardBorder = stage.id === 'new'
-          ? 'border-slate-200 dark:border-slate-800 hover:border-slate-400'
-          : stage.id === 'contacted'
-          ? 'border-blue-200 dark:border-blue-900/60 hover:border-blue-400'
-          : stage.id === 'proposal'
-          ? 'border-yellow-300 dark:border-yellow-900/60 hover:border-yellow-400'
-          : stage.id === 'negotiation'
-          ? 'border-purple-200 dark:border-purple-900/60 hover:border-purple-400'
-          : stage.id === 'closed-won'
-          ? 'border-emerald-200 dark:border-emerald-900/60 hover:border-emerald-400'
-          : 'border-rose-200 dark:border-rose-900/60 hover:border-rose-400';
-
-        return (
-          <div
-            key={stage.id}
-            onDragOver={(e) => { e.preventDefault(); setOverStage(stage.id); }}
-            onDragLeave={() => setOverStage((s) => (s === stage.id ? null : s))}
-            onDrop={(e) => {
-              e.preventDefault();
-              const id = e.dataTransfer.getData('text/plain') || draggingId;
-              if (id) onStageChange(id, stage.id);
-              setOverStage(null);
-              setDraggingId(null);
-            }}
-            className={`shrink-0 w-[280px] snap-start rounded-3xl border p-4 space-y-3 flex flex-col justify-between transition-all duration-200 ${stageDragStyle}`}
+    <div className="space-y-3">
+      {/* Mobile Stage Switcher Bar */}
+      <div className="sm:hidden w-full overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="inline-flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 min-w-full">
+          <button
+            type="button"
+            onClick={() => setMobileStage('all')}
+            className={`flex-1 flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap ${
+              mobileStage === 'all'
+                ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs font-extrabold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
           >
-            <div>
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-slate-800 mb-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${stage.dot}`} />
+            <span>All Stages</span>
+          </button>
+          {STAGES.map((stg) => {
+            const count = clients.filter(c => c.pipelineStage === stg.id).length;
+            return (
+              <button
+                key={stg.id}
+                type="button"
+                onClick={() => setMobileStage(stg.id)}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  mobileStage === stg.id
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs font-extrabold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${stg.dot}`} />
+                <span>{stg.label}</span>
+                <span className="text-[9px] opacity-80">({count})</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex sm:flex-row flex-col sm:overflow-x-auto gap-4 pb-4 -mx-1 px-1 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {STAGES.map((stage) => {
+          const stageClients = clients.filter((c) => c.pipelineStage === stage.id);
+          const stageValue = stageClients.reduce((sum, c) => sum + c.revenue, 0);
+          const isOver = overStage === stage.id;
+
+          const stageDragStyle = !isOver
+            ? 'border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60'
+            : stage.id === 'new'
+            ? 'bg-slate-100/90 dark:bg-slate-800/80 border-2 border-dashed border-slate-400 dark:border-slate-500 shadow-md shadow-slate-400/10 scale-[1.01]'
+            : stage.id === 'contacted'
+            ? 'bg-blue-50/90 dark:bg-blue-950/50 border-2 border-dashed border-blue-500 shadow-md shadow-blue-500/15 scale-[1.01]'
+            : stage.id === 'proposal'
+            ? 'bg-yellow-50/90 dark:bg-yellow-950/50 border-2 border-dashed border-yellow-400 dark:border-yellow-500 shadow-md shadow-yellow-400/20 scale-[1.01]'
+            : stage.id === 'negotiation'
+            ? 'bg-purple-50/90 dark:bg-purple-950/50 border-2 border-dashed border-purple-500 shadow-md shadow-purple-500/15 scale-[1.01]'
+            : stage.id === 'closed-won'
+            ? 'bg-emerald-50/90 dark:bg-emerald-950/50 border-2 border-dashed border-emerald-500 shadow-md shadow-emerald-500/15 scale-[1.01]'
+            : 'bg-rose-50/90 dark:bg-rose-950/50 border-2 border-dashed border-rose-500 shadow-md shadow-rose-500/15 scale-[1.01]';
+
+          const stageCardBorder = stage.id === 'new'
+            ? 'border-slate-200 dark:border-slate-800 hover:border-slate-400'
+            : stage.id === 'contacted'
+            ? 'border-blue-200 dark:border-blue-900/60 hover:border-blue-400'
+            : stage.id === 'proposal'
+            ? 'border-yellow-300 dark:border-yellow-900/60 hover:border-yellow-400'
+            : stage.id === 'negotiation'
+            ? 'border-purple-200 dark:border-purple-900/60 hover:border-purple-400'
+            : stage.id === 'closed-won'
+            ? 'border-emerald-200 dark:border-emerald-900/60 hover:border-emerald-400'
+            : 'border-rose-200 dark:border-rose-900/60 hover:border-rose-400';
+
+          return (
+            <div
+              key={stage.id}
+              onDragOver={(e) => { e.preventDefault(); setOverStage(stage.id); }}
+              onDragLeave={() => setOverStage((s) => (s === stage.id ? null : s))}
+              onDrop={(e) => {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text/plain') || draggingId;
+                if (id) onStageChange(id, stage.id);
+                setOverStage(null);
+                setDraggingId(null);
+              }}
+              className={`shrink-0 w-full sm:w-[280px] snap-start rounded-3xl border p-4 space-y-3 flex-col justify-between transition-all duration-200 ${stageDragStyle} ${
+                mobileStage !== 'all' && mobileStage !== stage.id ? 'hidden sm:flex' : 'flex'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-slate-800 mb-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${stage.dot}`} />
                   <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wide truncate">{stage.label}</h3>
                 </div>
                 <span className="shrink-0 text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
@@ -190,6 +230,7 @@ export function PipelineBoard({
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

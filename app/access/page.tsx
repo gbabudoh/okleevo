@@ -54,7 +54,17 @@ function AccessContent() {
       } else {
         // result.ok === true, or undefined in some NextAuth v5 flows — both mean success
         const callbackUrl = searchParams.get('callbackUrl');
-        window.location.href = callbackUrl && callbackUrl.startsWith('/') ? callbackUrl : '/dashboard';
+        const isAuthUrl = callbackUrl && (
+          callbackUrl.startsWith('/auth') ||
+          callbackUrl.startsWith('/access') ||
+          callbackUrl.startsWith('/login') ||
+          callbackUrl.startsWith('/signin') ||
+          callbackUrl.startsWith('/onboarding') ||
+          callbackUrl.startsWith('/signup') ||
+          callbackUrl.startsWith('/register')
+        );
+        const targetUrl = callbackUrl && callbackUrl.startsWith('/') && !isAuthUrl ? callbackUrl : '/dashboard';
+        window.location.href = targetUrl;
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in. Please try again.');

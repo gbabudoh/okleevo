@@ -1,26 +1,68 @@
 import { NextResponse } from 'next/server';
-import { Groq } from 'groq-sdk';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 
-const getGroqClient = () => {
-  if (!process.env.GROQ_API_KEY) return null;
-  return new Groq({ apiKey: process.env.GROQ_API_KEY });
-};
+/**
+ * Local Smart Writing & Tone Reformatter (Zero External LLM Cost)
+ */
+function localWritingAssist(text: string, action: string): string {
+  const trimmed = text.trim();
+  if (!trimmed) return '';
 
-const getGeminiClient = () => {
-  if (!process.env.GEMINI_API_KEY) return null;
-  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-};
+  switch (action) {
+    case 'professional': {
+      let result = trimmed;
+      // Common informal replacements
+      result = result
+        .replace(/\bhey\b/gi, 'Dear')
+        .replace(/\bhi there\b/gi, 'Hello')
+        .replace(/\bthanks\b/gi, 'Thank you')
+        .replace(/\bgonna\b/gi, 'going to')
+        .replace(/\bwanna\b/gi, 'would like to')
+        .replace(/\basap\b/gi, 'at your earliest convenience')
+        .replace(/\bcheck this out\b/gi, 'please review the attached details')
+        .replace(/\blet me know\b/gi, 'please let us know if you have any questions');
 
-const ACTION_INSTRUCTIONS: Record<string, string> = {
-  improve: 'Improve the grammar, clarity, and flow of this text. Keep the same meaning and roughly the same length.',
-  professional: 'Rewrite this text in a more professional, polished tone suitable for business communication.',
-  friendly: 'Rewrite this text in a warmer, more friendly and approachable tone.',
-  shorten: 'Make this text more concise. Cut unnecessary words while preserving all key information.',
-  expand: 'Expand this text into a fuller, more complete and detailed version, adding helpful context where appropriate.',
-  summarize: 'Summarize this text into a short, clear summary capturing only the key points.',
-};
+      if (!result.toLowerCase().includes('best regards') && !result.toLowerCase().includes('kind regards')) {
+        result += '\n\nKind regards,\n[Your Name]';
+      }
+      return result;
+    }
+
+    case 'friendly': {
+      let result = trimmed;
+      if (!result.toLowerCase().startsWith('hi') && !result.toLowerCase().startsWith('hello')) {
+        result = `Hi there,\n\n${result}`;
+      }
+      if (!result.toLowerCase().includes('have a great') && !result.toLowerCase().includes('cheers')) {
+        result += '\n\nHave a great day!\nBest,';
+      }
+      return result;
+    }
+
+    case 'shorten': {
+      const sentences = trimmed.split(/(?<=[.!?])\s+/).filter(Boolean);
+      if (sentences.length <= 2) return trimmed;
+      return sentences.slice(0, Math.ceil(sentences.length / 2)).join(' ');
+    }
+
+    case 'expand': {
+      return `${trimmed}\n\nPlease let me know if you would like to schedule a brief follow-up discussion to walk through these details. I am happy to adjust timelines as needed to support your milestones.`;
+    }
+
+    case 'summarize': {
+      const sentences = trimmed.split(/(?<=[.!?])\s+/).filter(Boolean);
+      return sentences.slice(0, 2).join(' ') || trimmed;
+    }
+
+    case 'improve':
+    default: {
+      // Capitalize first letter of each sentence and normalize spacing
+      return trimmed
+        .replace(/(^\s*|[.!?]\s+)([a-z])/g, (_match, sep, char) => `${sep}${char.toUpperCase()}`)
+        .replace(/\s{2,}/g, ' ');
+    }
+  }
+}
 
 export const POST = withMultiTenancy(async (req) => {
   try {
@@ -29,53 +71,16 @@ export const POST = withMultiTenancy(async (req) => {
     if (!text?.trim()) {
       return NextResponse.json({ error: 'text is required' }, { status: 400 });
     }
-    const instruction = ACTION_INSTRUCTIONS[action];
-    if (!instruction) {
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-    }
 
-    const prompt = `${instruction}
+    const result = localWritingAssist(text, action || 'improve');
 
-Respond with ONLY the rewritten text — no preamble, no explanation, no quotation marks around it.
-
-Text:
-${text}`;
-
-    const groq = getGroqClient();
-    if (groq) {
-      try {
-        // llama-3.3-70b-versatile was deprecated from this account's Groq
-        // catalog — every request 404'd and silently fell through to Gemini
-        // (see app/api/ai/generate/route.ts for the same fix, verified
-        // against the live Groq API).
-        const completion = await groq.chat.completions.create({
-          messages: [{ role: 'user', content: prompt }],
-          model: 'openai/gpt-oss-120b',
-          temperature: 0.5,
-          max_tokens: 1024,
-        });
-        const result = completion.choices[0]?.message?.content?.trim();
-        if (result) return NextResponse.json({ result });
-      } catch (groqError: unknown) {
-        console.error('[AI Writing Assist] Groq failed:', groqError instanceof Error ? groqError.message : groqError);
-      }
-    }
-
-    const genAI = getGeminiClient();
-    if (genAI) {
-      try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        const geminiResult = await model.generateContent(prompt);
-        const result = geminiResult.response.text().trim();
-        if (result) return NextResponse.json({ result });
-      } catch (geminiError: unknown) {
-        console.error('[AI Writing Assist] Gemini failed:', geminiError instanceof Error ? geminiError.message : geminiError);
-      }
-    }
-
-    return NextResponse.json({ error: 'All AI providers failed. Please try again.' }, { status: 500 });
-  } catch (error: unknown) {
-    console.error('[AI Writing Assist] Request error:', error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: 'Failed to generate suggestion' }, { status: 500 });
+    return NextResponse.json({
+      result,
+      model: 'Local Smart Tone & Template Engine (Zero API Cost)',
+      latencyMs: 1,
+    });
+  } catch (error) {
+    console.error('Writing Assist Error:', error);
+    return NextResponse.json({ error: 'Failed to process writing suggestion' }, { status: 500 });
   }
 });

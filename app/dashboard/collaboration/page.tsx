@@ -9,7 +9,7 @@ import PusherClient, { type Channel } from 'pusher-js';
 import {
   Video, Phone, MessageSquare,
   Loader2, ShieldCheck, UsersRound, Send, X,
-  Radio, Search
+  Radio, Search, LayoutGrid, List
 } from 'lucide-react';
 import MeetingRoom from '@/components/collaboration/MeetingRoom';
 import { startOutgoingRingtone, stopOutgoingRingtone } from '@/lib/audio/ringtone';
@@ -34,6 +34,9 @@ interface ChatMessage {
   senderId: string;
   receiverId: string;
   content: string;
+  senderName?: string;
+  senderRole?: string | null;
+  senderImage?: string | null;
   isRead?: boolean;
   createdAt: string;
 }
@@ -53,6 +56,7 @@ function CollaborationHubInner() {
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [activeMeeting, setActiveMeeting] = useState<{
     token: string;
     wsUrl: string;
@@ -67,6 +71,7 @@ function CollaborationHubInner() {
   const [newMessageContent, setNewMessageContent] = useState('');
   const [loadingChat, setLoadingChat] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const pusherRef = useRef<PusherClient | null>(null);
 
@@ -108,8 +113,11 @@ function CollaborationHubInner() {
     const myId = session?.user?.id;
     let channel: Channel | null = null;
     if (pusherRef.current && myId) {
-      const [a, b] = [myId, activeChatMember.userId].sort();
-      channel = pusherRef.current.subscribe(`private-chat-${a}-${b}`);
+      const channelName = activeChatMember.userId === 'GROUP_MAIN_HQ'
+        ? 'private-chat-GROUP_MAIN_HQ'
+        : `private-chat-${[myId, activeChatMember.userId].sort().join('-')}`;
+
+      channel = pusherRef.current.subscribe(channelName);
       channel.bind('new-message', () => fetchChatMessages(activeChatMember.userId));
     }
 
@@ -127,18 +135,22 @@ function CollaborationHubInner() {
     };
   }, [activeChatMember, session?.user?.id]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!activeChatMember || !newMessageContent.trim()) return;
 
     const content = newMessageContent.trim();
     setNewMessageContent('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
 
-    const optimisticMsg = {
+    const optimisticMsg: ChatMessage = {
       id: 'temp_' + Date.now(),
       senderId: session?.user?.id || 'me',
       receiverId: activeChatMember.userId,
       content,
+      senderName: session?.user?.name || 'You',
       createdAt: new Date().toISOString()
     };
     setChatMessages(prev => [...prev, optimisticMsg]);
@@ -317,7 +329,24 @@ function CollaborationHubInner() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => {
+                setActiveChatMember({
+                  userId: 'GROUP_MAIN_HQ',
+                  firstName: 'General HQ',
+                  lastName: 'Team Channel',
+                  email: 'Company-Wide Realtime Chat',
+                  role: 'HQ CHANNEL',
+                  isOnline: true,
+                  lastActivity: 'Now',
+                });
+              }}
+              className="px-4 py-2.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer active:scale-95"
+            >
+              <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span>Team Group Chat</span>
+            </button>
             <button
               onClick={() => startMeeting('general_hq', false, true)}
               className="px-4 py-2.5 rounded-2xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer active:scale-95"
@@ -351,20 +380,52 @@ function CollaborationHubInner() {
             </span>
           </div>
 
-          {/* Search Field */}
-          <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, role, email..."
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-orange-500 transition"
-            />
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            {/* View Mode Switcher */}
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700 shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === 'list'
+                    ? 'bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-2xs font-extrabold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="List View"
+              >
+                <List className="w-4 h-4" />
+                <span className="hidden md:inline">List</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === 'grid'
+                    ? 'bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-2xs font-extrabold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="Grid View"
+              >
+                <LayoutGrid className="w-4 h-4" />
+                <span className="hidden md:inline">Grid</span>
+              </button>
+            </div>
+
+            {/* Search Field */}
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search team members..."
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-orange-500 transition"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Directory List Container */}
+        {/* Directory List / Grid Container */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800">
             <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
@@ -376,7 +437,84 @@ function CollaborationHubInner() {
             <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">No matching team members found</h3>
             <p className="text-xs text-slate-400 max-w-sm">Try searching with a different name or role.</p>
           </div>
+        ) : viewMode === 'grid' ? (
+          /* Grid View Layout */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredTeam.map((member, idx) => {
+              const gradient = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length];
+              return (
+                <div
+                  key={member.userId}
+                  className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 flex flex-col items-center text-center justify-between gap-4 shadow-2xs hover:border-orange-400/80 transition-all group"
+                >
+                  <div className="flex flex-col items-center text-center min-w-0 w-full">
+                    <div className="relative mb-3">
+                      {member.image ? (
+                        <img
+                          src={member.image}
+                          alt={`${member.firstName} ${member.lastName}`}
+                          className="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
+                        />
+                      ) : (
+                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-lg font-extrabold shadow-sm`}>
+                          {member.firstName.charAt(0)}{member.lastName.charAt(0)}
+                        </div>
+                      )}
+                      <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 ${
+                        member.isOnline ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-slate-300 dark:bg-slate-700'
+                      }`} />
+                    </div>
+
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white truncate w-full">
+                      {member.firstName} {member.lastName}
+                    </h3>
+                    
+                    <span className="mt-1 text-[10px] font-mono font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                      {member.role || 'Member'}
+                    </span>
+
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-2 font-medium w-full">
+                      {member.email}
+                    </p>
+
+                    <p className="text-[11px] font-bold mt-1">
+                      {member.isOnline ? <span className="text-emerald-600 dark:text-emerald-400 font-bold">● Online</span> : <span className="text-slate-400">Offline</span>}
+                    </p>
+                  </div>
+
+                  {/* Grid Action Dock */}
+                  <div className="grid grid-cols-3 gap-1.5 w-full pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                    <button
+                      onClick={() => startMeeting(`call_${member.userId}`, true, true)}
+                      className="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-orange-100/80 dark:hover:bg-orange-950/60 hover:text-orange-600 text-slate-700 dark:text-slate-200 font-extrabold text-[11px] flex flex-col items-center justify-center gap-1 cursor-pointer transition-all border border-slate-200/60 dark:border-slate-700"
+                      title="Video Call"
+                    >
+                      <Video className="w-3.5 h-3.5 text-orange-500" />
+                      <span>Video</span>
+                    </button>
+                    <button
+                      onClick={() => startMeeting(`call_${member.userId}`, false, true)}
+                      className="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-emerald-100/80 dark:hover:bg-emerald-950/60 hover:text-emerald-600 text-slate-700 dark:text-slate-200 font-extrabold text-[11px] flex flex-col items-center justify-center gap-1 cursor-pointer transition-all border border-slate-200/60 dark:border-slate-700"
+                      title="Voice Call"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Voice</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveChatMember(member)}
+                      className="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-indigo-100/80 dark:hover:bg-indigo-950/60 hover:text-indigo-600 text-slate-700 dark:text-slate-200 font-extrabold text-[11px] flex flex-col items-center justify-center gap-1 cursor-pointer transition-all border border-slate-200/60 dark:border-slate-700"
+                      title="Direct Chat"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-indigo-500" />
+                      <span>Chat</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : (
+          /* List View Layout */
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl divide-y divide-slate-100 dark:divide-slate-800/80 overflow-hidden shadow-xs">
             {filteredTeam.map((member, idx) => {
               const gradient = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length];
@@ -520,20 +658,42 @@ function CollaborationHubInner() {
                 </div>
               ) : (
                 chatMessages.map((msg) => {
-                  const isMe = msg.senderId === session?.user?.id;
+                  const isMe = msg.senderId === session?.user?.id || msg.senderId === 'me';
+                  const member = team.find(t => t.userId === msg.senderId);
+                  const senderName = isMe 
+                    ? 'You' 
+                    : (msg.senderName || (member ? `${member.firstName} ${member.lastName}`.trim() : activeChatMember.firstName || 'Team Member'));
+                  const role = msg.senderRole || member?.role;
+
                   return (
                     <div 
                       key={msg.id} 
                       className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-200`}
                     >
-                      <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-xs ${
+                      <div className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-xs ${
                         isMe 
                           ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-tr-none font-medium' 
                           : 'bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-800 rounded-tl-none font-medium'
                       }`}>
-                        <p className="leading-relaxed break-words">{msg.content}</p>
+                        {/* Sender Name Header */}
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className={`text-[11px] font-extrabold tracking-tight ${
+                            isMe 
+                              ? 'text-orange-100/90' 
+                              : 'text-orange-600 dark:text-orange-400'
+                          }`}>
+                            {senderName}
+                          </span>
+                          {!isMe && role && (
+                            <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                              {role}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="leading-relaxed break-words whitespace-pre-wrap">{msg.content}</p>
                         <p className={`text-[9px] font-medium mt-1 text-right ${
-                          isMe ? 'text-orange-100' : 'text-slate-400'
+                          isMe ? 'text-orange-100/80' : 'text-slate-400'
                         }`}>
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -548,21 +708,33 @@ function CollaborationHubInner() {
             {/* Input Footer */}
             <form 
               onSubmit={handleSendMessage}
-              className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 flex items-center gap-2 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
+              className="p-3.5 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 flex items-end gap-2 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
             >
-              <input 
-                type="text" 
+              <textarea 
+                ref={textareaRef}
+                rows={1}
                 value={newMessageContent}
-                onChange={(e) => setNewMessageContent(e.target.value)}
+                onChange={(e) => {
+                  setNewMessageContent(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
                 onFocus={() => setIsInputFocused(true)}
                 onBlur={() => setIsInputFocused(false)}
-                placeholder={`Message ${activeChatMember.firstName}...`}
-                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+                placeholder={`Message ${activeChatMember.firstName}... (Shift+Enter for newline)`}
+                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm focus:outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white resize-none max-h-28 min-h-[42px] leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden font-normal"
               />
               <button 
                 type="submit"
                 disabled={!newMessageContent.trim()}
-                className="p-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:bg-slate-100 dark:disabled:bg-slate-900 text-white disabled:text-slate-400 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+                className="p-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:bg-slate-100 dark:disabled:bg-slate-900 text-white disabled:text-slate-400 rounded-2xl transition-all shadow-md active:scale-95 cursor-pointer shrink-0 mb-0.5"
+                title="Send message (Enter)"
               >
                 <Send className="w-4 h-4" />
               </button>

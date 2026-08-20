@@ -129,8 +129,8 @@ export function EnterpriseFaqFooter() {
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 mb-3">Company</h4>
             <ul className="space-y-2 text-xs text-slate-600 font-medium">
               <li><Link href="/pricing" className="hover:text-orange-600 transition">Enterprise Sales</Link></li>
-              <li><Link href="/login" className="hover:text-orange-600 transition">Sign In</Link></li>
-              <li><Link href="/signup" className="hover:text-orange-600 transition">Create Account</Link></li>
+              <li><Link href="/access" className="hover:text-orange-600 transition">Sign In</Link></li>
+              <li><Link href="/onboarding" className="hover:text-orange-600 transition">Create Account</Link></li>
             </ul>
           </div>
         </div>
