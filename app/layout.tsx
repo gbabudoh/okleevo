@@ -34,6 +34,28 @@ export const metadata: Metadata = {
   authors: [{ name: "Okleevo Team" }],
   creator: "Okleevo",
   publisher: "Okleevo",
+  alternates: {
+    canonical: '/',
+    languages: {
+      'en-US': '/?geo=us',
+      'en-GB': '/?geo=uk',
+      'en-CA': '/?geo=ca',
+      'en-AU': '/?geo=au',
+      'en-IE': '/?geo=ie',
+      'x-default': '/',
+    },
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
     type: "website",
     locale: "en_GB",
@@ -72,6 +94,88 @@ export const viewport: Viewport = {
   themeColor: "#f97316",
 };
 
+const jsonLdData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://okleevo.com/#organization",
+      "name": "Okleevo",
+      "url": "https://okleevo.com",
+      "logo": "https://okleevo.com/icon-512.png",
+      "description": "The unified Virtual HQ and business operating system for modern SMEs.",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "support@okleevo.com",
+        "contactType": "customer support",
+        "availableLanguage": ["English"]
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://okleevo.com/#software",
+      "name": "Okleevo",
+      "operatingSystem": "Web, macOS, Windows, iOS, Android, Cloud",
+      "applicationCategory": "BusinessApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "39.00",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2030-12-31",
+        "availability": "https://schema.org/OnlineOnly"
+      },
+      "description": "All-in-one Virtual HQ & Business Operating Platform with team collaboration, CRM pipelines, booking pages, mail engine, and task management.",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "142",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "featureList": [
+        "WebRTC Audio & Video Meetings",
+        "Multi-channel Team Chat",
+        "CRM Deal Pipeline",
+        "Calendar Booking Pages",
+        "Mail Engine & Automated Dispatches",
+        "Agile Kanban Task Boards",
+        "Legally Compliant E-Signatures",
+        "Executive KPI Dashboard"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://okleevo.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Okleevo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Okleevo is an all-in-one Virtual HQ and business operating platform for SMEs, combining team messaging, video conferencing, CRM, booking pages, task boards, and transactional email in one unified workspace."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does Okleevo cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Okleevo starts at $39/month for the Starter Plan, which includes 5 team seats, unlimited collaboration, video calls, CRM pipelines, and mail dispatch with a 14-day free trial."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can Okleevo replace Slack, Zoom, and Calendly?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Okleevo includes built-in team chat, HD video meetings, screen sharing, and client booking links to consolidate fragmented software into one platform."
+          }
+        }
+      ]
+    }
+  ]
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -80,6 +184,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+        />
         <script
           id="theme-init"
           suppressHydrationWarning

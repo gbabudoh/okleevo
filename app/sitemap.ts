@@ -4,13 +4,16 @@ import { prisma } from '@/lib/prisma';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://okleevo.com';
 
-  const routes: { path: string; priority: number; freq: 'daily' | 'weekly' }[] = [
+  const routes: { path: string; priority: number; freq: 'daily' | 'weekly' | 'monthly' }[] = [
     { path: '',          priority: 1.0, freq: 'daily' },
     { path: '/pricing',  priority: 0.9, freq: 'weekly' },
     { path: '/guide',    priority: 0.8, freq: 'weekly' },
-    { path: '/support',  priority: 0.7, freq: 'weekly' },
-    { path: '/terms',    priority: 0.5, freq: 'weekly' },
-    { path: '/privacy',  priority: 0.5, freq: 'weekly' },
+    { path: '/support',  priority: 0.8, freq: 'weekly' },
+    { path: '/billing',  priority: 0.8, freq: 'weekly' },
+    { path: '/access',   priority: 0.7, freq: 'monthly' },
+    { path: '/register', priority: 0.7, freq: 'monthly' },
+    { path: '/terms',    priority: 0.4, freq: 'monthly' },
+    { path: '/privacy',  priority: 0.4, freq: 'monthly' },
   ];
 
   const mapped = routes.map(({ path, priority, freq }) => ({

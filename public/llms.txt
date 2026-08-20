@@ -1,50 +1,43 @@
-# Okleevo
+# Okleevo — All-in-One Virtual HQ & Business Operating Platform
 
-Okleevo is an all-in-one SaaS platform and business workspace designed specifically for Small and Medium Enterprises (SMEs) in the United Kingdom. It replaces multiple single-purpose subscriptions (like Salesforce, Mailchimp, Slack, Zoom, Xero, and Monday) with one unified, highly integrated system.
+> The unified operating system for modern SMEs and growing businesses. Replace fragmented subscriptions (Slack, Zoom, Calendly, Trello, DocuSign) with one seamlessly integrated Virtual HQ.
 
-## Core Information & Value Proposition
+## Overview
+- **Name:** Okleevo
+- **Category:** Business Operating System (BOS) & Virtual HQ Software
+- **Target Audience:** Small and Medium-Sized Enterprises (SMEs), Consulting Agencies, Professional Services, Remote & Hybrid Teams
+- **Website:** https://okleevo.com
+- **Support Contact:** support@okleevo.com
+- **Pricing:** $39.00 USD / month (Includes 5 Team Seats and full access to all modules)
 
-- **Pricing**: Simple, transparent flat fee of £9.99/month.
-- **Trial**: 14-day free trial, no credit card required.
-- **Seats**: Includes 10 user seats out of the box, allowing teams to collaborate natively without extra seat license fees.
-- **UK Focus & Localisation**: Fully optimized for UK business operations, incorporating GBP formatting, MTD (Making Tax Digital) compliant ledger structures, VAT rules, and HMRC tax guidelines. 
-- **Security & Hosting**: Hosted on secure UK-based servers. Fully GDPR compliant.
+## Core Platform Pillars & Capabilities
 
-## Module Directory (20 Integrated Tools)
+### 1. Virtual HQ & Real-Time Team Collaboration
+- **Collaboration Hub:** Instant WebRTC audio/video meetings, multi-channel team chat, direct messaging, screen sharing, and live presence.
+- **Mail Engine:** Centralized transactional email dispatch and automated client communications.
 
-Okleevo is organized into four main business hubs:
+### 2. Async Productivity & Work Management
+- **Tasks & Agile Boards:** Kanban boards, task lists, subtask breakdowns, deadlines, and team assignments.
+- **Projects & Milestones:** Project roadmaps, deliverable tracking, and progress metrics.
+- **Notes & Brainstorming:** Rich-text document editor with AI summaries and team documentation.
+- **KPI Dashboard:** Executive business analytics, revenue telemetry, and team productivity charts.
 
-### 1. Finance Hub
-- **Invoicing**: Create professional, GBP-formatted invoices, track client payment status, and send automated late reminders.
-- **Accounting**: Double-entry bookkeeping system with automatic ledgers, balance sheets, and profit & loss statements.
-- **Taxation**: Simplified calculations mapping to HMRC requirements, built to support MTD standards.
-- **Cashflow**: Forecast liquidity based on pending invoices, upcoming expenses, and historical account balances.
-- **Expenses**: Digital expense logger allowing snap uploads of receipts and automated spend categorization.
-- **VAT Tools**: Specialized calculations for different UK VAT structures (standard, flat rate, margin).
+### 3. Client Engagement & Business Operations
+- **CRM Pipeline:** Visual deal pipeline, contact management, deal stages, and lead conversion tracking.
+- **Booking Pages:** Shareable client meeting links, custom availability rules, automated calendar syncing.
+- **E-Signatures:** Legally compliant digital document signing (eIDAS standard), signature pad, and document audit trails.
+- **Email Campaigns:** Broadcast marketing campaigns, open rate tracking, and client engagement analytics.
 
-### 2. Growth Engine
-- **CRM**: Manage leads, client lists, and interactions. Built-in SMTP links directly with mailboxes.
-- **Forms**: Drag-and-drop builder to compile custom contact forms, lead intakes, and surveys.
-- **Booking**: Centralized appointment calendar supporting client scheduling that syncs with team availability.
-- **Helpdesk**: Customer ticketing dashboard allowing support query tracking and resolution.
-- **Campaigns**: Bulk email sender and newsletter organizer leveraging native SMTP servers to avoid third-party email campaign fees.
+## Security & Reliability
+- **Authentication:** NextAuth.js multi-tenant authentication with Email OTP Two-Factor Authentication (2FA).
+- **Multi-Tenancy:** Strict business-level data isolation via PostgreSQL and Prisma ORM.
+- **Compliance:** UK VAT / HMRC compliant bookkeeping integration and encrypted data storage.
+- **Payment Processing:** Integrated with Stripe for automated subscription management and customer portals.
 
-### 3. Command Center
-- **Tasks**: Visual Kanban boards and lists to delegate work, set deadlines, and track projects.
-- **AI Content**: Generative copy editor to quickly draft blog outlines, marketing copy, and social blurbs.
-- **AI Notes**: Meeting summary engine that transcribes audio/notes to list action items and highlights.
-- **KPI Dashboard**: Business intelligence panels showing real-time revenue, unpaid invoice balances, and active pipeline values.
-
-### 4. Operations Hub
-- **Inventory**: Track stock levels across locations, assign barcodes, and trigger alerts when stock is running low.
-- **Suppliers**: Manage vendor catalogs, issue purchase orders, and track deliveries.
-- **HR Records**: Secure repository to store staff contracts, appraisals, emergency contact logs, and documents.
-- **E-Signature**: Send legally binding documents for electronic signature without leaving the workspace.
-- **Micro Pages**: Instant page builder to publish small public bio links, digital business cards, or product landing pages.
-- **Compliance**: Regulatory calendar checklists to stay compliant with Companies House filing dates, insurance renewals, and GDPR checks.
-
-## Key Technical Specs & Capabilities
-
-- **Development Stack**: React, Next.js (App Router), TailwindCSS, Prisma ORM, and PostgreSQL.
-- **Integrations**: Natively integrated SMTP client, built-in WebRTC engine for video calling and team chat, and modular database schemas.
-- **Bot/AI Accessibility**: Pages include clean accessibility tags (`aria-label`) and semantic HTML layout landmarks (`<main>`, `<nav>`, `<header>`) for straightforward indexing by automated web agents.
+## Key Links & Documentation
+- Platform Home: https://okleevo.com
+- User Guides & Walkthroughs: https://okleevo.com/guide
+- Pricing & Plans: https://okleevo.com/pricing
+- Client Support Desk: https://okleevo.com/dashboard/support
+- Terms of Service: https://okleevo.com/terms
+- Privacy Policy: https://okleevo.com/privacy
