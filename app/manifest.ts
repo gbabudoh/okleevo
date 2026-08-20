@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Okleevo - 23 Business Tools, One Simple Platform",
+    name: "Okleevo — All-in-One Virtual HQ & Business Operating Platform",
     short_name: "Okleevo",
     description:
-      "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, AI tools, and more.",
+      "The unified business operating platform for modern SMEs. Seamlessly manage team messaging, video meetings, CRM pipelines, mail engine, booking pages, and task boards in one place.",
     start_url: "/",
     scope: "/",
     display: "standalone",

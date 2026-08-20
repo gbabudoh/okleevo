@@ -24,13 +24,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
     template: '%s | Okleevo',
-    default: 'Okleevo - 23 Business Tools, One Simple Platform',
+    default: 'Okleevo — All-in-One Virtual HQ & Business Operating Platform',
   },
-  description: "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, AI tools, and more. Just £9.99/month.",
+  description: "The unified business operating platform for modern SMEs. Seamlessly manage team messaging, video meetings, CRM pipelines, mail engine, booking pages, and task boards in one place.",
   keywords: [
-    "SME", "UK business", "SaaS", "business tools", "invoicing", "CRM", "AI tools", "ERP", "small business software",
-    "UK business software", "London SME tools", "VAT invoicing UK", "MTD compliant bookkeeping", 
-    "UK client database", "Manchester small business tools", "Birmingham business software", "Leeds SaaS for SMEs"
+    "SME", "Virtual HQ", "Business Operating System", "Team Messaging", "Video Meetings", "CRM Pipeline", 
+    "Booking Pages", "Mail Engine", "Task Boards", "E-Signatures", "SaaS", "Small Business Software", "UK Business Software"
   ],
   authors: [{ name: "Okleevo Team" }],
   creator: "Okleevo",
@@ -39,14 +38,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_GB",
     url: "/",
-    title: "Okleevo - 23 Business Tools, One Simple Platform",
-    description: "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, AI tools, and more.",
+    title: "Okleevo — All-in-One Virtual HQ & Business Operating Platform",
+    description: "The unified business operating platform for modern SMEs. Seamlessly manage team messaging, video meetings, CRM pipelines, mail engine, booking pages, and task boards in one place.",
     siteName: "Okleevo",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Okleevo - 23 Business Tools, One Simple Platform",
-    description: "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, AI tools, and more.",
+    title: "Okleevo — All-in-One Virtual HQ & Business Operating Platform",
+    description: "The unified business operating platform for modern SMEs. Seamlessly manage team messaging, video meetings, CRM pipelines, mail engine, booking pages, and task boards in one place.",
   },
   icons: {
     icon: [
