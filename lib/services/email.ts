@@ -397,34 +397,97 @@ export async function sendInvoiceEmail(email: string, invoiceId: string, invoice
 
 export async function send2FAEmail(email: string, code: string, firstName?: string): Promise<EmailResult> {
   const name = firstName || 'there';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://okleevo.com';
+
   const html = `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #0f172a; border-radius: 24px; padding: 36px 28px; color: #ffffff; border: 1px solid #1e293b;">
-      <div style="text-align: center; margin-bottom: 28px;">
-        <span style="font-size: 22px; font-weight: 900; letter-spacing: 2px; color: #ffffff;">OKLEEVO<span style="color: #f97316;">.</span></span>
-      </div>
-      <div style="background: #1e293b; border-radius: 20px; padding: 28px 20px; border: 1px solid #334155; text-align: center;">
-        <h2 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0 0 12px 0;">Two-Factor Verification Code</h2>
-        <p style="font-size: 13px; color: #94a3b8; margin: 0 0 20px 0; line-height: 1.5;">
-          Hello ${name}, here is your single-use security code to access your Okleevo account:
-        </p>
-        <div style="background: #0f172a; border: 2px dashed #f97316; border-radius: 14px; padding: 16px 24px; display: inline-block; margin-bottom: 20px;">
-          <span style="font-family: monospace; font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #f97316;">${code}</span>
-        </div>
-        <p style="font-size: 11px; color: #64748b; margin: 0;">
-          This code will expire in <strong>10 minutes</strong>. If you did not attempt to sign in, please change your password immediately.
-        </p>
-      </div>
-      <p style="text-align: center; font-size: 11px; color: #475569; margin-top: 20px;">
-        Protected by Okleevo Multi-Factor Security System
-      </p>
-    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Okleevo Verification Code</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; background-color: #f1f5f9; padding: 32px 16px;">
+        <tr>
+          <td align="center">
+            
+            <!-- Email Container -->
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+              
+              <!-- Brand Header -->
+              <tr>
+                <td align="center" style="padding: 32px 24px 24px 24px; border-bottom: 1px solid #f1f5f9; background: #ffffff;">
+                  <img src="${appUrl}/logo.png" alt="Okleevo" width="140" style="width: 140px; max-width: 140px; height: auto; display: block; border: 0; outline: none; margin: 0 auto;" />
+                </td>
+              </tr>
+
+              <!-- Main Content -->
+              <tr>
+                <td style="padding: 32px 28px;">
+                  
+                  <!-- Security Badge -->
+                  <div style="text-align: center; margin-bottom: 20px;">
+                    <span style="display: inline-block; padding: 6px 14px; background-color: #fff7ed; border: 1px solid #ffedd5; border-radius: 9999px; font-size: 11px; font-weight: 800; color: #ea580c; text-transform: uppercase; letter-spacing: 1px;">
+                      🛡️ Two-Factor Authentication
+                    </span>
+                  </div>
+
+                  <h1 style="font-size: 22px; font-weight: 800; color: #0f172a; text-align: center; margin: 0 0 12px 0; letter-spacing: -0.5px;">
+                    Your Verification Code
+                  </h1>
+
+                  <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 24px 0; text-align: center;">
+                    Hello <strong style="color: #0f172a;">${name}</strong>, enter the 6-digit code below to securely authenticate your sign-in to Okleevo:
+                  </p>
+
+                  <!-- Hero 6-Digit PIN Box -->
+                  <div style="background-color: #fff7ed; border: 2px solid #fdba74; border-radius: 16px; padding: 20px 16px; text-align: center; margin: 0 0 24px 0;">
+                    <span style="font-family: 'Courier New', Courier, monospace, monospace; font-size: 36px; font-weight: 900; letter-spacing: 10px; color: #ea580c; display: block; line-height: 1;">
+                      ${code}
+                    </span>
+                  </div>
+
+                  <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0 0 24px 0;">
+                    ⏱️ This single-use code is valid for <strong>10 minutes</strong>.
+                  </p>
+
+                  <!-- Security Advisory -->
+                  <div style="background-color: #f8fafc; border-left: 4px solid #ea580c; border-radius: 8px; padding: 14px 16px;">
+                    <p style="font-size: 12px; color: #334155; margin: 0; line-height: 1.5;">
+                      <strong>Security Tip:</strong> If you did not request this verification code, someone may be attempting to access your account. Please sign in and update your password immediately.
+                    </p>
+                  </div>
+
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="padding: 24px 28px; background-color: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center;">
+                  <p style="font-size: 11px; color: #94a3b8; margin: 0 0 6px 0;">
+                    Protected by Okleevo Multi-Factor Security Infrastructure
+                  </p>
+                  <p style="font-size: 11px; color: #cbd5e1; margin: 0;">
+                    &copy; ${new Date().getFullYear()} Okleevo Business Operating Platform. All rights reserved.
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
   `;
 
   return sendEmail({
     to: email,
     subject: `🔐 Your Okleevo Verification Code: ${code}`,
     html,
-    text: `Your Okleevo verification code is: ${code}. It expires in 10 minutes.`,
+    text: `Your Okleevo verification code is: ${code}. It is valid for 10 minutes.`,
     senderName: 'Okleevo Security',
   });
 }
