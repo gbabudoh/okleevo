@@ -53,19 +53,32 @@ export function EnterpriseBento() {
             </div>
 
             {/* Micro visual widget */}
-            <div className="mt-8 p-4 rounded-2xl bg-slate-900 text-white flex items-center justify-between text-xs">
+            <div className="mt-8 p-4 rounded-2xl bg-slate-900 text-white flex items-center justify-between text-xs shadow-inner">
               <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  <span className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs ring-2 ring-slate-900">SC</span>
-                  <span className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs ring-2 ring-slate-900">AR</span>
-                  <span className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-xs ring-2 ring-slate-900">DK</span>
+                <div className="flex -space-x-2.5">
+                  <img
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+                    alt="Sarah Chen"
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-900 shadow-xs"
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+                    alt="Alex Rivera"
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-900 shadow-xs"
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80"
+                    alt="David Kim"
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-900 shadow-xs"
+                  />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Active Product Huddle</p>
-                  <p className="text-[10px] text-emerald-400">1080p 60fps • 8ms Latency</p>
+                  <p className="font-semibold text-white">Active Product Meeting</p>
+                  <p className="text-[10px] text-emerald-400">1080p Studio HD • Encrypted Room</p>
                 </div>
               </div>
-              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-mono border border-emerald-500/30">
+              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-mono border border-emerald-500/30 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Connected
               </span>
             </div>
