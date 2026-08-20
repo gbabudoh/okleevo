@@ -66,7 +66,7 @@ function NavItem({
       <span className="flex-1 flex flex-col justify-center min-w-0">
         <span className="text-sm font-medium leading-tight truncate">{label}</span>
         {sublabel && (
-          <span className="text-[10px] text-gray-400 font-mono tracking-tight group-hover:text-gray-500 transition-colors">
+          <span className="text-xs text-gray-500 font-medium tracking-normal group-hover:text-gray-700 transition-colors mt-0.5">
             {sublabel}
           </span>
         )}
