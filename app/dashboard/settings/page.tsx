@@ -1643,7 +1643,7 @@ function SettingsPageInner() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
                     '5 Team Seats Included',
-                    'Team Chat & Huddles',
+                    'Team Messaging & Video Meetings',
                     'Tasks & Agile Boards',
                     'Notes & Brainstorming',
                     'KPI Dashboard',
@@ -1788,7 +1788,7 @@ function SettingsPageInner() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
               {[
-                { id: 'collaboration', label: 'Team Chat & Huddles', icon: MessageSquare, category: 'Communication', desc: 'Real-time team messaging, channels, and video huddles.' },
+                { id: 'collaboration', label: 'Team Messaging & Video Meetings', icon: MessageSquare, category: 'Communication', desc: 'Real-time team messaging, channels, and WebRTC video meetings.' },
                 { id: 'tasks', label: 'Tasks', icon: CheckSquare, category: 'Productivity', desc: 'Task management, subtasks, and deadline tracking.' },
                 { id: 'ai-notes', label: 'Notes', icon: FileEdit, category: 'Productivity', desc: 'Smart note-taking, AI document summaries, and rich text.' },
                 { id: 'kpi-dashboard', label: 'KPI Dashboard', icon: BarChart3, category: 'Analytics', desc: 'Executive metrics, revenue tracking, and financial performance.' },
@@ -1796,7 +1796,6 @@ function SettingsPageInner() {
                 { id: 'crm', label: 'CRM Pipeline', icon: Users, category: 'Sales', desc: 'Customer deal pipeline, lead tracking, and contact management.' },
                 { id: 'booking', label: 'Booking Pages', icon: CalendarIcon, category: 'Appointments', desc: 'Client appointment booking portal and availability rules.' },
                 { id: 'mailbox', label: 'Mail Engine', icon: Mail, category: 'Communication', desc: 'Automated email dispatch and transactional mail engine.' },
-                { id: 'helpdesk', label: 'Helpdesk', icon: MessageCircle, category: 'Support', desc: 'Support ticketing system and custom customer forms.' },
                 { id: 'e-signature', label: 'E-Signatures', icon: PenTool, category: 'Legal', desc: 'Legally binding eIDAS e-signature pad and client documents.' },
                 { id: 'campaigns', label: 'Campaigns', icon: Zap, category: 'Marketing', desc: 'Broadcast email marketing campaigns and engagement telemetry.' },
               ].map((module) => {

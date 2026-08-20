@@ -22,11 +22,11 @@ export const modules: ModuleCatalogueEntry[] = [
   // Virtual HQ
   {
     id: 'collaboration',
-    label: 'Team Chat & Huddles',
+    label: 'Team Messaging & Video Meetings',
     icon: UsersRound,
     group: 'Virtual HQ',
     color: 'from-orange-500 to-amber-600',
-    desc: 'Instant WebRTC audio/video huddles, screen sharing, and persistent team messaging without separate Slack or Zoom licenses.',
+    desc: 'Instant WebRTC audio/video meetings, screen sharing, and persistent team messaging without separate Slack or Zoom licenses.',
     features: ['WebRTC Video Calls', 'Multi-channel Chat', 'Live Presence'],
     route: '/dashboard/collaboration',
   },
