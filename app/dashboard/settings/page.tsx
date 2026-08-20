@@ -130,6 +130,8 @@ function SettingsPageInner() {
     currentPeriodEnd: string | null;
     cancelAtPeriodEnd: boolean;
     amount: number;
+    currency?: string;
+    plan?: string | null;
     planTier: string | null;
   }
 
@@ -1565,11 +1567,16 @@ function SettingsPageInner() {
               <div className="bg-white dark:bg-slate-950 rounded-3xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider font-mono">Monthly Subscription Plan</p>
+                    <p className="text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider font-mono">
+                      {subInfo?.plan || 'Starter Plan'}
+                    </p>
                     <h2 className="text-4xl font-extrabold font-mono tracking-tight text-slate-900 dark:text-white">
-                      £9.99 <span className="text-sm font-bold text-slate-400 font-sans">/ month</span>
+                      {subInfo?.currency === 'gbp' ? '£9.99' : '$39'}{' '}
+                      <span className="text-sm font-bold text-slate-400 font-sans">/ month</span>
                     </h2>
-                    <p className="text-xs font-bold text-slate-400 mt-1">Full access to 20+ integrated tools · Cancel anytime</p>
+                    <p className="text-xs font-bold text-slate-400 mt-1">
+                      5 Team Seats Included · Full Virtual HQ & Client Suite Access · Cancel anytime
+                    </p>
                   </div>
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs shrink-0">
                     <CreditCard className="w-6 h-6" />
@@ -1587,11 +1594,11 @@ function SettingsPageInner() {
                   {subInfo?.status === 'ACTIVE' && (
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-mono font-extrabold uppercase">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Active
+                      Active (Starter)
                       {subInfo.currentPeriodEnd && !subInfo.cancelAtPeriodEnd &&
-                        ` · renews ${new Date(subInfo.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                        ` · Renews ${new Date(subInfo.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`}
                       {subInfo.cancelAtPeriodEnd && subInfo.currentPeriodEnd &&
-                        ` · cancels ${new Date(subInfo.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                        ` · Cancels ${new Date(subInfo.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`}
                     </div>
                   )}
                   {(!subInfo || subInfo.status === 'NONE') && (
@@ -1619,7 +1626,7 @@ function SettingsPageInner() {
                       href="/billing"
                       className="px-5 py-2.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-extrabold rounded-2xl text-xs border border-slate-200/80 dark:border-slate-800 hover:border-orange-400 transition-all shadow-2xs"
                     >
-                      Subscribe · £9.99/mo
+                      Subscribe · $39/mo
                     </a>
                   )}
                 </div>
@@ -1635,15 +1642,15 @@ function SettingsPageInner() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
+                    '5 Team Seats Included',
                     'Team Chat & Huddles',
-                    'Tasks',
-                    'Notes',
+                    'Tasks & Agile Boards',
+                    'Notes & Brainstorming',
                     'KPI Dashboard',
-                    'Projects',
+                    'Projects & Milestones',
                     'CRM Pipeline',
                     'Booking Pages',
                     'Mail Engine',
-                    'Helpdesk',
                     'E-Signatures',
                     'Campaigns',
                   ].map(f => (

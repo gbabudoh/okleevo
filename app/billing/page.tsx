@@ -23,15 +23,15 @@ type SubInfo = {
 };
 
 const FEATURES = [
+  "5 Team Seats Included",
   "Team Chat & Huddles",
-  "Tasks",
-  "Notes",
+  "Tasks & Agile Boards",
+  "Notes & Docs",
   "KPI Dashboard",
-  "Projects",
+  "Projects & Milestones",
   "CRM Pipeline",
   "Booking Pages",
   "Mail Engine",
-  "Helpdesk",
   "E-Signatures",
   "Campaigns",
 ];
@@ -43,110 +43,98 @@ function BillingContent() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const success = searchParams.get("success") === "true";
-  const cancelled = searchParams.get("cancelled") === "true";
+  const fetchStatus = async () => {
+    try {
+      const res = await fetch("/api/billing/status");
+      if (res.ok) {
+        setSub(await res.json());
+      }
+    } catch {
+      /* silent */
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchStatus();
   }, []);
 
-  async function fetchStatus() {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/billing/status");
-      if (res.ok) setSub(await res.json());
-    } catch {
-      setError("Failed to load subscription status.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSubscribe() {
+  const handleSubscribe = async () => {
     setActionLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/billing/checkout", { method: "POST" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to create checkout");
-      window.location.href = data.url;
-    } catch (err: any) {
-      setError(err.message || "Something went wrong. Please try again.");
-    } finally {
+      if (!res.ok) throw new Error(data.error || "Failed to start checkout");
+      if (data.url) window.location.href = data.url;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
       setActionLoading(false);
     }
-  }
+  };
 
-  async function handleManage() {
+  const handleManage = async () => {
     setActionLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/billing/portal", { method: "POST" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to open portal");
-      window.location.href = data.url;
-    } catch (err: any) {
-      setError(err.message || "Something went wrong. Please try again.");
-    } finally {
+      if (!res.ok) throw new Error(data.error || "Failed to open billing portal");
+      if (data.url) window.location.href = data.url;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
       setActionLoading(false);
     }
-  }
+  };
 
-  const isExpired =
-    sub &&
-    sub.status === "TRIAL" &&
-    (sub.daysLeft === 0 || !sub.isActive);
-
-  const needsPayment =
-    sub &&
-    (isExpired || sub.status === "CANCELED" || sub.status === "PAST_DUE");
-
-  const isActive = sub?.status === "ACTIVE";
+  const isExpired = !loading && sub && !sub.isActive && sub.status === "TRIAL";
+  const isActive = !loading && sub && sub.status === "ACTIVE";
+  const isTrialing = !loading && sub && sub.status === "TRIAL" && sub.isActive;
+  const needsPayment = isExpired || (!loading && sub && sub.status === "NONE");
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 md:p-8 relative overflow-x-hidden">
       {/* Background blobs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[100px] animate-blob mix-blend-multiply" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-orange-400/20 rounded-full blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-orange-400/15 rounded-full blur-[100px] mix-blend-multiply" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-amber-400/15 rounded-full blur-[100px] mix-blend-multiply" />
       </div>
 
       <div className="w-full max-w-lg relative z-10 space-y-4">
-        {/* Top Header Navigation */}
-        <div className="flex items-center justify-between px-1">
-          <Link
-            href="/dashboard/settings?tab=billing"
-            className="inline-flex items-center gap-2 text-xs font-extrabold text-slate-500 hover:text-orange-600 transition-colors bg-white/60 hover:bg-white px-3.5 py-2 rounded-2xl border border-slate-200/80 shadow-2xs backdrop-blur-md"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Back
+        {/* Top brand header */}
+        <div className="flex items-center justify-between px-2">
+          <Link href="/" className="inline-block hover:scale-105 transition-transform">
+            <Image src="/logo.png" alt="Okleevo" width={140} height={36} className="h-8 w-auto" priority />
           </Link>
-          <Link href="/dashboard/settings?tab=billing" className="shrink-0">
-            <Image src="/logo.png" alt="Okleevo" width={130} height={34} className="h-8 w-auto" />
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 text-xs font-mono font-extrabold text-slate-500 hover:text-slate-900 transition-colors"
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            <span>Dashboard</span>
           </Link>
         </div>
 
-        {/* Success banner */}
-        {success && (
+        {/* Success / Cancel banners */}
+        {searchParams.get("success") === "true" && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl"
+            className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3"
           >
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-            <div>
-              <p className="font-bold text-emerald-800 text-sm">Subscription activated!</p>
-              <p className="text-emerald-600 text-xs mt-0.5">Welcome aboard. You now have full access to Okleevo.</p>
-            </div>
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <p className="text-sm font-medium text-emerald-800">
+              Subscription activated! Welcome to the Starter Plan.
+            </p>
           </motion.div>
         )}
 
-        {/* Cancelled banner */}
-        {cancelled && (
+        {searchParams.get("cancelled") === "true" && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-100 rounded-2xl"
+            className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3"
           >
             <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
             <p className="text-sm font-medium text-amber-700">Payment cancelled. You can subscribe anytime below.</p>
@@ -164,9 +152,9 @@ function BillingContent() {
           <div className="bg-gradient-to-r from-orange-500 to-[#ff8c42] px-8 py-6 text-white relative">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-xs font-mono font-extrabold uppercase tracking-widest mb-1">Monthly Plan</p>
-                <h1 className="text-4xl font-black font-mono tracking-tight">£9.99</h1>
-                <p className="text-orange-100 text-xs font-bold mt-1">per month · cancel anytime</p>
+                <p className="text-orange-100 text-xs font-mono font-extrabold uppercase tracking-widest mb-1">Starter Plan</p>
+                <h1 className="text-4xl font-black font-mono tracking-tight">$39</h1>
+                <p className="text-orange-100 text-xs font-bold mt-1">per month · 5 team seats included · cancel anytime</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-2xs">

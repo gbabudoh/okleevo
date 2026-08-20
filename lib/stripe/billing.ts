@@ -75,6 +75,8 @@ export type SubscriptionInfo = {
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   amount: number;
+  currency: string;
+  plan: string | null;
   // Global pivot: set once a workspace has switched to a Starter/Growth/
   // Scale USD plan (see lib/stripe/global-billing.ts); null for every
   // legacy £9.99 subscriber, unchanged.
@@ -94,6 +96,8 @@ export async function getSubscriptionInfo(businessId: string): Promise<Subscript
     stripeCustomerId: null,
     stripeSubscriptionId: null,
     amount: PLAN_AMOUNT,
+    currency: 'usd',
+    plan: 'Starter Plan',
     planTier: null,
   };
 
@@ -115,6 +119,8 @@ export async function getSubscriptionInfo(businessId: string): Promise<Subscript
       stripeCustomerId: sub.stripeCustomerId,
       stripeSubscriptionId: sub.stripeSubscriptionId,
       amount: sub.amount,
+      currency: sub.currency || 'usd',
+      plan: sub.plan || 'Starter Plan',
       planTier: sub.planTier,
     };
   }
@@ -130,6 +136,8 @@ export async function getSubscriptionInfo(businessId: string): Promise<Subscript
       stripeCustomerId: sub.stripeCustomerId,
       stripeSubscriptionId: sub.stripeSubscriptionId,
       amount: sub.amount,
+      currency: sub.currency || 'usd',
+      plan: sub.plan || 'Starter Plan',
       planTier: sub.planTier,
     };
   }
