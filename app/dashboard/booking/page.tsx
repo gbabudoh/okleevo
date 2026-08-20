@@ -460,6 +460,31 @@ export default function BookingPage() {
     }
   };
 
+  const handleQuickConfirm = async (booking: Booking) => {
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'confirmed' }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setBookings(prev => prev.map(b => b.id === updated.id ? updated : b));
+        setStatusModal({
+          isOpen: true,
+          title: 'Booking Confirmed!',
+          message: `Appointment for ${updated.client} has been confirmed. Confirmation email with video room join link has been sent to ${updated.email}.`,
+          type: 'success',
+        });
+      } else {
+        const err = await res.json();
+        setStatusModal({ isOpen: true, title: 'Confirmation Failed', message: err.error || 'Failed to confirm booking', type: 'error' });
+      }
+    } catch {
+      setStatusModal({ isOpen: true, title: 'Error', message: 'Failed to confirm booking', type: 'error' });
+    }
+  };
+
   const handleDeleteConfirm = async () => {
     if (!deletingBooking) return;
     try {
@@ -788,6 +813,16 @@ export default function BookingPage() {
 
                       {/* Actions Footer */}
                       <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-900">
+                        {booking.status === 'pending' && (
+                          <button
+                            type="button"
+                            onClick={() => handleQuickConfirm(booking)}
+                            className="py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs active:scale-95"
+                            title="Confirm appointment and email video room invite to client"
+                          >
+                            <Check className="w-3.5 h-3.5" /> Confirm
+                          </button>
+                        )}
                         {booking.type === 'video' && (
                           <Link
                             href={`/dashboard/collaboration?meeting=${encodeURIComponent(booking.id)}`}

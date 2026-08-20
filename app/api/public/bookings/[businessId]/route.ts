@@ -88,7 +88,7 @@ export async function POST(
         startTime: startDateTime,
         endTime: endDateTime,
         type: validTypes.includes(normalizedType) ? normalizedType : AppointmentType.VIDEO,
-        status: AppointmentStatus.PENDING,
+        status: AppointmentStatus.CONFIRMED,
         description: notes?.trim() || null,
       },
     });
@@ -98,7 +98,7 @@ export async function POST(
       data: { lastContact: new Date() },
     }).catch((err) => console.error('Failed to update contact lastContact for public booking:', err));
 
-    notifyAppointmentStatus(appointment, business.name, 'received').catch(() => {});
+    notifyAppointmentStatus(appointment, business.name, 'confirmed').catch(() => {});
 
     return NextResponse.json({ success: true, id: appointment.id });
   } catch (error) {

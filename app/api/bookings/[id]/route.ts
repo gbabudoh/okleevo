@@ -87,6 +87,8 @@ export const PATCH = withMultiTenancy(async (req, { user, business, params }) =>
   }
 });
 
+export const PUT = PATCH;
+
 export const DELETE = withMultiTenancy(async (_req, { user, params }) => {
   try {
     const resolvedParams = await params;

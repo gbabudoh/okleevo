@@ -56,15 +56,38 @@ export async function notifyAppointmentStatus(
   kind: 'received' | 'confirmed' | 'cancelled',
 ) {
   const when = formatWhen(appointment.startTime);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  const meetingUrl = appointment.type === 'VIDEO' ? `${appUrl}/room/${appointment.id}` : undefined;
+
   const subjects = {
     received: `Booking request received — ${appointment.title}`,
     confirmed: `Booking confirmed — ${appointment.title}`,
     cancelled: `Booking cancelled — ${appointment.title}`,
   };
+
+  const videoButtonHtml = meetingUrl ? `
+    <div style="margin: 24px 0; padding: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; text-align: center;">
+      <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #1e293b;">Join Your Video Meeting:</p>
+      <a href="${meetingUrl}" target="_blank" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #f97316, #ea580c); color: #ffffff; text-decoration: none; font-weight: 700; border-radius: 12px; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2);">🎥 Join Video Meeting</a>
+      <p style="margin: 12px 0 0 0; font-size: 11px; color: #64748b;">No account or download required. Direct encrypted room access.</p>
+    </div>
+  ` : '';
+
   const bodies = {
-    received: `<p>Thanks — we've received your request for <strong>${appointment.title}</strong> on <strong>${when}</strong>.</p><p>We'll confirm shortly.</p>`,
-    confirmed: `<p>Your booking for <strong>${appointment.title}</strong> on <strong>${when}</strong> is confirmed.</p>${appointment.location ? `<p>Location: ${appointment.location}</p>` : ''}`,
-    cancelled: `<p>Your booking for <strong>${appointment.title}</strong> on <strong>${when}</strong> has been cancelled.</p>`,
+    received: `
+      <p>Thanks — we've received your request for <strong>${appointment.title}</strong> with <strong>${businessName}</strong> on <strong>${when}</strong>.</p>
+      ${videoButtonHtml}
+      <p style="font-size: 13px; color: #64748b;">We look forward to speaking with you!</p>
+    `,
+    confirmed: `
+      <p>Your booking for <strong>${appointment.title}</strong> with <strong>${businessName}</strong> on <strong>${when}</strong> is confirmed.</p>
+      ${videoButtonHtml}
+      ${appointment.location ? `<p style="margin-top: 12px; font-size: 13px; color: #475569;"><strong>Location:</strong> ${appointment.location}</p>` : ''}
+      <p style="margin-top: 16px; font-size: 12px; color: #94a3b8;">A calendar invite (.ics) is attached to add this meeting directly to your Google, Outlook, or Apple Calendar.</p>
+    `,
+    cancelled: `
+      <p>Your booking for <strong>${appointment.title}</strong> on <strong>${when}</strong> has been cancelled.</p>
+    `,
   };
 
   try {
@@ -73,6 +96,15 @@ export async function notifyAppointmentStatus(
       subject: subjects[kind],
       html: bodies[kind],
       businessName,
+      ...(kind === 'confirmed' ? {
+        attachments: [
+          {
+            filename: 'invite.ics',
+            content: buildIcsInvite(appointment, businessName, meetingUrl),
+            contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
+          },
+        ],
+      } : {}),
     });
   } catch (error) {
     console.error(`Failed to send ${kind} appointment email:`, error);
