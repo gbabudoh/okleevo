@@ -105,16 +105,6 @@ export const modules: ModuleCatalogueEntry[] = [
     route: '/dashboard/mailbox',
   },
   {
-    id: 'helpdesk',
-    label: 'Helpdesk',
-    icon: MessageSquare,
-    group: 'Client Engagement',
-    color: 'from-orange-500 to-amber-600',
-    desc: 'Multi-agent customer support ticket desk with priority routing, internal notes, and resolution telemetry.',
-    features: ['Ticket Queue', 'Priority Triage', 'SLA Response Tracking'],
-    route: '/dashboard/helpdesk',
-  },
-  {
     id: 'e-signature',
     label: 'E-Signatures',
     icon: PenTool,

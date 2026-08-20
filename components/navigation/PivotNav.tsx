@@ -29,7 +29,6 @@ const MODULE_UI: Record<string, ModuleUiMeta> = {
   crm: { href: '/dashboard/crm', icon: Users, label: 'CRM Pipeline' },
   booking: { href: '/dashboard/booking', icon: Calendar, label: 'Booking Pages' },
   mailbox: { href: '/dashboard/mailbox', icon: Mail, label: 'Mail Engine' },
-  helpdesk: { href: '/dashboard/helpdesk', icon: MessageSquare, label: 'Helpdesk' },
   'e-signature': { href: '/dashboard/e-signature', icon: PenTool, label: 'E-Signatures' },
   campaigns: { href: '/dashboard/campaigns', icon: Mail, label: 'Campaigns' },
 };
