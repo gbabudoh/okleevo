@@ -5,7 +5,7 @@ import {
   Plus, Mail, TrendingUp, Users, MousePointer2, BarChart3,
   Calendar, Search, LayoutGrid, List, Rocket, Clock, Loader2, X,
   CheckCircle, ChevronRight, Trash2, Pencil, Send, AlertTriangle,
-  CheckCircle2, CalendarClock, Sparkles, Check
+  CheckCircle2, CalendarClock, Sparkles, Check, Eye, FileText, Zap
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import TourProvider from '@/components/tours/TourProvider';
@@ -27,6 +27,33 @@ interface Campaign {
   createdAt: string;
   scheduledAt?: string;
 }
+
+const STARTER_TEMPLATES: Record<string, { label: string; name: string; subject: string; content: string }> = {
+  PROMOTIONAL: {
+    label: 'Promotional / Special Offer',
+    name: 'Special Promotion & Client Offer',
+    subject: '🎁 Exclusive Offer: Enjoy 20% off your next booking with us',
+    content: `Hi [Name],\n\nAs a valued client, we're pleased to offer you an exclusive 20% discount on all strategic consultation bookings made this month.\n\n👉 Use code GROW20 at checkout or book your session directly on our portal.\n\nOffer valid until the end of the month. We look forward to speaking with you!\n\nBest regards,\nYour Team`,
+  },
+  NEWSLETTER: {
+    label: 'Newsletter / Updates',
+    name: 'Monthly Digest & Updates',
+    subject: '🗞️ Monthly Digest: Key Industry Insights & What’s New',
+    content: `Hello [Name],\n\nHere are the top updates and strategic insights from our team this month:\n\n• Industry Trend: Key developments shaping business growth this year.\n• Client Spotlight: How our partners scaled their operations efficiently.\n• Upcoming Events: Join our next live Q&A session on Friday.\n\nRead the full breakdown on our portal.\n\nStay informed,\nThe Leadership Team`,
+  },
+  ANNOUNCEMENT: {
+    label: 'Announcement / Press',
+    name: 'Official Company Announcement',
+    subject: '📣 Important Announcement: Introducing our new client services',
+    content: `Dear [Name],\n\nWe are thrilled to officially announce the launch of our expanded suite of advisory and consulting services.\n\nStarting today, you have direct access to our new digital collaboration hub, faster scheduling, and dedicated account support.\n\nThank you for your continued partnership,\nLeadership Team`,
+  },
+  TRANSACTIONAL: {
+    label: 'Transactional / Notice',
+    name: 'Operational Notice & Schedule Update',
+    subject: '📋 Notice: Updated operational hours and holiday schedule',
+    content: `Hello [Name],\n\nPlease be advised that our office and client support lines will be operating on a modified schedule over the upcoming holiday.\n\n• Office Status: Closed Monday\n• Support Reopens: Tuesday at 09:00 AM\n\nAll active client portals and safe storage buckets will remain fully accessible 24/7.\n\nWarm regards,\nOperations Team`,
+  },
+};
 
 function toLocalInputValue(iso: string): string {
   const d = new Date(iso);
@@ -79,6 +106,7 @@ export default function CampaignsPage() {
   const [viewMode, setViewMode]           = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm]       = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [composerTab, setComposerTab]     = useState<'compose' | 'preview'>('compose');
   const [creating, setCreating]           = useState(false);
   const emptyCampaignForm = { name: '', subject: '', type: 'PROMOTIONAL', audience: 'All Subscribers', content: '', scheduledAt: '', revenue: '' };
   const [newCampaign, setNewCampaign]     = useState(emptyCampaignForm);
@@ -179,15 +207,30 @@ export default function CampaignsPage() {
       } else {
         notify('error', data.error || 'Failed to send campaign.');
       }
-    } catch { notify('error', 'Network error — please try again.'); } finally {
+    } catch {
+      notify('error', 'Network error — please try again.');
+    } finally {
       setSendingId(null);
       setSendTarget(null);
     }
   };
 
+  const handleLoadTemplate = (typeKey?: string) => {
+    const tKey = (typeKey || newCampaign.type || 'PROMOTIONAL').toUpperCase();
+    const tmpl = STARTER_TEMPLATES[tKey] || STARTER_TEMPLATES.PROMOTIONAL;
+    setNewCampaign(prev => ({
+      ...prev,
+      name: prev.name || tmpl.name,
+      subject: tmpl.subject,
+      content: tmpl.content,
+    }));
+    notify('success', `Loaded "${tmpl.label}" starter template.`);
+  };
+
   const resetModal = () => {
     setShowCreateModal(false);
     setEditingCampaign(null);
+    setComposerTab('compose');
     setNewCampaign(emptyCampaignForm);
   };
 
@@ -569,7 +612,35 @@ export default function CampaignsPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
+                {/* View Switcher Tabs */}
+                <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
+                  <button
+                    type="button"
+                    onClick={() => setComposerTab('compose')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                      composerTab === 'compose'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Compose</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setComposerTab('preview')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                      composerTab === 'preview'
+                        ? 'bg-white dark:bg-slate-900 text-orange-500 shadow-2xs'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+                    }`}
+                  >
+                    <Eye className="w-3.5 h-3.5 text-orange-500" />
+                    <span>Preview</span>
+                  </button>
+                </div>
+
                 <button
                   type="button"
                   onClick={resetModal}
@@ -583,175 +654,227 @@ export default function CampaignsPage() {
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar">
                 
-                {/* ── 1. Campaign Identity & Type ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
-                      Campaign Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newCampaign.name}
-                      onChange={e => setNewCampaign({ ...newCampaign, name: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all"
-                      placeholder="e.g. Q4 Executive Product Launch"
-                    />
-                  </div>
+                {composerTab === 'preview' ? (
+                  /* ── Live Email Client Preview ── */
+                  <div className="space-y-4">
+                    <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+                      <div className="flex items-center justify-between text-slate-500 pb-2 border-b border-slate-200/60 dark:border-slate-800">
+                        <span className="font-bold">From:</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">Your Business &lt;mail@okleevo.com&gt;</span>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-500 pb-2 border-b border-slate-200/60 dark:border-slate-800">
+                        <span className="font-bold">To:</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">Jane Smith &lt;jane@client.com&gt; ({newCampaign.audience})</span>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-500">
+                        <span className="font-bold">Subject:</span>
+                        <span className="font-extrabold text-slate-900 dark:text-white">{newCampaign.subject || '(No subject entered)'}</span>
+                      </div>
+                    </div>
 
-                  <div>
-                    <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
-                      Campaign Type *
-                    </label>
-                    <select
-                      value={newCampaign.type}
-                      onChange={e => setNewCampaign({ ...newCampaign, type: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="PROMOTIONAL">🚀 Promotional / Special Offer</option>
-                      <option value="NEWSLETTER">📰 Newsletter &amp; Updates</option>
-                      <option value="ANNOUNCEMENT">📢 Announcement &amp; Press</option>
-                      <option value="TRANSACTIONAL">⚡ Transactional &amp; Notice</option>
-                    </select>
-                  </div>
-                </div>
+                    {/* Email Body Rendering */}
+                    <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-6">
+                      <div className="space-y-3 text-xs leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-line font-normal">
+                        {newCampaign.content ? (
+                          newCampaign.content.replace(/\[Name\]/g, 'Jane')
+                        ) : (
+                          <span className="text-slate-400 italic">No email content entered yet. Switch to Compose to write your message or load a template.</span>
+                        )}
+                      </div>
 
-                {/* ── 2. Target Audience Segment Selector ── */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                      Target Audience Segment *
-                    </label>
-                    <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      GDPR &amp; Consent Filtered
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    {[
-                      { id: 'All Subscribers', desc: 'All active contacts', icon: Users },
-                      { id: 'VIP Customers', desc: 'High-value accounts', icon: Rocket },
-                      { id: 'New Signups', desc: 'Joined in last 30d', icon: Sparkles },
-                      { id: 'Inactive', desc: 'Re-engagement target', icon: Clock },
-                    ].map(seg => {
-                      const isSelected = newCampaign.audience === seg.id;
-                      return (
-                        <button
-                          key={seg.id}
-                          type="button"
-                          onClick={() => setNewCampaign({ ...newCampaign, audience: seg.id })}
-                          className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between space-y-1.5 ${
-                            isSelected
-                              ? 'bg-orange-50/60 dark:bg-orange-950/30 border-orange-500 text-orange-600 dark:text-orange-400 shadow-2xs ring-2 ring-orange-500/20'
-                              : 'bg-slate-50/60 dark:bg-slate-950/60 border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-extrabold truncate">{seg.id}</span>
-                            {isSelected && <Check className="w-3.5 h-3.5 text-orange-500 shrink-0" />}
-                          </div>
-                          <p className="text-[10px] font-medium text-slate-400 leading-tight">{seg.desc}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* ── 3. Email Subject Line ── */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                      Email Subject Line *
-                    </label>
-                    <span className="text-[10px] font-mono text-slate-400">
-                      {newCampaign.subject.length}/100 chars
-                    </span>
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={newCampaign.subject}
-                    onChange={e => setNewCampaign({ ...newCampaign, subject: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all"
-                    placeholder="e.g. Exclusive Update: New Services Available for You"
-                  />
-                </div>
-
-                {/* ── 4. Email Body & Merge Tags ── */}
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                      Email Content *
-                    </label>
-
-                    {/* Quick Insert Merge Tags */}
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-mono font-bold text-slate-400">Insert tag:</span>
-                      {['[Name]', '[Email]', '[Company]'].map(tag => (
-                        <button
-                          key={tag}
-                          type="button"
-                          onClick={() => setNewCampaign({ ...newCampaign, content: (newCampaign.content ? newCampaign.content + ' ' : '') + tag })}
-                          className="px-2 py-0.5 bg-slate-100 hover:bg-orange-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-orange-600 rounded-lg text-[10px] font-mono font-bold transition-colors cursor-pointer border border-slate-200/80 dark:border-slate-700"
-                        >
-                          +{tag}
-                        </button>
-                      ))}
+                      {/* Automated Anti-Spam Footer */}
+                      <div className="pt-6 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 text-center space-y-1">
+                        <p>You received this email because you opted in to updates from our business.</p>
+                        <p className="underline text-orange-500">Unsubscribe from this list</p>
+                      </div>
                     </div>
                   </div>
+                ) : (
+                  /* ── Compose Form ── */
+                  <>
+                    {/* ── 1. Campaign Identity & Type ── */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
+                          Campaign Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newCampaign.name}
+                          onChange={e => setNewCampaign({ ...newCampaign, name: e.target.value })}
+                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all"
+                          placeholder="e.g. Q4 Executive Product Launch"
+                        />
+                      </div>
 
-                  <div className="relative">
-                    <textarea
-                      required
-                      value={newCampaign.content}
-                      onChange={e => setNewCampaign({ ...newCampaign, content: e.target.value })}
-                      rows={5}
-                      className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all resize-none leading-relaxed"
-                      placeholder="Hi [Name],&#10;&#10;We are delighted to share our latest updates with you..."
-                    />
-                    <span className="absolute bottom-3 right-3 text-[10px] font-mono font-bold text-slate-400">
-                      {newCampaign.content.length} chars
-                    </span>
-                  </div>
-                  <p className="text-[10px] font-medium text-slate-400">
-                    URLs typed in the content will automatically receive click-tracking and analytics redirection.
-                  </p>
-                </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                            Campaign Type *
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => handleLoadTemplate(newCampaign.type)}
+                            className="inline-flex items-center gap-1 text-[10px] font-mono font-extrabold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer"
+                          >
+                            <Zap className="w-3 h-3" /> Load Template
+                          </button>
+                        </div>
+                        <select
+                          value={newCampaign.type}
+                          onChange={e => {
+                            const newType = e.target.value;
+                            setNewCampaign({ ...newCampaign, type: newType });
+                          }}
+                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all appearance-none cursor-pointer"
+                        >
+                          <option value="PROMOTIONAL">🚀 Promotional / Special Offer</option>
+                          <option value="NEWSLETTER">📰 Newsletter &amp; Updates</option>
+                          <option value="ANNOUNCEMENT">📢 Announcement &amp; Press</option>
+                          <option value="TRANSACTIONAL">⚡ Transactional &amp; Notice</option>
+                        </select>
+                      </div>
+                    </div>
 
-                {/* ── 5. Schedule Send ── */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                    Schedule Send (Optional)
-                  </label>
-                  <div className="relative">
-                    <CalendarClock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-500 pointer-events-none" />
-                    <input
-                      type="datetime-local"
-                      value={newCampaign.scheduledAt}
-                      onChange={e => setNewCampaign({ ...newCampaign, scheduledAt: e.target.value })}
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all cursor-pointer"
-                    />
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-medium">
-                    Leave blank to save as a draft that you can broadcast immediately.
-                  </p>
-                </div>
+                    {/* ── 2. Target Audience Segment Selector ── */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                          Target Audience Segment *
+                        </label>
+                        <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          GDPR &amp; Consent Filtered
+                        </span>
+                      </div>
 
-                {editingCampaign && (editingCampaign.status === 'sent' || editingCampaign.status === 'completed') && (
-                  <div>
-                    <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
-                      Revenue Generated (£)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={newCampaign.revenue}
-                      onChange={e => setNewCampaign({ ...newCampaign, revenue: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all"
-                      placeholder="0.00"
-                    />
-                  </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        {[
+                          { id: 'All Subscribers', desc: 'All active contacts', icon: Users },
+                          { id: 'VIP Customers', desc: 'High-value accounts', icon: Rocket },
+                          { id: 'New Signups', desc: 'Joined in last 30d', icon: Sparkles },
+                          { id: 'Inactive', desc: 'Re-engagement target', icon: Clock },
+                        ].map(seg => {
+                          const isSelected = newCampaign.audience === seg.id;
+                          return (
+                            <button
+                              key={seg.id}
+                              type="button"
+                              onClick={() => setNewCampaign({ ...newCampaign, audience: seg.id })}
+                              className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between space-y-1.5 ${
+                                isSelected
+                                  ? 'bg-orange-50/60 dark:bg-orange-950/30 border-orange-500 text-orange-600 dark:text-orange-400 shadow-2xs ring-2 ring-orange-500/20'
+                                  : 'bg-slate-50/60 dark:bg-slate-950/60 border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-extrabold truncate">{seg.id}</span>
+                                {isSelected && <Check className="w-3.5 h-3.5 text-orange-500 shrink-0" />}
+                              </div>
+                              <p className="text-[10px] font-medium text-slate-400 leading-tight">{seg.desc}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* ── 3. Email Subject Line ── */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                          Email Subject Line *
+                        </label>
+                        <span className="text-[10px] font-mono text-slate-400">
+                          {newCampaign.subject.length}/100 chars
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={newCampaign.subject}
+                        onChange={e => setNewCampaign({ ...newCampaign, subject: e.target.value })}
+                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all"
+                        placeholder="e.g. Exclusive Update: New Services Available for You"
+                      />
+                    </div>
+
+                    {/* ── 4. Email Body & Merge Tags ── */}
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                          Email Content *
+                        </label>
+
+                        {/* Quick Insert Merge Tags */}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono font-bold text-slate-400">Insert tag:</span>
+                          {['[Name]', '[Email]', '[Company]'].map(tag => (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => setNewCampaign({ ...newCampaign, content: (newCampaign.content ? newCampaign.content + ' ' : '') + tag })}
+                              className="px-2 py-0.5 bg-slate-100 hover:bg-orange-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-orange-600 rounded-lg text-[10px] font-mono font-bold transition-colors cursor-pointer border border-slate-200/80 dark:border-slate-700"
+                            >
+                              +{tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="relative">
+                        <textarea
+                          required
+                          value={newCampaign.content}
+                          onChange={e => setNewCampaign({ ...newCampaign, content: e.target.value })}
+                          rows={5}
+                          className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all resize-none leading-relaxed"
+                          placeholder="Hi [Name],&#10;&#10;We are delighted to share our latest updates with you..."
+                        />
+                        <span className="absolute bottom-3 right-3 text-[10px] font-mono font-bold text-slate-400">
+                          {newCampaign.content.length} chars
+                        </span>
+                      </div>
+                      <p className="text-[10px] font-medium text-slate-400">
+                        URLs typed in the content will automatically receive click-tracking and analytics redirection.
+                      </p>
+                    </div>
+
+                    {/* ── 5. Schedule Send ── */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                        Schedule Send (Optional)
+                      </label>
+                      <div className="relative">
+                        <CalendarClock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-500 pointer-events-none" />
+                        <input
+                          type="datetime-local"
+                          value={newCampaign.scheduledAt}
+                          onChange={e => setNewCampaign({ ...newCampaign, scheduledAt: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all cursor-pointer"
+                        />
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        Leave blank to save as a draft that you can broadcast immediately.
+                      </p>
+                    </div>
+
+                    {editingCampaign && (editingCampaign.status === 'sent' || editingCampaign.status === 'completed') && (
+                      <div>
+                        <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
+                          Revenue Generated (£)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={newCampaign.revenue}
+                          onChange={e => setNewCampaign({ ...newCampaign, revenue: e.target.value })}
+                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
