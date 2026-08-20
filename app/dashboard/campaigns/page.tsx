@@ -106,10 +106,11 @@ export default function CampaignsPage() {
   const [viewMode, setViewMode]           = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm]       = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [composerTab, setComposerTab]     = useState<'compose' | 'preview'>('compose');
+  const [composerTab, setComposerTab]     = useState<'templates' | 'compose' | 'preview'>('compose');
   const [creating, setCreating]           = useState(false);
   const emptyCampaignForm = { name: '', subject: '', type: 'PROMOTIONAL', audience: 'All Subscribers', content: '', scheduledAt: '', revenue: '' };
   const [newCampaign, setNewCampaign]     = useState(emptyCampaignForm);
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>('PROMOTIONAL');
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
   const [selectedReport, setSelectedReport] = useState<Campaign | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -617,6 +618,18 @@ export default function CampaignsPage() {
                 <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
                   <button
                     type="button"
+                    onClick={() => setComposerTab('templates')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                      composerTab === 'templates'
+                        ? 'bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-2xs'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+                    }`}
+                  >
+                    <Zap className="w-3.5 h-3.5 text-orange-500" />
+                    <span>Templates (4)</span>
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setComposerTab('compose')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                       composerTab === 'compose'
@@ -654,7 +667,61 @@ export default function CampaignsPage() {
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar">
                 
-                {composerTab === 'preview' ? (
+                {composerTab === 'templates' ? (
+                  /* ── ⚡ Starter Templates Visual Gallery & Preview ── */
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+                        Choose a pre-designed starter template:
+                      </p>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        Click &quot;Use Template&quot; to customize
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {Object.entries(STARTER_TEMPLATES).map(([key, tmpl]) => {
+                        const isCurrent = newCampaign.type === key;
+                        return (
+                          <div
+                            key={key}
+                            className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-3 ${
+                              isCurrent
+                                ? 'bg-orange-50/40 dark:bg-orange-950/20 border-orange-400 shadow-2xs ring-1 ring-orange-500/20'
+                                : 'bg-slate-50/60 dark:bg-slate-950/60 border-slate-200/80 dark:border-slate-800'
+                            }`}
+                          >
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded-full bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 border border-slate-200/80 dark:border-slate-800">
+                                  {tmpl.label}
+                                </span>
+                              </div>
+                              <h4 className="text-xs font-extrabold text-slate-900 dark:text-white pt-1">
+                                {tmpl.subject}
+                              </h4>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed whitespace-pre-line font-normal">
+                                {tmpl.content}
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleLoadTemplate(key);
+                                setComposerTab('compose');
+                              }}
+                              className="w-full py-2 px-3 bg-white hover:bg-orange-500 dark:bg-slate-900 dark:hover:bg-orange-500 text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-white border border-slate-200/80 dark:border-slate-800 hover:border-orange-500 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs active:scale-95"
+                            >
+                              <Zap className="w-3.5 h-3.5 text-orange-500 hover:text-white" />
+                              <span>Use This Template &rarr;</span>
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : composerTab === 'preview' ? (
                   /* ── Live Email Client Preview ── */
                   <div className="space-y-4">
                     <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
