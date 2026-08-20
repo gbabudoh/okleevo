@@ -379,16 +379,6 @@ export default function BookingPage() {
     if (url) window.open(url, '_blank');
   };
 
-  const handleShareEmail = () => {
-    const url = getPublicBookingUrl();
-    if (!url) return;
-    const subject = encodeURIComponent(`Schedule an Appointment with ${businessName}`);
-    const body = encodeURIComponent(
-      `Hi,\n\nPlease feel free to book a convenient time for our upcoming call using our secure booking portal here:\n${url}\n\nLooking forward to speaking with you!\n\nBest regards,\n${businessName}`
-    );
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  };
-
   const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
@@ -611,16 +601,6 @@ export default function BookingPage() {
                   >
                     <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                     <span>Preview Portal</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleShareEmail}
-                    className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-orange-400 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-extrabold shadow-2xs transition-all active:scale-95 cursor-pointer"
-                    title="Compose client invitation email"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Email Link</span>
                   </button>
                 </div>
               </div>
