@@ -3,13 +3,13 @@ import { prisma } from '@/lib/prisma';
 import type { SubscriptionStatus } from '@/lib/prisma-client';
 
 export const TRIAL_DAYS = 14;
-export const PLAN_AMOUNT = 999; // £9.99 in pence
-export const PLAN_LABEL = 'Okleevo — All-in-One Business Platform';
+export const PLAN_AMOUNT = 3900; // $39.00 in cents
+export const PLAN_LABEL = 'Okleevo — Starter Plan ($39/mo · 5 Seats Included)';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 export const stripe = stripeKey ? new Stripe(stripeKey, { apiVersion: '2023-10-16' }) : null;
-export const PRICE_ID = process.env.STRIPE_SUBSCRIPTION_PRICE_ID || process.env.STRIPE_PRICE_ID || '';
+export const PRICE_ID = process.env.STRIPE_SUBSCRIPTION_PRICE_ID || process.env.STRIPE_PRICE_ID || process.env.STRIPE_PRICE_STARTER_MONTHLY || '';
 
 // ─────────────────────────────────────────────
 // Customer + Trial setup (called at registration)
@@ -47,9 +47,9 @@ export async function createTrialRecord(
       businessId,
       stripeCustomerId,
       status: 'TRIAL',
-      plan: 'all-in-one',
+      plan: 'Starter Plan',
       amount: PLAN_AMOUNT,
-      currency: 'gbp',
+      currency: 'usd',
       currentPeriodStart: now,
       currentPeriodEnd: trialEnd,
       trialEnd,
@@ -158,24 +158,85 @@ export async function getSubscriptionInfo(businessId: string): Promise<Subscript
 
 export async function createCheckoutSession(businessId: string): Promise<string> {
   if (!stripe) throw new Error('Stripe is not configured. Add STRIPE_SECRET_KEY to your .env file.');
-  if (!PRICE_ID) throw new Error('Stripe price not set. Add STRIPE_SUBSCRIPTION_PRICE_ID to your .env.local file.');
+  if (!PRICE_ID) throw new Error('Stripe price not set. Add STRIPE_SUBSCRIPTION_PRICE_ID or STRIPE_PRICE_ID to your .env.local file.');
 
   const sub = await prisma.subscription.findUnique({ where: { businessId } });
-  if (!sub?.stripeCustomerId) throw new Error('No Stripe customer found. Please contact support.');
+  let stripeCustomerId = sub?.stripeCustomerId;
 
-  const session = await stripe.checkout.sessions.create({
-    customer: sub.stripeCustomerId,
-    mode: 'subscription',
-    payment_method_types: ['card'],
-    line_items: [{ price: PRICE_ID, quantity: 1 }],
-    success_url: `${APP_URL}/dashboard/settings?tab=billing&success=true`,
-    cancel_url: `${APP_URL}/dashboard/settings?tab=billing&cancelled=true`,
-    metadata: { businessId },
-    subscription_data: { metadata: { businessId } },
-  });
+  const ensureCustomer = async () => {
+    const business = await prisma.business.findUnique({
+      where: { id: businessId },
+      include: { users: { take: 1, orderBy: { createdAt: 'asc' } } },
+    });
+    if (business) {
+      const newCustId = await createStripeCustomer({
+        businessId,
+        email: business.users[0]?.email || '',
+        businessName: business.name,
+      });
+      if (newCustId) {
+        await prisma.subscription.upsert({
+          where: { businessId },
+          create: {
+            businessId,
+            stripeCustomerId: newCustId,
+            status: 'TRIAL',
+            plan: 'Starter Plan',
+            amount: PLAN_AMOUNT,
+            currency: 'usd',
+            currentPeriodStart: new Date(),
+            currentPeriodEnd: new Date(Date.now() + TRIAL_DAYS * 86400000),
+          },
+          update: { stripeCustomerId: newCustId },
+        });
+        return newCustId;
+      }
+    }
+    return null;
+  };
 
-  if (!session.url) throw new Error('Checkout session URL missing.');
-  return session.url;
+  if (!stripeCustomerId) {
+    stripeCustomerId = await ensureCustomer();
+  }
+
+  if (!stripeCustomerId) throw new Error('Could not create or find a Stripe customer for this workspace.');
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      customer: stripeCustomerId,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{ price: PRICE_ID, quantity: 1 }],
+      success_url: `${APP_URL}/dashboard/settings?tab=billing&success=true`,
+      cancel_url: `${APP_URL}/dashboard/settings?tab=billing&cancelled=true`,
+      metadata: { businessId },
+      subscription_data: { metadata: { businessId } },
+    });
+
+    if (!session.url) throw new Error('Checkout session URL missing.');
+    return session.url;
+  } catch (err: any) {
+    // If the customer existed in live mode or was deleted, recreate in current mode and retry
+    if (err?.message?.includes('No such customer') || err?.code === 'resource_missing') {
+      const freshCustId = await ensureCustomer();
+      if (!freshCustId) throw err;
+
+      const session = await stripe.checkout.sessions.create({
+        customer: freshCustId,
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [{ price: PRICE_ID, quantity: 1 }],
+        success_url: `${APP_URL}/dashboard/settings?tab=billing&success=true`,
+        cancel_url: `${APP_URL}/dashboard/settings?tab=billing&cancelled=true`,
+        metadata: { businessId },
+        subscription_data: { metadata: { businessId } },
+      });
+
+      if (!session.url) throw new Error('Checkout session URL missing.');
+      return session.url;
+    }
+    throw err;
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -183,17 +244,57 @@ export async function createCheckoutSession(businessId: string): Promise<string>
 // ─────────────────────────────────────────────
 
 export async function createPortalSession(businessId: string): Promise<string> {
-  if (!stripe) throw new Error('Stripe is not configured.');
+  if (!stripe) throw new Error('Stripe is not configured. Add STRIPE_SECRET_KEY to your .env file.');
 
   const sub = await prisma.subscription.findUnique({ where: { businessId } });
-  if (!sub?.stripeCustomerId) throw new Error('No Stripe customer found.');
+  let stripeCustomerId = sub?.stripeCustomerId;
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: sub.stripeCustomerId,
-    return_url: `${APP_URL}/dashboard/settings?tab=billing`,
-  });
+  const ensureCustomer = async () => {
+    const business = await prisma.business.findUnique({
+      where: { id: businessId },
+      include: { users: { take: 1, orderBy: { createdAt: 'asc' } } },
+    });
+    if (business) {
+      const newCustId = await createStripeCustomer({
+        businessId,
+        email: business.users[0]?.email || '',
+        businessName: business.name,
+      });
+      if (newCustId) {
+        await prisma.subscription.updateMany({
+          where: { businessId },
+          data: { stripeCustomerId: newCustId },
+        });
+        return newCustId;
+      }
+    }
+    return null;
+  };
 
-  return session.url;
+  if (!stripeCustomerId) {
+    stripeCustomerId = await ensureCustomer();
+  }
+
+  if (!stripeCustomerId) throw new Error('No Stripe customer found for this workspace.');
+
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: stripeCustomerId,
+      return_url: `${APP_URL}/dashboard/settings?tab=billing`,
+    });
+    return session.url;
+  } catch (err: any) {
+    if (err?.message?.includes('No such customer') || err?.code === 'resource_missing') {
+      const freshCustId = await ensureCustomer();
+      if (!freshCustId) throw err;
+      const session = await stripe.billingPortal.sessions.create({
+        customer: freshCustId,
+        return_url: `${APP_URL}/dashboard/settings?tab=billing`,
+      });
+      return session.url;
+    }
+    throw err;
+  }
 }
 
 // ─────────────────────────────────────────────
