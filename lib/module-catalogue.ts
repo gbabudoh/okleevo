@@ -22,7 +22,7 @@ export const modules: ModuleCatalogueEntry[] = [
   // Virtual HQ
   {
     id: 'collaboration',
-    label: 'Team Messaging & Video Meeting',
+    label: 'Collaboration Hub',
     icon: UsersRound,
     group: 'Virtual HQ',
     color: 'from-orange-500 to-amber-600',

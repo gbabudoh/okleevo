@@ -14,6 +14,7 @@ interface ModuleUiMeta {
   href: string;
   icon: LucideIcon;
   label: string;
+  sublabel?: string;
 }
 
 // Presentation metadata (icon/label/href) for every id that can appear in a
@@ -21,7 +22,7 @@ interface ModuleUiMeta {
 // lib/module-catalogue.ts owns *which* ids go in *which* tab; this only
 // owns how each one is drawn.
 const MODULE_UI: Record<string, ModuleUiMeta> = {
-  collaboration: { href: '/dashboard/collaboration', icon: UsersRound, label: 'Team Messaging\n& Video Meeting' },
+  collaboration: { href: '/dashboard/collaboration', icon: UsersRound, label: 'Collaboration Hub', sublabel: 'messaging · video' },
   tasks: { href: '/dashboard/tasks', icon: CheckSquare, label: 'Tasks' },
   projects: { href: '/dashboard/projects', icon: FolderKanban, label: 'Projects' },
   'ai-notes': { href: '/dashboard/ai-notes', icon: FileEdit, label: 'Notes' },
@@ -44,9 +45,9 @@ interface PivotNavProps {
 }
 
 function NavItem({
-  href, icon: Icon, label, active, badge,
+  href, icon: Icon, label, sublabel, active, badge,
 }: {
-  href: string; icon: LucideIcon; label: string; active: boolean; badge?: number;
+  href: string; icon: LucideIcon; label: string; sublabel?: string; active: boolean; badge?: number;
 }) {
   return (
     <Link
@@ -62,7 +63,14 @@ function NavItem({
       >
         <Icon className="w-4 h-4" />
       </span>
-      <span className="flex-1 text-sm leading-tight whitespace-pre-line">{label}</span>
+      <span className="flex-1 flex flex-col justify-center min-w-0">
+        <span className="text-sm font-medium leading-tight truncate">{label}</span>
+        {sublabel && (
+          <span className="text-[10px] text-gray-400 font-mono tracking-tight group-hover:text-gray-500 transition-colors">
+            {sublabel}
+          </span>
+        )}
+      </span>
       {Boolean(badge) && (
         <span className="px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-bold leading-none shrink-0">
           {badge! > 99 ? '99+' : badge}
@@ -114,6 +122,7 @@ export default function PivotNav({ finalModules, pathname, unreadMailCount }: Pi
                     href={meta.href}
                     icon={meta.icon}
                     label={meta.label}
+                    sublabel={meta.sublabel}
                     active={isModuleActive(meta.href)}
                     badge={id === 'mailbox' ? unreadMailCount : undefined}
                   />
