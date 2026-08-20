@@ -22,7 +22,7 @@ interface ModuleUiMeta {
 // lib/module-catalogue.ts owns *which* ids go in *which* tab; this only
 // owns how each one is drawn.
 const MODULE_UI: Record<string, ModuleUiMeta> = {
-  collaboration: { href: '/dashboard/collaboration', icon: UsersRound, label: 'Collaboration Hub', sublabel: 'messaging · video' },
+  collaboration: { href: '/dashboard/collaboration', icon: UsersRound, label: 'Collaboration Hub', sublabel: 'video / messaging' },
   tasks: { href: '/dashboard/tasks', icon: CheckSquare, label: 'Tasks' },
   projects: { href: '/dashboard/projects', icon: FolderKanban, label: 'Projects' },
   'ai-notes': { href: '/dashboard/ai-notes', icon: FileEdit, label: 'Notes' },
