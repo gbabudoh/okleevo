@@ -172,7 +172,7 @@ export default function KPIDashboardPage() {
     { id: 'financial', name: 'Financial', icon: DollarSign, color: 'emerald', count: kpis.filter(k => k.category === 'financial').length },
     { id: 'sales', name: 'Sales', icon: ShoppingCart, color: 'blue', count: kpis.filter(k => k.category === 'sales').length, dest: '/dashboard/crm' },
     { id: 'marketing', name: 'Marketing', icon: Target, color: 'purple', count: kpis.filter(k => k.category === 'marketing').length, dest: '/dashboard/campaigns' },
-    { id: 'customer', name: 'Customer', icon: Users, color: 'orange', count: kpis.filter(k => k.category === 'customer').length, dest: '/dashboard/helpdesk' },
+    { id: 'customer', name: 'Customer', icon: Users, color: 'orange', count: kpis.filter(k => k.category === 'customer').length, dest: '/dashboard/crm' },
   ];
 
   const showNotification = (message: string, type: 'success' | 'info' = 'success') => {

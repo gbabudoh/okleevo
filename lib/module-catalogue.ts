@@ -161,7 +161,7 @@ export interface PivotNavGroup {
 export const PIVOT_NAV_GROUPS: PivotNavGroup[] = [
   { id: 'virtual-hq', label: 'Virtual HQ', moduleIds: ['collaboration'] },
   { id: 'async-productivity', label: 'Async Productivity', moduleIds: ['tasks', 'ai-notes', 'kpi-dashboard'] },
-  { id: 'client-engagement', label: 'Client Engagement', moduleIds: ['crm', 'booking', 'mailbox', 'helpdesk', 'e-signature', 'campaigns'] },
+  { id: 'client-engagement', label: 'Client Engagement', moduleIds: ['crm', 'booking', 'mailbox', 'e-signature', 'campaigns'] },
 ];
 
 // Every module id that appears in *some* pivot tab.

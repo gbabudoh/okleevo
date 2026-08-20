@@ -543,6 +543,17 @@ export default function DashboardLayout({
                   </>
                 )}
               </div>
+
+              {/* Okleevo Platform Support Button */}
+              <Link
+                href="/dashboard/support"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200/80 text-xs font-extrabold transition-all cursor-pointer shadow-2xs"
+                title="Contact Okleevo Support & Admin"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-orange-500" />
+                <span>Support</span>
+              </Link>
+
               <div className="w-9 h-9 rounded-full bg-linear-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-sm font-semibold shadow-md">
                 {userData?.firstName?.charAt(0) || 'U'}
               </div>

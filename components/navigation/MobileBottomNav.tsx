@@ -21,7 +21,6 @@ const ALL_SECTIONS = [
       { name: 'CRM',          desc: 'Deals & Contacts',   icon: Users,          href: '/dashboard/crm' },
       { name: 'Mailbox',      desc: 'Shared Inbox',       icon: Inbox,          href: '/dashboard/mailbox' },
       { name: 'Booking',      desc: 'Meeting Links',      icon: Calendar,       href: '/dashboard/booking' },
-      { name: 'Helpdesk',     desc: 'Client Support',     icon: MessageSquare,  href: '/dashboard/helpdesk' },
       { name: 'Campaigns',    desc: 'Email Marketing',    icon: Mail,           href: '/dashboard/campaigns' },
     ],
   },
