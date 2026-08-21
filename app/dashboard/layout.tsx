@@ -551,9 +551,17 @@ export default function DashboardLayout({
                 <span>Support</span>
               </Link>
 
-              <div className="w-9 h-9 rounded-full bg-linear-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-sm font-semibold shadow-md">
-                {userData?.firstName?.charAt(0) || 'U'}
-              </div>
+              <Link
+                href="/dashboard/settings"
+                className="w-9 h-9 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 border border-slate-600 flex items-center justify-center text-white text-xs font-black shadow-md overflow-hidden hover:ring-2 hover:ring-orange-500/50 transition-all"
+                title="Account Settings"
+              >
+                {userData?.avatar ? (
+                  <img src={userData.avatar} alt="User" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{userData?.firstName?.charAt(0) || 'U'}</span>
+                )}
+              </Link>
             </div>
           </div>
         </header>

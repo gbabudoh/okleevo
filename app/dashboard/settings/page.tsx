@@ -316,27 +316,52 @@ function SettingsPageInner() {
         return;
       }
 
+      // Prepopulate from session immediately if available
+      if (session?.user) {
+        const sessionName = session.user.name || '';
+        const sessionParts = sessionName.trim().split(/\s+/);
+        setProfile(prev => ({
+          ...prev,
+          firstName: prev.firstName || sessionParts[0] || '',
+          lastName: prev.lastName || sessionParts.slice(1).join(' ') || '',
+          email: prev.email || session?.user?.email || '',
+          avatar: prev.avatar || session?.user?.image || '',
+        }));
+      }
+
       try {
         const response = await fetch('/api/user/profile');
         if (response.ok) {
           const data = await response.json();
           // Store user role
           setUserRole(data.role || 'MEMBER');
+
+          const rawName = data.name || session?.user?.name || '';
+          const nameParts = rawName.trim().split(/\s+/);
+          const fName = data.firstName || nameParts[0] || '';
+          const lName = data.lastName || nameParts.slice(1).join(' ') || '';
+
+          const rolePosition = 
+            data.role === 'OWNER' ? 'Owner / Founder' :
+            data.role === 'SUPER_ADMIN' ? 'Super Administrator' :
+            data.role === 'ADMIN' ? 'Administrator' :
+            data.role === 'MANAGER' ? 'Manager' : 'Team Member';
+
           // Map database fields to profile state
           setProfile({
-            firstName: data.firstName || '',
-            lastName: data.lastName || '',
-            email: data.email || '',
+            firstName: fName,
+            lastName: lName,
+            email: data.email || session?.user?.email || '',
             phone: data.phone || '',
             company: data.business?.name || '',
-            position: data.role === 'OWNER' ? 'Owner' : data.role === 'ADMIN' ? 'Administrator' : data.role === 'MANAGER' ? 'Manager' : 'Member',
+            position: rolePosition,
             address: data.business?.address || '',
             city: data.business?.city || '',
             country: data.business?.country || 'UK',
             currency: data.business?.currency || '',
             timezone: data.timezone || 'Europe/London',
             language: 'English',
-            avatar: data.avatar || data.image || '',
+            avatar: data.avatar || data.image || session?.user?.image || '',
           });
           setSecurity(prev => ({
             ...prev,
@@ -990,7 +1015,7 @@ function SettingsPageInner() {
                   onChange={handleAvatarUpload}
                 />
                 <div className="relative">
-                  <div className="h-22 w-22 bg-slate-100 dark:bg-slate-900 border-2 border-orange-400 ring-4 ring-orange-500/20 rounded-full flex items-center justify-center text-2xl font-extrabold text-slate-700 dark:text-slate-200 overflow-hidden shadow-2xs">
+                  <div className="h-22 w-22 bg-gradient-to-tr from-slate-800 via-slate-900 to-orange-950 border-2 border-orange-400 ring-4 ring-orange-500/20 rounded-full flex items-center justify-center text-xl font-black text-white overflow-hidden shadow-md">
                     {uploadingAvatar ? (
                       <div className="h-6 w-6 border-2 border-orange-300 border-t-orange-500 rounded-full animate-spin" />
                     ) : profile.avatar ? (
@@ -1001,21 +1026,32 @@ function SettingsPageInner() {
                         onError={() => setProfile(prev => ({ ...prev, avatar: '' }))}
                       />
                     ) : (
-                      <>{profile.firstName?.charAt(0)}{profile.lastName?.charAt(0)}</>
+                      <span className="tracking-wider uppercase font-black text-white">
+                        {profile.firstName?.charAt(0) || session?.user?.name?.charAt(0) || profile.company?.charAt(0) || 'U'}
+                        {profile.lastName?.charAt(0) || ''}
+                      </span>
                     )}
                   </div>
                   <button
                     type="button"
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={uploadingAvatar}
-                    className="absolute -bottom-1 -right-1 p-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-full shadow-2xs hover:from-orange-600 hover:to-amber-700 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="absolute -bottom-1 -right-1 p-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-full shadow-md hover:from-orange-600 hover:to-amber-700 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    title="Change profile photo"
                   >
                     <Camera className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                <div>
-                  <p className="text-sm font-extrabold text-slate-900 dark:text-white">{profile.firstName || 'User'} {profile.lastName}</p>
-                  <p className="text-xs font-bold text-slate-400 mt-0.5">{profile.position || 'Team Member'}</p>
+                <div className="w-full">
+                  <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white capitalize truncate px-1">
+                    {(`${profile.firstName || ''} ${profile.lastName || ''}`).trim() || session?.user?.name || 'Workspace Member'}
+                  </p>
+                  <p className="text-xs font-extrabold text-orange-600 dark:text-orange-400 mt-0.5">
+                    {profile.position || 'Team Member'}
+                  </p>
+                  <p className="text-[11px] font-medium text-slate-400 mt-0.5 truncate px-2">
+                    {profile.email || session?.user?.email}
+                  </p>
                 </div>
                 {(userRole === 'OWNER' || userRole === 'ADMIN') && (
                   <button

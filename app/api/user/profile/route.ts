@@ -62,12 +62,18 @@ export async function GET() {
       };
     }
 
+    const nameParts = (user.name || '').trim().split(/\s+/);
+    const firstName = user.firstName || (nameParts[0] || '').trim();
+    const lastName = user.lastName || (nameParts.slice(1).join(' ') || '').trim();
+    const fullName = `${firstName} ${lastName}`.trim() || user.name || user.email.split('@')[0];
+
     return NextResponse.json({
       id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      name: fullName,
+      firstName: firstName || fullName,
+      lastName: lastName,
       email: user.email,
-      phone: user.phone,
+      phone: user.phone || '',
       role: user.role,
       status: user.status,
       avatar: user.avatar ?? user.image ?? null,
