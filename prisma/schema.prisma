@@ -151,7 +151,7 @@ model Business {
   city     String?
   postcode String?
   country  String  @default("UK")
-  currency String  @default("GBP")
+  currency String?
 
   // Tax settings — defaults to the common UK company year-end (31 March) until configured
   fiscalYearEndMonth Int @default(3)

@@ -50,14 +50,14 @@ export async function GET() {
       );
     }
 
-    let businessData = user.business;
+    let businessData: any = user.business;
     if (businessData) {
       const activeUserCount = await prisma.user.count({
         where: { businessId: user.businessId },
       });
       businessData = {
         ...businessData,
-        currency: businessData.currency || (businessData.country === 'UK' ? 'GBP' : 'GBP'),
+        currency: businessData.currency || '',
         seatCount: Math.max(businessData.seatCount, activeUserCount, 3),
       };
     }

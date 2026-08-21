@@ -166,7 +166,7 @@ function SettingsPageInner() {
     address: '',
     city: '',
     country: 'UK',
-    currency: 'GBP',
+    currency: '',
     timezone: 'Europe/London',
     language: 'English'
   });
@@ -333,7 +333,7 @@ function SettingsPageInner() {
             address: data.business?.address || '',
             city: data.business?.city || '',
             country: data.business?.country || 'UK',
-            currency: data.business?.currency || (data.business?.country === 'UK' ? 'GBP' : 'GBP'),
+            currency: data.business?.currency || '',
             timezone: data.timezone || 'Europe/London',
             language: 'English',
             avatar: data.avatar || data.image || '',
@@ -1106,12 +1106,13 @@ function SettingsPageInner() {
                     <div className="relative">
                       <Banknote className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
                       <select
-                        value={profile.currency || 'GBP'}
+                        value={profile.currency || ''}
                         onChange={e => setProfile({ ...profile, currency: e.target.value })}
                         disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
                         className="w-full rounded-2xl border border-orange-200 dark:border-orange-900/60 bg-orange-50/50 dark:bg-slate-900 pl-10 pr-4 py-2.5 text-xs font-black text-orange-900 dark:text-orange-200 outline-none focus:border-orange-500 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        <option value="GBP">GBP (£) — British Pound (UK Default)</option>
+                        <option value="">Select your operating currency...</option>
+                        <option value="GBP">GBP (£) — British Pound</option>
                         <option value="USD">USD ($) — US Dollar</option>
                         <option value="EUR">EUR (€) — Euro</option>
                         <option value="NGN">NGN (₦) — Nigerian Naira</option>
@@ -1123,7 +1124,7 @@ function SettingsPageInner() {
                       </select>
                     </div>
                     <p className="mt-1.5 text-[11px] text-slate-400 font-semibold">
-                      Default currency used across invoices, reports, and financial ledgers.
+                      SME-selected workspace currency for invoices, estimates, and financial ledgers.
                     </p>
                   </div>
                 </div>

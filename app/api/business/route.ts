@@ -8,7 +8,7 @@ export const GET = withMultiTenancy(async (_req, { business }) => {
     id: biz.id,
     name: biz.name,
     country: biz.country,
-    currency: biz.currency || (biz.country === 'UK' ? 'GBP' : 'GBP'),
+    currency: biz.currency || null,
     fiscalYearEndMonth: biz.fiscalYearEndMonth,
     fiscalYearEndDay: biz.fiscalYearEndDay,
     pivotNavEnabled: biz.pivotNavEnabled,

@@ -122,7 +122,7 @@ export default function InvoicingPage() {
   /* ── State ──────────────────────────────────────────────────────── */
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [defaultCurrency, setDefaultCurrency] = useState('GBP');
+  const [defaultCurrency, setDefaultCurrency] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -146,7 +146,7 @@ export default function InvoicingPage() {
     clientType: 'business' as 'business' | 'individual',
     client: '',
     clientEmail: '',
-    currency: 'GBP',
+    currency: '',
     date: new Date().toISOString().split('T')[0],
     dueDate: '',
     items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
@@ -193,7 +193,7 @@ export default function InvoicingPage() {
               client: inv.clientName,
               clientEmail: inv.clientEmail || '',
               amount: inv.amount,
-              currency: inv.currency || defaultCurrency || 'GBP',
+              currency: inv.currency || defaultCurrency || 'USD',
               status: (rawStatus === 'canceled' ? 'cancelled' : rawStatus) as Invoice['status'],
               date: new Date(inv.createdAt).toISOString().split('T')[0],
               dueDate: new Date(inv.dueDate).toISOString().split('T')[0],
@@ -221,14 +221,14 @@ export default function InvoicingPage() {
     fetchInvoices();
     fetchProjects();
 
-    // Fetch workspace default currency from business profile
+    // Fetch SME workspace chosen currency from business profile
     fetch('/api/user/profile')
       .then((res) => res.json())
       .then((data) => {
-        const cur = data?.business?.currency || (data?.business?.country === 'UK' ? 'GBP' : 'GBP');
+        const cur = data?.business?.currency || '';
         if (cur) {
           setDefaultCurrency(cur);
-          setNewInvoice((prev) => ({ ...prev, currency: cur }));
+          setNewInvoice((prev) => ({ ...prev, currency: prev.currency || cur }));
         }
       })
       .catch(() => {});
@@ -428,7 +428,7 @@ export default function InvoicingPage() {
       clientType: 'business',
       client: '',
       clientEmail: '',
-      currency: defaultCurrency || 'GBP',
+      currency: defaultCurrency || '',
       date: new Date().toISOString().split('T')[0],
       dueDate: '',
       items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
@@ -1320,16 +1320,19 @@ export default function InvoicingPage() {
                       />
                     </div>
 
-                    {/* Location-Based Currency Selector */}
+                    {/* Invoice Currency Selector */}
                     <div className="sm:col-span-2">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        Billing Currency (Location-Based)
+                        Invoice Currency {defaultCurrency ? `(Workspace Selected: ${defaultCurrency})` : ''}
                       </label>
                       <select
-                        value={newInvoice.currency}
+                        value={newInvoice.currency || defaultCurrency || ''}
                         onChange={(e) => setNewInvoice({ ...newInvoice, currency: e.target.value })}
                         className="w-full px-3.5 py-2.5 bg-orange-50/50 dark:bg-slate-800 border border-orange-200 dark:border-orange-900/60 rounded-xl text-xs font-black text-orange-900 dark:text-orange-200 outline-none focus:border-orange-500 cursor-pointer"
                       >
+                        {!newInvoice.currency && !defaultCurrency && (
+                          <option value="">Select Invoice Currency...</option>
+                        )}
                         {SUPPORTED_CURRENCIES.map((c) => (
                           <option key={c.code} value={c.code}>
                             {c.label}

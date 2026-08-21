@@ -69,9 +69,10 @@ export const POST = withMultiTenancy(async (req, { user }) => {
     }, 0);
     const invoiceNumber = `INV-${String(maxNumber + 1).padStart(4, '0')}`;
 
-    // Determine currency: user-selected or SME business default currency (fallback GBP)
-    const businessCurrency = user.business?.currency || (user.business?.country === 'UK' ? 'GBP' : 'GBP');
-    const invoiceCurrency = currency ? String(currency).toUpperCase() : (businessCurrency || 'GBP');
+    // Determine currency: explicit invoice currency or SME's chosen business currency from settings
+    const invoiceCurrency = currency 
+      ? String(currency).toUpperCase() 
+      : (user.business?.currency ? String(user.business.currency).toUpperCase() : 'USD');
 
     const invoice = await prisma.invoice.create({
       data: {
