@@ -57,17 +57,17 @@ export function EnterpriseBento() {
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2.5">
                   <img
-                    src="https://api.dicebear.com/7.x/lorelei/svg?seed=SarahChen&backgroundColor=fed7aa&radius=50"
+                    src="https://api.dicebear.com/7.x/personas/svg?seed=SarahChen&backgroundColor=fed7aa,ea580c&radius=50"
                     alt="Sarah Chen"
                     className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-900 shadow-xs"
                   />
                   <img
-                    src="https://api.dicebear.com/7.x/lorelei/svg?seed=AlexRivera&backgroundColor=bfdbfe&radius=50"
+                    src="https://api.dicebear.com/7.x/personas/svg?seed=AlexRivera&backgroundColor=bfdbfe,2563eb&radius=50"
                     alt="Alex Rivera"
                     className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-900 shadow-xs"
                   />
                   <img
-                    src="https://api.dicebear.com/7.x/lorelei/svg?seed=DavidKim&backgroundColor=bbf7d0&radius=50"
+                    src="https://api.dicebear.com/7.x/personas/svg?seed=DavidKim&backgroundColor=bbf7d0,059669&radius=50"
                     alt="David Kim"
                     className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-900 shadow-xs"
                   />
