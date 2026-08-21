@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: Max 5 reset attempts per IP per 15 minutes
+    const ip = getClientIp(request);
+    const rateLimit = checkRateLimit(`reset-pass:${ip}`, 5, 15 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(
+        rateLimit,
+        'Too many password reset attempts. Please wait 15 minutes before trying again.'
+      );
+    }
+
     const body = await request.json();
     const { token, newPassword } = body;
 

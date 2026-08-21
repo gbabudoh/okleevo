@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -287,19 +287,13 @@ export default function DashboardLayout({
     }
   };
 
-  // Scroll to top on route change or search param tab change
-  const searchParams = useSearchParams();
-  useEffect(() => {
-    // Scroll both window and main content area to top
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) {
-      mainContent.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    }
-  }, [pathname, searchParams]);
-
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+      {/* Suspense-isolated scroll to top watcher */}
+      <Suspense fallback={null}>
+        <ScrollWatcher pathname={pathname} />
+      </Suspense>
+
       {/* Sidebar (Desktop Only) */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-100 z-40 transition-all duration-300 flex-col">
         <div className="px-5 py-5 border-b border-gray-100 flex items-center justify-between">
@@ -650,4 +644,16 @@ export default function DashboardLayout({
       <MobileBottomNav />
     </div>
   );
+}
+
+function ScrollWatcher({ pathname }: { pathname: string }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [pathname, searchParams]);
+  return null;
 }

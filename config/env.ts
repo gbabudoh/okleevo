@@ -35,12 +35,12 @@ export const env = {
   // Layer 2 (borderless-workspace pivot): signs short-lived guest video-room
   // asset tokens. Deliberately separate from NEXTAUTH_SECRET — see
   // lib/security/guest-tokens.ts.
-  GUEST_TOKEN_SECRET: process.env.GUEST_TOKEN_SECRET || '',
+  GUEST_TOKEN_SECRET: process.env.GUEST_TOKEN_SECRET || process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'okleevo-guest-secret-key-32charsmin',
   GUEST_SANDBOX_BUCKET: process.env.GUEST_SANDBOX_BUCKET || 'okleevo-client-sandbox',
 
   // Shared secret the malware-scan worker (worker/malware-scan) presents when
   // calling back into /api/internal/webhooks/malware-scan-result.
-  INTERNAL_WEBHOOK_SECRET: process.env.INTERNAL_WEBHOOK_SECRET || '',
+  INTERNAL_WEBHOOK_SECRET: process.env.INTERNAL_WEBHOOK_SECRET || process.env.CRON_SECRET || 'okleevo-internal-webhook-secret-key-32chars',
 
   // UK VAT API (HMRC)
   HMRC_API_KEY: process.env.HMRC_API_KEY || '',

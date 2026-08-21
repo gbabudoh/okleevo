@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@source "../app";
+@source "../components";
+@source "../modules";
+@source "../lib";
+
 /* Tailwind v4: Dark mode is enabled by default with class strategy */
 /* The 'dark' class will be added to <html> by next-themes */
 

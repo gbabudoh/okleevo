@@ -1,11 +1,9 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  // Ensure we're using App Router
-  experimental: {
-    // Add any experimental features if needed
-  },
+  outputFileTracingRoot: path.join(__dirname),
+  turbopack: {},
   // Suppress Turbopack warnings about middleware
   // Note: middleware.ts is the correct Next.js convention
   onDemandEntries: {
