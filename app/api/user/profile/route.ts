@@ -49,6 +49,17 @@ export async function GET() {
       );
     }
 
+    let businessData = user.business;
+    if (businessData) {
+      const activeUserCount = await prisma.user.count({
+        where: { businessId: user.businessId },
+      });
+      businessData = {
+        ...businessData,
+        seatCount: Math.max(businessData.seatCount, activeUserCount, 3),
+      };
+    }
+
     return NextResponse.json({
       id: user.id,
       firstName: user.firstName,
@@ -61,7 +72,7 @@ export async function GET() {
       timezone: user.timezone,
       twoFactorEnabled: user.twoFactorEnabled ?? false,
       notificationPreferences: user.notificationPreferences,
-      business: user.business,
+      business: businessData,
     });
   } catch (error: unknown) {
     console.error('Profile fetch error:', error);
