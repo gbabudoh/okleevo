@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { 
   CheckCircle2, Clock, User, Plus, Sparkles, 
   ChevronRight, ArrowUpRight, Flame, ShieldCheck,
-  CheckSquare, X, Loader2
+  CheckSquare, X, Loader2, Calendar, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,21 +19,37 @@ export interface DTCItem {
   isDailyTask?: boolean;
 }
 
+interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+}
+
 interface DailyTaskCompletionBoxProps {
   onTaskLogged?: () => void;
   className?: string;
 }
 
 export function DailyTaskCompletionBox({ onTaskLogged, className = '' }: DailyTaskCompletionBoxProps) {
+  const { data: session } = useSession();
   const [completions, setCompletions] = useState<DTCItem[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [todayCount, setTodayCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   
+  // Form fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('medium');
+  const [selectedMemberName, setSelectedMemberName] = useState('');
+  const [selectedMemberId, setSelectedMemberId] = useState('');
+  const [completedDate, setCompletedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [completedTime, setCompletedTime] = useState(
+    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+  );
 
   const fetchDTC = useCallback(async () => {
     try {
@@ -41,6 +58,9 @@ export function DailyTaskCompletionBox({ onTaskLogged, className = '' }: DailyTa
         const data = await res.json();
         setTodayCount(data.todayCount || 0);
         setCompletions(data.todayCompletions || data.recentCompletions || []);
+        if (Array.isArray(data.teamMembers)) {
+          setTeamMembers(data.teamMembers);
+        }
       }
     } catch {
       // silent fallback
@@ -55,6 +75,26 @@ export function DailyTaskCompletionBox({ onTaskLogged, className = '' }: DailyTa
     return () => clearInterval(interval);
   }, [fetchDTC]);
 
+  // Set default team member to logged-in user
+  useEffect(() => {
+    if (session?.user?.name && !selectedMemberName) {
+      setSelectedMemberName(session.user.name);
+      if (session.user.id) setSelectedMemberId(session.user.id);
+    }
+  }, [session, selectedMemberName]);
+
+  const handleOpenModal = () => {
+    const currentUserName = session?.user?.name || (teamMembers[0]?.name) || '';
+    const currentUserId = session?.user?.id || (teamMembers[0]?.id) || '';
+    if (!selectedMemberName) {
+      setSelectedMemberName(currentUserName);
+      setSelectedMemberId(currentUserId);
+    }
+    setCompletedDate(new Date().toISOString().split('T')[0]);
+    setCompletedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+    setShowSubmitModal(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
@@ -63,7 +103,15 @@ export function DailyTaskCompletionBox({ onTaskLogged, className = '' }: DailyTa
       const res = await fetch('/api/tasks/dtc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, priority }),
+        body: JSON.stringify({ 
+          title, 
+          description, 
+          priority,
+          teamMemberName: selectedMemberName,
+          teamMemberUserId: selectedMemberId,
+          completedDate,
+          completedTime,
+        }),
       });
       if (res.ok) {
         setTitle('');
@@ -119,7 +167,7 @@ export function DailyTaskCompletionBox({ onTaskLogged, className = '' }: DailyTa
 
         <button
           type="button"
-          onClick={() => setShowSubmitModal(true)}
+          onClick={handleOpenModal}
           className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl text-xs font-black shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer self-start sm:self-auto shrink-0"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
@@ -184,29 +232,98 @@ export function DailyTaskCompletionBox({ onTaskLogged, className = '' }: DailyTa
       {showSubmitModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 overflow-hidden">
           <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs" onClick={() => setShowSubmitModal(false)} />
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-emerald-500/30 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-emerald-50/50 dark:bg-emerald-950/30 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-emerald-600 text-white rounded-xl">
+          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-emerald-500/30 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-emerald-50/50 dark:bg-emerald-950/30 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-600 text-white rounded-2xl shadow-sm shadow-emerald-600/25">
                   <CheckSquare className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white">Submit Completed Daily Task</h3>
-                  <p className="text-[11px] text-slate-500">Sign off your deliverable to team activity stream</p>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white leading-tight">Submit Completed Daily Task</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Sign off your deliverable to team activity stream</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowSubmitModal(false)}
-                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl"
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-5 space-y-4">
+            {/* Modal Form */}
+            <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto">
+              {/* Team Member Selection */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Team Member Name Selection *</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedMemberName}
+                    onChange={(e) => {
+                      const memberName = e.target.value;
+                      setSelectedMemberName(memberName);
+                      const found = teamMembers.find((m) => m.name === memberName);
+                      if (found) setSelectedMemberId(found.id);
+                    }}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-emerald-500 cursor-pointer appearance-none"
+                  >
+                    {teamMembers.length > 0 ? (
+                      teamMembers.map((m) => (
+                        <option key={m.id} value={m.name}>
+                          {m.name} ({m.email}) {m.role ? `· ${m.role}` : ''}
+                        </option>
+                      ))
+                    ) : (
+                      <option value={session?.user?.name || 'Team Member'}>
+                        {session?.user?.name || 'Current User'} ({session?.user?.email || 'Team Member'})
+                      </option>
+                    )}
+                  </select>
+                  <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                    <ChevronRight className="w-3.5 h-3.5 rotate-90" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Date & Time Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Completion Date *</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={completedDate}
+                    onChange={(e) => setCompletedDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-emerald-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Completion Time *</span>
+                  </label>
+                  <input
+                    type="time"
+                    required
+                    value={completedTime}
+                    onChange={(e) => setCompletedTime(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-emerald-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Deliverable Title */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Deliverable / Task Title *
+                  Deliverable / Task Name *
                 </label>
                 <input
                   type="text"
@@ -218,6 +335,7 @@ export function DailyTaskCompletionBox({ onTaskLogged, className = '' }: DailyTa
                 />
               </div>
 
+              {/* Deliverable Summary */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Deliverable Summary / Key Highlights (Optional)

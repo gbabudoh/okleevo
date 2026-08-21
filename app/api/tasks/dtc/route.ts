@@ -18,7 +18,7 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
         ],
       },
       include: {
-        user: { select: { firstName: true, lastName: true, email: true } },
+        user: { select: { firstName: true, lastName: true, email: true, avatar: true } },
       },
       orderBy: { completedAt: 'desc' },
     });
@@ -29,10 +29,23 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
         status: 'DONE',
       },
       include: {
-        user: { select: { firstName: true, lastName: true, email: true } },
+        user: { select: { firstName: true, lastName: true, email: true, avatar: true } },
       },
       orderBy: { completedAt: 'desc' },
       take: 15,
+    });
+
+    const teamMembers = await prisma.user.findMany({
+      where: { businessId: dataFilter.businessId, status: 'ACTIVE' },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        avatar: true,
+      },
+      orderBy: { firstName: 'asc' },
     });
 
     const formattedToday = completedTasksToday.map((t) => ({
@@ -59,6 +72,13 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
       todayCount: formattedToday.length,
       todayCompletions: formattedToday,
       recentCompletions: formattedRecent,
+      teamMembers: teamMembers.map((m) => ({
+        id: m.id,
+        name: `${m.firstName || ''} ${m.lastName || ''}`.trim() || m.email,
+        email: m.email,
+        role: m.role,
+        avatar: m.avatar,
+      })),
     });
   } catch (error) {
     console.error('Error fetching DTC data:', error);
@@ -69,14 +89,33 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body = await req.json();
-    const { title, description, priority, tags } = body;
+    const { title, description, priority, tags, teamMemberName, teamMemberUserId, completedDate, completedTime } = body;
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Daily deliverable title is required' }, { status: 400 });
     }
 
-    const userFullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Team Member';
-    const now = new Date();
+    const defaultUserName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Team Member';
+    const signerName = (teamMemberName && teamMemberName.trim()) ? teamMemberName.trim() : defaultUserName;
+    const assignedUserId = teamMemberUserId || user.id;
+
+    // Parse custom completion timestamp (date + time)
+    let completionDateTime = new Date();
+    if (completedDate) {
+      const parts = completedDate.split('-').map(Number);
+      if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+        let hours = completionDateTime.getHours();
+        let minutes = completionDateTime.getMinutes();
+        if (completedTime) {
+          const tParts = completedTime.split(':').map(Number);
+          if (tParts.length >= 2 && !isNaN(tParts[0]) && !isNaN(tParts[1])) {
+            hours = tParts[0];
+            minutes = tParts[1];
+          }
+        }
+        completionDateTime = new Date(parts[0], parts[1] - 1, parts[2], hours, minutes, 0);
+      }
+    }
 
     const task = await prisma.task.create({
       data: {
@@ -85,12 +124,12 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         status: 'DONE',
         priority: (priority?.toUpperCase() || 'MEDIUM') as TaskPriority,
         isDailyTask: true,
-        completedAt: now,
-        completedBy: userFullName,
-        assignedTo: userFullName,
+        completedAt: completionDateTime,
+        completedBy: signerName,
+        assignedTo: signerName,
         tags: Array.isArray(tags) ? tags : ['daily-signoff'],
         businessId: user.businessId,
-        userId: user.id,
+        userId: assignedUserId,
       },
     });
 
