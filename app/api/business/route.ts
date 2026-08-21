@@ -3,19 +3,22 @@ import { withMultiTenancy } from '@/lib/api/with-multi-tenancy';
 import { prisma } from '@/lib/prisma';
 
 export const GET = withMultiTenancy(async (_req, { business }) => {
+  const biz = business as any;
   return NextResponse.json({
-    id: business.id,
-    name: business.name,
-    fiscalYearEndMonth: business.fiscalYearEndMonth,
-    fiscalYearEndDay: business.fiscalYearEndDay,
-    pivotNavEnabled: business.pivotNavEnabled,
+    id: biz.id,
+    name: biz.name,
+    country: biz.country,
+    currency: biz.currency || (biz.country === 'UK' ? 'GBP' : 'GBP'),
+    fiscalYearEndMonth: biz.fiscalYearEndMonth,
+    fiscalYearEndDay: biz.fiscalYearEndDay,
+    pivotNavEnabled: biz.pivotNavEnabled,
   });
 });
 
 export const PATCH = withMultiTenancy(async (req, { dataFilter, user }) => {
   try {
     const body = await req.json();
-    const { fiscalYearEndMonth, fiscalYearEndDay, name, address, city, country, pivotNavEnabled } = body;
+    const { fiscalYearEndMonth, fiscalYearEndDay, name, address, city, country, currency, pivotNavEnabled } = body;
 
     const data: Record<string, string | number | boolean> = {};
 
@@ -31,6 +34,15 @@ export const PATCH = withMultiTenancy(async (req, { dataFilter, user }) => {
         return NextResponse.json({ error: 'pivotNavEnabled must be a boolean' }, { status: 400 });
       }
       data.pivotNavEnabled = pivotNavEnabled;
+    }
+
+    if (currency !== undefined) {
+      if (user.role !== 'OWNER' && user.role !== 'ADMIN') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+      if (typeof currency === 'string' && currency.trim()) {
+        data.currency = currency.trim().toUpperCase();
+      }
     }
 
     if (fiscalYearEndMonth !== undefined || fiscalYearEndDay !== undefined) {
@@ -77,6 +89,7 @@ export const PATCH = withMultiTenancy(async (req, { dataFilter, user }) => {
       address: business.address,
       city: business.city,
       country: business.country,
+      currency: (business as any).currency || 'GBP',
       pivotNavEnabled: business.pivotNavEnabled,
     });
   } catch (error) {

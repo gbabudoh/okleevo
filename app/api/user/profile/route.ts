@@ -32,6 +32,7 @@ export async function GET() {
             city: true,
             postcode: true,
             country: true,
+            currency: true,
             seatCount: true,
             maxSeats: true,
             enabledModules: true,
@@ -56,6 +57,7 @@ export async function GET() {
       });
       businessData = {
         ...businessData,
+        currency: businessData.currency || (businessData.country === 'UK' ? 'GBP' : 'GBP'),
         seatCount: Math.max(businessData.seatCount, activeUserCount, 3),
       };
     }

@@ -7,7 +7,7 @@ import {
   User, Mail, Phone, MapPin, Building2, Briefcase, Lock,
   Bell, CreditCard, Globe, Shield, Eye, EyeOff, Camera,
   Save, X, Check, AlertCircle, Settings as SettingsIcon,
-  Zap, Download, Upload,
+  Zap, Download, Upload, Banknote,
   Trash2, LogOut, Key, Smartphone, Monitor, Users, Crown,
   FileText, Code, Sparkles,
   Edit3, UserPlus, UserCheck, MessageSquare, MessageCircle,
@@ -42,6 +42,7 @@ interface UserProfile {
   address: string;
   city: string;
   country: string;
+  currency?: string;
   timezone: string;
   language: string;
   avatar?: string;
@@ -165,6 +166,7 @@ function SettingsPageInner() {
     address: '',
     city: '',
     country: 'UK',
+    currency: 'GBP',
     timezone: 'Europe/London',
     language: 'English'
   });
@@ -331,6 +333,7 @@ function SettingsPageInner() {
             address: data.business?.address || '',
             city: data.business?.city || '',
             country: data.business?.country || 'UK',
+            currency: data.business?.currency || (data.business?.country === 'UK' ? 'GBP' : 'GBP'),
             timezone: data.timezone || 'Europe/London',
             language: 'English',
             avatar: data.avatar || data.image || '',
@@ -798,6 +801,7 @@ function SettingsPageInner() {
               address: profile.address,
               city: profile.city,
               country: profile.country,
+              currency: profile.currency || 'GBP',
             }),
           })
         );
@@ -1093,6 +1097,35 @@ function SettingsPageInner() {
                     </div>
                     );
                   })}
+
+                  {/* Workspace Default Operating Currency Selector */}
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Platform Operating Currency
+                    </label>
+                    <div className="relative">
+                      <Banknote className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
+                      <select
+                        value={profile.currency || 'GBP'}
+                        onChange={e => setProfile({ ...profile, currency: e.target.value })}
+                        disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
+                        className="w-full rounded-2xl border border-orange-200 dark:border-orange-900/60 bg-orange-50/50 dark:bg-slate-900 pl-10 pr-4 py-2.5 text-xs font-black text-orange-900 dark:text-orange-200 outline-none focus:border-orange-500 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        <option value="GBP">GBP (£) — British Pound (UK Default)</option>
+                        <option value="USD">USD ($) — US Dollar</option>
+                        <option value="EUR">EUR (€) — Euro</option>
+                        <option value="NGN">NGN (₦) — Nigerian Naira</option>
+                        <option value="GHS">GHS (GH₵) — Ghanaian Cedi</option>
+                        <option value="KES">KES (KSh) — Kenyan Shilling</option>
+                        <option value="ZAR">ZAR (R) — South African Rand</option>
+                        <option value="CAD">CAD (C$) — Canadian Dollar</option>
+                        <option value="AUD">AUD (A$) — Australian Dollar</option>
+                      </select>
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-slate-400 font-semibold">
+                      Default currency used across invoices, reports, and financial ledgers.
+                    </p>
+                  </div>
                 </div>
 
                 {(userRole === 'MANAGER' || userRole === 'MEMBER') && (

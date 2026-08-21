@@ -122,6 +122,7 @@ export default function InvoicingPage() {
   /* ── State ──────────────────────────────────────────────────────── */
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [defaultCurrency, setDefaultCurrency] = useState('GBP');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -145,7 +146,7 @@ export default function InvoicingPage() {
     clientType: 'business' as 'business' | 'individual',
     client: '',
     clientEmail: '',
-    currency: 'USD',
+    currency: 'GBP',
     date: new Date().toISOString().split('T')[0],
     dueDate: '',
     items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
@@ -192,7 +193,7 @@ export default function InvoicingPage() {
               client: inv.clientName,
               clientEmail: inv.clientEmail || '',
               amount: inv.amount,
-              currency: inv.currency || 'USD',
+              currency: inv.currency || defaultCurrency || 'GBP',
               status: (rawStatus === 'canceled' ? 'cancelled' : rawStatus) as Invoice['status'],
               date: new Date(inv.createdAt).toISOString().split('T')[0],
               dueDate: new Date(inv.dueDate).toISOString().split('T')[0],
@@ -219,6 +220,18 @@ export default function InvoicingPage() {
     setMounted(true);
     fetchInvoices();
     fetchProjects();
+
+    // Fetch workspace default currency from business profile
+    fetch('/api/user/profile')
+      .then((res) => res.json())
+      .then((data) => {
+        const cur = data?.business?.currency || (data?.business?.country === 'UK' ? 'GBP' : 'GBP');
+        if (cur) {
+          setDefaultCurrency(cur);
+          setNewInvoice((prev) => ({ ...prev, currency: cur }));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -264,7 +277,8 @@ export default function InvoicingPage() {
 
   /* ── PDF & CSV Generators ───────────────────────────────────────── */
   const downloadAsPDF = (invoice: Invoice) => {
-    const sym = getCurrencySymbol(invoice.currency);
+    const invCurrency = (invoice.currency && invoice.currency.trim()) || defaultCurrency || 'GBP';
+    const sym = getCurrencySymbol(invCurrency);
     const doc = new jsPDF();
 
     // Modern Branded Header
@@ -304,7 +318,7 @@ export default function InvoicingPage() {
     doc.setFontSize(8);
     doc.text(`Issue Date: ${invoice.date}`, 115, 64);
     doc.text(`Due Date: ${invoice.dueDate}`, 115, 70);
-    doc.text(`Currency: ${invoice.currency || 'USD'}`, 160, 64);
+    doc.text(`Currency: ${invCurrency}`, 160, 64);
 
     // Line Items Header
     doc.setFillColor(79, 70, 229); // Indigo 600
@@ -329,8 +343,8 @@ export default function InvoicingPage() {
       }
       doc.text(item.description, 24, yPos);
       doc.text(item.quantity.toString(), 120, yPos);
-      doc.text(`${sym}${item.rate.toLocaleString()}`, 140, yPos);
-      doc.text(`${sym}${(item.quantity * item.rate).toLocaleString()}`, 168, yPos);
+      doc.text(`${sym}${item.rate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 140, yPos);
+      doc.text(`${sym}${(item.quantity * item.rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 168, yPos);
       yPos += 8;
     });
 
@@ -344,7 +358,7 @@ export default function InvoicingPage() {
     doc.text('TOTAL BILLED:', 125, yPos + 8);
     doc.setFontSize(14);
     doc.setTextColor(79, 70, 229);
-    doc.text(`${sym}${invoice.amount.toLocaleString()} ${invoice.currency || 'USD'}`, 125, yPos + 18);
+    doc.text(`${sym}${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${invCurrency}`, 125, yPos + 18);
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
@@ -355,7 +369,8 @@ export default function InvoicingPage() {
   };
 
   const downloadAsExcel = (invoice: Invoice) => {
-    const sym = getCurrencySymbol(invoice.currency);
+    const invCurrency = (invoice.currency && invoice.currency.trim()) || defaultCurrency || 'GBP';
+    const sym = getCurrencySymbol(invCurrency);
     const headers = ['Description', 'Quantity', 'Rate', 'Amount'];
     const rows = invoice.items.map((item) => [
       item.description,
@@ -363,7 +378,7 @@ export default function InvoicingPage() {
       item.rate,
       item.quantity * item.rate,
     ]);
-    let csv = `Invoice: ${invoice.id}\nClient: ${invoice.client}\nEmail: ${invoice.clientEmail}\nCurrency: ${invoice.currency || 'USD'}\nIssue Date: ${invoice.date}\nDue Date: ${invoice.dueDate}\nStatus: ${invoice.status}\n\n`;
+    let csv = `Invoice: ${invoice.id}\nClient: ${invoice.client}\nEmail: ${invoice.clientEmail}\nCurrency: ${invCurrency}\nIssue Date: ${invoice.date}\nDue Date: ${invoice.dueDate}\nStatus: ${invoice.status}\n\n`;
     csv += headers.join(',') + '\n' + rows.map((r) => r.join(',')).join('\n');
     csv += `\n\nTotal Due,,,${sym}${invoice.amount}`;
 
@@ -385,12 +400,12 @@ export default function InvoicingPage() {
       inv.client,
       inv.clientEmail,
       inv.amount,
-      inv.currency || 'USD',
+      inv.currency || defaultCurrency || 'GBP',
       inv.status,
       inv.date,
       inv.dueDate,
     ]);
-    let csv = `Okleevo Invoice Engine Ledger Report\nGenerated: ${new Date().toLocaleDateString()}\nTotal Volume: $${stats.total.toLocaleString()}\n\n`;
+    let csv = `Okleevo Invoice Engine Ledger Report\nGenerated: ${new Date().toLocaleDateString()}\nTotal Volume: ${getCurrencySymbol(defaultCurrency)}${stats.total.toLocaleString()}\n\n`;
     csv += headers.join(',') + '\n' + rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -413,7 +428,7 @@ export default function InvoicingPage() {
       clientType: 'business',
       client: '',
       clientEmail: '',
-      currency: 'USD',
+      currency: defaultCurrency || 'GBP',
       date: new Date().toISOString().split('T')[0],
       dueDate: '',
       items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
@@ -767,7 +782,7 @@ export default function InvoicingPage() {
                 </span>
               </div>
               <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-slate-900 dark:text-white tracking-tight">
-                ${stats.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {getCurrencySymbol(defaultCurrency)}{stats.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-[10px] text-slate-400 font-bold truncate">Gross invoice volume</p>
             </div>
@@ -783,7 +798,7 @@ export default function InvoicingPage() {
                 </span>
               </div>
               <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
-                ${stats.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {getCurrencySymbol(defaultCurrency)}{stats.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                 <div className="bg-emerald-500 h-full rounded-full transition-all" style={{ width: `${stats.rate}%` }} />
@@ -801,7 +816,7 @@ export default function InvoicingPage() {
                 </span>
               </div>
               <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-blue-600 dark:text-blue-400 tracking-tight">
-                ${stats.pending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {getCurrencySymbol(defaultCurrency)}{stats.pending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-[10px] text-slate-400 font-bold truncate">Awaiting client payment</p>
             </div>
@@ -819,7 +834,7 @@ export default function InvoicingPage() {
                 )}
               </div>
               <p className={`text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight ${stats.overdue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
-                ${stats.overdue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {getCurrencySymbol(defaultCurrency)}{stats.overdue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-[10px] text-slate-400 font-bold truncate">
                 {invoices.filter((i) => i.status === 'overdue').length} requiring follow-up
