@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createPortalSession } from '@/lib/stripe/billing';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -14,6 +15,15 @@ export async function POST() {
     const businessId = (session.user as { businessId?: string }).businessId;
     if (!businessId) {
       return NextResponse.json({ error: 'No business found' }, { status: 400 });
+    }
+
+    // Rate Limit: Max 10 portal requests per business per 10 minutes
+    const rateLimit = checkRateLimit(`portal:${businessId}`, 10, 10 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(
+        rateLimit,
+        'Too many customer portal requests. Please wait a few minutes before trying again.'
+      );
     }
 
     const url = await createPortalSession(businessId);

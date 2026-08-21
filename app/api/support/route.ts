@@ -2,12 +2,23 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/services/email';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Rate Limit: Max 5 tickets per user/IP per 10 minutes
+    const clientIdentifier = session.user.id || getClientIp(req);
+    const rateLimit = checkRateLimit(`support:${clientIdentifier}`, 5, 10 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(
+        rateLimit,
+        'You have submitted multiple support requests. Please wait a few minutes before submitting another.'
+      );
     }
 
     const user = await prisma.user.findUnique({

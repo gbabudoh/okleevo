@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSMEOnboarding } from '@/lib/auth/onboarding';
 import { registrationSchema } from '@/lib/security/validation';
 import { prisma } from '@/lib/prisma';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 // Ensure API route runs in Node.js runtime (required for Prisma)
 export const runtime = 'nodejs';
@@ -12,6 +13,16 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate Limit: Max 5 registration attempts per IP per 15 minutes
+    const ip = getClientIp(request);
+    const rateLimit = checkRateLimit(`onboarding:${ip}`, 5, 15 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(
+        rateLimit,
+        'Too many account creation attempts from this network. Please wait 15 minutes before trying again.'
+      );
+    }
+
     let body;
     try {
       body = await request.json();

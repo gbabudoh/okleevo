@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { send2FAEmail } from '@/lib/services/email';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -26,6 +27,15 @@ export async function POST(req: NextRequest) {
 
     // 1. Send test 6-digit verification code to user's email
     if (action === 'send-enable-code') {
+      // Rate Limit: Max 3 OTP emails per 10 minutes
+      const rateLimit = checkRateLimit(`2fa-send:${user.id}`, 3, 10 * 60 * 1000);
+      if (!rateLimit.allowed) {
+        return rateLimitResponse(
+          rateLimit,
+          'Too many verification codes requested. Please wait 10 minutes before requesting a new code.'
+        );
+      }
+
       const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
       const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -47,6 +57,15 @@ export async function POST(req: NextRequest) {
 
     // 2. Verify code and activate 2FA
     if (action === 'verify-enable') {
+      // Rate Limit: Max 5 attempts per 15 minutes before temporary lockout
+      const rateLimit = checkRateLimit(`2fa-verify:${user.id}`, 5, 15 * 60 * 1000);
+      if (!rateLimit.allowed) {
+        return rateLimitResponse(
+          rateLimit,
+          'Too many incorrect verification attempts. For your security, please wait 15 minutes.'
+        );
+      }
+
       const { code } = body;
       if (!code || typeof code !== 'string') {
         return NextResponse.json({ error: 'Please enter the 6-digit verification code' }, { status: 400 });
