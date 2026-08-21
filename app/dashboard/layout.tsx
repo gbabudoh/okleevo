@@ -22,6 +22,8 @@ interface UserData {
   firstName: string;
   lastName: string;
   email: string;
+  avatar?: string | null;
+  image?: string | null;
   business: {
     name: string;
     industry: string;
