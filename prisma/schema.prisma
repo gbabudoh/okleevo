@@ -225,13 +225,21 @@ model Subscription {
   businessId String   @unique
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
+  // Stripe Integration
   stripeCustomerId     String? @unique
   stripeSubscriptionId String? @unique
   stripePriceId        String?
 
+  // Paystack Integration (African Region & Emerging Markets)
+  paymentProvider          PaymentProvider @default(STRIPE)
+  paystackCustomerCode     String?         @unique
+  paystackSubscriptionCode String?         @unique
+  paystackPlanCode         String?
+  paystackEmailToken       String?
+
   status   SubscriptionStatus @default(TRIAL)
   plan     String             @default("all-in-one")
-  amount   Int                @default(1999) // in pence
+  amount   Int                @default(1999) // in pence / kobo / cents
   currency String             @default("gbp")
 
   // Global pivot: USD tiered plans (Starter/Growth/Scale). Nullable and
@@ -250,6 +258,13 @@ model Subscription {
 
   @@index([stripeCustomerId])
   @@index([stripeSubscriptionId])
+  @@index([paystackCustomerCode])
+  @@index([paystackSubscriptionCode])
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYSTACK
 }
 
 enum SubscriptionStatus {

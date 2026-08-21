@@ -19,6 +19,7 @@ import { usePresence } from '@/components/hooks/use-presence';
 import { TeamActivityFeed } from '@/components/team-activity-feed';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertCircle as AlertCircleIcon } from 'lucide-react';
+import { PAYSTACK_PRICING, PaystackCurrency } from '@/lib/paystack/billing';
 
 // Global pivot pricing tiers — display copy only. The actual charge amount
 // always comes from Stripe (see lib/stripe/global-billing.ts, which reads
@@ -129,6 +130,7 @@ function SettingsPageInner() {
     trialEnd: string | null;
     currentPeriodEnd: string | null;
     cancelAtPeriodEnd: boolean;
+    paymentProvider?: 'STRIPE' | 'PAYSTACK';
     amount: number;
     currency?: string;
     plan?: string | null;
@@ -138,6 +140,8 @@ function SettingsPageInner() {
   const [subInfo, setSubInfo] = useState<SubInfo | null>(null);
   const [loadingBilling, setLoadingBilling] = useState(false);
   const [globalBillingPeriod, setGlobalBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+  const [paymentGateway, setPaymentGateway] = useState<'STRIPE' | 'PAYSTACK'>('STRIPE');
+  const [paystackCurrency, setPaystackCurrency] = useState<PaystackCurrency>('NGN');
   const [checkoutLoadingTier, setCheckoutLoadingTier] = useState<string | null>(null);
 
   // Presence tracking
@@ -261,20 +265,41 @@ function SettingsPageInner() {
     }
   };
 
-  // Handle Stripe/Shopify return — open the right tab and show an outcome toast
+  // Handle Stripe/Shopify/Paystack return — open the right tab and show an outcome toast
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
     const success = params.get('success');
     const cancelled = params.get('cancelled');
     const shopify = params.get('shopify');
+    const paystackRef = params.get('paystack_ref');
+
     if (tab) setActiveTab(tab);
     if (success === 'true') showToast('Payment successful! Your subscription is now active.', 'success');
     if (cancelled === 'true') showToast('Checkout cancelled — no charge was made.', 'error');
     if (shopify === 'connected') { showToast('Connected to Shopify!', 'success'); fetchShopifyStatus(); }
     if (shopify === 'error') showToast('Failed to connect to Shopify. Please try again.', 'error');
+
+    if (paystackRef) {
+      fetch('/api/billing/paystack/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: paystackRef }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            showToast('Paystack payment verified! Your subscription is now active.', 'success');
+            fetchBillingInfo();
+          } else {
+            showToast(data.error || 'Failed to verify Paystack payment.', 'error');
+          }
+        })
+        .catch(() => showToast('Error verifying Paystack payment.', 'error'));
+    }
+
     // Clean the URL without a page reload
-    if (tab || success || cancelled || shopify) {
+    if (tab || success || cancelled || shopify || paystackRef) {
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -385,19 +410,37 @@ function SettingsPageInner() {
     }
     setCheckoutLoadingTier(planTier);
     try {
-      const response = await fetch('/api/billing/checkout-global', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planTier, billingPeriod: globalBillingPeriod }),
-      });
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
+      if (paymentGateway === 'PAYSTACK') {
+        const response = await fetch('/api/billing/paystack/initialize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tier: planTier,
+            period: globalBillingPeriod,
+            currency: paystackCurrency,
+          }),
+        });
+        const data = await response.json();
+        if (data.authorization_url) {
+          window.location.href = data.authorization_url;
+        } else {
+          showToast(data.error || 'Failed to start Paystack checkout', 'error');
+        }
       } else {
-        showToast(data.error || 'Failed to start checkout', 'error');
+        const response = await fetch('/api/billing/checkout-global', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ planTier, billingPeriod: globalBillingPeriod }),
+        });
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          showToast(data.error || 'Failed to start checkout', 'error');
+        }
       }
     } catch (error) {
-      console.error('Global checkout error:', error);
+      console.error('Checkout error:', error);
       showToast('Connection error', 'error');
     } finally {
       setCheckoutLoadingTier(null);
@@ -1674,37 +1717,88 @@ function SettingsPageInner() {
                 </p>
               </div>
 
-              {/* Global pivot: new USD tiered plans */}
+              {/* Global pivot: new USD/African tiered plans */}
               <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-900">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-900">
                   <div>
                     <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-orange-500" />
-                      Okleevo Global — Borderless Workspace Plans
+                      Okleevo Global & African Workspace Plans
                     </h3>
-                    <p className="text-xs font-bold text-slate-400 mt-0.5">Switch anytime. Your seat count carries over; extra seats beyond a plan&apos;s allotment are billed per seat.</p>
+                    <p className="text-xs font-bold text-slate-400 mt-0.5">Switch anytime. Extras seats beyond a plan&apos;s allotment are billed per seat.</p>
                   </div>
-                  <div className="inline-flex items-center bg-slate-100 dark:bg-slate-900 rounded-2xl p-1 text-xs font-extrabold shrink-0 border border-slate-200/80 dark:border-slate-800">
-                    <button
-                      type="button"
-                      onClick={() => setGlobalBillingPeriod('monthly')}
-                      className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${globalBillingPeriod === 'monthly' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs' : 'text-slate-400'}`}
-                    >
-                      Monthly
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setGlobalBillingPeriod('annual')}
-                      className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${globalBillingPeriod === 'annual' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs' : 'text-slate-400'}`}
-                    >
-                      Annual
-                    </button>
+
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Gateway Switcher */}
+                    <div className="inline-flex items-center bg-slate-100 dark:bg-slate-900 rounded-2xl p-1 text-xs font-extrabold shrink-0 border border-slate-200/80 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentGateway('STRIPE')}
+                        className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${paymentGateway === 'STRIPE' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs' : 'text-slate-400'}`}
+                      >
+                        💳 Stripe (Global)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentGateway('PAYSTACK')}
+                        className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${paymentGateway === 'PAYSTACK' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs' : 'text-slate-400'}`}
+                      >
+                        ⚡ Paystack (Africa/MoMo)
+                      </button>
+                    </div>
+
+                    {/* Paystack Currency Picker */}
+                    {paymentGateway === 'PAYSTACK' && (
+                      <select
+                        value={paystackCurrency}
+                        onChange={(e) => setPaystackCurrency(e.target.value as PaystackCurrency)}
+                        aria-label="Paystack Currency"
+                        className="px-3 py-2 bg-slate-100 dark:bg-slate-900 text-xs font-extrabold rounded-2xl border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 cursor-pointer outline-hidden"
+                      >
+                        <option value="NGN">₦ NGN (Nigeria)</option>
+                        <option value="GHS">GH₵ GHS (Ghana)</option>
+                        <option value="KES">KSh KES (Kenya)</option>
+                        <option value="ZAR">R ZAR (South Africa)</option>
+                        <option value="USD">$ USD (Africa)</option>
+                      </select>
+                    )}
+
+                    {/* Period Switcher */}
+                    <div className="inline-flex items-center bg-slate-100 dark:bg-slate-900 rounded-2xl p-1 text-xs font-extrabold shrink-0 border border-slate-200/80 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setGlobalBillingPeriod('monthly')}
+                        className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${globalBillingPeriod === 'monthly' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs' : 'text-slate-400'}`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGlobalBillingPeriod('annual')}
+                        className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${globalBillingPeriod === 'annual' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs' : 'text-slate-400'}`}
+                      >
+                        Annual
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
                   {GLOBAL_TIERS.map((tier) => {
-                    const price = globalBillingPeriod === 'monthly' ? tier.monthly : tier.annual;
+                    let symbol = '$';
+                    let priceString = '0';
+                    if (tier.id === 'FREE') {
+                      priceString = '0';
+                    } else if (paymentGateway === 'PAYSTACK') {
+                      const p = PAYSTACK_PRICING[paystackCurrency][tier.id as 'STARTER' | 'GROWTH' | 'SCALE'];
+                      symbol = p.symbol;
+                      const amount = globalBillingPeriod === 'monthly' ? p.monthly : Math.round(p.annual / 12);
+                      priceString = amount.toLocaleString();
+                    } else {
+                      const price = globalBillingPeriod === 'monthly' ? tier.monthly : tier.annual;
+                      priceString = price.toLocaleString();
+                    }
+
                     const isCurrentTier = subInfo?.planTier === tier.id || (!subInfo?.planTier && tier.id === 'FREE');
                     return (
                       <div key={tier.id} className={`rounded-3xl border p-5 flex flex-col justify-between transition-all shadow-2xs ${tier.id === 'GROWTH' ? 'border-orange-400/80 bg-orange-50/20 dark:bg-orange-950/10' : 'border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950'}`}>
@@ -1716,7 +1810,7 @@ function SettingsPageInner() {
                           )}
                           <p className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider font-mono">{tier.label}</p>
                           <p className="mt-2">
-                            <span className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white">${price}</span>
+                            <span className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white">{symbol}{priceString}</span>
                             <span className="text-xs font-bold text-slate-400">/mo</span>
                           </p>
                           <p className="text-xs font-mono font-bold text-slate-400 mb-4 mt-1">{tier.seats} seat{tier.seats > 1 ? 's' : ''} included</p>
@@ -1731,7 +1825,7 @@ function SettingsPageInner() {
                               : 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-xs shadow-orange-500/20'
                           }`}
                         >
-                          {isCurrentTier ? 'Current plan' : checkoutLoadingTier === tier.id ? 'Redirecting...' : tier.id === 'FREE' ? 'Free Forever' : 'Switch to this plan'}
+                          {isCurrentTier ? 'Current plan' : checkoutLoadingTier === tier.id ? 'Redirecting...' : tier.id === 'FREE' ? 'Free Forever' : `Upgrade with ${paymentGateway === 'PAYSTACK' ? 'Paystack' : 'Stripe'}`}
                         </button>
                       </div>
                     );
