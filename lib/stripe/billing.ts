@@ -72,6 +72,7 @@ export type SubscriptionInfo = {
   trialEnd: Date | null;
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
+  paymentProvider: string;
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   amount: number;
