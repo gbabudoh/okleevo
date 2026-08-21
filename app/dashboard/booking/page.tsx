@@ -878,6 +878,11 @@ export default function BookingPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredBookings.map(booking => {
                   const sc = statusConfig[booking.status] ?? statusConfig.pending;
+                  const displayDate = booking.date || (booking.startTime ? new Date(booking.startTime).toISOString().split('T')[0] : '—');
+                  const displayTime = booking.time || (booking.startTime ? new Date(booking.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : '—');
+                  const displayDuration = booking.duration || 30;
+                  const displayService = booking.service || (booking as unknown as { title?: string }).title || 'Discovery & Consultation';
+
                   return (
                     <div
                       key={booking.id}
@@ -899,7 +904,7 @@ export default function BookingPage() {
                               <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">
                                 {booking.client}
                               </p>
-                              <p className="text-xs font-bold text-slate-400 truncate mt-0.5">{booking.service}</p>
+                              <p className="text-xs font-bold text-slate-400 truncate mt-0.5">{displayService}</p>
                             </div>
                             <span className={`text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full shrink-0 ${sc.badge}`}>
                               {sc.label}
@@ -909,10 +914,10 @@ export default function BookingPage() {
                           {/* Meta Row */}
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 pt-3 border-t border-slate-100 dark:border-slate-900">
                             <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-600 dark:text-slate-400">
-                              <Calendar className="w-3.5 h-3.5 text-orange-500" /> {booking.date}
+                              <Calendar className="w-3.5 h-3.5 text-orange-500" /> {displayDate}
                             </span>
                             <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-600 dark:text-slate-400">
-                              <Clock className="w-3.5 h-3.5 text-orange-500" /> {booking.time} · {booking.duration}m
+                              <Clock className="w-3.5 h-3.5 text-orange-500" /> {displayTime} · {displayDuration}m
                             </span>
                             <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500 capitalize">
                               {typeIcon(booking.type)} <span>{booking.type}</span>

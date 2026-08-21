@@ -87,12 +87,19 @@ export const PATCH = withMultiTenancy(async (req, { user, business, params }) =>
     }
 
     return NextResponse.json({
-      ...updated,
+      id: updated.id,
       client: updated.clientName,
       email: updated.clientEmail,
+      phone: updated.clientPhone,
+      service: updated.title,
+      date: updated.startTime.toISOString().split('T')[0],
+      time: updated.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
       startTime: updated.startTime.toISOString(),
+      duration: Math.round((updated.endTime.getTime() - updated.startTime.getTime()) / 60000),
       status: updated.status.toLowerCase(),
       type: updated.type.toLowerCase().replace('_', '-'),
+      location: updated.location,
+      notes: updated.description,
     });
   } catch (error: unknown) {
     console.error('Error updating booking:', error);

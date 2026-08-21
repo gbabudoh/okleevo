@@ -111,12 +111,19 @@ export const POST = withMultiTenancy(async (req, { user, business }) => {
     notifyAppointmentStatus(appointment, business.name, 'received', rawPin).catch(() => {});
 
     return NextResponse.json({
-      ...appointment,
+      id: appointment.id,
       client: appointment.clientName,
       email: appointment.clientEmail,
+      phone: appointment.clientPhone,
+      service: appointment.title,
+      date: appointment.startTime.toISOString().split('T')[0],
+      time: appointment.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
       startTime: appointment.startTime.toISOString(),
+      duration: Math.round((appointment.endTime.getTime() - appointment.startTime.getTime()) / 60000),
       status: appointment.status.toLowerCase(),
       type: appointment.type.toLowerCase().replace('_', '-'),
+      location: appointment.location,
+      notes: appointment.description,
     });
   } catch (error: unknown) {
     console.error('Error creating booking:', error);
