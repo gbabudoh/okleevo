@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://okleevo.com'),
   title: {
     template: '%s | Okleevo',
     default: 'Okleevo — All-in-One Virtual HQ & Business Operating Platform',
