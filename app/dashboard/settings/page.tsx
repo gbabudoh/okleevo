@@ -19,7 +19,7 @@ import { usePresence } from '@/components/hooks/use-presence';
 import { TeamActivityFeed } from '@/components/team-activity-feed';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertCircle as AlertCircleIcon } from 'lucide-react';
-import { PAYSTACK_PRICING, PaystackCurrency } from '@/lib/paystack/billing';
+import { PAYSTACK_PRICING, PaystackCurrency } from '@/lib/paystack/types';
 
 // Global pivot pricing tiers — display copy only. The actual charge amount
 // always comes from Stripe (see lib/stripe/global-billing.ts, which reads

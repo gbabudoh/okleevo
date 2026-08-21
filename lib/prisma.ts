@@ -6,6 +6,11 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const prismaClientSingleton = () => {
+  // If accidentally evaluated in a browser environment, return a dummy object rather than throwing
+  if (typeof window !== 'undefined') {
+    return {} as unknown as PrismaClient;
+  }
+
   // Ensure DATABASE_URL is set
   const databaseUrl = process.env.DATABASE_URL;
   
