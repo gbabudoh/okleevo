@@ -10,9 +10,10 @@ import {
   Zap, Award, Bell, Mail, PenTool,
   Briefcase, AlertCircle, X,
   UsersRound, Circle, LineChart, Settings,
-  Building2, ShieldCheck
+  Building2, ShieldCheck, FileText
 } from 'lucide-react';
 import { usePresence } from '@/components/hooks/use-presence';
+import { DailyTaskCompletionBox } from '@/components/tasks/DailyTaskCompletionBox';
 
 interface UserData {
   firstName: string;
@@ -311,6 +312,13 @@ export default function DashboardPage() {
       href: '/dashboard/crm'
     },
     { 
+      name: 'Invoice Engine', 
+      icon: FileText, 
+      gradient: 'from-blue-600 to-indigo-600',
+      description: 'Price & send invoice',
+      href: '/dashboard/invoicing'
+    },
+    { 
       name: 'New Task', 
       icon: CheckSquare, 
       gradient: 'from-green-500 to-emerald-500',
@@ -592,6 +600,9 @@ export default function DashboardPage() {
           );
         })}
       </div>
+
+      {/* Daily Task Completion [DTC]-Box */}
+      <DailyTaskCompletionBox />
 
       {/* Quick Actions Hub */}
       <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">

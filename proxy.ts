@@ -8,7 +8,6 @@ import type { NextRequest } from 'next/server';
 // Reversible: remove an id here (and re-add its nav entries) to bring a
 // module back with zero data migration needed.
 const retiredModulePaths = [
-  '/dashboard/invoicing',
   '/dashboard/accounting',
   '/dashboard/taxation',
   '/dashboard/cashflow',

@@ -91,25 +91,28 @@ export function DailyTaskCompletionBox({ onTaskLogged, className = '' }: DailyTa
   };
 
   return (
-    <div className={`bg-gradient-to-br from-emerald-500/10 via-white to-teal-500/5 dark:from-emerald-950/40 dark:via-slate-900 dark:to-slate-900 border border-emerald-500/30 dark:border-emerald-800/40 rounded-3xl p-5 sm:p-6 shadow-sm ${className}`}>
+    <div className={`bg-gradient-to-br from-emerald-50 via-white to-teal-50/40 dark:from-emerald-950/50 dark:via-slate-900 dark:to-slate-950 border-2 border-emerald-500/40 dark:border-emerald-700/50 rounded-3xl p-5 sm:p-7 shadow-lg shadow-emerald-500/5 relative overflow-hidden ${className}`}>
+      {/* Background ambient glow */}
+      <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+
       {/* Header Strip */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-500/15 dark:border-emerald-800/40">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-            <CheckCircle2 className="w-5 h-5" />
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-emerald-500/20 dark:border-emerald-800/50">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/25 shrink-0">
+            <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
                 Daily Task Completion [DTC]-Box
               </h2>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                <Flame className="w-3 h-3 text-emerald-600 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 shadow-2xs">
+                <Flame className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 fill-emerald-500 animate-pulse" />
                 {todayCount} Completed Today
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Real-time daily sprint submissions &amp; verified team accountability audit
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-bold mt-0.5">
+              Live daily sprint submissions, team accountability, and verified completion audit log
             </p>
           </div>
         </div>
@@ -117,10 +120,10 @@ export function DailyTaskCompletionBox({ onTaskLogged, className = '' }: DailyTa
         <button
           type="button"
           onClick={() => setShowSubmitModal(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl text-xs font-black shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl text-xs font-black shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer self-start sm:self-auto shrink-0"
         >
-          <Plus className="w-4 h-4" />
-          <span>Submit Daily Task</span>
+          <Plus className="w-4 h-4 stroke-[3]" />
+          <span>+ Submit Daily Task Deliverable</span>
         </button>
       </div>
 

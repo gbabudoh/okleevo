@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   UsersRound, CheckSquare, FolderKanban, FileEdit, BarChart3,
-  Users, Calendar, Mail, MessageSquare, PenTool, ChevronDown, Archive,
+  Users, Calendar, Mail, MessageSquare, PenTool, ChevronDown, Archive, FileText,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { PIVOT_NAV_GROUPS, LEGACY_ONLY_MODULE_IDS, getModuleById } from '@/lib/module-catalogue';
@@ -28,6 +28,7 @@ const MODULE_UI: Record<string, ModuleUiMeta> = {
   'ai-notes': { href: '/dashboard/ai-notes', icon: FileEdit, label: 'Notes' },
   'kpi-dashboard': { href: '/dashboard/kpi-dashboard', icon: BarChart3, label: 'KPI Dashboard' },
   crm: { href: '/dashboard/crm', icon: Users, label: 'CRM Pipeline' },
+  invoicing: { href: '/dashboard/invoicing', icon: FileText, label: 'Invoice Engine', sublabel: 'pricing / dispatch' },
   booking: { href: '/dashboard/booking', icon: Calendar, label: 'Appointment Manager' },
   mailbox: { href: '/dashboard/mailbox', icon: Mail, label: 'Mail Engine' },
   'e-signature': { href: '/dashboard/e-signature', icon: PenTool, label: 'E-Signatures' },

@@ -53,7 +53,7 @@ export const GET = withMultiTenancy(async (req, { dataFilter }) => {
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body = await req.json();
-    const { clientName, clientEmail, amount, items, dueDate, projectId } = body;
+    const { clientName, clientEmail, amount, items, dueDate, projectId, currency } = body;
 
     // Generate invoice number from the highest existing number for this business
     // (not a count, since a deleted invoice would otherwise make the count collide
@@ -77,6 +77,7 @@ export const POST = withMultiTenancy(async (req, { user }) => {
         clientName,
         clientEmail,
         amount: parseFloat(amount) || 0,
+        currency: currency || 'USD',
         items: items || [],
         dueDate: dueDate ? new Date(dueDate) : new Date(),
         status: 'DRAFT',

@@ -1,7 +1,7 @@
 import {
   Users, Calendar, MessageSquare, Mail,
   CheckSquare, FolderKanban, FileEdit, BarChart3, PenTool,
-  UsersRound,
+  UsersRound, FileText,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -95,6 +95,16 @@ export const modules: ModuleCatalogueEntry[] = [
     route: '/dashboard/booking',
   },
   {
+    id: 'invoicing',
+    label: 'Invoice Engine',
+    icon: FileText,
+    group: 'Client Engagement',
+    color: 'from-orange-500 to-amber-600',
+    desc: 'Professional invoice pricing engine, itemized tax/VAT calculations, instant PDF/CSV generation, and 1-click email dispatch to clients.',
+    features: ['Direct Client Emailing', 'PDF/CSV Generation', 'Stripe & Paystack Links'],
+    route: '/dashboard/invoicing',
+  },
+  {
     id: 'mailbox',
     label: 'Mail Engine',
     icon: Mail,
@@ -151,7 +161,7 @@ export interface PivotNavGroup {
 export const PIVOT_NAV_GROUPS: PivotNavGroup[] = [
   { id: 'virtual-hq', label: 'Virtual HQ', moduleIds: ['collaboration'] },
   { id: 'async-productivity', label: 'Async Productivity', moduleIds: ['tasks', 'ai-notes', 'kpi-dashboard'] },
-  { id: 'client-engagement', label: 'Client Engagement', moduleIds: ['crm', 'booking', 'mailbox', 'e-signature', 'campaigns'] },
+  { id: 'client-engagement', label: 'Client Engagement', moduleIds: ['crm', 'invoicing', 'booking', 'mailbox', 'e-signature', 'campaigns'] },
 ];
 
 // Every module id that appears in *some* pivot tab.

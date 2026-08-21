@@ -307,13 +307,16 @@ export default function DashboardLayout({
             const enabledModules = userData?.business?.enabledModules || [];
             const defaultModules = [
               "dashboard",
-              "crm", "mailbox", "booking", "campaigns",
+              "crm", "invoicing", "mailbox", "booking", "campaigns",
               "collaboration", "tasks", "ai-notes", "kpi-dashboard",
               "e-signature"
             ];
 
             // Show only enabled modules to the user (excluding hidden modules)
-            const finalModules = (enabledModules.length > 0 ? enabledModules : defaultModules).filter(m => m !== 'helpdesk');
+            const finalModules = (enabledModules.length > 0
+              ? (enabledModules.includes('invoicing') ? enabledModules : [...enabledModules, 'invoicing'])
+              : defaultModules
+            ).filter(m => m !== 'helpdesk');
 
             const isDashboardActive = pathname === '/dashboard';
 

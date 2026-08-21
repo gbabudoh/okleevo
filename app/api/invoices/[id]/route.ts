@@ -55,7 +55,7 @@ export const PATCH = withMultiTenancy(async (req, { params, dataFilter, user }) 
     // that must never be settable from a PATCH payload.
     const {
       clientName, clientEmail, clientAddress, amount, items,
-      dueDate, projectId, status, paidAt, notes, category,
+      dueDate, projectId, status, paidAt, notes, category, currency
     } = body;
 
     const isNewlyPaid = status === 'PAID' && existingInvoice.status !== 'PAID';
@@ -72,6 +72,7 @@ export const PATCH = withMultiTenancy(async (req, { params, dataFilter, user }) 
         ...(clientEmail !== undefined && { clientEmail }),
         ...(clientAddress !== undefined && { clientAddress }),
         ...(amount !== undefined && { amount: parseFloat(amount) || 0 }),
+        ...(currency !== undefined && { currency }),
         ...(items !== undefined && { items }),
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : undefined }),
         ...(projectId !== undefined && { projectId: projectId || null }),

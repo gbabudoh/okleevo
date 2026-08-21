@@ -22,11 +22,30 @@ import { invoicingTourSteps } from './tour-steps';
 interface InvoiceLineItem { description: string; quantity: number; rate: number; vatRate?: number }
 const DEFAULT_VAT_RATE = 20;
 
+export const SUPPORTED_CURRENCIES = [
+  { code: 'USD', symbol: '$', label: 'USD ($) — United States Dollar' },
+  { code: 'GBP', symbol: '£', label: 'GBP (£) — British Pound' },
+  { code: 'EUR', symbol: '€', label: 'EUR (€) — Euro' },
+  { code: 'NGN', symbol: '₦', label: 'NGN (₦) — Nigerian Naira' },
+  { code: 'GHS', symbol: 'GH₵', label: 'GHS (GH₵) — Ghanaian Cedi' },
+  { code: 'KES', symbol: 'KSh', label: 'KES (KSh) — Kenyan Shilling' },
+  { code: 'ZAR', symbol: 'R', label: 'ZAR (R) — South African Rand' },
+  { code: 'CAD', symbol: 'C$', label: 'CAD (C$) — Canadian Dollar' },
+  { code: 'AUD', symbol: 'A$', label: 'AUD (A$) — Australian Dollar' },
+];
+
+export const getCurrencySymbol = (code?: string): string => {
+  if (!code) return '$';
+  const found = SUPPORTED_CURRENCIES.find(c => c.code.toUpperCase() === code.toUpperCase());
+  return found ? found.symbol : '$';
+};
+
 interface Invoice {
   id: string;
   client: string;
   clientEmail: string;
   amount: number;
+  currency?: string;
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
   date: string;
   dueDate: string;
@@ -39,6 +58,7 @@ interface InvoiceResponse {
   clientName: string;
   clientEmail: string | null;
   amount: number;
+  currency?: string | null;
   status: string;
   createdAt: string;
   dueDate: string;
@@ -103,9 +123,12 @@ const CancelBtn = ({ onClick, label = 'Cancel' }: { onClick: () => void; label?:
 
 /* ══════════════════════════════════════════════════════════════════ */
 export default function InvoicingPage() {
+  const { data: session } = useSession();
+  const businessName = (session?.user as any)?.businessName || 'Okleevo Workspace';
 
   /* ── PDF / export helpers ──────────────────────────────────────── */
   const downloadAsPDF = (invoice: Invoice) => {
+    const sym = getCurrencySymbol(invoice.currency);
     const doc = new jsPDF();
     doc.setFillColor(59, 130, 246); doc.rect(0, 0, 210, 40, 'F');
     doc.setFontSize(24); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
@@ -125,31 +148,32 @@ export default function InvoicingPage() {
     doc.setFillColor(59, 130, 246); doc.setTextColor(255, 255, 255);
     doc.rect(20, 85, 170, 8, 'F');
     doc.text('Description', 25, 90); doc.text('Qty', 125, 90);
-    doc.text('Rate', 145, 90); doc.text('Amount', 170, 90);
+    doc.text(`Rate (${sym})`, 145, 90); doc.text(`Amount (${sym})`, 170, 90);
     doc.setTextColor(0, 0, 0); doc.setFont('helvetica', 'normal');
     let yPos = 100;
     invoice.items.forEach((item, i) => {
       if (i % 2 === 0) { doc.setFillColor(249, 250, 251); doc.rect(20, yPos - 5, 170, 8, 'F'); }
       doc.text(item.description, 25, yPos); doc.text(item.quantity.toString(), 125, yPos);
-      doc.text(`$${item.rate}`, 145, yPos); doc.text(`$${(item.quantity * item.rate).toLocaleString()}`, 170, yPos);
+      doc.text(`${sym}${item.rate}`, 145, yPos); doc.text(`${sym}${(item.quantity * item.rate).toLocaleString()}`, 170, yPos);
       yPos += 8;
     });
     yPos += 10;
     doc.setFillColor(59, 130, 246); doc.rect(20, yPos - 5, 170, 12, 'F');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(255, 255, 255);
-    doc.text('TOTAL:', 145, yPos + 3); doc.text(`$${invoice.amount.toLocaleString()}`, 170, yPos + 3);
+    doc.text('TOTAL:', 145, yPos + 3); doc.text(`${sym}${invoice.amount.toLocaleString()} ${invoice.currency || 'USD'}`, 170, yPos + 3);
     doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(128, 128, 128);
     doc.text('Thank you for your business!', 105, 280, { align: 'center' });
     doc.save(`${invoice.id}.pdf`);
   };
 
   const downloadAsExcel = (invoice: Invoice) => {
+    const sym = getCurrencySymbol(invoice.currency);
     const headers = ['Description', 'Quantity', 'Rate', 'Amount'];
     const rows = invoice.items.map(item => [item.description, item.quantity, item.rate, item.quantity * item.rate]);
-    let csv = `Invoice: ${invoice.id}\nClient: ${invoice.client}\nEmail: ${invoice.clientEmail}\nIssue: ${invoice.date}\nDue: ${invoice.dueDate}\nStatus: ${invoice.status}\n\n`;
+    let csv = `Invoice: ${invoice.id}\nClient: ${invoice.client}\nEmail: ${invoice.clientEmail}\nCurrency: ${invoice.currency || 'USD'}\nIssue: ${invoice.date}\nDue: ${invoice.dueDate}\nStatus: ${invoice.status}\n\n`;
     csv += headers.join(',') + '\n' + rows.map(r => r.join(',')).join('\n');
-    csv += `\n\nTotal,,,$${invoice.amount}`;
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    csv += `\n\nTotal,,,${sym}${invoice.amount}`;
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = `${invoice.id}.csv`;
@@ -184,8 +208,9 @@ export default function InvoicingPage() {
       if (y > 270) { doc.addPage(); y = 20; }
       if (idx % 2 === 0) { doc.setFillColor(249, 250, 251); doc.rect(15, y - 5, 180, 8, 'F'); }
       doc.setTextColor(0, 0, 0);
+      const sym = getCurrencySymbol(inv.currency);
       doc.text(inv.id.slice(0, 12), 18, y); doc.text(inv.client.slice(0, 22), 45, y);
-      doc.text(`$${inv.amount.toLocaleString()}`, 105, y);
+      doc.text(`${sym}${inv.amount.toLocaleString()}`, 105, y);
       const c = sc[inv.status] || [107, 114, 128];
       doc.setTextColor(c[0], c[1], c[2]); doc.text(inv.status.toUpperCase(), 135, y);
       doc.setTextColor(0, 0, 0); doc.text(inv.date, 158, y); doc.text(inv.dueDate, 178, y);
@@ -216,6 +241,7 @@ export default function InvoicingPage() {
   const [newInvoice, setNewInvoice] = useState({
     clientType: 'business' as 'business' | 'individual',
     client: '', clientEmail: '',
+    currency: 'USD',
     date: new Date().toISOString().split('T')[0],
     dueDate: '',
     items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
@@ -292,6 +318,7 @@ export default function InvoicingPage() {
             client: inv.clientName,
             clientEmail: inv.clientEmail || '',
             amount: inv.amount,
+            currency: inv.currency || 'USD',
             status: (rawStatus === 'canceled' ? 'cancelled' : rawStatus) as Invoice['status'],
             date: new Date(inv.createdAt).toISOString().split('T')[0],
             dueDate: new Date(inv.dueDate).toISOString().split('T')[0],
@@ -334,7 +361,7 @@ export default function InvoicingPage() {
   const closeNewModal = () => {
     setShowNewInvoiceModal(false);
     setEditingInvoiceId(null);
-    setNewInvoice({ clientType: 'business', client: '', clientEmail: '', date: new Date().toISOString().split('T')[0], dueDate: '', items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }], projectId: '' });
+    setNewInvoice({ clientType: 'business', client: '', clientEmail: '', currency: 'USD', date: new Date().toISOString().split('T')[0], dueDate: '', items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }], projectId: '' });
   };
 
   const handleViewInvoice = (invoice: Invoice) => {
@@ -347,6 +374,7 @@ export default function InvoicingPage() {
       clientType: 'business',
       client: invoice.client,
       clientEmail: invoice.clientEmail,
+      currency: invoice.currency || 'USD',
       date: invoice.date,
       dueDate: invoice.dueDate,
       items: invoice.items.length > 0
@@ -358,15 +386,13 @@ export default function InvoicingPage() {
     setActiveMenu(null);
   };
 
-  const { data: session } = useSession();
-  const businessName = (session?.user as any)?.businessName || 'Okleevo Workspace';
-
   const handleSendEmail = (invoice: Invoice) => {
+    const sym = getCurrencySymbol(invoice.currency);
     setEmailInvoice(invoice);
     setEmailData({
       to: invoice.clientEmail,
       subject: `Invoice ${invoice.id} from ${businessName}`,
-      message: `Dear ${invoice.client},\n\nPlease find attached invoice ${invoice.id} for $${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.\n\nPayment Due Date: ${invoice.dueDate}\n\nThank you for your valued business!\n\nBest regards,\n${businessName}`,
+      message: `Dear ${invoice.client},\n\nPlease find attached invoice ${invoice.id} for ${sym}${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${invoice.currency || 'USD'}).\n\nPayment Due Date: ${invoice.dueDate}\n\nThank you for your valued business!\n\nBest regards,\n${businessName}`,
     });
     setShowEmailModal(true);
   };
@@ -391,7 +417,15 @@ export default function InvoicingPage() {
   const handleSaveInvoice = async () => {
     setSavingInvoice(true);
     try {
-      const payload = { clientName: newInvoice.client, clientEmail: newInvoice.clientEmail, amount: newInvoiceTotal, items: newInvoice.items, dueDate: newInvoice.dueDate, projectId: newInvoice.projectId || undefined };
+      const payload = {
+        clientName: newInvoice.client,
+        clientEmail: newInvoice.clientEmail,
+        amount: newInvoiceTotal,
+        currency: newInvoice.currency || 'USD',
+        items: newInvoice.items,
+        dueDate: newInvoice.dueDate,
+        projectId: newInvoice.projectId || undefined,
+      };
       const res = await fetch(
         editingInvoiceId ? `/api/invoices/${editingInvoiceId}` : '/api/invoices',
         {
@@ -501,17 +535,17 @@ export default function InvoicingPage() {
             </div>
             <div className="min-w-0 flex items-center gap-2 sm:gap-3 shrink-0">
               <div className="min-w-0 shrink-0">
-                <h1 className="text-sm sm:text-lg font-bold text-gray-900 leading-tight whitespace-nowrap">Invoicing</h1>
-                <p className="text-[11px] text-gray-400 hidden sm:block">Create, manage and track invoices</p>
+                <h1 className="text-sm sm:text-lg font-extrabold text-gray-900 leading-tight whitespace-nowrap">Invoice Engine</h1>
+                <p className="text-[11px] font-bold text-gray-400 hidden sm:block">Client pricing, itemized invoice generation, PDF exports, and direct email dispatch</p>
               </div>
               <ModuleGuideBanner
                 moduleId="invoicing"
-                moduleName="Invoicing"
-                summary="Track revenue, manage client invoices, and handle payments effortlessly."
+                moduleName="Invoice Engine"
+                summary="Price SME services, generate itemized invoices, and dispatch PDF invoices with direct payment links directly to client email."
                 tips={[
-                  "Quick search by client or invoice number",
-                  "Filter invoices by status (Paid, Sent, Overdue)",
-                  "Export reports to PDF or CSV instantly"
+                  "1-Click 'Send Email' dispatches formatted HTML invoices with PDF/CSV attachments",
+                  "Real-time payment tracking ($ USD, Stripe & Paystack links)",
+                  "Automatic sync with accounting journal and team activity stream"
                 ]}
               />
             </div>
@@ -708,7 +742,7 @@ export default function InvoicingPage() {
                             </div>
                           </td>
                           <td className="px-5 py-3.5">
-                            <span className="font-bold text-gray-900">${invoice.amount.toLocaleString()}</span>
+                            <span className="font-bold text-gray-900">{getCurrencySymbol(invoice.currency)}{invoice.amount.toLocaleString()}</span>
                           </td>
                           <td className="px-5 py-3.5">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${sc.bg} ${sc.text}`}>
@@ -892,7 +926,7 @@ export default function InvoicingPage() {
                       </div>
                       {/* Bottom row */}
                       <div className="flex items-center justify-between">
-                        <span className="text-xl font-bold text-gray-900">${invoice.amount.toLocaleString()}</span>
+                        <span className="text-xl font-bold text-gray-900">{getCurrencySymbol(invoice.currency)}{invoice.amount.toLocaleString()}</span>
                         <div className="flex items-center gap-3 text-xs text-gray-400">
                           <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{invoice.date}</span>
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Due {invoice.dueDate}</span>
@@ -961,6 +995,20 @@ export default function InvoicingPage() {
                   <input type="date" value={newInvoice.dueDate}
                     onChange={e => setNewInvoice({ ...newInvoice, dueDate: e.target.value })}
                     className={inputCls} />
+                </div>
+                <div className="col-span-2 sm:col-span-4">
+                  <label className={labelCls}>Billing Currency (Location-Based Pricing)</label>
+                  <select
+                    value={newInvoice.currency}
+                    onChange={e => setNewInvoice({ ...newInvoice, currency: e.target.value })}
+                    className={`${inputCls} appearance-none cursor-pointer font-bold text-slate-800`}
+                  >
+                    {SUPPORTED_CURRENCIES.map(c => (
+                      <option key={c.code} value={c.code}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="sm:col-span-4">
                   <label className={labelCls}>Associated Project</label>
@@ -1038,7 +1086,7 @@ export default function InvoicingPage() {
                         />
                       </div>
                       <div className="sm:w-24">
-                        <label className="block text-xs font-medium text-gray-400 mb-1">Rate ($)</label>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">Rate ({getCurrencySymbol(newInvoice.currency)})</label>
                         <input
                           type="number" min="0" step="0.01"
                           value={item.rate}
@@ -1062,7 +1110,7 @@ export default function InvoicingPage() {
                         <div className="flex-1">
                           <label className="block text-xs font-medium text-gray-400 mb-1">Subtotal</label>
                           <div className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold text-gray-800 h-[38px] flex items-center">
-                            ${(item.quantity * item.rate).toFixed(2)}
+                            {getCurrencySymbol(newInvoice.currency)}{(item.quantity * item.rate).toFixed(2)}
                           </div>
                         </div>
                         {newInvoice.items.length > 1 && (
@@ -1083,11 +1131,11 @@ export default function InvoicingPage() {
               <div className="mt-4 px-4 py-3 bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-indigo-50/80 border border-indigo-100 rounded-2xl space-y-1">
                 <div className="flex items-center justify-between text-xs text-indigo-700/80">
                   <span>VAT</span>
-                  <span className="font-semibold">${newInvoiceVAT.toFixed(2)}</span>
+                  <span className="font-semibold">{getCurrencySymbol(newInvoice.currency)}{newInvoiceVAT.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-gray-700">Invoice Total (excl. VAT)</span>
-                  <span className="text-2xl font-black text-indigo-600 tracking-tight">${newInvoiceTotal.toFixed(2)}</span>
+                  <span className="text-sm font-bold text-gray-700">Invoice Total ({newInvoice.currency || 'USD'})</span>
+                  <span className="text-2xl font-black text-indigo-600 tracking-tight">{getCurrencySymbol(newInvoice.currency)}{newInvoiceTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -1098,11 +1146,11 @@ export default function InvoicingPage() {
             <CancelBtn onClick={closeNewModal} />
             <button
               onClick={handleSaveInvoice}
-              disabled={savingInvoice}
-              className="flex-[2] py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
+              disabled={savingInvoice || !newInvoice.client.trim() || newInvoiceTotal <= 0}
+              className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
             >
-              {savingInvoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-              {editingInvoiceId ? 'Save Changes' : 'Create Invoice'}
+              {savingInvoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+              <span>{editingInvoiceId ? 'Update Invoice' : 'Create Invoice'}</span>
             </button>
           </ModalFooter>
         </ModalShell>
@@ -1157,6 +1205,10 @@ export default function InvoicingPage() {
                     <span className="text-gray-400">Due Date</span>
                     <span className="font-semibold text-gray-800">{selectedInvoice.dueDate}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Currency</span>
+                    <span className="font-bold text-blue-600">{selectedInvoice.currency || 'USD'}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1171,7 +1223,7 @@ export default function InvoicingPage() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      {['Description', 'Qty', 'Rate', 'VAT', 'Amount'].map(h => (
+                      {['Description', 'Qty', `Rate (${getCurrencySymbol(selectedInvoice.currency)})`, 'VAT', `Amount (${getCurrencySymbol(selectedInvoice.currency)})`].map(h => (
                         <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">{h}</th>
                       ))}
                     </tr>
@@ -1181,9 +1233,9 @@ export default function InvoicingPage() {
                       <tr key={i} className="hover:bg-gray-50/50">
                         <td className="px-4 py-3 text-sm text-gray-800">{item.description}</td>
                         <td className="px-4 py-3 text-sm text-gray-500">{item.quantity}</td>
-                        <td className="px-4 py-3 text-sm text-gray-500">${item.rate}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">{getCurrencySymbol(selectedInvoice.currency)}{item.rate}</td>
                         <td className="px-4 py-3 text-sm text-gray-500">{item.vatRate ?? DEFAULT_VAT_RATE}%</td>
-                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">${(item.quantity * item.rate).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">{getCurrencySymbol(selectedInvoice.currency)}{(item.quantity * item.rate).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1195,9 +1247,9 @@ export default function InvoicingPage() {
                   <div key={i} className="px-4 py-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.quantity} × ${item.rate} · VAT {item.vatRate ?? DEFAULT_VAT_RATE}%</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.quantity} × {getCurrencySymbol(selectedInvoice.currency)}{item.rate} · VAT {item.vatRate ?? DEFAULT_VAT_RATE}%</p>
                     </div>
-                    <p className="text-sm font-bold text-gray-900">${(item.quantity * item.rate).toLocaleString()}</p>
+                    <p className="text-sm font-bold text-gray-900">{getCurrencySymbol(selectedInvoice.currency)}{(item.quantity * item.rate).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
@@ -1205,11 +1257,11 @@ export default function InvoicingPage() {
               <div className="px-4 py-3 bg-blue-50 border-t border-blue-100 space-y-1">
                 <div className="flex items-center justify-between text-xs text-blue-700">
                   <span>VAT</span>
-                  <span className="font-semibold">${selectedInvoice.items.reduce((s, i) => s + i.quantity * i.rate * ((i.vatRate ?? DEFAULT_VAT_RATE) / 100), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-semibold">{getCurrencySymbol(selectedInvoice.currency)}{selectedInvoice.items.reduce((s, i) => s + i.quantity * i.rate * ((i.vatRate ?? DEFAULT_VAT_RATE) / 100), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-gray-700">Total (excl. VAT)</span>
-                  <span className="text-2xl font-bold text-blue-600">${selectedInvoice.amount.toLocaleString()}</span>
+                  <span className="text-2xl font-bold text-blue-600">{getCurrencySymbol(selectedInvoice.currency)}{selectedInvoice.amount.toLocaleString()} {selectedInvoice.currency || 'USD'}</span>
                 </div>
               </div>
             </div>

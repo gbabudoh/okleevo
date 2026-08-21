@@ -9,7 +9,7 @@ import {
   Inbox, Menu, LogOut, Settings, BookOpen,
   Calendar, MessageSquare, Mail, UsersRound,
   CheckSquare, FolderKanban, FileEdit, BarChart3,
-  PenTool,
+  PenTool, FileText,
   LifeBuoy, Rocket, Search
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
@@ -19,6 +19,7 @@ const ALL_SECTIONS = [
     label: 'Customer Tools',
     items: [
       { name: 'CRM',          desc: 'Deals & Contacts',   icon: Users,          href: '/dashboard/crm' },
+      { name: 'Invoice Engine', desc: 'Pricing & Invoices', icon: FileText,     href: '/dashboard/invoicing' },
       { name: 'Mailbox',      desc: 'Shared Inbox',       icon: Inbox,          href: '/dashboard/mailbox' },
       { name: 'Appointments', desc: 'Appointment Manager', icon: Calendar, href: '/dashboard/booking' },
       { name: 'Campaigns',    desc: 'Email Marketing',    icon: Mail,           href: '/dashboard/campaigns' },
