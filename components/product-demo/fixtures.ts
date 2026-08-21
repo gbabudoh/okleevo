@@ -10,7 +10,7 @@
 export const internalHqFixture = {
   chatMessages: [
     { initials: 'AR', name: 'Alex River', time: '10:42 AM', text: 'Client booking page is live — branding matches their site now.' },
-    { initials: 'ER', name: 'Elena Rostova', time: '10:44 AM', text: 'AI picked up 3 action items from this morning’s kickoff call.' },
+    { initials: 'ER', name: 'Elvis Rostova', time: '10:44 AM', text: 'AI picked up 3 action items from this morning’s kickoff call.' },
   ],
   kanban: {
     todo: [{ title: 'Set up team timezone tracker', tag: 'Setup' }],
