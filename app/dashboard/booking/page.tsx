@@ -533,12 +533,21 @@ export default function BookingPage() {
     }
   };
 
+  const getBookingEndTimeMs = (b: Booking) => {
+    if (b.startTime) {
+      const startMs = new Date(b.startTime).getTime();
+      const durationMs = (b.duration || 30) * 60 * 1000;
+      return startMs + durationMs;
+    }
+    return 0;
+  };
+
   const filteredBookings = bookings.filter(b => {
     const q = searchTerm.toLowerCase();
     const matchQ = b.client.toLowerCase().includes(q) || b.service.toLowerCase().includes(q) || b.email.toLowerCase().includes(q);
     
-    const isUpcoming = (b.status === 'confirmed' || b.status === 'pending') && new Date(b.startTime).getTime() >= Date.now();
-    const isArchived = b.status === 'completed' || b.status === 'cancelled' || new Date(b.startTime).getTime() < Date.now();
+    const isUpcoming = (b.status === 'confirmed' || b.status === 'pending') && getBookingEndTimeMs(b) > Date.now();
+    const isArchived = b.status === 'completed' || b.status === 'cancelled' || getBookingEndTimeMs(b) <= Date.now();
 
     let matchCategory = true;
     if (viewCategory === 'upcoming') {
@@ -553,8 +562,8 @@ export default function BookingPage() {
 
   const totalBookings     = bookings.length;
   const confirmedCount    = bookings.filter(b => b.status === 'confirmed').length;
-  const upcomingCount     = bookings.filter(b => (b.status === 'confirmed' || b.status === 'pending') && new Date(b.startTime).getTime() >= Date.now()).length;
-  const completedCount    = bookings.filter(b => b.status === 'completed' || new Date(b.startTime).getTime() < Date.now()).length;
+  const upcomingCount     = bookings.filter(b => (b.status === 'confirmed' || b.status === 'pending') && getBookingEndTimeMs(b) > Date.now()).length;
+  const completedCount    = bookings.filter(b => b.status === 'completed' || b.status === 'cancelled' || getBookingEndTimeMs(b) <= Date.now()).length;
 
   const publicUrlDisplay = businessId
     ? `${typeof window !== 'undefined' ? window.location.host : 'okleevo.com'}/booking/${businessId}`

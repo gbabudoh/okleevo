@@ -29,20 +29,17 @@ interface MeetingRoomProps {
   appointmentMeta?: AppointmentMeta;
 }
 
-function InCallTimer({ durationMinutes = 30 }: { durationMinutes?: number }) {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setElapsedSeconds((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
+function InCallTimer({
+  elapsedSeconds,
+  durationMinutes = 30,
+}: {
+  elapsedSeconds: number;
+  durationMinutes?: number;
+}) {
   const totalScheduledSeconds = durationMinutes * 60;
   const remainingSeconds = Math.max(0, totalScheduledSeconds - elapsedSeconds);
-  const isOvertime = elapsedSeconds > totalScheduledSeconds;
-  const isNearEnd = remainingSeconds <= 300 && !isOvertime; // 5 minutes or less
+  const isTimeUp = elapsedSeconds >= totalScheduledSeconds;
+  const isNearEnd = remainingSeconds <= 300 && !isTimeUp; // 5 minutes or less
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -55,8 +52,8 @@ function InCallTimer({ durationMinutes = 30 }: { durationMinutes?: number }) {
       {/* Time status badge */}
       <div
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono font-bold backdrop-blur-md border transition-all ${
-          isOvertime
-            ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
+          isTimeUp
+            ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 animate-pulse'
             : isNearEnd
             ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 animate-pulse'
             : 'bg-white/10 border-white/15 text-white/90'
@@ -65,9 +62,7 @@ function InCallTimer({ durationMinutes = 30 }: { durationMinutes?: number }) {
         <Clock className="w-3.5 h-3.5 shrink-0" />
         <span>{formatTime(elapsedSeconds)}</span>
         <span className="text-white/40 font-normal">/</span>
-        <span className="text-white/70">
-          {isOvertime ? `+${formatTime(elapsedSeconds - totalScheduledSeconds)}` : formatTime(totalScheduledSeconds)}
-        </span>
+        <span className="text-white/70">{formatTime(totalScheduledSeconds)}</span>
       </div>
 
       {/* Warning pill if 5 min or less */}
@@ -78,9 +73,9 @@ function InCallTimer({ durationMinutes = 30 }: { durationMinutes?: number }) {
         </div>
       )}
 
-      {isOvertime && (
+      {isTimeUp && (
         <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-rose-500/20 border border-rose-500/30 rounded-full text-[11px] font-bold text-rose-300">
-          <span>Overtime</span>
+          <span>Time Ended</span>
         </div>
       )}
     </div>
@@ -88,6 +83,40 @@ function InCallTimer({ durationMinutes = 30 }: { durationMinutes?: number }) {
 }
 
 function VideoLayout({ onLeave, appointmentMeta }: { onLeave: () => void; appointmentMeta?: AppointmentMeta }) {
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [isConcluding, setIsConcluding] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+
+  const durationMinutes = appointmentMeta?.durationMinutes || 30;
+  const totalScheduledSeconds = durationMinutes * 60;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // When timer reaches scheduled limit, initiate automatic conclusion
+  useEffect(() => {
+    if (elapsedSeconds >= totalScheduledSeconds && !isConcluding) {
+      setIsConcluding(true);
+    }
+  }, [elapsedSeconds, totalScheduledSeconds, isConcluding]);
+
+  // Grace countdown before calling onLeave
+  useEffect(() => {
+    if (!isConcluding) return;
+    if (countdown <= 0) {
+      onLeave();
+      return;
+    }
+    const timer = setTimeout(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [isConcluding, countdown, onLeave]);
+
   const tracks = useTracks(
     [
       { source: Track.Source.Camera, withPlaceholder: true },
@@ -98,6 +127,24 @@ function VideoLayout({ onLeave, appointmentMeta }: { onLeave: () => void; appoin
 
   return (
     <div className="flex flex-col h-full relative">
+      {/* Auto-Expiration Concluding Overlay */}
+      {isConcluding && (
+        <div className="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white/10 border border-white/20 rounded-3xl p-8 text-center space-y-4 shadow-2xl">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto animate-bounce">
+              <Clock className="w-8 h-8" />
+            </div>
+            <h2 className="text-xl font-bold text-white">Scheduled Time Concluded</h2>
+            <p className="text-white/70 text-xs leading-relaxed">
+              Your scheduled {durationMinutes}-minute appointment window has finished.
+            </p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/20 border border-orange-500/40 rounded-full text-xs font-mono font-bold text-orange-300">
+              <span>Closing video room in {countdown}s…</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Header Overlay */}
       <div className="shrink-0 bg-gray-950/80 backdrop-blur-md border-b border-white/10 px-4 py-3 flex items-center justify-between z-40">
         <div className="flex items-center gap-3 min-w-0">
@@ -128,7 +175,10 @@ function VideoLayout({ onLeave, appointmentMeta }: { onLeave: () => void; appoin
         </div>
 
         {/* In-Call Timer */}
-        <InCallTimer durationMinutes={appointmentMeta?.durationMinutes || 30} />
+        <InCallTimer
+          elapsedSeconds={elapsedSeconds}
+          durationMinutes={durationMinutes}
+        />
       </div>
 
       {/* Video grid */}
