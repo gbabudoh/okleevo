@@ -29,6 +29,10 @@ interface Note {
   tags: string[];
   isPinned: boolean;
   isStarred: boolean;
+  isPrivate?: boolean;
+  authorName?: string;
+  lastEditedBy?: string;
+  lastEditedAt?: string | Date;
   color?: string; // For Post-It sticky notes
   aiSummary?: string;
   actionItems?: string[];
@@ -72,11 +76,18 @@ export default function AINotesPage() {
   const [viewMode, setViewMode]             = useState<'grid' | 'posted' | 'table'>('grid');
   const [searchQuery, setSearchQuery]       = useState('');
   const [selectedType, setSelectedType]     = useState('all');
+  const [scopeFilter, setScopeFilter]       = useState<'all' | 'shared' | 'private'>('all');
   const [showNewModal, setShowNewModal]     = useState(false);
   const [selectedNote, setSelectedNote]     = useState<Note | null>(null);
+  const [isEditingSelected, setIsEditingSelected] = useState(false);
+  const [editTitle, setEditTitle]           = useState('');
+  const [editContent, setEditContent]       = useState('');
+  const [editIsPrivate, setEditIsPrivate]   = useState(false);
+  const [savingEdit, setSavingEdit]         = useState(false);
   const [showAIAssist, setShowAIAssist]     = useState(true);
   const [newNoteType, setNewNoteType]       = useState<'meeting' | 'brainstorm' | 'document' | 'task' | 'research' | 'personal' | 'posted'>('document');
   const [newStickyColor, setNewStickyColor] = useState('yellow');
+  const [newIsPrivate, setNewIsPrivate]     = useState(false);
   const [selectedEngine, setSelectedEngine] = useState<'deep' | 'fast'>(availableEngines[0].id);
   const [copied, setCopied]                 = useState(false);
   const [newTitle, setNewTitle]             = useState('');
@@ -124,9 +135,15 @@ export default function AINotesPage() {
       const matchSearch = n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q) || n.tags.some(t => t.toLowerCase().includes(q));
       const matchType = selectedType === 'all' || n.type === selectedType;
       const matchStarred = showStarredOnly ? n.isStarred : true;
-      return matchSearch && matchType && matchStarred;
+      const matchScope =
+        scopeFilter === 'all'
+          ? true
+          : scopeFilter === 'private'
+          ? Boolean(n.isPrivate)
+          : !n.isPrivate;
+      return matchSearch && matchType && matchStarred && matchScope;
     });
-  }, [notes, searchQuery, selectedType, showStarredOnly]);
+  }, [notes, searchQuery, selectedType, showStarredOnly, scopeFilter]);
 
   const pinnedNotes  = filteredNotes.filter(n =>  n.isPinned);
   const regularNotes = filteredNotes.filter(n => !n.isPinned);
@@ -159,6 +176,33 @@ export default function AINotesPage() {
     if (res.ok) {
       const u: Omit<Note, 'date'> & { date: string } = await res.json();
       setNotes(prev => prev.map(n => n.id === id ? { ...u, date: new Date(u.date) } : n));
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedNote || !editTitle.trim()) return;
+    setSavingEdit(true);
+    try {
+      const res = await fetch(`/api/ai-notes/${selectedNote.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editTitle.trim(),
+          content: editContent.trim(),
+          isPrivate: editIsPrivate,
+        }),
+      });
+      if (res.ok) {
+        const updated: Omit<Note, 'date'> & { date: string } = await res.json();
+        const parsed = { ...updated, date: new Date(updated.date) };
+        setNotes(prev => prev.map(n => n.id === parsed.id ? parsed : n));
+        setSelectedNote(parsed);
+        setIsEditingSelected(false);
+      }
+    } catch {
+      /* silent */
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -196,6 +240,7 @@ export default function AINotesPage() {
         title: newTitle.trim(), content: newContent.trim(), type: newNoteType,
         color: newNoteType === 'posted' ? newStickyColor : undefined,
         tags: newTags.split(',').map(t => t.trim()).filter(Boolean),
+        isPrivate: newIsPrivate,
         aiSummary, actionItems,
         participants: assignee ? [`${assignee.firstName} ${assignee.lastName}`] : [],
       }),
@@ -205,7 +250,7 @@ export default function AINotesPage() {
       const c: Omit<Note, 'date'> & { date: string } = await res.json();
       setNotes(prev => [{ ...c, date: new Date(c.date) }, ...prev]);
       setShowNewModal(false);
-      setNewTitle(''); setNewContent(''); setNewTags(''); setAssistError(null);
+      setNewTitle(''); setNewContent(''); setNewTags(''); setNewIsPrivate(false); setAssistError(null);
     }
   };
 
@@ -231,14 +276,23 @@ export default function AINotesPage() {
 
     return (
       <div
-        onClick={() => setSelectedNote(note)}
+        onClick={() => {
+          setSelectedNote(note);
+          setEditTitle(note.title);
+          setEditContent(note.content);
+          setEditIsPrivate(Boolean(note.isPrivate));
+          setIsEditingSelected(false);
+        }}
         className={`group relative p-5 rounded-2xl border ${colorObj.bg} ${colorObj.border} shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer flex flex-col justify-between min-h-[200px] font-sans`}
       >
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <StickyNote className="w-4 h-4 text-amber-700 dark:text-amber-300 shrink-0" />
             <span className={`text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md ${colorObj.badge}`}>
               POSTED
+            </span>
+            <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-md ${note.isPrivate ? 'bg-amber-200 text-amber-900 dark:bg-amber-900/80 dark:text-amber-200' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200'}`}>
+              {note.isPrivate ? '🔒 Private' : '🌐 Shared'}
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -260,9 +314,16 @@ export default function AINotesPage() {
           </p>
         </div>
 
-        <div className="pt-2 border-t border-black/5 flex items-center justify-between text-[10px] font-bold opacity-70">
-          <span>{note.date.toLocaleDateString()}</span>
-          <span>Team Shared</span>
+        <div className="pt-2 border-t border-black/5 flex flex-col gap-1 text-[10px] font-bold opacity-75">
+          <div className="flex items-center justify-between">
+            <span className="truncate">By {note.authorName || 'Team Member'}</span>
+            <span>{note.date.toLocaleDateString()}</span>
+          </div>
+          {note.lastEditedBy && (
+            <span className="text-[9px] text-slate-500 italic truncate">
+              Updated by {note.lastEditedBy}
+            </span>
+          )}
         </div>
       </div>
     );
@@ -279,7 +340,13 @@ export default function AINotesPage() {
 
     return (
       <div
-        onClick={() => setSelectedNote(note)}
+        onClick={() => {
+          setSelectedNote(note);
+          setEditTitle(note.title);
+          setEditContent(note.content);
+          setEditIsPrivate(Boolean(note.isPrivate));
+          setIsEditingSelected(false);
+        }}
         className="group relative bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 hover:border-orange-300 dark:hover:border-orange-900/60 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-4"
       >
         <div className="flex items-start justify-between gap-3">
@@ -287,6 +354,13 @@ export default function AINotesPage() {
             <Icon className="w-5 h-5" />
           </div>
           <div className="flex items-center gap-1.5">
+            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+              note.isPrivate
+                ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800/60'
+                : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/60'
+            }`}>
+              {note.isPrivate ? '🔒 Private' : '🌐 Shared'}
+            </span>
             {note.isPinned && <Pin className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />}
             <button
               onClick={e => { e.stopPropagation(); handleToggleStar(note.id); }}
@@ -313,11 +387,19 @@ export default function AINotesPage() {
           </div>
         )}
 
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-          <span className="text-[10px] font-bold font-mono text-slate-400">{note.date.toLocaleDateString()}</span>
-          <span className="text-[10px] font-extrabold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2.5 py-0.5 rounded-full border border-orange-200/60">
-            {tc.name}
-          </span>
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 truncate">
+              👤 {note.authorName || 'Team Member'}
+            </span>
+            <span className="text-[10px] font-extrabold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded-full border border-orange-200/60">
+              {tc.name}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-[9px] font-mono text-slate-400">
+            <span>{note.date.toLocaleDateString()} {note.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            {note.lastEditedBy && <span className="text-slate-400 italic">Updated by {note.lastEditedBy}</span>}
+          </div>
         </div>
       </div>
     );
@@ -403,6 +485,43 @@ export default function AINotesPage() {
           </div>
 
           <div className="flex items-center gap-2 justify-between md:justify-end min-w-0 overflow-x-auto scrollbar-none pb-0.5">
+            {/* Scope Filter: All vs Team Shared vs Private */}
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
+              <button
+                type="button"
+                onClick={() => setScopeFilter('all')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  scopeFilter === 'all'
+                    ? 'bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-2xs font-extrabold'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                All Scope
+              </button>
+              <button
+                type="button"
+                onClick={() => setScopeFilter('shared')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  scopeFilter === 'shared'
+                    ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-2xs font-extrabold'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>🌐 Shared</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setScopeFilter('private')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  scopeFilter === 'private'
+                    ? 'bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-2xs font-extrabold'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>🔒 Private</span>
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={() => setShowStarredOnly(!showStarredOnly)}
@@ -709,6 +828,41 @@ export default function AINotesPage() {
                 </div>
               )}
 
+              {/* Access & Visibility Selection */}
+              <div>
+                <label className={labelCls}>Access & Visibility</label>
+                <div className="grid grid-cols-2 gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setNewIsPrivate(false)}
+                    className={`p-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer flex flex-col items-center gap-1 text-center ${
+                      !newIsPrivate
+                        ? 'bg-indigo-50/80 dark:bg-indigo-950/60 border-indigo-500 text-indigo-950 dark:text-indigo-200 ring-2 ring-indigo-500/20'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-500 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5 font-extrabold text-indigo-600 dark:text-indigo-400">
+                      <Users className="w-4 h-4" /> 🌐 Team Shared
+                    </span>
+                    <span className="text-[10px] font-medium opacity-80">Visible & reviewable by workspace team</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewIsPrivate(true)}
+                    className={`p-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer flex flex-col items-center gap-1 text-center ${
+                      newIsPrivate
+                        ? 'bg-amber-50/80 dark:bg-amber-950/60 border-amber-500 text-amber-950 dark:text-amber-200 ring-2 ring-amber-500/20'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-500 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5 font-extrabold text-amber-600 dark:text-amber-400">
+                      <Star className="w-4 h-4" /> 🔒 Private Note
+                    </span>
+                    <span className="text-[10px] font-medium opacity-80">Only you can view and edit</span>
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className={labelCls}>Title</label>
                 <input
@@ -813,20 +967,37 @@ export default function AINotesPage() {
         </div>
       )}
 
-      {/* ── View Note Drawer Modal ── */}
+      {/* ── View & Collaborative Edit Note Drawer Modal ── */}
       {selectedNote && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 pb-24 sm:pb-4 overflow-hidden">
           <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs" onClick={() => setSelectedNote(null)} />
           <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-7.5rem)] sm:max-h-[85vh]">
             <div className="shrink-0 px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-400">{selectedNote.date.toLocaleDateString()}</span>
-                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md uppercase">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+                  selectedNote.isPrivate
+                    ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200/60'
+                    : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200/60'
+                }`}>
+                  {selectedNote.isPrivate ? '🔒 Private' : '🌐 Team Shared'}
+                </span>
+                <span className="text-[10px] font-bold text-orange-600 bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded-md uppercase">
                   {selectedNote.type}
                 </span>
               </div>
 
               <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingSelected(!isEditingSelected)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    isEditingSelected
+                      ? 'bg-orange-500 text-white border-orange-500 shadow-xs'
+                      : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
+                  }`}
+                >
+                  {isEditingSelected ? 'Cancel Edit' : '✏️ Edit / Review'}
+                </button>
                 <button
                   onClick={() => handleToggleStar(selectedNote.id)}
                   className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
@@ -845,39 +1016,95 @@ export default function AINotesPage() {
               </div>
             </div>
 
-            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-              <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight">
-                {selectedNote.title}
-              </h2>
-
-              <div className="p-4 sm:p-5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl text-xs leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-wrap font-medium">
-                {selectedNote.content || 'No content written yet.'}
+            {/* Author and Timestamp Header Strip */}
+            <div className="px-5 sm:px-6 py-2.5 bg-slate-50/90 dark:bg-slate-850 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-slate-700 dark:text-slate-200">Created by:</span>
+                <span className="font-semibold text-orange-600 dark:text-orange-400">{selectedNote.authorName || 'Team Member'}</span>
+                <span className="text-slate-400">•</span>
+                <span>{selectedNote.date.toLocaleDateString()} at {selectedNote.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-
-              {selectedNote.aiSummary && (
-                <div className="p-4 bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/40 rounded-2xl space-y-1">
-                  <div className="flex items-center gap-1.5 text-purple-700 dark:text-purple-300 font-bold text-xs">
-                    <Sparkles className="w-4 h-4" />
-                    <span>Okleevo Neural Copilot Summary</span>
-                  </div>
-                  <p className="text-xs text-purple-900 dark:text-purple-200 leading-relaxed font-medium">
-                    {selectedNote.aiSummary}
-                  </p>
+              {selectedNote.lastEditedBy && (
+                <div className="text-[11px] italic text-slate-400 hidden sm:block">
+                  Updated by {selectedNote.lastEditedBy}
                 </div>
               )}
+            </div>
 
-              {selectedNote.actionItems && selectedNote.actionItems.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Action Items</h4>
-                  <div className="space-y-1.5">
-                    {selectedNote.actionItems.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-2 p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 rounded-xl text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                        <CheckSquare className="w-4 h-4 shrink-0 text-emerald-600" />
-                        <span>{item}</span>
-                      </div>
-                    ))}
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+              {isEditingSelected ? (
+                /* Collaborative Edit Form */
+                <div className="space-y-4">
+                  <div>
+                    <label className={labelCls}>Note Title</label>
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={e => setEditTitle(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-medium outline-none focus:border-orange-500 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Note Content</label>
+                    <textarea
+                      rows={6}
+                      value={editContent}
+                      onChange={e => setEditContent(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-medium outline-none focus:border-orange-500 text-slate-900 dark:text-white resize-none leading-relaxed"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Visibility:</span>
+                    <button
+                      type="button"
+                      onClick={() => setEditIsPrivate(!editIsPrivate)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        editIsPrivate
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200'
+                          : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200'
+                      }`}
+                    >
+                      {editIsPrivate ? '🔒 Private (Only Me)' : '🌐 Team Shared'}
+                    </button>
                   </div>
                 </div>
+              ) : (
+                /* View Mode */
+                <>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight">
+                    {selectedNote.title}
+                  </h2>
+
+                  <div className="p-4 sm:p-5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl text-xs leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-wrap font-medium">
+                    {selectedNote.content || 'No content written yet.'}
+                  </div>
+
+                  {selectedNote.aiSummary && (
+                    <div className="p-4 bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/40 rounded-2xl space-y-1">
+                      <div className="flex items-center gap-1.5 text-purple-700 dark:text-purple-300 font-bold text-xs">
+                        <Sparkles className="w-4 h-4" />
+                        <span>Okleevo Neural Copilot Summary</span>
+                      </div>
+                      <p className="text-xs text-purple-900 dark:text-purple-200 leading-relaxed font-medium">
+                        {selectedNote.aiSummary}
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedNote.actionItems && selectedNote.actionItems.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Action Items</h4>
+                      <div className="space-y-1.5">
+                        {selectedNote.actionItems.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-2 p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 rounded-xl text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                            <CheckSquare className="w-4 h-4 shrink-0 text-emerald-600" />
+                            <span>{item}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -891,20 +1118,33 @@ export default function AINotesPage() {
               </button>
 
               <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
-                <button
-                  onClick={() => handleCopy(selectedNote)}
-                  className="px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>{copied ? 'Copied' : 'Copy'}</span>
-                </button>
-                <button
-                  onClick={exportToTasks}
-                  className="px-3.5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Export to Task</span>
-                </button>
+                {isEditingSelected ? (
+                  <button
+                    onClick={handleSaveEdit}
+                    disabled={savingEdit || !editTitle.trim()}
+                    className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-orange-500/20"
+                  >
+                    {savingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                    <span>Save Changes</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleCopy(selectedNote)}
+                      className="px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>{copied ? 'Copied' : 'Copy'}</span>
+                    </button>
+                    <button
+                      onClick={exportToTasks}
+                      className="px-3.5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Export to Task</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

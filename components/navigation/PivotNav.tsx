@@ -28,7 +28,7 @@ const MODULE_UI: Record<string, ModuleUiMeta> = {
   'ai-notes': { href: '/dashboard/ai-notes', icon: FileEdit, label: 'Notes' },
   'kpi-dashboard': { href: '/dashboard/kpi-dashboard', icon: BarChart3, label: 'KPI Dashboard' },
   crm: { href: '/dashboard/crm', icon: Users, label: 'CRM Pipeline' },
-  booking: { href: '/dashboard/booking', icon: Calendar, label: 'Booking Pages' },
+  booking: { href: '/dashboard/booking', icon: Calendar, label: 'Appointment Manager' },
   mailbox: { href: '/dashboard/mailbox', icon: Mail, label: 'Mail Engine' },
   'e-signature': { href: '/dashboard/e-signature', icon: PenTool, label: 'E-Signatures' },
   campaigns: { href: '/dashboard/campaigns', icon: Mail, label: 'Campaigns' },

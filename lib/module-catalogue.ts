@@ -86,7 +86,7 @@ export const modules: ModuleCatalogueEntry[] = [
   },
   {
     id: 'booking',
-    label: 'Booking Pages',
+    label: 'Appointment Manager',
     icon: Calendar,
     group: 'Client Engagement',
     color: 'from-orange-500 to-amber-600',

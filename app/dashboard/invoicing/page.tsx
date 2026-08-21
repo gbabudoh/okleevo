@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   Plus, Search, Filter, Download, Eye, Edit, Send, Trash2,
   DollarSign, PoundSterling, Clock, CheckCircle, AlertCircle, MoreVertical, X,
@@ -357,12 +358,15 @@ export default function InvoicingPage() {
     setActiveMenu(null);
   };
 
+  const { data: session } = useSession();
+  const businessName = (session?.user as any)?.businessName || 'Okleevo Workspace';
+
   const handleSendEmail = (invoice: Invoice) => {
     setEmailInvoice(invoice);
     setEmailData({
       to: invoice.clientEmail,
-      subject: `Invoice ${invoice.id} from Your Company`,
-      message: `Dear ${invoice.client},\n\nPlease find attached invoice ${invoice.id} for $${invoice.amount.toLocaleString()}.\n\nDue Date: ${invoice.dueDate}\n\nThank you for your business!\n\nBest regards,\nYour Company`,
+      subject: `Invoice ${invoice.id} from ${businessName}`,
+      message: `Dear ${invoice.client},\n\nPlease find attached invoice ${invoice.id} for $${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.\n\nPayment Due Date: ${invoice.dueDate}\n\nThank you for your valued business!\n\nBest regards,\n${businessName}`,
     });
     setShowEmailModal(true);
   };

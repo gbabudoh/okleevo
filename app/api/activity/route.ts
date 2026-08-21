@@ -95,19 +95,22 @@ export async function GET(request: NextRequest) {
     });
 
     recentTasks.forEach((task: any) => {
+      const actorName = task.completedBy || (task.user ? `${task.user.firstName} ${task.user.lastName}`.trim() : 'Team Member');
       activity.push({
         id: `task-${task.id}`,
         type: 'task',
         action: task.status === 'DONE' ? 'completed' : task.status === 'IN_PROGRESS' ? 'started' : 'created',
         resource: task.title,
         user: {
-          name: `${task.user.firstName} ${task.user.lastName}`,
-          email: task.user.email,
+          name: actorName,
+          email: task.user?.email || '',
         },
-        timestamp: task.updatedAt || task.createdAt,
+        timestamp: task.completedAt || task.updatedAt || task.createdAt,
         metadata: {
           status: task.status,
           priority: task.priority,
+          completedBy: task.completedBy,
+          isDailyTask: task.isDailyTask,
         },
       });
     });

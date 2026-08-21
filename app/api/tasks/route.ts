@@ -10,6 +10,9 @@ function serialize(t: Task & { subtasks?: SubTask[]; dependsOn?: { id: string; t
     priority: t.priority.toLowerCase(),
     startDate: t.startDate ? t.startDate.toISOString().split('T')[0] : '',
     dueDate: t.dueDate ? t.dueDate.toISOString().split('T')[0] : '',
+    completedAt: t.completedAt ? t.completedAt.toISOString() : null,
+    completedBy: t.completedBy || null,
+    isDailyTask: Boolean(t.isDailyTask),
     createdAt: t.createdAt.toISOString().split('T')[0],
   };
 }
@@ -39,25 +42,34 @@ interface TaskBody {
   subtasks?: { title: string; completed?: boolean }[];
   projectId?: string;
   dependsOnIds?: string[];
+  isDailyTask?: boolean;
+  status?: string;
 }
 
 export const POST = withMultiTenancy(async (req, { user }) => {
   try {
     const body: TaskBody = await req.json();
-    const { title, description, priority, startDate, dueDate, assignedTo, tags, subtasks, projectId, dependsOnIds } = body;
+    const { title, description, priority, startDate, dueDate, assignedTo, tags, subtasks, projectId, dependsOnIds, isDailyTask, status } = body;
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Task title is required' }, { status: 400 });
     }
 
+    const isDone = status?.toLowerCase() === 'done';
+    const userFullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Team Member';
+
     const task = await prisma.task.create({
       data: {
         title: title.trim(),
         description: description?.trim() || null,
+        status: isDone ? 'DONE' : 'TODO',
         priority: (priority?.toUpperCase() || 'MEDIUM') as TaskPriority,
         startDate: startDate ? new Date(startDate) : null,
         dueDate: dueDate ? new Date(dueDate) : null,
         assignedTo: assignedTo || null,
+        isDailyTask: Boolean(isDailyTask),
+        completedAt: isDone ? new Date() : null,
+        completedBy: isDone ? userFullName : null,
         tags: Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',').map((s: string) => s.trim()) : []),
         projectId: projectId || null,
         businessId: user.businessId,

@@ -1021,9 +1021,12 @@ model Task {
   status   TaskStatus   @default(TODO)
   priority TaskPriority @default(MEDIUM)
 
-  startDate  DateTime?
-  dueDate    DateTime?
-  assignedTo String? // Name of assignee
+  startDate   DateTime?
+  dueDate     DateTime?
+  assignedTo  String? // Name of assignee
+  completedAt DateTime?
+  completedBy String? // Name of member who signed off / completed
+  isDailyTask Boolean   @default(false)
 
   tags String[]
 
@@ -1548,6 +1551,11 @@ model AINote {
   tags      String[]
   isPinned  Boolean  @default(false)
   isStarred Boolean  @default(false)
+  isPrivate Boolean  @default(false)
+
+  authorName   String?
+  lastEditedBy String?
+  lastEditedAt DateTime?
 
   aiSummary    String?
   actionItems  String[]

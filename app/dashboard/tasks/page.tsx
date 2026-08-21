@@ -12,6 +12,7 @@ import {
   GripVertical, Check, Zap, Sparkles, ChevronLeft, ChevronRight, BarChart2
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { DailyTaskCompletionBox } from '@/components/tasks/DailyTaskCompletionBox';
 
 interface SubTask {
   id: string;
@@ -501,6 +502,9 @@ export default function TasksPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Daily Task Completion [DTC]-Box ── */}
+      <DailyTaskCompletionBox onTaskLogged={fetchTasks} />
 
       {/* ── KPI Metric Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

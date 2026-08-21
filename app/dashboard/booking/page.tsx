@@ -592,10 +592,10 @@ export default function BookingPage() {
               </div>
               <div className="min-w-0">
                 <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight">
-                  Bookings &amp; Schedules
+                  Appointment Manager
                 </h1>
                 <p className="text-xs font-bold text-slate-400 truncate hidden sm:block">
-                  Automated client intake, meeting scheduling, and calendar dispatch
+                  Automated client appointments, meeting scheduling, video consultations, and calendar dispatch
                 </p>
               </div>
             </div>

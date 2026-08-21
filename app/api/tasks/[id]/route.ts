@@ -10,6 +10,9 @@ function serialize(t: Task & { subtasks?: SubTask[]; dependsOn?: Task[] }) {
     priority: t.priority.toLowerCase(),
     startDate: t.startDate ? t.startDate.toISOString().split('T')[0] : '',
     dueDate: t.dueDate ? t.dueDate.toISOString().split('T')[0] : '',
+    completedAt: t.completedAt ? t.completedAt.toISOString() : null,
+    completedBy: t.completedBy || null,
+    isDailyTask: Boolean(t.isDailyTask),
     createdAt: t.createdAt.toISOString().split('T')[0],
   };
 }
@@ -26,23 +29,21 @@ interface TaskUpdateBody {
   subtasks?: { id?: string; title: string; completed?: boolean }[];
   projectId?: string;
   dependsOnIds?: string[];
+  isDailyTask?: boolean;
+  completedBy?: string;
+  completedAt?: string;
 }
 
 export const PATCH = withMultiTenancy(async (req, { user, params }) => {
   try {
     const { id } = await params;
     const body: TaskUpdateBody = await req.json();
-    const { title, description, status, priority, startDate, dueDate, assignedTo, tags, subtasks, projectId, dependsOnIds } = body;
+    const { title, description, status, priority, startDate, dueDate, assignedTo, tags, subtasks, projectId, dependsOnIds, isDailyTask, completedBy, completedAt } = body;
 
     const existing = await prisma.task.findFirst({ where: { id: id as string, businessId: user.businessId } });
     if (!existing) return NextResponse.json({ error: 'Task not found' }, { status: 404 });
 
     // Diff against existing subtasks instead of deleting and recreating
-    // everything — a full delete+recreate on every checkbox toggle generated
-    // a brand new id for every subtask on every single edit, which remounted
-    // the whole checklist in the UI each time. Incoming subtasks may carry a
-    // real DB id (existing) or a client-side temp id (new, not in the DB
-    // set) — only ids that actually exist are treated as updates.
     if (subtasks && Array.isArray(subtasks)) {
       const existingSubtasks = await prisma.subTask.findMany({ where: { taskId: id as string }, select: { id: true } });
       const existingIds = new Set(existingSubtasks.map((s) => s.id));
@@ -60,6 +61,21 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
       ));
     }
 
+    const userFullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Team Member';
+    const isMovingToDone = status?.toLowerCase() === 'done';
+    const isMovingFromDone = status !== undefined && status?.toLowerCase() !== 'done';
+
+    let resolvedCompletedAt = existing.completedAt;
+    let resolvedCompletedBy = existing.completedBy;
+
+    if (isMovingToDone) {
+      resolvedCompletedAt = completedAt ? new Date(completedAt) : (existing.completedAt || new Date());
+      resolvedCompletedBy = completedBy || existing.completedBy || userFullName;
+    } else if (isMovingFromDone) {
+      resolvedCompletedAt = null;
+      resolvedCompletedBy = null;
+    }
+
     const task = await prisma.task.update({
       where: { id: id as string },
       data: {
@@ -73,6 +89,9 @@ export const PATCH = withMultiTenancy(async (req, { user, params }) => {
         ...(tags !== undefined && { tags: Array.isArray(tags) ? tags : [] }),
         ...(projectId !== undefined && { projectId: projectId || null }),
         ...(dependsOnIds !== undefined && { dependsOn: { set: dependsOnIds.map((depId) => ({ id: depId })) } }),
+        ...(isDailyTask !== undefined && { isDailyTask: Boolean(isDailyTask) }),
+        completedAt: resolvedCompletedAt,
+        completedBy: resolvedCompletedBy,
       },
       include: { subtasks: true }
     });
