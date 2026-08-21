@@ -8,7 +8,7 @@ import {
   CheckCircle, Edit, Trash2, Search, TrendingUp, CalendarCheck,
   ChevronDown, Loader2, User, Link as LinkIcon, ExternalLink,
   Copy, Check, Share2, Sparkles, Layers, ShieldCheck,
-  ArrowRight, Video as VideoIcon, CheckCircle2
+  ArrowRight, Video as VideoIcon, CheckCircle2, Archive, History
 } from 'lucide-react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import StatusModal from '@/components/StatusModal';
@@ -341,6 +341,7 @@ export default function BookingPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [viewCategory, setViewCategory] = useState<'upcoming' | 'archived' | 'all'>('upcoming');
 
   const { data: session } = useSession();
   const [statusModal, setStatusModal] = useState({ isOpen: false, title: '', message: '', type: 'success' as 'success' | 'error' });
@@ -535,14 +536,25 @@ export default function BookingPage() {
   const filteredBookings = bookings.filter(b => {
     const q = searchTerm.toLowerCase();
     const matchQ = b.client.toLowerCase().includes(q) || b.service.toLowerCase().includes(q) || b.email.toLowerCase().includes(q);
+    
+    const isUpcoming = (b.status === 'confirmed' || b.status === 'pending') && new Date(b.startTime).getTime() >= Date.now();
+    const isArchived = b.status === 'completed' || b.status === 'cancelled' || new Date(b.startTime).getTime() < Date.now();
+
+    let matchCategory = true;
+    if (viewCategory === 'upcoming') {
+      matchCategory = isUpcoming;
+    } else if (viewCategory === 'archived') {
+      matchCategory = isArchived;
+    }
+
     const matchS = filterStatus === 'all' || b.status === filterStatus;
-    return matchQ && matchS;
+    return matchQ && matchCategory && matchS;
   });
 
   const totalBookings     = bookings.length;
   const confirmedCount    = bookings.filter(b => b.status === 'confirmed').length;
   const upcomingCount     = bookings.filter(b => (b.status === 'confirmed' || b.status === 'pending') && new Date(b.startTime).getTime() >= Date.now()).length;
-  const completedCount    = bookings.filter(b => b.status === 'completed').length;
+  const completedCount    = bookings.filter(b => b.status === 'completed' || new Date(b.startTime).getTime() < Date.now()).length;
 
   const publicUrlDisplay = businessId
     ? `${typeof window !== 'undefined' ? window.location.host : 'okleevo.com'}/booking/${businessId}`
@@ -729,6 +741,67 @@ export default function BookingPage() {
               ))}
             </div>
 
+            {/* View Category Sub-Tabs Dock */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5 p-1 bg-slate-200/60 dark:bg-slate-900/80 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setViewCategory('upcoming')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    viewCategory === 'upcoming'
+                      ? 'bg-white dark:bg-slate-950 text-orange-600 dark:text-orange-400 shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Upcoming &amp; Active</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    viewCategory === 'upcoming' ? 'bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                  }`}>
+                    {upcomingCount}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewCategory('archived')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    viewCategory === 'archived'
+                      ? 'bg-white dark:bg-slate-950 text-orange-600 dark:text-orange-400 shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Archive className="w-3.5 h-3.5" />
+                  <span>Archived History</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    viewCategory === 'archived' ? 'bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                  }`}>
+                    {completedCount}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewCategory('all')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    viewCategory === 'all'
+                      ? 'bg-white dark:bg-slate-950 text-orange-600 dark:text-orange-400 shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>All ({totalBookings})</span>
+                </button>
+              </div>
+
+              {viewCategory === 'archived' && (
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+                  <History className="w-3.5 h-3.5 text-orange-500" />
+                  <span>Past and expired sessions are automatically preserved in this archive</span>
+                </div>
+              )}
+            </div>
+
             {/* Search + Filter Dock */}
             <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-3.5 flex flex-col sm:flex-row gap-3">
               <div className="flex-1 relative">
@@ -747,7 +820,7 @@ export default function BookingPage() {
                   onChange={e => setFilterStatus(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 dark:text-white rounded-2xl text-xs font-bold outline-none border border-slate-200/80 dark:border-slate-800 focus:border-orange-500 transition-all appearance-none cursor-pointer pr-9"
                 >
-                  <option value="all">All Appointments</option>
+                  <option value="all">All Statuses</option>
                   <option value="confirmed">Upcoming &amp; Confirmed</option>
                   <option value="pending">Pending Requests</option>
                   <option value="completed">Completed &amp; Archived</option>
@@ -766,16 +839,22 @@ export default function BookingPage() {
             ) : filteredBookings.length === 0 ? (
               <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-12 text-center space-y-4">
                 <div className="w-14 h-14 bg-orange-50 dark:bg-orange-950/60 border border-orange-200/60 text-orange-500 rounded-3xl flex items-center justify-center mx-auto shadow-2xs">
-                  <Calendar className="w-7 h-7" />
+                  {viewCategory === 'archived' ? <Archive className="w-7 h-7" /> : <Calendar className="w-7 h-7" />}
                 </div>
                 <div>
                   <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-                    {searchTerm || filterStatus !== 'all' ? 'No matching appointments' : 'No appointments scheduled yet'}
+                    {searchTerm || filterStatus !== 'all'
+                      ? 'No matching appointments'
+                      : viewCategory === 'archived'
+                        ? 'No archived appointments yet'
+                        : 'No upcoming appointments scheduled'}
                   </h3>
                   <p className="text-xs font-bold text-slate-400 mt-1 max-w-md mx-auto">
                     {searchTerm || filterStatus !== 'all'
                       ? 'Try adjusting your search query or filter criteria.'
-                      : 'Copy your public portal link above to share with clients, or manually schedule an appointment.'}
+                      : viewCategory === 'archived'
+                        ? 'Concluded and expired meetings will automatically appear here.'
+                        : 'Your schedule is currently clear. Share your public booking link to invite clients.'}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
