@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       },
       data: {
         status: 'COMPLETED',
-        meetingRoomStatus: 'CONCLUDED',
+        meetingRoomStatus: 'COMPLETED',
       },
     });
 

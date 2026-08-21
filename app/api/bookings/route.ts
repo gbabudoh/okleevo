@@ -7,7 +7,7 @@ import { findConflictingAppointment, notifyAppointmentStatus } from '@/lib/servi
 export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
   try {
     const now = new Date();
-    // Automatically transition expired confirmed appointments to COMPLETED and CONCLUDED
+    // Automatically transition expired confirmed appointments to COMPLETED
     await prisma.appointment.updateMany({
       where: {
         businessId: dataFilter.businessId,
@@ -16,7 +16,7 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
       },
       data: {
         status: AppointmentStatus.COMPLETED,
-        meetingRoomStatus: 'CONCLUDED',
+        meetingRoomStatus: 'COMPLETED',
       },
     });
 

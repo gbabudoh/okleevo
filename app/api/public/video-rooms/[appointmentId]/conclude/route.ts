@@ -27,12 +27,12 @@ export async function POST(
     await prisma.appointment.update({
       where: { id: appointmentId },
       data: {
-        meetingRoomStatus: 'CONCLUDED',
+        meetingRoomStatus: 'COMPLETED',
         status: AppointmentStatus.COMPLETED,
       },
     });
 
-    return NextResponse.json({ success: true, status: 'completed', meetingRoomStatus: 'CONCLUDED' });
+    return NextResponse.json({ success: true, status: 'completed', meetingRoomStatus: 'COMPLETED' });
   } catch (error) {
     console.error('Error concluding meeting room session:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
