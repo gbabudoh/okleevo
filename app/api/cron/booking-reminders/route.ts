@@ -12,7 +12,20 @@ export async function GET(req: NextRequest) {
 
   try {
     const now = new Date();
-    // Look ahead 24 hours
+
+    // 1. Auto-archive all confirmed appointments whose scheduled end time has passed
+    const archived = await prisma.appointment.updateMany({
+      where: {
+        status: 'CONFIRMED',
+        endTime: { lte: now },
+      },
+      data: {
+        status: 'COMPLETED',
+        meetingRoomStatus: 'CONCLUDED',
+      },
+    });
+
+    // 2. Look ahead 24 hours for upcoming reminders
     const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
     const upcomingAppointments = await prisma.appointment.findMany({

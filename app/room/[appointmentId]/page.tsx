@@ -152,6 +152,13 @@ export default function GuestRoomPage({ params: _params }: { params?: Promise<{ 
     );
   }
 
+  const handleLeave = () => {
+    if (appointmentId) {
+      fetch(`/api/public/video-rooms/${appointmentId}/conclude`, { method: 'POST' }).catch(() => {});
+    }
+    setLeft(true);
+  };
+
   if (session?.access_granted && session.webrtc_token && session.ws_url) {
     const appointmentMeta: AppointmentMeta = {
       title: session.appointment?.title || 'Video Appointment',
@@ -168,7 +175,7 @@ export default function GuestRoomPage({ params: _params }: { params?: Promise<{ 
             <MeetingRoom
               token={session.webrtc_token}
               wsUrl={session.ws_url}
-              onLeave={() => setLeft(true)}
+              onLeave={handleLeave}
               video
               audio
               appointmentMeta={appointmentMeta}

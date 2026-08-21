@@ -747,10 +747,10 @@ export default function BookingPage() {
                   onChange={e => setFilterStatus(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 dark:text-white rounded-2xl text-xs font-bold outline-none border border-slate-200/80 dark:border-slate-800 focus:border-orange-500 transition-all appearance-none cursor-pointer pr-9"
                 >
-                  <option value="all">All Statuses</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="pending">Pending</option>
-                  <option value="completed">Completed</option>
+                  <option value="all">All Appointments</option>
+                  <option value="confirmed">Upcoming &amp; Confirmed</option>
+                  <option value="pending">Pending Requests</option>
+                  <option value="completed">Completed &amp; Archived</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
                 <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -854,7 +854,7 @@ export default function BookingPage() {
                             <Check className="w-3.5 h-3.5" /> Confirm
                           </button>
                         )}
-                        {booking.type === 'video' && (
+                        {booking.type === 'video' && booking.status !== 'completed' && booking.status !== 'cancelled' && (
                           <Link
                             href={`/room/${encodeURIComponent(booking.id)}`}
                             target="_blank"

@@ -6,9 +6,23 @@ import { findConflictingAppointment, notifyAppointmentStatus } from '@/lib/servi
 
 export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
   try {
+    const now = new Date();
+    // Automatically transition expired confirmed appointments to COMPLETED and CONCLUDED
+    await prisma.appointment.updateMany({
+      where: {
+        businessId: dataFilter.businessId,
+        status: AppointmentStatus.CONFIRMED,
+        endTime: { lte: now },
+      },
+      data: {
+        status: AppointmentStatus.COMPLETED,
+        meetingRoomStatus: 'CONCLUDED',
+      },
+    });
+
     const appointments = await prisma.appointment.findMany({
       where: { businessId: dataFilter.businessId },
-      orderBy: { startTime: 'asc' },
+      orderBy: { startTime: 'desc' },
     });
 
     const mapped = appointments.map(a => ({
