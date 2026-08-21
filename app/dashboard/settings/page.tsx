@@ -96,7 +96,7 @@ function SettingsPageInner() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string>('MEMBER'); // Track user role
+  const [userRole, setUserRole] = useState<string>(() => ((session?.user as any)?.role || 'OWNER')); // Track user role
   
   // Team management state
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -318,6 +318,9 @@ function SettingsPageInner() {
 
       // Prepopulate from session immediately if available
       if (session?.user) {
+        if ((session.user as any).role) {
+          setUserRole((session.user as any).role);
+        }
         const sessionName = session.user.name || '';
         const sessionParts = sessionName.trim().split(/\s+/);
         setProfile(prev => ({
@@ -334,7 +337,7 @@ function SettingsPageInner() {
         if (response.ok) {
           const data = await response.json();
           // Store user role
-          setUserRole(data.role || 'MEMBER');
+          setUserRole(data.role || (session?.user as any)?.role || 'OWNER');
 
           const rawName = data.name || session?.user?.name || '';
           const nameParts = rawName.trim().split(/\s+/);
