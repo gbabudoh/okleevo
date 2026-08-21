@@ -305,33 +305,79 @@ function HuddlesView() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { name: "Sarah Chen (VP Product)", role: "Speaking", avatar: "👩‍💻", isSpeaking: true },
-          { name: "Alex Rivera (Tech Lead)", role: "Muted", avatar: "👨‍💻", isSpeaking: false },
-          { name: "David Kim (Lead Architect)", role: "Screen Share", avatar: "👨‍🔬", isSpeaking: false },
-          { name: "Elena Rostova (Design)", role: "Listening", avatar: "👩‍🎨", isSpeaking: false },
+          {
+            name: "Sarah Chen (VP Product)",
+            role: "Speaking",
+            avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=SarahChen&backgroundColor=fed7aa&radius=50",
+            bg: "bg-orange-50 dark:bg-orange-950/40",
+            isSpeaking: true,
+          },
+          {
+            name: "Alex Rivera (Tech Lead)",
+            role: "Muted",
+            avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=AlexRivera&backgroundColor=bfdbfe&radius=50",
+            bg: "bg-blue-50 dark:bg-blue-950/40",
+            isSpeaking: false,
+          },
+          {
+            name: "David Kim (Lead Architect)",
+            role: "Screen Share",
+            avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=DavidKim&backgroundColor=bbf7d0&radius=50",
+            bg: "bg-emerald-50 dark:bg-emerald-950/40",
+            isSpeaking: false,
+          },
+          {
+            name: "Elena Rostova (Design)",
+            role: "Listening",
+            avatar: "https://api.dicebear.com/7.x/lorelei/svg?seed=ElenaRostova&backgroundColor=e9d5ff&radius=50",
+            bg: "bg-purple-50 dark:bg-purple-950/40",
+            isSpeaking: false,
+          },
         ].map((user, idx) => (
           <div
             key={idx}
-            className={`relative rounded-xl p-4 bg-white border flex flex-col items-center justify-between min-h-[140px] overflow-hidden transition-all ${user.isSpeaking ? "border-orange-500 shadow-[0_4px_20px_rgba(252,104,19,0.25)]" : "border-slate-200 shadow-sm"
-              }`}
+            className={`relative rounded-2xl p-4 bg-white dark:bg-slate-900 border flex flex-col items-center justify-between min-h-[160px] overflow-hidden transition-all ${
+              user.isSpeaking
+                ? "border-orange-500 ring-2 ring-orange-500/30 shadow-[0_4px_24px_rgba(252,104,19,0.2)]"
+                : "border-slate-200 dark:border-slate-800 shadow-xs"
+            }`}
           >
             <div className="w-full flex items-center justify-between text-[10px]">
-              <span className={`px-2 py-0.5 rounded font-bold ${user.isSpeaking ? "bg-orange-100 text-orange-700" : "bg-slate-100 text-slate-600"}`}>
+              <span
+                className={`px-2.5 py-0.5 rounded-full font-bold font-mono tracking-tight ${
+                  user.isSpeaking
+                    ? "bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-slate-700"
+                }`}
+              >
                 {user.role}
               </span>
               {user.isSpeaking && (
-                <div className="flex items-center gap-0.5">
-                  <span className="w-1 h-3 bg-orange-500 rounded animate-pulse" />
-                  <span className="w-1 h-4 bg-orange-500 rounded animate-pulse delay-75" />
-                  <span className="w-1 h-2 bg-orange-500 rounded animate-pulse delay-150" />
+                <div className="flex items-center gap-0.5 bg-orange-100/70 dark:bg-orange-950/60 px-1.5 py-0.5 rounded-full">
+                  <span className="w-0.5 h-2.5 bg-orange-500 rounded-full animate-pulse" />
+                  <span className="w-0.5 h-3.5 bg-orange-500 rounded-full animate-pulse delay-75" />
+                  <span className="w-0.5 h-2 bg-orange-500 rounded-full animate-pulse delay-150" />
                 </div>
               )}
             </div>
 
-            <div className="text-3xl my-2">{user.avatar}</div>
+            <div className="my-3 relative">
+              <div className="w-14 h-14 rounded-full overflow-hidden shadow-sm border-2 border-white dark:border-slate-800 ring-2 ring-slate-100 dark:ring-slate-800/60">
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {user.isSpeaking ? (
+                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 flex items-center justify-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                </span>
+              ) : null}
+            </div>
 
             <div className="w-full text-center truncate">
-              <p className="text-xs font-bold text-slate-900 truncate">{user.name}</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user.name}</p>
             </div>
           </div>
         ))}
