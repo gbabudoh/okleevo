@@ -470,8 +470,12 @@ function CollaborationHubInner() {
                       {member.firstName} {member.lastName}
                     </h3>
                     
-                    <span className="mt-1 text-[10px] font-mono font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                      {member.role || 'Member'}
+                    <span className={`mt-1 text-[10px] font-mono font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md border ${
+                      (member.role === 'OWNER' || member.role === 'SUPER_ADMIN')
+                        ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border-amber-200/60'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                    }`}>
+                      {(member.role === 'OWNER' || member.role === 'SUPER_ADMIN') ? '[ Account Holder ]' : member.role === 'MEMBER' ? 'Member' : (member.role || 'Member')}
                     </span>
 
                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-2 font-medium w-full">
@@ -548,8 +552,12 @@ function CollaborationHubInner() {
                         <p className="text-sm font-bold text-slate-900 dark:text-white break-words">
                           {member.firstName} {member.lastName}
                         </p>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                          {member.role || 'Member'}
+                        <span className={`text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md border ${
+                          (member.role === 'OWNER' || member.role === 'SUPER_ADMIN')
+                            ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border-amber-200/60'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                        }`}>
+                          {(member.role === 'OWNER' || member.role === 'SUPER_ADMIN') ? '[ Account Holder ]' : member.role === 'MEMBER' ? 'Member' : (member.role || 'Member')}
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5 font-medium">

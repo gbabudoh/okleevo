@@ -345,8 +345,7 @@ function SettingsPageInner() {
           const lName = data.lastName || nameParts.slice(1).join(' ') || '';
 
           const rolePosition = 
-            data.role === 'OWNER' ? 'Owner / Founder' :
-            data.role === 'SUPER_ADMIN' ? 'Super Administrator' :
+            (data.role === 'OWNER' || data.role === 'SUPER_ADMIN') ? '[ Account Holder ]' :
             data.role === 'ADMIN' ? 'Administrator' :
             data.role === 'MANAGER' ? 'Manager' : 'Team Member';
 
@@ -1049,8 +1048,8 @@ function SettingsPageInner() {
                   <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white capitalize truncate px-1">
                     {(`${profile.firstName || ''} ${profile.lastName || ''}`).trim() || session?.user?.name || 'Workspace Member'}
                   </p>
-                  <p className="text-xs font-extrabold text-orange-600 dark:text-orange-400 mt-0.5">
-                    {profile.position || 'Team Member'}
+                  <p className="text-xs font-black text-orange-600 dark:text-orange-400 mt-0.5 tracking-wide">
+                    {profile.position || ((userRole === 'OWNER' || userRole === 'SUPER_ADMIN') ? '[ Account Holder ]' : 'Team Member')}
                   </p>
                   <p className="text-[11px] font-medium text-slate-400 mt-0.5 truncate px-2">
                     {profile.email || session?.user?.email}
@@ -1349,7 +1348,7 @@ function SettingsPageInner() {
 
                       <div className="flex items-center gap-2 mb-4">
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold uppercase border ${roleBadge}`}>
-                          {member.role}
+                          {(member.role === 'OWNER' || member.role === 'SUPER_ADMIN') ? '[ Account Holder ]' : member.role === 'MEMBER' ? 'Member' : member.role}
                         </span>
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold uppercase bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40">
                           {member.status || 'ACTIVE'}
