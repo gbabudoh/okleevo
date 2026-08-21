@@ -5,8 +5,8 @@
 
 export const formatCurrency = (
   amount: number,
-  currency: string = 'GBP',
-  locale: string = 'en-GB'
+  currency: string = 'USD',
+  locale: string = 'en-US'
 ): string => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -14,13 +14,17 @@ export const formatCurrency = (
   }).format(amount);
 };
 
+export const formatUSD = (amount: number): string => {
+  return formatCurrency(amount, 'USD', 'en-US');
+};
+
 export const formatGBP = (amount: number): string => {
-  return formatCurrency(amount, 'GBP', 'en-GB');
+  return formatCurrency(amount, 'USD', 'en-US');
 };
 
 export const parseCurrency = (value: string): number => {
   // Remove currency symbols and parse
-  const cleaned = value.replace(/[£,\s]/g, '');
+  const cleaned = value.replace(/[$$,\s]/g, '');
   return parseFloat(cleaned) || 0;
 };
 

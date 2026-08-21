@@ -112,7 +112,7 @@ export default function AdminDashboard() {
             <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
               <p className="text-xs text-slate-300 mb-1">Monthly Revenue</p>
               <p className="text-2xl font-bold">
-                £{((stats?.totalRevenue || 0) / 100).toLocaleString()}
+                ${((stats?.totalRevenue || 0) / 100).toLocaleString()}
               </p>
             </div>
           </div>

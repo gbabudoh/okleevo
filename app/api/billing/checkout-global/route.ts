@@ -9,7 +9,7 @@ const VALID_PERIODS: BillingPeriod[] = ['monthly', 'annual'];
 
 /**
  * Starts checkout for the new global USD pricing tiers. Deliberately
- * separate from /api/billing/checkout (the legacy £9.99 flow), which is
+ * separate from /api/billing/checkout (the legacy $9.99 flow), which is
  * untouched — existing subscribers keep working exactly as before, and only
  * reach this route if they choose to from the billing settings UI.
  */

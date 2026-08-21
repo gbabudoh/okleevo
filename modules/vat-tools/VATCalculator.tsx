@@ -18,7 +18,7 @@ export function VATCalculator() {
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Net Amount (£)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Net Amount ($)</label>
             <input
               type="number"
               value={amount}
@@ -31,15 +31,15 @@ export function VATCalculator() {
           <div className="bg-gray-50 rounded-lg p-6 space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">Net Amount:</span>
-              <span className="font-semibold">£{(parseFloat(amount) || 0).toFixed(2)}</span>
+              <span className="font-semibold">${(parseFloat(amount) || 0).toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">VAT ({vatRate}%):</span>
-              <span className="font-semibold">£{vatAmount.toFixed(2)}</span>
+              <span className="font-semibold">${vatAmount.toFixed(2)}</span>
             </div>
             <div className="border-t pt-3 flex justify-between">
               <span className="font-bold text-gray-900">Total:</span>
-              <span className="font-bold text-gray-900 text-xl">£{total.toFixed(2)}</span>
+              <span className="font-bold text-gray-900 text-xl">${total.toFixed(2)}</span>
             </div>
           </div>
         </div>

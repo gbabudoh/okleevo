@@ -80,7 +80,7 @@ export type SubscriptionInfo = {
   plan: string | null;
   // Global pivot: set once a workspace has switched to a Starter/Growth/
   // Scale USD plan (see lib/stripe/global-billing.ts); null for every
-  // legacy £9.99 subscriber, unchanged.
+  // legacy $9.99 subscriber, unchanged.
   planTier: string | null;
 };
 

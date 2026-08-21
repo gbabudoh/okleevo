@@ -42,7 +42,7 @@ interface DashboardStat {
 const DEFAULT_STATS: DashboardStat[] = [
   {
     title: 'Total Revenue',
-    value: '£0',
+    value: '$0',
     change: '+0%',
     trend: 'up',
     icon: DollarSign,
@@ -180,7 +180,7 @@ export default function DashboardPage() {
           const mappedStats: DashboardStat[] = [
             {
               ...DEFAULT_STATS[0],
-              value: `£${(parseInt(kpis[0]?.value?.replace(/[^0-9]/g, '') || '0')).toLocaleString()}`,
+              value: `$${(parseInt(kpis[0]?.value?.replace(/[^0-9]/g, '') || '0')).toLocaleString()}`,
               change: `${kpis[0]?.change >= 0 ? '+' : ''}${kpis[0]?.change}%`,
               trend: kpis[0]?.change >= 0 ? 'up' : 'down',
             },
@@ -220,7 +220,7 @@ export default function DashboardPage() {
             type: a.type,
             title: `${a.type.charAt(0).toUpperCase() + a.type.slice(1)} ${a.action}: ${a.resource}`,
             client: a.user.name,
-            amount: a.metadata?.amount ? `£${a.metadata.amount.toLocaleString()}` : null,
+            amount: a.metadata?.amount ? `$${a.metadata.amount.toLocaleString()}` : null,
             time: new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             icon: a.type === 'invoice' ? DollarSign : a.type === 'contact' ? Users : a.type === 'task' ? CheckSquare : Mail,
             color: a.type === 'invoice' ? 'text-green-600' : a.type === 'contact' ? 'text-purple-600' : 'text-blue-600',
@@ -557,7 +557,7 @@ export default function DashboardPage() {
           const Icon = stat.icon;
           const TrendIcon = stat.trend === 'up' ? ArrowUpRight : ArrowDownRight;
           const isZeroChange = stat.change === '+0%' || stat.change === '0%';
-          const isHydrating = loading && (stat.value === '£0' || stat.value === '0');
+          const isHydrating = loading && (stat.value === '$0' || stat.value === '0');
           
           return (
             <div
@@ -759,7 +759,7 @@ export default function DashboardPage() {
       {/* Performance Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
         {[
-          { label: 'Monthly Revenue', value: stats[0]?.value || '£0', change: stats[0]?.change || '0%', sub: 'vs last month', icon: LineChart },
+          { label: 'Monthly Revenue', value: stats[0]?.value || '$0', change: stats[0]?.change || '0%', sub: 'vs last month', icon: LineChart },
           { label: 'Customer Growth', value: stats[1]?.change || '0%', change: stats[1]?.value || '0', sub: 'new customers', icon: Users },
           { label: 'Conversion Rate', value: stats[2]?.value || '0', change: stats[2]?.change || '0%', sub: 'improvement', icon: Target },
         ].map(({ label, value, change, sub, icon: Icon }) => (
@@ -802,7 +802,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{item.resource || 'Premium Item'}</p>
-                    <p className="text-[10px] font-mono font-bold text-slate-400">{item.amount || '£0'} revenue</p>
+                    <p className="text-[10px] font-mono font-bold text-slate-400">{item.amount || '$0'} revenue</p>
                   </div>
                   <div className="text-right shrink-0">
                     <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 rounded-full text-[9px] font-mono font-extrabold uppercase">

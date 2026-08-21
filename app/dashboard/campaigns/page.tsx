@@ -340,7 +340,7 @@ export default function CampaignsPage() {
             { label: 'Active',      value: activeCount.toString(),                     icon: Rocket,        bgGrad: 'from-orange-500 to-amber-600' },
             { label: 'Total Reach', value: (totalSent / 1000).toFixed(1) + 'k',        icon: Users,         bgGrad: 'from-emerald-500 to-teal-600' },
             { label: 'Avg Open',    value: avgEngagement.toFixed(1) + '%',              icon: MousePointer2, bgGrad: 'from-amber-500 to-orange-500' },
-            { label: 'Revenue',     value: '£' + (totalRevenue / 1000).toFixed(1) + 'k', icon: TrendingUp,  bgGrad: 'from-purple-500 to-indigo-600' },
+            { label: 'Revenue',     value: '$' + (totalRevenue / 1000).toFixed(1) + 'k', icon: TrendingUp,  bgGrad: 'from-purple-500 to-indigo-600' },
           ].map((s, i) => (
             <div key={i} className="bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-orange-300 transition-all group">
               <div className="flex items-center justify-between mb-3">
@@ -473,7 +473,7 @@ export default function CampaignsPage() {
                     {campaign.revenue > 0 && (
                       <div className="bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl px-4 py-2.5 flex items-center justify-between mt-auto shadow-2xs">
                         <p className="text-xs text-white/90 font-bold">Revenue</p>
-                        <p className="text-sm font-mono font-extrabold text-white">£{campaign.revenue.toLocaleString()}</p>
+                        <p className="text-sm font-mono font-extrabold text-white">${campaign.revenue.toLocaleString()}</p>
                       </div>
                     )}
 
@@ -564,7 +564,7 @@ export default function CampaignsPage() {
                         </td>
                         <td className="px-4 py-4 text-right whitespace-nowrap">
                           <span className="text-xs font-mono font-extrabold text-slate-900 dark:text-white">
-                            {campaign.revenue > 0 ? `£${campaign.revenue.toLocaleString()}` : '—'}
+                            {campaign.revenue > 0 ? `$${campaign.revenue.toLocaleString()}` : '—'}
                           </span>
                         </td>
                         <td className="px-4 py-4 text-right whitespace-nowrap">
@@ -928,7 +928,7 @@ export default function CampaignsPage() {
                     {editingCampaign && (editingCampaign.status === 'sent' || editingCampaign.status === 'completed') && (
                       <div>
                         <label className="block text-[11px] font-extrabold font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1.5">
-                          Revenue Generated (£)
+                          Revenue Generated ($)
                         </label>
                         <input
                           type="number"
@@ -1037,7 +1037,7 @@ export default function CampaignsPage() {
                 {[
                   { label: 'Opened', val: openRate(selectedReport), color: 'text-emerald-600', bg: 'bg-emerald-50' },
                   { label: 'Clicked', val: clickRate(selectedReport), color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                  { label: 'Revenue', val: `£${selectedReport.revenue.toLocaleString()}`, color: 'text-rose-600', bg: 'bg-rose-50' }
+                  { label: 'Revenue', val: `$${selectedReport.revenue.toLocaleString()}`, color: 'text-rose-600', bg: 'bg-rose-50' }
                 ].map((s, i) => (
                   <div key={i} className={`${s.bg} rounded-2xl p-4 text-center border border-white/50 shadow-sm`}>
                     <p className={`text-xl font-black ${s.color}`}>{s.val}</p>

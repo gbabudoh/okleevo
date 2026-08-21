@@ -75,7 +75,7 @@ export default function HRRecordsPage() {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'compliance' | 'timesheets'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [currencySymbol, setCurrencySymbol] = useState('£');
+  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [activeFormTab, setActiveFormTab] = useState<'personal' | 'role' | 'payroll' | 'leave'>('personal');
 
@@ -496,7 +496,6 @@ export default function HRRecordsPage() {
               onChange={e => setCurrencySymbol(e.target.value)}
               className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
             >
-              <option value="£">Currency: £ GBP</option>
               <option value="$">Currency: $ USD</option>
               <option value="€">Currency: € EUR</option>
             </select>
@@ -909,7 +908,7 @@ export default function HRRecordsPage() {
                 <th className="px-5 py-3">Department & Role</th>
                 <th className="px-5 py-3">Type</th>
                 <th className="px-5 py-3">HMRC Tax Code</th>
-                <th className="px-5 py-3">Salary (£)</th>
+                <th className="px-5 py-3">Salary ($)</th>
                 <th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>

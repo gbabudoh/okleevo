@@ -12,7 +12,7 @@ Okleevo is a comprehensive "Business-in-a-Box" SaaS platform designed to be the 
 ## 2. The value of the app and benefits
 - **Subscription Consolidation:** Replaces the need for 5-10 separate subscriptions (e.g., QuickBooks + HubSpot + Calendly + Mailchimp + Asana).
 - **Data Integrity:** Eliminates data silos; customer info flows seamlessly from CRM to Invoicing to Analytics.
-- **Cost Efficiency:** Offered at a fraction of the cost of individual enterprise tools (£19.99/month).
+- **Cost Efficiency:** Offered at a fraction of the cost of individual enterprise tools ($19.99/month).
 - **Operational Speed:** AI-integrated tools drastically reduce the time spent on content creation and data entry.
 
 ## 3. Pain point the app is solving

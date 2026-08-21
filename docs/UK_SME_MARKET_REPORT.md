@@ -7,7 +7,7 @@ The UK SME landscape is currently facing a "complexity crisis." With the average
 
 ## 1. Current Pain Points for UK SMEs
 Small and Medium Enterprises (SMEs) in the UK are currently struggling with:
-*   **The "SaaS Tax":** Paying multiple subscriptions for CRM, Invoicing, Project Management, and HR, often totaling £150-£300+ per month.
+*   **The "SaaS Tax":** Paying multiple subscriptions for CRM, Invoicing, Project Management, and HR, often totaling $150-$300+ per month.
 *   **Data Fragmentation:** Customer info is in one app, invoices in another, and stock levels in a third. This leads to manual data entry errors.
 *   **Regulatory Friction:** Keeping up with MTD (Making Tax Digital), GDPR, and UK employment law without expensive consultants.
 *   **Operational Overwhelm:** Business owners spending 40% of their week on administrative "busy work" rather than growth.
@@ -21,7 +21,7 @@ Okleevo transforms these pain points into strategic advantages by providing a un
 *   **Subscription Consolidation:** By replacing tools like Salesforce (CRM), Xero (Accounting), Monday.com (Tasks), and DocuSign (E-Signature), Okleevo reduces software overhead by up to **85%**.
 *   **Multi-User Scalability:** Unlike competitors that charge "per-seat," Okleevo includes **10 user seats** by default. This allows multiple users on one account, suitable for SMEs with small or large teams.
 *   **Operational Efficiency:** Automated invoice reminders and stock alerts reduce the need for administrative staff, saving thousands in annual payroll costs.
-*   **Integrated E-Signatures:** Eliminates the need for separate £20/mo signature tools while speeding up contract turnaround times.
+*   **Integrated E-Signatures:** Eliminates the need for separate $20/mo signature tools while speeding up contract turnaround times.
 
 ### ⚡ Productivity & Workflow
 *   **Zero-Entry Synergy:** Data flows seamlessly between modules. Converting a CRM Lead to an Invoice happens in one click, eliminating redundant data entry.

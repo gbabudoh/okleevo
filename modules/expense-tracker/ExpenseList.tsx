@@ -31,7 +31,7 @@ export function ExpenseList() {
               <tr key={exp.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">{exp.description}</td>
                 <td className="px-6 py-4">{exp.category}</td>
-                <td className="px-6 py-4 font-semibold">£{exp.amount}</td>
+                <td className="px-6 py-4 font-semibold">${exp.amount}</td>
                 <td className="px-6 py-4">{exp.date}</td>
               </tr>
             ))}

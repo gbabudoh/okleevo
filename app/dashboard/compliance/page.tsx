@@ -547,9 +547,9 @@ export default function CompliancePage() {
                   <TrendingUp className="w-4 h-4 text-gray-300" />
                 </div>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Annual Cost</p>
-                <p className="text-3xl font-bold text-gray-900">£{(totalCost / 1000).toFixed(0)}K</p>
+                <p className="text-3xl font-bold text-gray-900">${(totalCost / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-gray-400 mt-1">
-                  £{items.length > 0 ? (totalCost / items.length / 1000).toFixed(1) : '0.0'}K per item
+                  ${items.length > 0 ? (totalCost / items.length / 1000).toFixed(1) : '0.0'}K per item
                 </p>
               </div>
             </div>

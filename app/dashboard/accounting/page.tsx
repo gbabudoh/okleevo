@@ -134,7 +134,7 @@ const exportAccountingData = (
         doc.text(acc.code, 16, y);
         doc.text(acc.name, 40, y);
         doc.text(acc.type, 120, y);
-        doc.text(accounting.formatMoney(acc.balance, "£"), 170, y);
+        doc.text(accounting.formatMoney(acc.balance, "$"), 170, y);
         y += 7;
       });
     } else {
@@ -284,13 +284,13 @@ const exportReportPDF = (report: ReportDocument) => {
     section.rows.forEach((r) => {
       if (y > 270) { doc.addPage(); y = 20; }
       doc.text(r.label, 18, y);
-      doc.text(`£${r.amount.toLocaleString()}`, 196, y, { align: "right" });
+      doc.text(`$${r.amount.toLocaleString()}`, 196, y, { align: "right" });
       y += 6;
     });
     doc.setDrawColor(240); doc.line(14, y - 2, 196, y - 2);
     doc.setFont("helvetica", "bold");
     doc.text(section.totalLabel, 18, y + 3);
-    doc.text(`£${section.total.toLocaleString()}`, 196, y + 3, { align: "right" });
+    doc.text(`$${section.total.toLocaleString()}`, 196, y + 3, { align: "right" });
     y += 12;
     doc.setFont("helvetica", "normal");
   });
@@ -301,7 +301,7 @@ const exportReportPDF = (report: ReportDocument) => {
     report.summaryLines.forEach((l) => {
       doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(0);
       doc.text(l.label, 18, y);
-      doc.text(`£${l.amount.toLocaleString()}`, 192, y, { align: "right" });
+      doc.text(`$${l.amount.toLocaleString()}`, 192, y, { align: "right" });
       y += 7;
     });
     y += 6;
@@ -328,11 +328,11 @@ const exportReportCSV = (report: ReportDocument) => {
   let csv = `${report.title}\nGenerated: ${new Date().toLocaleString()}\n\n`;
   report.sections.forEach((section) => {
     csv += `${section.heading}\n`;
-    section.rows.forEach((r) => { csv += `"${r.label}",£${r.amount}\n`; });
-    csv += `"${section.totalLabel}",£${section.total}\n\n`;
+    section.rows.forEach((r) => { csv += `"${r.label}",$${r.amount}\n`; });
+    csv += `"${section.totalLabel}",$${section.total}\n\n`;
   });
   if (report.summaryLines.length > 0) {
-    report.summaryLines.forEach((l) => { csv += `"${l.label}",£${l.amount}\n`; });
+    report.summaryLines.forEach((l) => { csv += `"${l.label}",$${l.amount}\n`; });
   }
   if (report.note) csv += `\n"${report.note.replace(/"/g, '""')}"\n`;
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
@@ -513,7 +513,7 @@ const EntryForm = ({ onSave, onCancel, saveLabel = "Save Entry", newEntry, setNe
             </select>
           </div>
           <div>
-            <label className={labelCls}>Amount (£) *</label>
+            <label className={labelCls}>Amount ($) *</label>
             <input type="number" step="0.01" value={newEntry.debitAmount} onChange={(e) => setNewEntry({ ...newEntry, debitAmount: e.target.value })} placeholder="0.00" className={inputCls} />
           </div>
         </div>
@@ -533,7 +533,7 @@ const EntryForm = ({ onSave, onCancel, saveLabel = "Save Entry", newEntry, setNe
             </select>
           </div>
           <div>
-            <label className={labelCls}>Amount (£) *</label>
+            <label className={labelCls}>Amount ($) *</label>
             <input type="number" step="0.01" value={newEntry.creditAmount} onChange={(e) => setNewEntry({ ...newEntry, creditAmount: e.target.value })} placeholder="0.00" className={inputCls} />
           </div>
         </div>
@@ -543,7 +543,7 @@ const EntryForm = ({ onSave, onCancel, saveLabel = "Save Entry", newEntry, setNe
         <div className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-semibold ${isBalanced ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"}`}>
           {isBalanced
             ? <><CheckCircle className="w-4 h-4 shrink-0" /> Entry is balanced</>
-            : <><AlertCircle className="w-4 h-4 shrink-0" /> Difference: £{Math.abs(parseFloat(newEntry.debitAmount) - parseFloat(newEntry.creditAmount)).toFixed(2)}</>}
+            : <><AlertCircle className="w-4 h-4 shrink-0" /> Difference: ${Math.abs(parseFloat(newEntry.debitAmount) - parseFloat(newEntry.creditAmount)).toFixed(2)}</>}
         </div>
       )}
 
@@ -895,7 +895,7 @@ export default function AccountingPage() {
       summaryLines: [{ label: "Liabilities + Equity", amount: totalLiabilities + totalEquity }],
       note: balanced
         ? "Assets = Liabilities + Equity — the balance sheet balances."
-        : `Out of balance — Assets differ from Liabilities + Equity by £${Math.abs(totalAssets - (totalLiabilities + totalEquity)).toLocaleString()}.`,
+        : `Out of balance — Assets differ from Liabilities + Equity by $${Math.abs(totalAssets - (totalLiabilities + totalEquity)).toLocaleString()}.`,
     };
   };
 
@@ -960,7 +960,7 @@ export default function AccountingPage() {
       const res = await fetch("/api/accounting/year-end-close", { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        showToastMsg(`Fiscal year closed. £${Number(data.data.netIncome).toLocaleString()} net income moved to Retained Earnings.`);
+        showToastMsg(`Fiscal year closed. $${Number(data.data.netIncome).toLocaleString()} net income moved to Retained Earnings.`);
         globalMutate("/api/accounting/accounts");
         globalMutate("/api/accounting/journal");
         setShowYearEndCloseConfirm(false);
@@ -998,7 +998,7 @@ export default function AccountingPage() {
       ["Net Profit", financialSummary.netProfit],
     ].forEach(([label, value]) => {
       doc.text(String(label), 16, y);
-      doc.text(`£${Number(value).toLocaleString()}`, 180, y, { align: "right" });
+      doc.text(`$${Number(value).toLocaleString()}`, 180, y, { align: "right" });
       y += 7;
     });
 
@@ -1013,7 +1013,7 @@ export default function AccountingPage() {
       ["Total Equity", financialSummary.totalEquity],
     ].forEach(([label, value]) => {
       doc.text(String(label), 16, y);
-      doc.text(`£${Number(value).toLocaleString()}`, 180, y, { align: "right" });
+      doc.text(`$${Number(value).toLocaleString()}`, 180, y, { align: "right" });
       y += 7;
     });
 
@@ -1023,10 +1023,10 @@ export default function AccountingPage() {
     y += 8;
     doc.setFontSize(10); doc.setFont("helvetica", "normal");
     doc.text("Total Debits", 16, y);
-    doc.text(`£${trialBalanceDebitTotal.toLocaleString()}`, 180, y, { align: "right" });
+    doc.text(`$${trialBalanceDebitTotal.toLocaleString()}`, 180, y, { align: "right" });
     y += 7;
     doc.text("Total Credits", 16, y);
-    doc.text(`£${trialBalanceCreditTotal.toLocaleString()}`, 180, y, { align: "right" });
+    doc.text(`$${trialBalanceCreditTotal.toLocaleString()}`, 180, y, { align: "right" });
     y += 10;
 
     if (trialBalanceIsBalanced) {
@@ -1034,7 +1034,7 @@ export default function AccountingPage() {
       doc.text("✓ Trial Balance is balanced", 16, y);
     } else {
       doc.setTextColor(190, 30, 30);
-      doc.text(`⚠ Trial Balance is NOT balanced — difference of £${Math.abs(trialBalanceDebitTotal - trialBalanceCreditTotal).toLocaleString()}`, 16, y);
+      doc.text(`⚠ Trial Balance is NOT balanced — difference of $${Math.abs(trialBalanceDebitTotal - trialBalanceCreditTotal).toLocaleString()}`, 16, y);
     }
 
     doc.setTextColor(150);
@@ -1325,7 +1325,7 @@ export default function AccountingPage() {
                           <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide">Debit</span>
                         </div>
                         <p className="text-[11px] text-gray-500 truncate mb-0.5">{tx.entries[0]?.account.name}</p>
-                        <p className="text-sm font-bold text-emerald-800">{accounting.formatMoney(tx.entries[0]?.debit || 0, "£")}</p>
+                        <p className="text-sm font-bold text-emerald-800">{accounting.formatMoney(tx.entries[0]?.debit || 0, "$")}</p>
                       </div>
                       <div className="bg-rose-50 border border-rose-100 rounded-xl p-3">
                         <div className="flex items-center gap-1 mb-1">
@@ -1333,7 +1333,7 @@ export default function AccountingPage() {
                           <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wide">Credit</span>
                         </div>
                         <p className="text-[11px] text-gray-500 truncate mb-0.5">{tx.entries[1]?.account.name}</p>
-                        <p className="text-sm font-bold text-rose-800">{accounting.formatMoney(tx.entries[1]?.credit || 0, "£")}</p>
+                        <p className="text-sm font-bold text-rose-800">{accounting.formatMoney(tx.entries[1]?.credit || 0, "$")}</p>
                       </div>
                     </div>
                   </div>
@@ -1350,11 +1350,11 @@ export default function AccountingPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Total Debits</p>
-                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">£{trialBalanceDebitTotal.toLocaleString()}</p>
+                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">${trialBalanceDebitTotal.toLocaleString()}</p>
               </div>
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Total Credits</p>
-                <p className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">£{trialBalanceCreditTotal.toLocaleString()}</p>
+                <p className="text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">${trialBalanceCreditTotal.toLocaleString()}</p>
               </div>
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-slate-800 shadow-xs">
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Reconciliation Status</p>
@@ -1368,7 +1368,7 @@ export default function AccountingPage() {
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200/60 rounded-full text-xs font-bold mt-1">
-                    <AlertCircle className="w-3.5 h-3.5" /> Unbalanced (£{Math.abs(trialBalanceDebitTotal - trialBalanceCreditTotal).toLocaleString()})
+                    <AlertCircle className="w-3.5 h-3.5" /> Unbalanced (${Math.abs(trialBalanceDebitTotal - trialBalanceCreditTotal).toLocaleString()})
                   </span>
                 )}
               </div>
@@ -1421,8 +1421,8 @@ export default function AccountingPage() {
                       <tr>
                         <th className="px-5 py-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Code</th>
                         <th className="px-5 py-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Account Name</th>
-                        <th className="px-5 py-3 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider">Debit (£)</th>
-                        <th className="px-5 py-3 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider">Credit (£)</th>
+                        <th className="px-5 py-3 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider">Debit ($)</th>
+                        <th className="px-5 py-3 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider">Credit ($)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
@@ -1431,10 +1431,10 @@ export default function AccountingPage() {
                           <td className="px-5 py-3 font-mono text-xs font-bold text-gray-900 dark:text-white">{a.code}</td>
                           <td className="px-5 py-3 text-sm font-semibold text-gray-900 dark:text-white">{a.name}</td>
                           <td className="px-5 py-3 text-right text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
-                            {["asset", "expense"].includes(a.type) ? `£${a.balance.toLocaleString()}` : "—"}
+                            {["asset", "expense"].includes(a.type) ? `$${a.balance.toLocaleString()}` : "—"}
                           </td>
                           <td className="px-5 py-3 text-right text-sm font-extrabold text-rose-600 dark:text-rose-400">
-                            {["liability", "equity", "revenue"].includes(a.type) ? `£${a.balance.toLocaleString()}` : "—"}
+                            {["liability", "equity", "revenue"].includes(a.type) ? `$${a.balance.toLocaleString()}` : "—"}
                           </td>
                         </tr>
                       ))}
@@ -1443,10 +1443,10 @@ export default function AccountingPage() {
                       <tr>
                         <td colSpan={2} className="px-5 py-4 text-sm font-extrabold text-gray-900 dark:text-white uppercase tracking-wider">Total Ledger Balances</td>
                         <td className="px-5 py-4 text-right text-sm font-black text-emerald-600 dark:text-emerald-400">
-                          £{trialBalanceDebitTotal.toLocaleString()}
+                          ${trialBalanceDebitTotal.toLocaleString()}
                         </td>
                         <td className="px-5 py-4 text-right text-sm font-black text-rose-600 dark:text-rose-400">
-                          £{trialBalanceCreditTotal.toLocaleString()}
+                          ${trialBalanceCreditTotal.toLocaleString()}
                         </td>
                       </tr>
                     </tfoot>
@@ -1497,7 +1497,7 @@ export default function AccountingPage() {
                   bgGrad: "from-blue-500 to-indigo-600",
                   desc: "Income vs expenses, gross margin & net profit at a glance",
                   metricLabel: "Current Net Profit",
-                  metricVal: `£${financialSummary.netProfit.toLocaleString()}`,
+                  metricVal: `$${financialSummary.netProfit.toLocaleString()}`,
                   metricCls: financialSummary.netProfit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400",
                 },
                 {
@@ -1506,7 +1506,7 @@ export default function AccountingPage() {
                   bgGrad: "from-emerald-500 to-teal-600",
                   desc: "Snapshot of total assets, liabilities & owner equity balance",
                   metricLabel: "Net Worth (Assets - Liab)",
-                  metricVal: `£${(financialSummary.totalAssets - financialSummary.totalLiabilities).toLocaleString()}`,
+                  metricVal: `$${(financialSummary.totalAssets - financialSummary.totalLiabilities).toLocaleString()}`,
                   metricCls: "text-indigo-600 dark:text-indigo-400",
                 },
                 {
@@ -1515,7 +1515,7 @@ export default function AccountingPage() {
                   bgGrad: "from-amber-500 to-orange-600",
                   desc: "Tracking operating, investing & financing liquidity flows",
                   metricLabel: "Total Cash & Assets",
-                  metricVal: `£${financialSummary.totalAssets.toLocaleString()}`,
+                  metricVal: `$${financialSummary.totalAssets.toLocaleString()}`,
                   metricCls: "text-blue-600 dark:text-blue-400",
                 },
                 {
@@ -1524,7 +1524,7 @@ export default function AccountingPage() {
                   bgGrad: "from-purple-500 to-indigo-600",
                   desc: "Outstanding customer invoice aging breakdown (30/60/90+ days)",
                   metricLabel: "Total Outstanding Sales",
-                  metricVal: `£${financialSummary.totalRevenue.toLocaleString()}`,
+                  metricVal: `$${financialSummary.totalRevenue.toLocaleString()}`,
                   metricCls: "text-purple-600 dark:text-purple-400",
                 },
                 {
@@ -1533,7 +1533,7 @@ export default function AccountingPage() {
                   bgGrad: "from-rose-500 to-red-600",
                   desc: "Vendor bills & supplier payment schedules due",
                   metricLabel: "Total Outstanding Bills",
-                  metricVal: `£${financialSummary.totalLiabilities.toLocaleString()}`,
+                  metricVal: `$${financialSummary.totalLiabilities.toLocaleString()}`,
                   metricCls: "text-rose-600 dark:text-rose-400",
                 },
                 {
@@ -1542,7 +1542,7 @@ export default function AccountingPage() {
                   bgGrad: "from-teal-500 to-emerald-600",
                   desc: "Estimated Output vs Input VAT tax breakdown for HMRC returns",
                   metricLabel: "Est. VAT Liability (20%)",
-                  metricVal: `£${(financialSummary.totalRevenue * 0.2).toLocaleString()}`,
+                  metricVal: `$${(financialSummary.totalRevenue * 0.2).toLocaleString()}`,
                   metricCls: "text-teal-600 dark:text-teal-400",
                 },
               ].map(({ type, Icon, bgGrad, desc, metricLabel, metricVal, metricCls }) => (
@@ -1747,14 +1747,14 @@ export default function AccountingPage() {
                 <ArrowUpRight className="w-3 h-3" /> Debit
               </p>
               <p className="text-xs text-gray-500 mb-1">{selectedEntry.entries[0]?.account.name}</p>
-              <p className="text-lg font-bold text-emerald-900">£{(selectedEntry.entries[0]?.debit || 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-emerald-900">${(selectedEntry.entries[0]?.debit || 0).toLocaleString()}</p>
             </div>
             <div className="bg-rose-50 border border-rose-100 rounded-xl p-4">
               <p className="text-[10px] font-bold text-rose-700 uppercase tracking-wide mb-1 flex items-center gap-1">
                 <ArrowDownRight className="w-3 h-3" /> Credit
               </p>
               <p className="text-xs text-gray-500 mb-1">{selectedEntry.entries[1]?.account.name}</p>
-              <p className="text-lg font-bold text-rose-900">£{(selectedEntry.entries[1]?.credit || 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-rose-900">${(selectedEntry.entries[1]?.credit || 0).toLocaleString()}</p>
             </div>
           </div>
           <div>
@@ -1800,7 +1800,7 @@ export default function AccountingPage() {
           </div>
 
           <div>
-            <label className={labelCls}>Opening Balance (£)</label>
+            <label className={labelCls}>Opening Balance ($)</label>
             <input type="number" step="0.01" value={newAccount.openingBalance} onChange={(e) => setNewAccount({ ...newAccount, openingBalance: e.target.value })} placeholder="0.00" className={inputCls} />
           </div>
 
@@ -1860,7 +1860,7 @@ export default function AccountingPage() {
           </div>
           <div>
             <p className={labelCls}>Balance</p>
-            <p className="text-2xl font-bold text-gray-900">£{selectedAccount.balance.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-gray-900">${selectedAccount.balance.toLocaleString()}</p>
           </div>
           <div>
             <p className={labelCls}>Last Transaction</p>
@@ -1893,7 +1893,7 @@ export default function AccountingPage() {
             <AccountTypeSelector newAccount={newAccount} setNewAccount={setNewAccount} />
           </div>
           <div>
-            <label className={labelCls}>Balance (£)</label>
+            <label className={labelCls}>Balance ($)</label>
             <input type="number" step="0.01" value={newAccount.openingBalance} onChange={(e) => setNewAccount({ ...newAccount, openingBalance: e.target.value })} className={inputCls} />
           </div>
           {newAccount.type === "asset" && (
@@ -2015,14 +2015,14 @@ export default function AccountingPage() {
                       {section.rows.map((r) => (
                         <div key={r.label} className="flex items-center justify-between text-sm">
                           <span className="text-gray-600">{r.label}</span>
-                          <span className="font-medium text-gray-900">£{r.amount.toLocaleString()}</span>
+                          <span className="font-medium text-gray-900">${r.amount.toLocaleString()}</span>
                         </div>
                       ))}
                     </div>
                   )}
                   <div className="flex items-center justify-between text-sm font-bold text-gray-900 mt-2 pt-2 border-t border-gray-200">
                     <span>{section.totalLabel}</span>
-                    <span>£{section.total.toLocaleString()}</span>
+                    <span>${section.total.toLocaleString()}</span>
                   </div>
                 </div>
               ))}
@@ -2030,7 +2030,7 @@ export default function AccountingPage() {
                 {previewReport.summaryLines.map((l) => (
                   <div key={l.label} className="flex items-center justify-between text-sm font-bold text-blue-900">
                     <span>{l.label}</span>
-                    <span>£{l.amount.toLocaleString()}</span>
+                    <span>${l.amount.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -2097,7 +2097,7 @@ export default function AccountingPage() {
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Net Income to close</span>
               <span className={`font-bold ${financialSummary.netProfit >= 0 ? "text-emerald-700" : "text-red-700"}`}>
-                £{financialSummary.netProfit.toLocaleString()}
+                ${financialSummary.netProfit.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">

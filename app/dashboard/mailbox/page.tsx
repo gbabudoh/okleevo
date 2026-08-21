@@ -872,7 +872,7 @@ export default function MailboxPage() {
                               <div key={inv.id} className="flex items-center justify-between text-xs bg-white dark:bg-slate-950 rounded-2xl px-3 py-2 border border-slate-200/80 dark:border-slate-800">
                                 <span className="font-mono font-extrabold text-slate-900 dark:text-white">{inv.number}</span>
                                 <span className="flex items-center gap-2">
-                                  <span className="font-mono font-bold text-slate-500 dark:text-slate-400">£{inv.amount.toFixed(2)}</span>
+                                  <span className="font-mono font-bold text-slate-500 dark:text-slate-400">${inv.amount.toFixed(2)}</span>
                                   <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${
                                     inv.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' :
                                     inv.status === 'OVERDUE' ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400' :

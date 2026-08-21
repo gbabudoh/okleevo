@@ -319,7 +319,7 @@ model Invoice {
   clientAddress String?
 
   amount   Float
-  currency String        @default("GBP")
+  currency String        @default("USD")
   status   InvoiceStatus @default(DRAFT)
   category String?       @default("Sales")
 
@@ -455,7 +455,7 @@ model Expense {
 
   description String
   amount      Float
-  currency    String @default("GBP")
+  currency    String @default("USD")
   category    String
 
   receipt String? // URL to receipt image

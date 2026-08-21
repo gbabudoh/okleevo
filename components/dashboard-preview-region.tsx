@@ -560,12 +560,12 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-slate-900/60 p-4 rounded-xl border border-white/10 shadow-lg hover:border-white/20 transition-all">
                       <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-medium">Unpaid Billing</p>
-                      <h4 className="text-2xl font-bold font-mono text-rose-400 mt-1">£{invUnpaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</h4>
+                      <h4 className="text-2xl font-bold font-mono text-rose-400 mt-1">${invUnpaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</h4>
                       <p className="text-[10px] text-slate-500 mt-1">{invCount} pending bills</p>
                     </div>
                     <div className="bg-slate-900/60 p-4 rounded-xl border border-white/10 shadow-lg hover:border-white/20 transition-all">
                       <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-medium">CRM Leads Pipeline</p>
-                      <h4 className="text-2xl font-bold font-mono text-indigo-400 mt-1">£{crmTotalRev.toLocaleString(undefined, {minimumFractionDigits: 2})}</h4>
+                      <h4 className="text-2xl font-bold font-mono text-indigo-400 mt-1">${crmTotalRev.toLocaleString(undefined, {minimumFractionDigits: 2})}</h4>
                       <p className="text-[10px] text-slate-500 mt-1">{crmClients} pipeline contacts</p>
                     </div>
                     <div className="bg-slate-900/60 p-4 rounded-xl border border-white/10 shadow-lg hover:border-white/20 transition-all">
@@ -644,7 +644,7 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                     <div className="flex justify-between items-center bg-slate-900/60 p-4 rounded-xl border border-white/10 shadow-sm">
                       <div>
                         <span className="text-[10px] font-mono uppercase text-slate-400">Outstanding Total</span>
-                        <p className="text-xl font-bold font-mono text-rose-400 mt-0.5">£{invUnpaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                        <p className="text-xl font-bold font-mono text-rose-400 mt-0.5">${invUnpaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] font-mono uppercase text-slate-400">Active Records</span>
@@ -664,7 +664,7 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                           <div key={idx} className="px-4 py-3 flex text-xs items-center hover:bg-white/[0.02] transition-colors">
                             <span className="w-1/4 font-mono text-slate-400">{inv.number}</span>
                             <span className="w-2/5 font-medium text-slate-200 truncate">{inv.client}</span>
-                            <span className="w-1/5 text-right font-mono font-semibold text-slate-200">£{inv.amount.toLocaleString()}</span>
+                            <span className="w-1/5 text-right font-mono font-semibold text-slate-200">${inv.amount.toLocaleString()}</span>
                             <div className="w-1/4 text-right">
                               {inv.status === "Paid" ? (
                                 <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-mono text-[10px]">
@@ -723,7 +723,7 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                               <span className="px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded text-[9px] font-mono">
                                 {contact.stage}
                               </span>
-                              <span className="font-mono font-medium text-slate-300">£{contact.value.toLocaleString()}</span>
+                              <span className="font-mono font-medium text-slate-300">${contact.value.toLocaleString()}</span>
                             </div>
                           </div>
                         ))}
@@ -746,7 +746,7 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                             </div>
                             <div className="flex justify-between">
                               <span className="text-slate-400">Value:</span>
-                              <span className="font-mono font-semibold text-indigo-400">£{selectedCrmContact.value.toLocaleString()}</span>
+                              <span className="font-mono font-semibold text-indigo-400">${selectedCrmContact.value.toLocaleString()}</span>
                             </div>
                             <div className="pt-2">
                               <span className="text-slate-400 block mb-1.5 text-[10px]">Actions:</span>
@@ -1024,7 +1024,7 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                               </span>
                             </div>
                             <div className="w-1/4 text-right font-mono font-medium text-slate-300">
-                              £{item.price.toFixed(2)}
+                              ${item.price.toFixed(2)}
                             </div>
                             <div className="w-1/6 flex justify-end gap-1">
                               <button
@@ -1138,7 +1138,7 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] text-slate-400 mb-1">Amount (£)</label>
+                          <label className="block text-[10px] text-slate-400 mb-1">Amount ($)</label>
                           <input
                             type="number"
                             step="0.01"
@@ -1172,7 +1172,7 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                             </div>
                             <span className="w-1/4 text-slate-400 self-center">{exp.category}</span>
                             <span className="w-1/4 text-right font-mono font-semibold text-slate-200 self-center">
-                              £{exp.amount.toFixed(2)}
+                              ${exp.amount.toFixed(2)}
                             </span>
                           </div>
                         ))}
@@ -1204,20 +1204,20 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                         <div className="px-4 py-2.5 flex items-center">
                           <span className="w-2/5 font-medium text-slate-200">Bank Current Account</span>
                           <span className="w-1/5 text-slate-500 font-mono">1200</span>
-                          <span className="w-1/5 text-right font-mono text-slate-300">£14,250.00</span>
+                          <span className="w-1/5 text-right font-mono text-slate-300">$14,250.00</span>
                           <span className="w-1/5 text-right text-slate-600">-</span>
                         </div>
                         <div className="px-4 py-2.5 flex items-center">
                           <span className="w-2/5 font-medium text-slate-200">Accounts Receivable</span>
                           <span className="w-1/5 text-slate-500 font-mono">1100</span>
-                          <span className="w-1/5 text-right font-mono text-slate-300">£{invUnpaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                          <span className="w-1/5 text-right font-mono text-slate-300">${invUnpaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                           <span className="w-1/5 text-right text-slate-600">-</span>
                         </div>
                         <div className="px-4 py-2.5 flex items-center">
                           <span className="w-2/5 font-medium text-slate-200">Sales Revenues</span>
                           <span className="w-1/5 text-slate-500 font-mono">4000</span>
                           <span className="w-1/5 text-right text-slate-600">-</span>
-                          <span className="w-1/5 text-right font-mono text-slate-300">£{(14250 + invUnpaid).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                          <span className="w-1/5 text-right font-mono text-slate-300">${(14250 + invUnpaid).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                         </div>
                       </div>
                     </div>
@@ -1239,17 +1239,17 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="bg-slate-900/60 p-3.5 border border-white/10 rounded-xl shadow-sm">
                         <span className="text-[9px] font-mono uppercase text-slate-400">Box 1: Sales VAT</span>
-                        <p className="text-base font-mono font-bold text-slate-200 mt-1">£{(crmTotalRev * 0.2).toLocaleString(undefined, {maximumFractionDigits: 2})}</p>
+                        <p className="text-base font-mono font-bold text-slate-200 mt-1">${(crmTotalRev * 0.2).toLocaleString(undefined, {maximumFractionDigits: 2})}</p>
                         <span className="text-[8px] text-slate-500">Standard 20%</span>
                       </div>
                       <div className="bg-slate-900/60 p-3.5 border border-white/10 rounded-xl shadow-sm">
                         <span className="text-[9px] font-mono uppercase text-slate-400">Box 4: Reclaimed</span>
-                        <p className="text-base font-mono font-bold text-slate-200 mt-1">£340.50</p>
+                        <p className="text-base font-mono font-bold text-slate-200 mt-1">$340.50</p>
                         <span className="text-[8px] text-slate-500">Purchases & Expenses</span>
                       </div>
                       <div className="bg-slate-900/60 p-3.5 border border-indigo-500/30 rounded-xl shadow-sm">
                         <span className="text-[9px] font-mono uppercase text-indigo-400">Box 5: Net Payable</span>
-                        <p className="text-base font-mono font-bold text-indigo-400 mt-1">£{Math.max(0, (crmTotalRev * 0.2) - 340.50).toLocaleString(undefined, {maximumFractionDigits: 2})}</p>
+                        <p className="text-base font-mono font-bold text-indigo-400 mt-1">${Math.max(0, (crmTotalRev * 0.2) - 340.50).toLocaleString(undefined, {maximumFractionDigits: 2})}</p>
                         <span className="text-[8px] text-slate-500">Due to HMRC</span>
                       </div>
                     </div>
@@ -1272,22 +1272,22 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                       <div className="bg-slate-900/60 p-3.5 border border-white/10 rounded-xl space-y-2 text-xs shadow-sm">
                         <p className="font-medium text-slate-200 border-b border-white/10 pb-1.5 flex justify-between">
                           <span>Inflows (Receivables)</span>
-                          <span className="text-emerald-400 font-mono">+£14,250.00</span>
+                          <span className="text-emerald-400 font-mono">+$14,250.00</span>
                         </p>
                         <div className="space-y-1 text-slate-400">
-                          <p className="flex justify-between"><span>DesignCo Contract</span><span className="font-mono text-slate-300">£4,500.00</span></p>
-                          <p className="flex justify-between"><span>Jenkins Legal</span><span className="font-mono text-slate-300">£3,200.00</span></p>
+                          <p className="flex justify-between"><span>DesignCo Contract</span><span className="font-mono text-slate-300">$4,500.00</span></p>
+                          <p className="flex justify-between"><span>Jenkins Legal</span><span className="font-mono text-slate-300">$3,200.00</span></p>
                         </div>
                       </div>
 
                       <div className="bg-slate-900/60 p-3.5 border border-white/10 rounded-xl space-y-2 text-xs shadow-sm">
                         <p className="font-medium text-slate-200 border-b border-white/10 pb-1.5 flex justify-between">
                           <span>Outflows (Operating)</span>
-                          <span className="text-rose-400 font-mono">-£2,450.00</span>
+                          <span className="text-rose-400 font-mono">-$2,450.00</span>
                         </p>
                         <div className="space-y-1 text-slate-400">
-                          <p className="flex justify-between"><span>Office Workspace</span><span className="font-mono text-slate-300">£1,200.00</span></p>
-                          <p className="flex justify-between"><span>HR Seats</span><span className="font-mono text-slate-300">£950.00</span></p>
+                          <p className="flex justify-between"><span>Office Workspace</span><span className="font-mono text-slate-300">$1,200.00</span></p>
+                          <p className="flex justify-between"><span>HR Seats</span><span className="font-mono text-slate-300">$950.00</span></p>
                         </div>
                       </div>
                     </div>
@@ -1309,16 +1309,16 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                     <div className="bg-slate-900/60 border border-white/10 rounded-xl p-4 space-y-3 text-xs shadow-sm">
                       <div className="flex justify-between border-b border-white/5 pb-1.5">
                         <span className="text-slate-400">Net Revenues:</span>
-                        <span className="font-mono font-medium text-slate-200">£{crmTotalRev.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        <span className="font-mono font-medium text-slate-200">${crmTotalRev.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                       </div>
                       <div className="flex justify-between border-b border-white/5 pb-1.5">
                         <span className="text-slate-400">Deductible Expenses:</span>
-                        <span className="font-mono font-medium text-slate-200">£2,450.00</span>
+                        <span className="font-mono font-medium text-slate-200">$2,450.00</span>
                       </div>
                       <div className="flex justify-between items-center bg-indigo-500/10 p-2.5 border border-indigo-500/20 rounded-lg">
                         <span className="text-indigo-300 font-medium">Estimated Corp Tax (19% Rate)</span>
                         <span className="font-mono font-bold text-indigo-400 text-sm">
-                          £{Math.max(0, (crmTotalRev - 3300) * 0.19).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                          ${Math.max(0, (crmTotalRev - 3300) * 0.19).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                         </span>
                       </div>
                     </div>
@@ -1518,15 +1518,15 @@ export function DashboardPreviewRegion({ initialConfig }: DashboardPreviewRegion
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div className="bg-slate-900/60 p-3.5 border border-white/10 rounded-xl shadow-sm">
                         <span className="text-[9px] font-mono uppercase text-slate-400">MRR Forecast</span>
-                        <p className="text-base font-mono font-bold text-slate-200 mt-1">£4,850.00</p>
+                        <p className="text-base font-mono font-bold text-slate-200 mt-1">$4,850.00</p>
                       </div>
                       <div className="bg-slate-900/60 p-3.5 border border-white/10 rounded-xl shadow-sm">
                         <span className="text-[9px] font-mono uppercase text-slate-400">CAC Cost</span>
-                        <p className="text-base font-mono font-bold text-slate-200 mt-1">£42.50</p>
+                        <p className="text-base font-mono font-bold text-slate-200 mt-1">$42.50</p>
                       </div>
                       <div className="bg-slate-900/60 p-3.5 border border-white/10 rounded-xl shadow-sm">
                         <span className="text-[9px] font-mono uppercase text-slate-400">LTV Value</span>
-                        <p className="text-base font-mono font-bold text-slate-200 mt-1">£380.00</p>
+                        <p className="text-base font-mono font-bold text-slate-200 mt-1">$380.00</p>
                       </div>
                       <div className="bg-slate-900/60 p-3.5 border border-white/10 rounded-xl shadow-sm">
                         <span className="text-[9px] font-mono uppercase text-slate-400">NPS Rating</span>

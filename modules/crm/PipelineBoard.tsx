@@ -155,7 +155,7 @@ export function PipelineBoard({
                 </span>
               </div>
               <p className="text-xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">
-                £{stageValue.toLocaleString()}
+                ${stageValue.toLocaleString()}
               </p>
               <div className={`h-1 mt-2.5 rounded-full bg-gradient-to-r ${stage.accent}`} />
             </div>
@@ -207,7 +207,7 @@ export function PipelineBoard({
                       {client.status}
                     </span>
                     <span className="text-xs font-extrabold font-mono text-slate-900 dark:text-white">
-                      £{client.revenue.toLocaleString()}
+                      ${client.revenue.toLocaleString()}
                     </span>
                   </div>
                 </div>

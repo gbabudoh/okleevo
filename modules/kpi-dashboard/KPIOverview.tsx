@@ -3,7 +3,7 @@ import { BarChart3, TrendingUp, Target } from 'lucide-react';
 
 export function KPIOverview() {
   const kpis = [
-    { name: 'Revenue', value: '£45,230', change: '+12.5%', trend: 'up' },
+    { name: 'Revenue', value: '$45,230', change: '+12.5%', trend: 'up' },
     { name: 'Customers', value: '1,234', change: '+8.2%', trend: 'up' },
     { name: 'Conversion Rate', value: '3.2%', change: '-1.1%', trend: 'down' },
   ];

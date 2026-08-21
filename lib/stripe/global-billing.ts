@@ -4,7 +4,7 @@ import { stripe, createStripeCustomer } from './billing';
 
 /**
  * Global pivot: USD tiered pricing (Starter/Growth/Scale), layered on top of
- * the legacy flat £9.99 plan without touching it. Existing subscribers keep
+ * the legacy flat $9.99 plan without touching it. Existing subscribers keep
  * their current Subscription row (plan: 'all-in-one', currency: 'gbp')
  * completely untouched — this module only ever runs for a workspace that
  * explicitly starts a checkout session below, which sets

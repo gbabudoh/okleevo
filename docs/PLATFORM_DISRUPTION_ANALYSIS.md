@@ -20,7 +20,7 @@ This review analyzes the disruption potential of these new features and how they
 ### B. The Integrated Campaign Engine
 *   **The Old Way:** Exporting CSVs from the CRM, importing them into Mailchimp, managing bounces externally, and struggling to attribute revenue back to the original CRM record.
 *   **The Okleevo Way:** Launching promotional or newsletter campaigns directly from the database. 
-*   **The Impact:** Zero-latency segmentation. You can target "VIP Clients with Revenue > £5,000" and launch a campaign in seconds. More importantly, engagement stats (opens/clicks) and generated revenue are instantly tied back to the specific client profile.
+*   **The Impact:** Zero-latency segmentation. You can target "VIP Clients with Revenue > $5,000" and launch a campaign in seconds. More importantly, engagement stats (opens/clicks) and generated revenue are instantly tied back to the specific client profile.
 
 ### C. Video/Voice Collaboration
 *   **The Old Way:** Paying for Zoom licenses and scheduling via external calendar links. Internal teams using Slack or Microsoft Teams.

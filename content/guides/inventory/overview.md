@@ -15,7 +15,7 @@ Inventory is a real-time stock tracking module — add products, watch quantity 
 
 ## Stats at a glance
 
-The header shows Stock Value (£), Total Units, Alerts (low + out of stock combined), and total Products.
+The header shows Stock Value ($), Total Units, Alerts (low + out of stock combined), and total Products.
 
 ## Who it's for
 
@@ -23,4 +23,4 @@ Anyone responsible for keeping physical or digital stock levels accurate and avo
 
 ## Good to know
 
-Stock value and currency are shown in £ throughout this module.
+Stock value and currency are shown in $ throughout this module.

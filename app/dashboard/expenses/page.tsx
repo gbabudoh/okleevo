@@ -282,7 +282,7 @@ export default function ExpensesPage() {
     ]);
     let csv = 'Expense Report\n';
     csv += `Generated: ${new Date().toLocaleDateString()}\n`;
-    csv += `Total Expenses: £${totalExpenses.toLocaleString()}\n\n`;
+    csv += `Total Expenses: $${totalExpenses.toLocaleString()}\n\n`;
     csv += headers.join(',') + '\n';
     csv += rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -361,14 +361,14 @@ export default function ExpensesPage() {
           {[
             {
               label: 'Total Spent',
-              value: `£${totalExpenses.toLocaleString()}`,
+              value: `$${totalExpenses.toLocaleString()}`,
               sub:   `${filteredExpenses.length} records`,
               icon:  TrendingDown,
               bgGrad: 'bg-gradient-to-br from-rose-500 to-red-600',
             },
             {
               label: 'Avg per Item',
-              value: `£${Math.round(avgExpense).toLocaleString()}`,
+              value: `$${Math.round(avgExpense).toLocaleString()}`,
               sub:   'per transaction',
               icon:  BarChart3,
               bgGrad: 'bg-gradient-to-br from-blue-500 to-indigo-600',
@@ -383,7 +383,7 @@ export default function ExpensesPage() {
             {
               label: 'Top Category',
               value: topCategory ? topCategory[0] : '—',
-              sub:   topCategory ? `£${topCategory[1].toLocaleString()}` : 'No data',
+              sub:   topCategory ? `$${topCategory[1].toLocaleString()}` : 'No data',
               icon:  Tag,
               bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600',
             },
@@ -467,7 +467,7 @@ export default function ExpensesPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[11px] font-semibold text-gray-500 truncate">{name}</p>
-                      <p className="text-xs font-bold text-gray-900">£{amount.toLocaleString()}</p>
+                      <p className="text-xs font-bold text-gray-900">${amount.toLocaleString()}</p>
                     </div>
                     <span className="text-[11px] font-bold text-gray-400 shrink-0">{pct}%</span>
                   </div>
@@ -532,7 +532,7 @@ export default function ExpensesPage() {
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span className="text-sm font-bold text-gray-900 mr-1">
-                        £{expense.amount.toLocaleString()}
+                        ${expense.amount.toLocaleString()}
                       </span>
                       <button
                         onClick={() => { setSelectedExpense(expense); setSelectedEditFile(null); setShowEditModal(true); }}
@@ -626,7 +626,7 @@ export default function ExpensesPage() {
 
             <div className="grid grid-cols-2 gap-2.5">
               <div>
-                <label className={labelCls}>Amount (£)</label>
+                <label className={labelCls}>Amount ($)</label>
                 <div className="relative">
                   <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
@@ -650,7 +650,7 @@ export default function ExpensesPage() {
             </div>
 
             <div>
-              <label className={labelCls}>VAT Amount (£) <span className="text-gray-400 font-normal normal-case">— optional</span></label>
+              <label className={labelCls}>VAT Amount ($) <span className="text-gray-400 font-normal normal-case">— optional</span></label>
               <div className="relative">
                 <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -738,7 +738,7 @@ export default function ExpensesPage() {
 
             <div className="grid grid-cols-2 gap-2.5">
               <div>
-                <label className={labelCls}>Amount (£)</label>
+                <label className={labelCls}>Amount ($)</label>
                 <div className="relative">
                   <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
@@ -761,7 +761,7 @@ export default function ExpensesPage() {
             </div>
 
             <div>
-              <label className={labelCls}>VAT Amount (£) <span className="text-gray-400 font-normal normal-case">— optional</span></label>
+              <label className={labelCls}>VAT Amount ($) <span className="text-gray-400 font-normal normal-case">— optional</span></label>
               <div className="relative">
                 <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -856,7 +856,7 @@ export default function ExpensesPage() {
                     <div>
                       <p>{selectedExpense.receiptValidationNotes}</p>
                       {selectedExpense.vatNumber && <p className="mt-0.5 font-semibold">VAT No: {selectedExpense.vatNumber}</p>}
-                      {selectedExpense.vatAmount != null && <p className="font-semibold">VAT Amount: £{selectedExpense.vatAmount.toFixed(2)}</p>}
+                      {selectedExpense.vatAmount != null && <p className="font-semibold">VAT Amount: ${selectedExpense.vatAmount.toFixed(2)}</p>}
                     </div>
                   </div>
                 )}
@@ -899,7 +899,7 @@ export default function ExpensesPage() {
           }}
           title="Delete Expense"
           itemName={deletingExpense.title}
-          itemDetails={`£${deletingExpense.amount.toLocaleString()} - ${deletingExpense.category} - ${new Date(deletingExpense.date).toLocaleDateString()}`}
+          itemDetails={`$${deletingExpense.amount.toLocaleString()} - ${deletingExpense.category} - ${new Date(deletingExpense.date).toLocaleDateString()}`}
           warningMessage="This will permanently remove this expense record."
         />
       )}

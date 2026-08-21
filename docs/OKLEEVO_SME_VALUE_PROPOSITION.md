@@ -4,17 +4,17 @@
 
 As a UK SME owner, you're juggling multiple responsibilities every day. You're wearing many hats - accountant, marketer, sales manager, customer service rep, and more. And to manage all these roles, you're probably paying for:
 
-- 💰 Accounting software (£20-50/month)
-- 💰 CRM system (£25-75/month)
-- 💰 Email marketing tool (£15-40/month)
-- 💰 Project management app (£10-30/month)
-- 💰 Invoicing software (£15-35/month)
-- 💰 Booking system (£20-45/month)
-- 💰 Form builder (£10-25/month)
-- 💰 Document management (£15-30/month)
+- 💰 Accounting software ($20-50/month)
+- 💰 CRM system ($25-75/month)
+- 💰 Email marketing tool ($15-40/month)
+- 💰 Project management app ($10-30/month)
+- 💰 Invoicing software ($15-35/month)
+- 💰 Booking system ($20-45/month)
+- 💰 Form builder ($10-25/month)
+- 💰 Document management ($15-30/month)
 
-**Total Monthly Cost: £130-330+ per month**
-**Annual Cost: £1,560-3,960+**
+**Total Monthly Cost: $130-330+ per month**
+**Annual Cost: $1,560-3,960+**
 
 Plus the hidden costs:
 - ⏰ Hours spent switching between platforms
@@ -25,14 +25,14 @@ Plus the hidden costs:
 
 ## The Okleevo Solution: One Platform, Everything You Need
 
-### 💷 Save Money: £19.99/Month for Everything
+### 💷 Save Money: $19.99/Month for Everything
 
-Instead of paying for 8-10 different tools, get **all 20 business modules** for just £19.99/month.
+Instead of paying for 8-10 different tools, get **all 20 business modules** for just $19.99/month.
 
 **Your Savings:**
-- Traditional approach: £130-330/month
-- Okleevo: £19.99/month
-- **You Save: £110-310/month (£1,320-3,720/year)**
+- Traditional approach: $130-330/month
+- Okleevo: $19.99/month
+- **You Save: $110-310/month ($1,320-3,720/year)**
 
 That's enough to:
 - Hire a part-time employee
@@ -172,36 +172,36 @@ Manage your business from anywhere:
 ### Scenario 1: The Solo Consultant
 **Before Okleevo:**
 - Using 6 different tools
-- Spending £145/month
+- Spending $145/month
 - 12 hours/week on admin
 - Missing follow-ups
 - Stressed and overwhelmed
 
 **After Okleevo:**
 - One platform for everything
-- Paying £19.99/month
+- Paying $19.99/month
 - 3 hours/week on admin
 - Automated reminders
 - Focused on billable work
 
-**Result:** £1,500/year saved + 468 hours reclaimed = £15,000+ in additional revenue
+**Result:** $1,500/year saved + 468 hours reclaimed = $15,000+ in additional revenue
 
 ### Scenario 2: The Growing Agency
 **Before Okleevo:**
 - Using 10+ tools
-- Spending £280/month
+- Spending $280/month
 - Team confusion
 - Data silos
 - Integration nightmares
 
 **After Okleevo:**
 - Unified platform
-- Paying £19.99/month
+- Paying $19.99/month
 - Seamless collaboration
 - Connected data
 - Smooth operations
 
-**Result:** £3,120/year saved + 25% productivity increase = £20,000+ impact
+**Result:** $3,120/year saved + 25% productivity increase = $20,000+ impact
 
 ### Scenario 3: The Retail Business
 **Before Okleevo:**
@@ -218,12 +218,12 @@ Manage your business from anywhere:
 - Email campaigns
 - Proactive insights
 
-**Result:** £2,400/year saved + 30% revenue growth = £25,000+ impact
+**Result:** $2,400/year saved + 30% revenue growth = $25,000+ impact
 
 ## 🌟 Why SMEs Choose Okleevo
 
 ### 1. **Affordable Excellence**
-£19.99/month for enterprise-grade tools that would normally cost £200+/month
+$19.99/month for enterprise-grade tools that would normally cost $200+/month
 
 ### 2. **No Learning Curve**
 Intuitive design means you're productive from day one, not week 10
@@ -243,21 +243,21 @@ UK-based support team that understands your business
 ## 📊 The Okleevo ROI Calculator
 
 ### Monthly Savings
-- Software costs saved: £110-310
-- Time saved (10 hrs × £25/hr): £250
-- **Total Monthly Savings: £360-560**
+- Software costs saved: $110-310
+- Time saved (10 hrs × $25/hr): $250
+- **Total Monthly Savings: $360-560**
 
 ### Annual Impact
-- Direct savings: £4,320-6,720
-- Additional revenue (from time saved): £13,000+
-- **Total Annual Impact: £17,320-19,720+**
+- Direct savings: $4,320-6,720
+- Additional revenue (from time saved): $13,000+
+- **Total Annual Impact: $17,320-19,720+**
 
 ### 3-Year Projection
-- Total savings: £12,960-20,160
-- Revenue growth: £39,000+
-- **Total 3-Year Impact: £51,960-59,160+**
+- Total savings: $12,960-20,160
+- Revenue growth: $39,000+
+- **Total 3-Year Impact: $51,960-59,160+**
 
-**Investment: £719.64 over 3 years**
+**Investment: $719.64 over 3 years**
 **Return: 7,200% ROI**
 
 ## 🎯 Your Path to Business Growth
@@ -287,7 +287,7 @@ UK-based support team that understands your business
 - Confident business decisions
 
 ### Year 1: Growth
-- £17,000+ in savings and additional revenue
+- $17,000+ in savings and additional revenue
 - Streamlined operations
 - Scalable systems
 - Ready for next level
@@ -305,15 +305,15 @@ UK-based support team that understands your business
 ✅ No hidden fees
 
 ### What It Costs:
-💷 £19.99/month (cancel anytime)
+💷 $19.99/month (cancel anytime)
 💷 No setup fees
 💷 No per-user charges
 💷 No feature restrictions
 
 ### What You'll Save:
-💰 £1,320-3,720/year in software costs
+💰 $1,320-3,720/year in software costs
 ⏰ 520-780 hours/year in time
-📈 £13,000+/year in additional revenue
+📈 $13,000+/year in additional revenue
 😌 Countless hours of stress and frustration
 
 ## 🎁 Special Launch Offer

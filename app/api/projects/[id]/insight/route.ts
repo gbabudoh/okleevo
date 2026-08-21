@@ -26,17 +26,17 @@ function generateProjectInsight(
   if (revenue > 0) {
     if (netProfit >= 0) {
       parts.push(
-        `Financial position is healthy with £${revenue.toLocaleString()} billed against £${totalExpenses.toLocaleString()} in costs, yielding a ${margin.toFixed(1)}% profit margin (£${netProfit.toLocaleString()}).`
+        `Financial position is healthy with $${revenue.toLocaleString()} billed against $${totalExpenses.toLocaleString()} in costs, yielding a ${margin.toFixed(1)}% profit margin ($${netProfit.toLocaleString()}).`
       );
     } else {
       parts.push(
-        `Direct costs (£${totalExpenses.toLocaleString()}) have exceeded recognized revenue (£${revenue.toLocaleString()}), resulting in a current deficit of £${Math.abs(netProfit).toLocaleString()}.`
+        `Direct costs ($${totalExpenses.toLocaleString()}) have exceeded recognized revenue ($${revenue.toLocaleString()}), resulting in a current deficit of $${Math.abs(netProfit).toLocaleString()}.`
       );
     }
   } else {
     if (totalExpenses > 0) {
       parts.push(
-        `£${totalExpenses.toLocaleString()} in project costs have been incurred with no billings recorded yet.`
+        `$${totalExpenses.toLocaleString()} in project costs have been incurred with no billings recorded yet.`
       );
     } else {
       parts.push(`Initial milestone setup is underway with zero cost overruns recorded to date.`);
@@ -44,7 +44,7 @@ function generateProjectInsight(
   }
 
   if (budget !== null && totalExpenses > budget) {
-    parts.push(`Recommendation: Project expenditure has exceeded the £${budget.toLocaleString()} budget ceiling; review scope deliverables immediately.`);
+    parts.push(`Recommendation: Project expenditure has exceeded the $${budget.toLocaleString()} budget ceiling; review scope deliverables immediately.`);
   } else if (isOverdue) {
     parts.push(`Recommendation: Prioritize closing outstanding milestone blockers or adjust the client schedule.`);
   } else {

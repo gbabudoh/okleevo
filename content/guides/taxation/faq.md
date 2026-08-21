@@ -7,7 +7,7 @@ summary: Common questions and troubleshooting for Taxation.
 
 No. Okleevo calculates and prepares your figures, but you (or your accountant) still submit the actual return to HMRC. Look for the disclaimer banner at the top of the Taxation page as a reminder.
 
-## Why are all my figures showing £0?
+## Why are all my figures showing $0?
 
 That's expected for a new account — the figures are calculated from your real invoices, expenses, and employee records. Once you've added some, the numbers will update automatically.
 

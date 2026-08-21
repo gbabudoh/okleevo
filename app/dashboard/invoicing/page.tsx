@@ -130,13 +130,13 @@ export default function InvoicingPage() {
     invoice.items.forEach((item, i) => {
       if (i % 2 === 0) { doc.setFillColor(249, 250, 251); doc.rect(20, yPos - 5, 170, 8, 'F'); }
       doc.text(item.description, 25, yPos); doc.text(item.quantity.toString(), 125, yPos);
-      doc.text(`£${item.rate}`, 145, yPos); doc.text(`£${(item.quantity * item.rate).toLocaleString()}`, 170, yPos);
+      doc.text(`$${item.rate}`, 145, yPos); doc.text(`$${(item.quantity * item.rate).toLocaleString()}`, 170, yPos);
       yPos += 8;
     });
     yPos += 10;
     doc.setFillColor(59, 130, 246); doc.rect(20, yPos - 5, 170, 12, 'F');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(255, 255, 255);
-    doc.text('TOTAL:', 145, yPos + 3); doc.text(`£${invoice.amount.toLocaleString()}`, 170, yPos + 3);
+    doc.text('TOTAL:', 145, yPos + 3); doc.text(`$${invoice.amount.toLocaleString()}`, 170, yPos + 3);
     doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(128, 128, 128);
     doc.text('Thank you for your business!', 105, 280, { align: 'center' });
     doc.save(`${invoice.id}.pdf`);
@@ -147,7 +147,7 @@ export default function InvoicingPage() {
     const rows = invoice.items.map(item => [item.description, item.quantity, item.rate, item.quantity * item.rate]);
     let csv = `Invoice: ${invoice.id}\nClient: ${invoice.client}\nEmail: ${invoice.clientEmail}\nIssue: ${invoice.date}\nDue: ${invoice.dueDate}\nStatus: ${invoice.status}\n\n`;
     csv += headers.join(',') + '\n' + rows.map(r => r.join(',')).join('\n');
-    csv += `\n\nTotal,,,£${invoice.amount}`;
+    csv += `\n\nTotal,,,$${invoice.amount}`;
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -168,9 +168,9 @@ export default function InvoicingPage() {
     const tot = list.reduce((s, i) => s + i.amount, 0);
     const paid = list.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0);
     const over = list.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amount, 0);
-    doc.setTextColor(0, 0, 0); doc.text(`Total: £${tot.toLocaleString()}`, 20, 49);
-    doc.setTextColor(34, 197, 94); doc.text(`Paid: £${paid.toLocaleString()}`, 80, 49);
-    doc.setTextColor(239, 68, 68); doc.text(`Overdue: £${over.toLocaleString()}`, 140, 49);
+    doc.setTextColor(0, 0, 0); doc.text(`Total: $${tot.toLocaleString()}`, 20, 49);
+    doc.setTextColor(34, 197, 94); doc.text(`Paid: $${paid.toLocaleString()}`, 80, 49);
+    doc.setTextColor(239, 68, 68); doc.text(`Overdue: $${over.toLocaleString()}`, 140, 49);
     doc.setTextColor(255, 255, 255); doc.setFillColor(59, 130, 246); doc.rect(15, 60, 180, 8, 'F');
     doc.setFontSize(8); doc.setFont('helvetica', 'bold');
     ['Invoice', 'Client', 'Amount', 'Status', 'Issue', 'Due'].forEach((h, i) => {
@@ -184,7 +184,7 @@ export default function InvoicingPage() {
       if (idx % 2 === 0) { doc.setFillColor(249, 250, 251); doc.rect(15, y - 5, 180, 8, 'F'); }
       doc.setTextColor(0, 0, 0);
       doc.text(inv.id.slice(0, 12), 18, y); doc.text(inv.client.slice(0, 22), 45, y);
-      doc.text(`£${inv.amount.toLocaleString()}`, 105, y);
+      doc.text(`$${inv.amount.toLocaleString()}`, 105, y);
       const c = sc[inv.status] || [107, 114, 128];
       doc.setTextColor(c[0], c[1], c[2]); doc.text(inv.status.toUpperCase(), 135, y);
       doc.setTextColor(0, 0, 0); doc.text(inv.date, 158, y); doc.text(inv.dueDate, 178, y);
@@ -362,7 +362,7 @@ export default function InvoicingPage() {
     setEmailData({
       to: invoice.clientEmail,
       subject: `Invoice ${invoice.id} from Your Company`,
-      message: `Dear ${invoice.client},\n\nPlease find attached invoice ${invoice.id} for £${invoice.amount.toLocaleString()}.\n\nDue Date: ${invoice.dueDate}\n\nThank you for your business!\n\nBest regards,\nYour Company`,
+      message: `Dear ${invoice.client},\n\nPlease find attached invoice ${invoice.id} for $${invoice.amount.toLocaleString()}.\n\nDue Date: ${invoice.dueDate}\n\nThank you for your business!\n\nBest regards,\nYour Company`,
     });
     setShowEmailModal(true);
   };
@@ -471,7 +471,7 @@ export default function InvoicingPage() {
   const handleExportAllCSV = () => {
     const headers = ['Invoice ID', 'Client', 'Email', 'Amount', 'Status', 'Issue Date', 'Due Date'];
     const rows = invoices.map(inv => [inv.id, inv.client, inv.clientEmail, inv.amount, inv.status, inv.date, inv.dueDate]);
-    let csv = `Invoice Report\nGenerated: ${new Date().toLocaleDateString()}\nTotal: £${stats.total.toLocaleString()}\n\n`;
+    let csv = `Invoice Report\nGenerated: ${new Date().toLocaleDateString()}\nTotal: $${stats.total.toLocaleString()}\n\n`;
     csv += headers.join(',') + '\n' + rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -578,7 +578,7 @@ export default function InvoicingPage() {
                 <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 transition-colors" />
               </div>
               <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">{label}</p>
-              <p className={`text-2xl sm:text-3xl font-extrabold ${valCls} mb-1 leading-tight tracking-tight`}>£{value.toLocaleString()}</p>
+              <p className={`text-2xl sm:text-3xl font-extrabold ${valCls} mb-1 leading-tight tracking-tight`}>${value.toLocaleString()}</p>
               <p className="text-[11px] text-gray-400 font-medium">{sub}</p>
             </div>
           ))}
@@ -704,7 +704,7 @@ export default function InvoicingPage() {
                             </div>
                           </td>
                           <td className="px-5 py-3.5">
-                            <span className="font-bold text-gray-900">£{invoice.amount.toLocaleString()}</span>
+                            <span className="font-bold text-gray-900">${invoice.amount.toLocaleString()}</span>
                           </td>
                           <td className="px-5 py-3.5">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${sc.bg} ${sc.text}`}>
@@ -888,7 +888,7 @@ export default function InvoicingPage() {
                       </div>
                       {/* Bottom row */}
                       <div className="flex items-center justify-between">
-                        <span className="text-xl font-bold text-gray-900">£{invoice.amount.toLocaleString()}</span>
+                        <span className="text-xl font-bold text-gray-900">${invoice.amount.toLocaleString()}</span>
                         <div className="flex items-center gap-3 text-xs text-gray-400">
                           <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{invoice.date}</span>
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Due {invoice.dueDate}</span>
@@ -1034,7 +1034,7 @@ export default function InvoicingPage() {
                         />
                       </div>
                       <div className="sm:w-24">
-                        <label className="block text-xs font-medium text-gray-400 mb-1">Rate (£)</label>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">Rate ($)</label>
                         <input
                           type="number" min="0" step="0.01"
                           value={item.rate}
@@ -1058,7 +1058,7 @@ export default function InvoicingPage() {
                         <div className="flex-1">
                           <label className="block text-xs font-medium text-gray-400 mb-1">Subtotal</label>
                           <div className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold text-gray-800 h-[38px] flex items-center">
-                            £{(item.quantity * item.rate).toFixed(2)}
+                            ${(item.quantity * item.rate).toFixed(2)}
                           </div>
                         </div>
                         {newInvoice.items.length > 1 && (
@@ -1079,11 +1079,11 @@ export default function InvoicingPage() {
               <div className="mt-4 px-4 py-3 bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-indigo-50/80 border border-indigo-100 rounded-2xl space-y-1">
                 <div className="flex items-center justify-between text-xs text-indigo-700/80">
                   <span>VAT</span>
-                  <span className="font-semibold">£{newInvoiceVAT.toFixed(2)}</span>
+                  <span className="font-semibold">${newInvoiceVAT.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-gray-700">Invoice Total (excl. VAT)</span>
-                  <span className="text-2xl font-black text-indigo-600 tracking-tight">£{newInvoiceTotal.toFixed(2)}</span>
+                  <span className="text-2xl font-black text-indigo-600 tracking-tight">${newInvoiceTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -1177,9 +1177,9 @@ export default function InvoicingPage() {
                       <tr key={i} className="hover:bg-gray-50/50">
                         <td className="px-4 py-3 text-sm text-gray-800">{item.description}</td>
                         <td className="px-4 py-3 text-sm text-gray-500">{item.quantity}</td>
-                        <td className="px-4 py-3 text-sm text-gray-500">£{item.rate}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">${item.rate}</td>
                         <td className="px-4 py-3 text-sm text-gray-500">{item.vatRate ?? DEFAULT_VAT_RATE}%</td>
-                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">£{(item.quantity * item.rate).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">${(item.quantity * item.rate).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1191,9 +1191,9 @@ export default function InvoicingPage() {
                   <div key={i} className="px-4 py-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.quantity} × £{item.rate} · VAT {item.vatRate ?? DEFAULT_VAT_RATE}%</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.quantity} × ${item.rate} · VAT {item.vatRate ?? DEFAULT_VAT_RATE}%</p>
                     </div>
-                    <p className="text-sm font-bold text-gray-900">£{(item.quantity * item.rate).toLocaleString()}</p>
+                    <p className="text-sm font-bold text-gray-900">${(item.quantity * item.rate).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
@@ -1201,11 +1201,11 @@ export default function InvoicingPage() {
               <div className="px-4 py-3 bg-blue-50 border-t border-blue-100 space-y-1">
                 <div className="flex items-center justify-between text-xs text-blue-700">
                   <span>VAT</span>
-                  <span className="font-semibold">£{selectedInvoice.items.reduce((s, i) => s + i.quantity * i.rate * ((i.vatRate ?? DEFAULT_VAT_RATE) / 100), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-semibold">${selectedInvoice.items.reduce((s, i) => s + i.quantity * i.rate * ((i.vatRate ?? DEFAULT_VAT_RATE) / 100), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-gray-700">Total (excl. VAT)</span>
-                  <span className="text-2xl font-bold text-blue-600">£{selectedInvoice.amount.toLocaleString()}</span>
+                  <span className="text-2xl font-bold text-blue-600">${selectedInvoice.amount.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -1272,7 +1272,7 @@ export default function InvoicingPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-gray-900 truncate">{emailInvoice.id}</p>
-                <p className="text-xs text-gray-400">{emailInvoice.client} · £{emailInvoice.amount.toLocaleString()}</p>
+                <p className="text-xs text-gray-400">{emailInvoice.client} · ${emailInvoice.amount.toLocaleString()}</p>
               </div>
             </div>
 
@@ -1331,7 +1331,7 @@ export default function InvoicingPage() {
           }}
           title="Delete Invoice"
           itemName={deletingInvoice.id}
-          itemDetails={`${deletingInvoice.client} · £${deletingInvoice.amount.toLocaleString()}`}
+          itemDetails={`${deletingInvoice.client} · $${deletingInvoice.amount.toLocaleString()}`}
           warningMessage="This will permanently remove the invoice and all associated records."
         />
       )}
@@ -1346,7 +1346,7 @@ export default function InvoicingPage() {
             </div>
             <div>
               <h2 className="font-extrabold text-gray-900 text-base">Mark as Paid</h2>
-              <p className="text-xs text-gray-400">{markPaidTarget.id} · £{markPaidTarget.amount.toLocaleString()}</p>
+              <p className="text-xs text-gray-400">{markPaidTarget.id} · ${markPaidTarget.amount.toLocaleString()}</p>
             </div>
           </div>
           <div className="p-4 sm:p-6 space-y-3">
@@ -1382,7 +1382,7 @@ export default function InvoicingPage() {
             </div>
             <div>
               <h2 className="font-extrabold text-gray-900 text-base">Cancel Invoice</h2>
-              <p className="text-xs text-gray-400">{cancelTarget.id} · £{cancelTarget.amount.toLocaleString()}</p>
+              <p className="text-xs text-gray-400">{cancelTarget.id} · ${cancelTarget.amount.toLocaleString()}</p>
             </div>
           </div>
           <div className="p-4 sm:p-6">
@@ -1414,7 +1414,7 @@ export default function InvoicingPage() {
             </div>
             <div>
               <h2 className="font-extrabold text-gray-900 text-base">Reopen Invoice</h2>
-              <p className="text-xs text-gray-400">{reopenTarget.id} · £{reopenTarget.amount.toLocaleString()}</p>
+              <p className="text-xs text-gray-400">{reopenTarget.id} · ${reopenTarget.amount.toLocaleString()}</p>
             </div>
           </div>
           <div className="p-4 sm:p-6">

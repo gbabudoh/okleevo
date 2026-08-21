@@ -15,7 +15,7 @@ Okleevo's internal email engine caps a single campaign send at 100 recipients to
 
 The audience field is currently descriptive — it labels the campaign for your own reference. The actual recipient list, when a campaign is sent, is your contacts who have given email consent and haven't unsubscribed, regardless of the audience label chosen.
 
-## Why do some campaigns show £0 revenue?
+## Why do some campaigns show $0 revenue?
 
 Revenue is only shown if it's been recorded against a campaign — there's no field in the campaign creation form for entering revenue or cost directly.
 

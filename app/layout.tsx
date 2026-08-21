@@ -238,7 +238,7 @@ export default function RootLayout({
               "name": "Okleevo",
               "url": "https://okleevo.com",
               "logo": "https://okleevo.com/logo.png",
-              "description": "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, MTD bookkeeping, and AI tools for just £9.99/month.",
+              "description": "The all-in-one platform for UK SMEs. 23 integrated modules including invoicing, CRM, staff collaboration, Mail Engine, MTD bookkeeping, and AI tools for just $9.99/month.",
               "address": {
                 "@type": "PostalAddress",
                 "addressCountry": "GB"

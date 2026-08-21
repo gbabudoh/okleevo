@@ -7,7 +7,7 @@ summary: Step-by-step instructions for each tax calculator.
 
 1. Go to the **Corporation Tax** tab.
 2. Choose your accounting period and enter your taxable profit.
-3. Okleevo applies the current UK rules automatically: 19% up to £50,000, 25% over £250,000, with Marginal Relief calculated in between.
+3. Okleevo applies the current UK rules automatically: 19% up to $50,000, 25% over $250,000, with Marginal Relief calculated in between.
 4. Click **Generate CT600** to download a report for your accountant.
 
 ## Self Assessment

@@ -53,7 +53,7 @@ export const invoiceSchema = z.object({
   clientName: z.string().min(2, 'Client name is required'),
   clientEmail: emailSchema.optional(),
   amount: z.number().positive('Amount must be positive'),
-  currency: z.string().default('GBP'),
+  currency: z.string().default('USD'),
   dueDate: z.string().or(z.date()),
   items: z.array(z.object({
     description: z.string(),

@@ -274,9 +274,9 @@ export default function CashflowPage() {
       <div className="px-4 sm:px-6 pt-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
-            { label: 'Total Income', value: `£${avgMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly Average', icon: TrendingUp, badge: 'Inflow', up: true, iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600', badgeStyle: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300' },
-            { label: 'Total Expenses', value: `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly Average', icon: TrendingDown, badge: 'Outflow', up: false, iconBg: 'bg-gradient-to-br from-rose-500 to-red-600', badgeStyle: 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-300' },
-            { label: 'Net Cashflow', value: `£${netCashflow.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Net Position', icon: PoundSterling, badge: netCashflow >= 0 ? 'Surplus' : 'Deficit', up: netCashflow >= 0, iconBg: 'bg-gradient-to-br from-indigo-500 to-blue-600', badgeStyle: netCashflow >= 0 ? 'bg-indigo-50 text-indigo-700 border-indigo-200/60 dark:bg-indigo-950/60 dark:text-indigo-300' : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-300' },
+            { label: 'Total Income', value: `$${avgMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly Average', icon: TrendingUp, badge: 'Inflow', up: true, iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600', badgeStyle: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300' },
+            { label: 'Total Expenses', value: `$${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Monthly Average', icon: TrendingDown, badge: 'Outflow', up: false, iconBg: 'bg-gradient-to-br from-rose-500 to-red-600', badgeStyle: 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-300' },
+            { label: 'Net Cashflow', value: `$${netCashflow.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'Net Position', icon: PoundSterling, badge: netCashflow >= 0 ? 'Surplus' : 'Deficit', up: netCashflow >= 0, iconBg: 'bg-gradient-to-br from-indigo-500 to-blue-600', badgeStyle: netCashflow >= 0 ? 'bg-indigo-50 text-indigo-700 border-indigo-200/60 dark:bg-indigo-950/60 dark:text-indigo-300' : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-300' },
             { label: 'Profit Margin', value: `${isNaN(profitMargin) ? '0.0' : profitMargin.toFixed(1)}%`, sub: 'Operating Margin', icon: Wallet, badge: profitMargin > 0 ? 'Positive' : '0.0%', up: true, iconBg: 'bg-gradient-to-br from-purple-500 to-indigo-600', badgeStyle: 'bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-950/60 dark:text-purple-300' },
           ].map(({ label, value, sub, icon: Icon, badge, iconBg, badgeStyle }) => (
             <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
@@ -343,13 +343,13 @@ export default function CashflowPage() {
                         <div className="absolute -top-28 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-20 whitespace-nowrap">
                           <p className="font-semibold mb-1.5 text-center border-b border-white/10 pb-1.5">{data.month}</p>
                           <p className="text-emerald-400 flex justify-between gap-3">
-                            <span>Income</span><span>£{data.income.toLocaleString()}</span>
+                            <span>Income</span><span>${data.income.toLocaleString()}</span>
                           </p>
                           <p className="text-rose-400 flex justify-between gap-3">
-                            <span>Expenses</span><span>£{data.expenses.toLocaleString()}</span>
+                            <span>Expenses</span><span>${data.expenses.toLocaleString()}</span>
                           </p>
                           <p className="text-gray-300 flex justify-between gap-3 font-semibold pt-1 border-t border-white/10 mt-1">
-                            <span>Net</span><span>£{data.net.toLocaleString()}</span>
+                            <span>Net</span><span>${data.net.toLocaleString()}</span>
                           </p>
                         </div>
                       )}
@@ -400,7 +400,7 @@ export default function CashflowPage() {
                           <p className="text-[10px] text-gray-400">{category.percentage}%</p>
                         </div>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900">£{category.amount.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-900">${category.amount.toLocaleString()}</span>
                     </div>
                   );
                 })}
@@ -416,11 +416,11 @@ export default function CashflowPage() {
               <div className="space-y-2.5">
                 <div className="flex justify-between items-center pb-2.5 border-b border-gray-100">
                   <span className="text-sm text-gray-500">Est. Corp Tax</span>
-                  <span className="font-semibold text-gray-900">£{summary.corporationTaxEstimate.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-semibold text-gray-900">${summary.corporationTaxEstimate.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">Est. VAT Liability</span>
-                  <span className="font-semibold text-gray-900">£{summary.vatLiabilityEstimate.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-semibold text-gray-900">${summary.vatLiabilityEstimate.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                 </div>
                 <p className="text-[10px] text-gray-400 pt-1">*Based on the last 12 months of recorded activity. Consult your accountant.</p>
               </div>
@@ -482,7 +482,7 @@ export default function CashflowPage() {
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="text-right">
                     <p className={`text-sm font-semibold ${transaction.type === 'income' ? 'text-emerald-600' : 'text-gray-900'}`}>
-                      {transaction.type === 'income' ? '+' : '-'}£{Math.abs(transaction.amount).toLocaleString()}
+                      {transaction.type === 'income' ? '+' : '-'}${Math.abs(transaction.amount).toLocaleString()}
                     </p>
                     <p className={`text-[10px] font-medium uppercase ${transaction.type === 'income' ? 'text-emerald-500' : 'text-gray-400'}`}>
                       {transaction.type === 'income' ? 'Received' : 'Paid'}
@@ -515,7 +515,7 @@ export default function CashflowPage() {
           {[
             { title: 'Cash Runway', val: loading ? '—' : (cashRunwayMonths === null ? 'N/A' : `${cashRunwayMonths} mo`), icon: Calendar, sub: 'Est. from cash reserves', trend: loading ? '—' : cashRunwayTrend },
             { title: 'Savings Rate', val: loading ? '—' : (avgMonthlyIncome > 0 ? `${Math.round(((avgMonthlyIncome - avgMonthlyExpenses) / avgMonthlyIncome) * 100)}%` : '0%'), icon: Sparkles, sub: 'vs last period', trend: loading ? '—' : formatTrendPct(summary.savingsRateChangePct) },
-            { title: 'Burn Rate', val: loading ? '—' : `£${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, icon: Zap, sub: 'per month', trend: loading ? '—' : formatTrendPct(summary.burnRateChangePct) }
+            { title: 'Burn Rate', val: loading ? '—' : `$${avgMonthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, icon: Zap, sub: 'per month', trend: loading ? '—' : formatTrendPct(summary.burnRateChangePct) }
           ].map((item) => (
             <div key={item.title} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
               <div className="flex items-center justify-between mb-2">
@@ -583,7 +583,7 @@ export default function CashflowPage() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Amount (£)</label>
+                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Amount ($)</label>
                   <input
                     type="number"
                     value={newTransaction.amount}
@@ -699,7 +699,7 @@ export default function CashflowPage() {
                 </span>
                 <h3 className="text-lg font-bold text-gray-900 mb-1.5">{viewingTransaction.description}</h3>
                 <p className={`text-3xl font-bold ${viewingTransaction.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>
-                  {viewingTransaction.amount > 0 ? '+' : ''}£{Math.abs(viewingTransaction.amount).toLocaleString()}
+                  {viewingTransaction.amount > 0 ? '+' : ''}${Math.abs(viewingTransaction.amount).toLocaleString()}
                 </p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
@@ -791,7 +791,7 @@ export default function CashflowPage() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Amount (£)</label>
+                  <label className="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Amount ($)</label>
                   <input
                     type="number"
                     value={Math.abs(editingTransaction.amount)}
@@ -904,7 +904,7 @@ export default function CashflowPage() {
           }}
           title="Delete Transaction"
           itemName={deletingTransaction.description || 'Transaction'}
-          itemDetails={`${deletingTransaction.type === 'income' ? '+' : '-'}£${Math.abs(deletingTransaction.amount || 0).toLocaleString()} - ${deletingTransaction.date}`}
+          itemDetails={`${deletingTransaction.type === 'income' ? '+' : '-'}$${Math.abs(deletingTransaction.amount || 0).toLocaleString()} - ${deletingTransaction.date}`}
           warningMessage="This will permanently remove this transaction from your cashflow records."
         />
       )}

@@ -154,10 +154,10 @@ export default function VATToolsPage() {
     const rows = vatHistory.map(item => [
       item.date,
       item.mode === 'add' ? 'Add VAT' : 'Remove VAT',
-      `£${item.amount.toFixed(2)}`,
+      `$${item.amount.toFixed(2)}`,
       `${item.vatRate}%`,
-      `£${item.vatAmount.toFixed(2)}`,
-      `£${item.total.toFixed(2)}`
+      `$${item.vatAmount.toFixed(2)}`,
+      `$${item.total.toFixed(2)}`
     ]);
     let csvContent = 'VAT Calculation History\n\n' + headers.join(',') + '\n';
     csvContent += rows.map(row => row.join(',')).join('\n');
@@ -239,8 +239,8 @@ export default function VATToolsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           {[
             { label: 'Calculations', value: vatHistory.length.toString(), sub: 'Total operations', icon: Calculator, bgGrad: 'bg-gradient-to-br from-indigo-500 to-blue-600', badge: 'All Time' },
-            { label: 'Total VAT', value: `£${totalVATCalculated.toFixed(2)}`, sub: 'Cumulative VAT', icon: TrendingUp, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600', badge: 'Total' },
-            { label: 'Average VAT', value: `£${avgVATAmount.toFixed(2)}`, sub: 'Per transaction', icon: BarChart3, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600', badge: 'Avg' },
+            { label: 'Total VAT', value: `$${totalVATCalculated.toFixed(2)}`, sub: 'Cumulative VAT', icon: TrendingUp, bgGrad: 'bg-gradient-to-br from-emerald-500 to-teal-600', badge: 'Total' },
+            { label: 'Average VAT', value: `$${avgVATAmount.toFixed(2)}`, sub: 'Per transaction', icon: BarChart3, bgGrad: 'bg-gradient-to-br from-purple-500 to-indigo-600', badge: 'Avg' },
             { label: 'Current Rate', value: `${activeRate}%`, sub: 'Applied VAT %', icon: Percent, bgGrad: 'bg-gradient-to-br from-amber-500 to-orange-600', badge: 'Active' },
           ].map(({ label, value, sub, icon: Icon, bgGrad, badge }) => (
             <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-xs hover:shadow-md transition-all group">
@@ -298,7 +298,7 @@ export default function VATToolsPage() {
                 {calculatorMode === 'add' ? 'Net Amount (excl. VAT)' : 'Gross Amount (incl. VAT)'}
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">£</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">$</span>
                 <input
                   type="number"
                   value={amount}
@@ -366,7 +366,7 @@ export default function VATToolsPage() {
                   <Info className="w-3 h-3" /> Excl. VAT
                 </span>
               </div>
-              <span className="text-2xl sm:text-3xl font-bold text-gray-900">£{netAmount.toFixed(2)}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-gray-900">${netAmount.toFixed(2)}</span>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center justify-between">
@@ -378,7 +378,7 @@ export default function VATToolsPage() {
                   <Info className="w-3 h-3" /> Tax Value
                 </span>
               </div>
-              <span className="text-2xl sm:text-3xl font-bold text-purple-600">£{vatAmount.toFixed(2)}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-purple-600">${vatAmount.toFixed(2)}</span>
             </div>
 
             <div className="bg-gray-900 rounded-xl p-4 flex items-center justify-between">
@@ -388,7 +388,7 @@ export default function VATToolsPage() {
                   <CheckCircle className="w-3 h-3" /> Total
                 </span>
               </div>
-              <span className="text-3xl sm:text-4xl font-bold text-white">£{grossAmount.toFixed(2)}</span>
+              <span className="text-3xl sm:text-4xl font-bold text-white">${grossAmount.toFixed(2)}</span>
             </div>
 
             {amount && parseFloat(amount) > 0 && (
@@ -402,8 +402,8 @@ export default function VATToolsPage() {
                 </div>
                 <span className="text-xs font-semibold">
                   {calculatorMode === 'add'
-                    ? `£${amount} + £${vatAmount.toFixed(2)} VAT = £${grossAmount.toFixed(2)}`
-                    : `£${amount} − £${vatAmount.toFixed(2)} VAT = £${netAmount.toFixed(2)}`}
+                    ? `$${amount} + $${vatAmount.toFixed(2)} VAT = $${grossAmount.toFixed(2)}`
+                    : `$${amount} − $${vatAmount.toFixed(2)} VAT = $${netAmount.toFixed(2)}`}
                 </span>
               </div>
             )}
@@ -487,14 +487,14 @@ export default function VATToolsPage() {
                         <Calendar className="w-3 h-3" /> {item.date}
                       </span>
                       <span className="text-[11px] text-gray-400 flex items-center gap-0.5">
-                        <Receipt className="w-3 h-3 text-indigo-500" /> Base: £{item.amount.toFixed(2)}
+                        <Receipt className="w-3 h-3 text-indigo-500" /> Base: ${item.amount.toFixed(2)}
                       </span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-gray-900">£{item.total.toFixed(2)}</p>
+                    <p className="text-sm font-bold text-gray-900">${item.total.toFixed(2)}</p>
                     <span className="text-[10px] font-semibold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">
-                      VAT £{item.vatAmount.toFixed(2)}
+                      VAT ${item.vatAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>

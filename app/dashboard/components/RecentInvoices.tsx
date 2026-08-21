@@ -46,7 +46,7 @@ export function RecentInvoices() {
               <p className="text-sm text-gray-600 mt-1">{invoice.client} • Due {invoice.dueDate}</p>
             </div>
             <div className="flex items-center gap-4">
-              <p className="font-bold text-gray-900">£{invoice.amount.toLocaleString()}</p>
+              <p className="font-bold text-gray-900">${invoice.amount.toLocaleString()}</p>
               <div className="flex items-center gap-2">
                 <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                   <Eye className="w-4 h-4 text-gray-600" />

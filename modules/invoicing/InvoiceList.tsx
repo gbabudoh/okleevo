@@ -89,7 +89,7 @@ export function InvoiceList() {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-gray-700">{invoice.client}</td>
-                <td className="px-6 py-4 font-semibold text-gray-900">£{invoice.amount.toLocaleString()}</td>
+                <td className="px-6 py-4 font-semibold text-gray-900">${invoice.amount.toLocaleString()}</td>
                 <td className="px-6 py-4">
                   <Badge variant={statusVariant[invoice.status]}>
                     {invoice.status}

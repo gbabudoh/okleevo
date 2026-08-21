@@ -248,7 +248,7 @@ export default function AdminDashboardPreview() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Total Pipeline Revenue (£)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Total Pipeline Revenue ($)</label>
               <input
                 type="number"
                 step="0.01"
@@ -297,7 +297,7 @@ export default function AdminDashboardPreview() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Total Unpaid Amount (£)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Total Unpaid Amount ($)</label>
               <input
                 type="number"
                 step="0.01"

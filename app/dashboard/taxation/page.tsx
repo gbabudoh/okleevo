@@ -514,7 +514,7 @@ export default function TaxationPage() {
   const currentMonthlyTotalDue = currentMonthlyPAYE + currentMonthlyNIDue;
 
   const totalIncome = saSelfEmployment + saEmployment + saProperty + saDividends;
-  // Personal Allowance tapers to £0 for income over £100k — applies here too, not just PAYE.
+  // Personal Allowance tapers to $0 for income over $100k — applies here too, not just PAYE.
   const personalAllowance = taperedPersonalAllowance(totalIncome);
   const taxableIncomeValue = Math.max(0, totalIncome - personalAllowance - saExpenses);
   const totalTaxDueValue = calculateSelfAssessmentTaxDue(taxableIncomeValue);
@@ -627,28 +627,28 @@ export default function TaxationPage() {
             {
               label: 'Corporation Tax',
               badge: 'CT600 Estimate',
-              value: taxSummary.corporationTax.toLocaleString('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+              value: taxSummary.corporationTax.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
               icon: Building2,
               iconCls: 'bg-indigo-50 text-indigo-600 border-indigo-100',
             },
             {
               label: 'VAT Liability',
               badge: 'MTD Return',
-              value: taxSummary.vatLiability.toLocaleString('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+              value: taxSummary.vatLiability.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
               icon: Receipt,
               iconCls: 'bg-purple-50 text-purple-600 border-purple-100',
             },
             {
               label: 'PAYE & NI',
               badge: 'Payroll Tax',
-              value: taxSummary.payeNI.toLocaleString('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+              value: taxSummary.payeNI.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
               icon: Users,
               iconCls: 'bg-emerald-50 text-emerald-600 border-emerald-100',
             },
             {
               label: 'Outstanding',
               badge: taxSummary.taxOutstanding > 0 ? 'Action Required' : 'Up to Date',
-              value: taxSummary.taxOutstanding.toLocaleString('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+              value: taxSummary.taxOutstanding.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
               icon: AlertCircle,
               iconCls: taxSummary.taxOutstanding > 0 ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-slate-50 text-slate-600 border-slate-100',
             },
@@ -821,7 +821,7 @@ export default function TaxationPage() {
                         </div>
 
                         <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-200/60 dark:border-slate-700">
-                          <p className="text-lg font-black text-gray-900 dark:text-white tracking-tight">£{obligation.amount.toLocaleString()}</p>
+                          <p className="text-lg font-black text-gray-900 dark:text-white tracking-tight">${obligation.amount.toLocaleString()}</p>
                           <button
                             onClick={() => setActiveTab(targetTab)}
                             className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition-all shadow-2xs flex items-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap"
@@ -926,7 +926,7 @@ export default function TaxationPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Taxable Company Profit (£)</label>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Taxable Company Profit ($)</label>
                     <div className="flex items-center gap-1">
                       {[10000, 50000, 100000, 250000].map((preset) => (
                         <button
@@ -935,7 +935,7 @@ export default function TaxationPage() {
                           onClick={() => setCtProfit(preset.toString())}
                           className="px-2 py-0.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
                         >
-                          £{(preset / 1000).toFixed(0)}k
+                          ${(preset / 1000).toFixed(0)}k
                         </button>
                       ))}
                     </div>
@@ -979,7 +979,7 @@ export default function TaxationPage() {
             <div className="bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-700 rounded-2xl p-5 sm:p-6 text-white shadow-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <p className="text-xs font-bold text-indigo-100 uppercase tracking-wider mb-1">Estimated Corporation Tax Liability</p>
-                <p className="text-3xl sm:text-4xl font-black tracking-tight">£{ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                <p className="text-3xl sm:text-4xl font-black tracking-tight">${ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                 <p className="text-xs text-indigo-200 mt-1">Effective Rate: {ctRateLabel}</p>
               </div>
 
@@ -1020,7 +1020,7 @@ export default function TaxationPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Profits up to £50,000</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Profits up to $50,000</p>
                       </div>
                       <span className="text-2xl font-black text-blue-600 dark:text-blue-400">19%</span>
                     </div>
@@ -1047,7 +1047,7 @@ export default function TaxationPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Profits between £50,001 and £250,000 (Tapered 19% - 25%)</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Profits between $50,001 and $250,000 (Tapered 19% - 25%)</p>
                       </div>
                       <span className="text-2xl font-black text-purple-600 dark:text-purple-400">19-25%</span>
                     </div>
@@ -1074,7 +1074,7 @@ export default function TaxationPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Profits over £250,000</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Profits over $250,000</p>
                       </div>
                       <span className="text-2xl font-black text-rose-600 dark:text-rose-400">25%</span>
                     </div>
@@ -1125,7 +1125,7 @@ export default function TaxationPage() {
               <div className="bg-purple-50/80 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/60 rounded-2xl p-3.5 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-purple-700 dark:text-purple-300">Tax-Free Personal Allowance</p>
-                  <p className="text-xl font-black text-purple-950 dark:text-white tracking-tight">£12,570</p>
+                  <p className="text-xl font-black text-purple-950 dark:text-white tracking-tight">$12,570</p>
                 </div>
                 <ShieldCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
@@ -1133,7 +1133,7 @@ export default function TaxationPage() {
               <div className="bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 rounded-2xl p-3.5 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300">Total Taxable Income</p>
-                  <p className="text-xl font-black text-blue-950 dark:text-white tracking-tight">£{totalIncome.toLocaleString()}</p>
+                  <p className="text-xl font-black text-blue-950 dark:text-white tracking-tight">${totalIncome.toLocaleString()}</p>
                 </div>
                 <Briefcase className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
@@ -1142,7 +1142,7 @@ export default function TaxationPage() {
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Est. Tax &amp; Class 4 NI</p>
                   <p className="text-xl font-black text-emerald-950 dark:text-white tracking-tight">
-                    £{totalTaxDueValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    ${totalTaxDueValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </p>
                 </div>
                 <Calculator className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -1251,19 +1251,19 @@ export default function TaxationPage() {
                 <div className="space-y-1.5 text-xs">
                   <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
                     <span className="text-gray-600 dark:text-gray-300 font-medium">Personal Allowance:</span>
-                    <span className="font-extrabold text-emerald-600 dark:text-emerald-400">Up to £12,570 (0%)</span>
+                    <span className="font-extrabold text-emerald-600 dark:text-emerald-400">Up to $12,570 (0%)</span>
                   </div>
                   <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
                     <span className="text-gray-600 dark:text-gray-300 font-medium">Basic Rate (20%):</span>
-                    <span className="font-extrabold text-blue-600 dark:text-blue-400">£12,571 - £50,270</span>
+                    <span className="font-extrabold text-blue-600 dark:text-blue-400">$12,571 - $50,270</span>
                   </div>
                   <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
                     <span className="text-gray-600 dark:text-gray-300 font-medium">Higher Rate (40%):</span>
-                    <span className="font-extrabold text-amber-600 dark:text-amber-400">£50,271 - £125,140</span>
+                    <span className="font-extrabold text-amber-600 dark:text-amber-400">$50,271 - $125,140</span>
                   </div>
                   <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
                     <span className="text-gray-600 dark:text-gray-300 font-medium">Additional Rate (45%):</span>
-                    <span className="font-extrabold text-rose-600 dark:text-rose-400">Over £125,140</span>
+                    <span className="font-extrabold text-rose-600 dark:text-rose-400">Over $125,140</span>
                   </div>
                 </div>
               </div>
@@ -1334,7 +1334,7 @@ export default function TaxationPage() {
                     <p className="text-xs text-blue-700">Sole trader income</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-blue-900">£{saSelfEmployment.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-blue-900">${saSelfEmployment.toLocaleString()}</p>
                 <button className="mt-3 w-full px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 transition-colors shadow-sm cursor-pointer">
                   Edit Details
                 </button>
@@ -1353,7 +1353,7 @@ export default function TaxationPage() {
                     <p className="text-xs text-green-700">PAYE salary</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-green-900">£{saEmployment.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-green-900">${saEmployment.toLocaleString()}</p>
                 <button className="mt-3 w-full px-4 py-2 bg-green-500 text-white text-sm font-semibold rounded-lg hover:bg-green-600 transition-colors shadow-sm cursor-pointer">
                   Edit Details
                 </button>
@@ -1372,7 +1372,7 @@ export default function TaxationPage() {
                     <p className="text-xs text-purple-700">Rental income</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-purple-900">£{saProperty.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-purple-900">${saProperty.toLocaleString()}</p>
                 <button className="mt-3 w-full px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-lg hover:bg-purple-600 transition-colors shadow-sm cursor-pointer">
                   Edit Details
                 </button>
@@ -1391,7 +1391,7 @@ export default function TaxationPage() {
                     <p className="text-xs text-orange-700">Investment income</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-orange-900">£{saDividends.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-orange-900">${saDividends.toLocaleString()}</p>
                 <button className="mt-3 w-full px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition-colors shadow-sm cursor-pointer">
                   Edit Details
                 </button>
@@ -1410,29 +1410,29 @@ export default function TaxationPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Total Income</span>
-                <span className="font-bold text-gray-900">£{totalIncome.toLocaleString()}</span>
+                <span className="font-bold text-gray-900">${totalIncome.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Personal Allowance</span>
-                <span className="font-bold text-gray-900">-£{personalAllowance.toLocaleString()}</span>
+                <span className="font-bold text-gray-900">-${personalAllowance.toLocaleString()}</span>
               </div>
               <div 
                 onClick={() => { setEditingSource({ id: 'expenses', name: 'Allowable Expenses', value: saExpenses }); setShowEditIncomeModal(true); }}
                 className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer"
               >
                 <span className="text-gray-700">Allowable Expenses</span>
-                <span className="font-bold text-gray-900">-£{saExpenses.toLocaleString()}</span>
+                <span className="font-bold text-gray-900">-${saExpenses.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100 hover:border-blue-200 transition-colors cursor-pointer">
                 <span className="font-semibold text-blue-900">Taxable Income</span>
-                <span className="font-bold text-blue-900 text-xl">£{taxableIncomeValue.toLocaleString()}</span>
+                <span className="font-bold text-blue-900 text-xl">${taxableIncomeValue.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100 hover:border-purple-200 transition-colors cursor-pointer">
                 <div>
                   <p className="font-semibold text-purple-900">Total Tax Due</p>
                   <p className="text-xs text-purple-700">Including NI contributions</p>
                 </div>
-                <span className="font-bold text-purple-900 text-3xl">£{totalTaxDueValue.toLocaleString()}</span>
+                <span className="font-bold text-purple-900 text-3xl">${totalTaxDueValue.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -1560,7 +1560,7 @@ export default function TaxationPage() {
             <div className="p-6 space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Enter Your Taxable Income (£)
+                  Enter Your Taxable Income ($)
                 </label>
                 <input
                   type="number"
@@ -1613,20 +1613,20 @@ export default function TaxationPage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-white/60 rounded-lg">
                       <span className="text-gray-700">Taxable Income</span>
-                      <span className="font-bold text-gray-900">£{parseFloat(taxableIncome).toLocaleString()}</span>
+                      <span className="font-bold text-gray-900">${parseFloat(taxableIncome).toLocaleString()}</span>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-purple-100/50 rounded-lg">
                       <div>
                         <p className="font-bold text-purple-900">Total Tax & NI Due</p>
                         <p className="text-xs text-purple-700">Income Tax + Class 4 NI</p>
                       </div>
-                      <span className="font-bold text-purple-900 text-3xl">£{calculatedTax.toLocaleString()}</span>
+                      <span className="font-bold text-purple-900 text-3xl">${calculatedTax.toLocaleString()}</span>
                     </div>
                     <div className="bg-blue-50/50 border border-blue-200/50 rounded-lg p-3">
                       <p className="text-xs text-blue-800">
                         <strong>Payment Schedule:</strong><br/>
-                        • 1st Payment on Account: 31 Jan 2025 (£{Math.round(calculatedTax / 2).toLocaleString()})<br/>
-                        • 2nd Payment on Account: 31 Jul 2025 (£{Math.round(calculatedTax / 2).toLocaleString()})
+                        • 1st Payment on Account: 31 Jan 2025 (${Math.round(calculatedTax / 2).toLocaleString()})<br/>
+                        • 2nd Payment on Account: 31 Jul 2025 (${Math.round(calculatedTax / 2).toLocaleString()})
                       </p>
                     </div>
                   </div>
@@ -1699,7 +1699,7 @@ export default function TaxationPage() {
                       </div>
                       <div className="flex justify-between border-b border-gray-200 pb-1.5">
                         <span className="text-gray-500">Total Tax</span>
-                        <span className="font-semibold text-gray-900">£{totalTaxDueValue.toLocaleString()}</span>
+                        <span className="font-semibold text-gray-900">${totalTaxDueValue.toLocaleString()}</span>
                       </div>
                     </>
                   ) : selectedReportType === 'Corporation Tax' ? (
@@ -1710,7 +1710,7 @@ export default function TaxationPage() {
                       </div>
                       <div className="flex justify-between border-b border-gray-200 pb-1.5">
                         <span className="text-gray-500">Est. Tax</span>
-                        <span className="font-semibold text-gray-900">£{ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="font-semibold text-gray-900">${ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     </>
                   ) : selectedReportType === 'VAT' ? (
@@ -1721,7 +1721,7 @@ export default function TaxationPage() {
                       </div>
                       <div className="flex justify-between border-b border-gray-200 pb-1.5">
                         <span className="text-gray-500">Payable</span>
-                        <span className="font-semibold text-gray-900">£{Math.max(0, realOutputVAT - realInputVAT).toLocaleString()}</span>
+                        <span className="font-semibold text-gray-900">${Math.max(0, realOutputVAT - realInputVAT).toLocaleString()}</span>
                       </div>
                     </>
                   ) : (
@@ -1732,7 +1732,7 @@ export default function TaxationPage() {
                       </div>
                       <div className="flex justify-between border-b border-gray-200 pb-1.5">
                         <span className="text-gray-500">HMRC Total</span>
-                        <span className="font-semibold text-gray-900">£{currentMonthlyTotalDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="font-semibold text-gray-900">${currentMonthlyTotalDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                     </>
                   )}
@@ -1998,7 +1998,7 @@ export default function TaxationPage() {
                 <h4 className="font-semibold text-blue-900 mb-2 text-sm">Return Details:</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Tax Year: {saTaxYear}</li>
-                  <li>• Total Tax Due: £{totalTaxDueValue.toLocaleString()}</li>
+                  <li>• Total Tax Due: ${totalTaxDueValue.toLocaleString()}</li>
                   <li>• HMRC Deadline: {saOnlineReturnDeadline.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</li>
                 </ul>
               </div>
@@ -2078,22 +2078,22 @@ export default function TaxationPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
               <div className="p-4 bg-blue-50/80 dark:bg-slate-800/60 rounded-2xl border border-blue-100 dark:border-slate-800">
                 <p className="text-[11px] font-extrabold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-1">Personal Allowance</p>
-                <p className="text-xl font-black text-blue-950 dark:text-white tracking-tight">£12,570</p>
+                <p className="text-xl font-black text-blue-950 dark:text-white tracking-tight">$12,570</p>
                 <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">Tax code 1257L standard</p>
               </div>
               <div className="p-4 bg-emerald-50/80 dark:bg-slate-800/60 rounded-2xl border border-emerald-100 dark:border-slate-800">
                 <p className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-1">Basic Rate (20%)</p>
-                <p className="text-xl font-black text-emerald-950 dark:text-white tracking-tight">£12,571 - £50,270</p>
+                <p className="text-xl font-black text-emerald-950 dark:text-white tracking-tight">$12,571 - $50,270</p>
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">Standard payroll tax band</p>
               </div>
               <div className="p-4 bg-amber-50/80 dark:bg-slate-800/60 rounded-2xl border border-amber-100 dark:border-slate-800">
                 <p className="text-[11px] font-extrabold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-1">Higher Rate (40%)</p>
-                <p className="text-xl font-black text-amber-950 dark:text-white tracking-tight">£50,271 - £125,140</p>
+                <p className="text-xl font-black text-amber-950 dark:text-white tracking-tight">$50,271 - $125,140</p>
                 <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">Higher earners threshold</p>
               </div>
               <div className="p-4 bg-rose-50/80 dark:bg-slate-800/60 rounded-2xl border border-rose-100 dark:border-slate-800">
                 <p className="text-[11px] font-extrabold text-rose-700 dark:text-rose-300 uppercase tracking-wider mb-1">Additional Rate (45%)</p>
-                <p className="text-xl font-black text-rose-950 dark:text-white tracking-tight">Over £125,140</p>
+                <p className="text-xl font-black text-rose-950 dark:text-white tracking-tight">Over $125,140</p>
                 <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1">Top earners tax band</p>
               </div>
             </div>
@@ -2105,21 +2105,21 @@ export default function TaxationPage() {
                 <div className="p-3.5 bg-purple-50/70 dark:bg-slate-800/60 rounded-2xl border border-purple-100 dark:border-slate-800 flex items-center justify-between">
                   <div>
                     <p className="text-[11px] font-extrabold text-purple-800 dark:text-purple-300">Employee Primary NI</p>
-                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">£12,570 – £50,270</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">$12,570 – $50,270</p>
                   </div>
                   <span className="text-2xl font-black text-purple-900 dark:text-white">8%</span>
                 </div>
                 <div className="p-3.5 bg-purple-50/70 dark:bg-slate-800/60 rounded-2xl border border-purple-100 dark:border-slate-800 flex items-center justify-between">
                   <div>
                     <p className="text-[11px] font-extrabold text-purple-800 dark:text-purple-300">Employee Upper NI</p>
-                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">Over £50,270</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">Over $50,270</p>
                   </div>
                   <span className="text-2xl font-black text-purple-900 dark:text-white">2%</span>
                 </div>
                 <div className="p-3.5 bg-indigo-50/70 dark:bg-slate-800/60 rounded-2xl border border-indigo-100 dark:border-slate-800 flex items-center justify-between">
                   <div>
                     <p className="text-[11px] font-extrabold text-indigo-800 dark:text-indigo-300">Employer Secondary NI</p>
-                    <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">Over £9,100 (April 2025 rule)</p>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">Over $9,100 (April 2025 rule)</p>
                   </div>
                   <span className="text-2xl font-black text-indigo-900 dark:text-white">15%</span>
                 </div>
@@ -2143,7 +2143,7 @@ export default function TaxationPage() {
                 <PoundSterling className="w-4.5 h-4.5" />
               </div>
               <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Monthly PAYE Liability</p>
-              <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">£{currentMonthlyPAYE.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">${currentMonthlyPAYE.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
               <p className="text-[11px] font-medium text-gray-400 mt-1">Income tax deducted under PAYE</p>
             </div>
 
@@ -2152,7 +2152,7 @@ export default function TaxationPage() {
                 <Receipt className="w-4.5 h-4.5" />
               </div>
               <p className="text-[11px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Monthly National Insurance</p>
-              <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">£{currentMonthlyNIDue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">${currentMonthlyNIDue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
               <p className="text-[11px] font-medium text-gray-400 mt-1">Combined Employer &amp; Employee Class 1 NI</p>
             </div>
           </div>
@@ -2183,7 +2183,7 @@ export default function TaxationPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900">£{report.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                      <p className="text-lg font-bold text-gray-900">${report.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                       <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
                         downloaded
                       </span>
@@ -2200,22 +2200,22 @@ export default function TaxationPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Employee Income Tax (PAYE)</span>
-                <span className="font-bold text-gray-900">£{currentMonthlyPAYE.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="font-bold text-gray-900">${currentMonthlyPAYE.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
-                <span className="text-gray-700">Employee NI (8% of £12,570-£50,270)</span>
-                <span className="font-bold text-gray-900">£{currentMonthlyEmployeeNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="text-gray-700">Employee NI (8% of $12,570-$50,270)</span>
+                <span className="font-bold text-gray-900">${currentMonthlyEmployeeNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
-                <span className="text-gray-700">Employer NI (15% over £9,100)</span>
-                <span className="font-bold text-gray-900">£{currentMonthlyEmployerNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="text-gray-700">Employer NI (15% over $9,100)</span>
+                <span className="font-bold text-gray-900">${currentMonthlyEmployerNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-100 hover:border-green-200 transition-colors cursor-pointer">
                 <div>
                   <p className="font-semibold text-green-900">Total Payment Due to HMRC</p>
                   <p className="text-xs text-green-700">Due: {payeDueLabel}</p>
                 </div>
-                <span className="font-bold text-green-900 text-3xl">£{currentMonthlyTotalDue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                <span className="font-bold text-green-900 text-3xl">${currentMonthlyTotalDue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
               </div>
             </div>
           </div>
@@ -2317,7 +2317,7 @@ export default function TaxationPage() {
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-purple-700 dark:text-purple-300">Net VAT Payable / (Reclaim)</p>
                   <p className="text-xl font-black text-purple-950 dark:text-white tracking-tight">
-                    £{Math.max(0, realOutputVAT - realInputVAT).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${Math.max(0, realOutputVAT - realInputVAT).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <Receipt className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -2327,7 +2327,7 @@ export default function TaxationPage() {
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">Output VAT on Sales</p>
                   <p className="text-xl font-black text-indigo-950 dark:text-white tracking-tight">
-                    £{realOutputVAT.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${realOutputVAT.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -2337,7 +2337,7 @@ export default function TaxationPage() {
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Input VAT on Purchases</p>
                   <p className="text-xl font-black text-emerald-950 dark:text-white tracking-tight">
-                    £{realInputVAT.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${realInputVAT.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -2379,7 +2379,7 @@ export default function TaxationPage() {
                   <p className="text-[11px] font-extrabold text-rose-800 dark:text-rose-300">Mandatory Registration Threshold</p>
                   <p className="text-xs text-rose-600 dark:text-rose-400 mt-0.5">Taxable turnover in rolling 12 months</p>
                 </div>
-                <span className="text-xl font-black text-rose-900 dark:text-white">£90,000</span>
+                <span className="text-xl font-black text-rose-900 dark:text-white">$90,000</span>
               </div>
 
               <div className="p-3.5 bg-amber-50/70 dark:bg-slate-800/60 rounded-2xl border border-amber-100 dark:border-slate-800 flex items-center justify-between">
@@ -2387,7 +2387,7 @@ export default function TaxationPage() {
                   <p className="text-[11px] font-extrabold text-amber-800 dark:text-amber-300">Deregistration Threshold</p>
                   <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Below this figure, eligible to deregister</p>
                 </div>
-                <span className="text-xl font-black text-amber-900 dark:text-white">£88,000</span>
+                <span className="text-xl font-black text-amber-900 dark:text-white">$88,000</span>
               </div>
             </div>
 
@@ -2395,7 +2395,7 @@ export default function TaxationPage() {
               <div className="flex items-start gap-2.5 p-3.5 bg-blue-50/70 dark:bg-slate-800/60 border border-blue-100 dark:border-slate-800 rounded-2xl">
                 <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                 <p className="text-xs text-blue-800 dark:text-blue-300">
-                  Estimated turnover (£{parseFloat(vatOutputSales || '0').toLocaleString()}) is below the £90,000 mandatory registration threshold — VAT registration may not be required unless you&apos;ve registered voluntarily.
+                  Estimated turnover (${parseFloat(vatOutputSales || '0').toLocaleString()}) is below the $90,000 mandatory registration threshold — VAT registration may not be required unless you&apos;ve registered voluntarily.
                 </p>
               </div>
             )}
@@ -2407,18 +2407,18 @@ export default function TaxationPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Output VAT (on Sales)</span>
-                <span className="font-bold text-gray-900">£{realOutputVAT.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
+                <span className="font-bold text-gray-900">${realOutputVAT.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:shadow-sm transition-all cursor-pointer">
                 <span className="text-gray-700">Input VAT (on Purchases)</span>
-                <span className="font-bold text-gray-900">-£{realInputVAT.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
+                <span className="font-bold text-gray-900">-${realInputVAT.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
               </div>
               <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100">
                 <div>
                   <p className="font-semibold text-purple-900">Net VAT Due to HMRC</p>
                   <p className="text-xs text-purple-700">Due: {vatQuarterDueLabel} — share with accountant</p>
                 </div>
-                <span className="font-bold text-purple-900 text-3xl">£{Math.max(0, realOutputVAT - realInputVAT).toLocaleString('en-GB', {minimumFractionDigits: 0})}</span>
+                <span className="font-bold text-purple-900 text-3xl">${Math.max(0, realOutputVAT - realInputVAT).toLocaleString('en-GB', {minimumFractionDigits: 0})}</span>
               </div>
               <p className="text-[10px] text-gray-500 italic">Computed from your recorded invoices and validated expense receipts — not a flat-rate guess.</p>
             </div>
@@ -2490,7 +2490,7 @@ export default function TaxationPage() {
               <div className="bg-amber-50/80 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/60 rounded-2xl p-3.5 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-300">Annual Exempt Amount (AEA)</p>
-                  <p className="text-xl font-black text-amber-950 dark:text-white tracking-tight">£3,000</p>
+                  <p className="text-xl font-black text-amber-950 dark:text-white tracking-tight">$3,000</p>
                 </div>
                 <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
@@ -2499,7 +2499,7 @@ export default function TaxationPage() {
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-300">Sample Asset Disposal Gain</p>
                   <p className="text-xl font-black text-blue-950 dark:text-white tracking-tight">
-                    £{Math.max(0, parseFloat(cgtDisposalValue || '0') - parseFloat(cgtAcquisitionCost || '0') - parseFloat(cgtAllowableExpenses || '0')).toLocaleString()}
+                    ${Math.max(0, parseFloat(cgtDisposalValue || '0') - parseFloat(cgtAcquisitionCost || '0') - parseFloat(cgtAllowableExpenses || '0')).toLocaleString()}
                   </p>
                 </div>
                 <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -2525,14 +2525,14 @@ export default function TaxationPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
               <div className="p-4 bg-amber-50/80 dark:bg-slate-800/60 rounded-2xl border border-amber-100 dark:border-slate-800">
                 <p className="text-[11px] font-extrabold text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-1">Annual Exempt Amount</p>
-                <p className="text-2xl font-black text-amber-950 dark:text-white tracking-tight">£3,000</p>
+                <p className="text-2xl font-black text-amber-950 dark:text-white tracking-tight">$3,000</p>
                 <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-1">Tax-free allowance per individual</p>
               </div>
 
               <div className="p-4 bg-emerald-50/80 dark:bg-slate-800/60 rounded-2xl border border-emerald-100 dark:border-slate-800">
                 <p className="text-[11px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-1">BADR Relief</p>
                 <p className="text-2xl font-black text-emerald-950 dark:text-white tracking-tight">10% / 14%</p>
-                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">Qualifying UK SME business sales (£1m limit)</p>
+                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">Qualifying UK SME business sales ($1m limit)</p>
               </div>
 
               <div className="p-4 bg-blue-50/80 dark:bg-slate-800/60 rounded-2xl border border-blue-100 dark:border-slate-800">
@@ -2988,7 +2988,7 @@ export default function TaxationPage() {
                 <div className="space-y-5 animate-in fade-in slide-in-from-right-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1.5">Total Turnover (£)</label>
+                      <label className="block text-xs font-medium text-gray-500 mb-1.5">Total Turnover ($)</label>
                       <input
                         type="number"
                         placeholder="0.00"
@@ -2998,7 +2998,7 @@ export default function TaxationPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1.5">Total Expenses (£)</label>
+                      <label className="block text-xs font-medium text-gray-500 mb-1.5">Total Expenses ($)</label>
                       <input
                         type="number"
                         placeholder="0.00"
@@ -3022,7 +3022,7 @@ export default function TaxationPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-600">Estimated Taxable Profit</span>
                       <span className="text-lg font-semibold text-gray-900">
-                        £{(Number(newReturnData.turnover) - Number(newReturnData.expenses)).toLocaleString()}
+                        ${(Number(newReturnData.turnover) - Number(newReturnData.expenses)).toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -3051,16 +3051,16 @@ export default function TaxationPage() {
                       </div>
                       <div className="flex justify-between items-center py-1.5 border-b border-gray-100 text-sm">
                         <span className="text-gray-500">Turnover</span>
-                        <span className="font-semibold text-gray-900">£{Number(newReturnData.turnover).toLocaleString()}</span>
+                        <span className="font-semibold text-gray-900">${Number(newReturnData.turnover).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between items-center py-1.5 border-b border-gray-100 text-sm">
                         <span className="text-gray-500">Expenses</span>
-                        <span className="font-semibold text-gray-900">£{Number(newReturnData.expenses).toLocaleString()}</span>
+                        <span className="font-semibold text-gray-900">${Number(newReturnData.expenses).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between items-center py-3 bg-gray-50 -mx-5 sm:-mx-6 px-5 sm:px-6 rounded-b-xl">
                         <span className="text-sm font-semibold text-gray-900">Total Liability (Estimated)</span>
                         <span className="text-xl font-semibold text-gray-900">
-                          £{newReturnEstimatedLiability(newReturnData.type, newReturnData.turnover, newReturnData.expenses).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                          ${newReturnEstimatedLiability(newReturnData.type, newReturnData.turnover, newReturnData.expenses).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </span>
                       </div>
                     </div>
@@ -3101,9 +3101,9 @@ export default function TaxationPage() {
                         ['Return Type', newReturnData.type || '—'],
                         ['Period', newReturnData.period || '—'],
                         ['Reference', newReturnData.reference || '—'],
-                        ['Turnover', newReturnData.turnover ? `£${newReturnData.turnover}` : '—'],
-                        ['Expenses', newReturnData.expenses ? `£${newReturnData.expenses}` : '—'],
-                        ['Net Profit', newReturnData.turnover && newReturnData.expenses ? `£${(parseFloat(newReturnData.turnover) - parseFloat(newReturnData.expenses)).toFixed(2)}` : '—'],
+                        ['Turnover', newReturnData.turnover ? `$${newReturnData.turnover}` : '—'],
+                        ['Expenses', newReturnData.expenses ? `$${newReturnData.expenses}` : '—'],
+                        ['Net Profit', newReturnData.turnover && newReturnData.expenses ? `$${(parseFloat(newReturnData.turnover) - parseFloat(newReturnData.expenses)).toFixed(2)}` : '—'],
                         ['Notes', newReturnData.notes || '—'],
                       ];
                       const retTitle = `${newReturnData.type || 'Tax Return'} — ${newReturnData.period}`;
@@ -3164,7 +3164,7 @@ export default function TaxationPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-blue-100">
                     <span className="text-blue-800">Taxable Profit</span>
-                    <span className="font-bold text-blue-900">£{Number(ctProfit).toLocaleString()}</span>
+                    <span className="font-bold text-blue-900">${Number(ctProfit).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-blue-100">
                     <span className="text-blue-800">Effective Tax Rate</span>
@@ -3173,7 +3173,7 @@ export default function TaxationPage() {
                   <div className="flex justify-between items-center py-4 bg-white/60 -mx-6 px-6 mt-4">
                     <span className="text-blue-900 font-bold">Estimated Tax Liability</span>
                     <span className="text-3xl font-black text-blue-600">
-                      £{ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      ${ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                 </div>
@@ -3210,7 +3210,7 @@ export default function TaxationPage() {
                           <p className="font-semibold text-gray-900 text-xs">{item.period}</p>
                           <p className="text-[10px] text-gray-400 mt-0.5">{item.format} • {new Date(item.createdAt).toLocaleDateString('en-GB')}</p>
                         </div>
-                        <span className="font-bold text-gray-900 text-xs">£{item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="font-bold text-gray-900 text-xs">${item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     ))}
                   </div>
@@ -3248,7 +3248,7 @@ export default function TaxationPage() {
                     doc.setFontSize(12);
                     doc.setFont('helvetica', 'normal');
                     doc.text('Taxable Profit:', 20, y);
-                    doc.text(`£${Number(ctProfit).toLocaleString()}`, 150, y, { align: 'right' });
+                    doc.text(`$${Number(ctProfit).toLocaleString()}`, 150, y, { align: 'right' });
                     
                     y += 10;
                     doc.text('Applicable Tax Rate:', 20, y);
@@ -3257,7 +3257,7 @@ export default function TaxationPage() {
                     y += 15;
                     doc.setFont('helvetica', 'bold');
                     doc.text('TOTAL CORPORATION TAX PAYABLE:', 20, y);
-                    doc.text(`£${ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, 150, y, { align: 'right' });
+                    doc.text(`$${ctTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, 150, y, { align: 'right' });
 
                     y += 30;
                     doc.setFontSize(14);
@@ -3284,7 +3284,7 @@ export default function TaxationPage() {
                     setShowCT600Modal(false);
                     setSuccessContent({
                       title: 'Report Generated',
-                      message: `CT600 Summary (PDF) for profits of £${Number(ctProfit).toLocaleString()} generated successfully.`
+                      message: `CT600 Summary (PDF) for profits of $${Number(ctProfit).toLocaleString()} generated successfully.`
                     });
                     setShowSuccessModal(true);
                   }}
@@ -3334,7 +3334,7 @@ export default function TaxationPage() {
                   Amount
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">£</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
                   <input
                     type="number"
                     autoFocus
@@ -3408,7 +3408,7 @@ export default function TaxationPage() {
                         <p className="font-bold text-gray-900 text-sm">{item.period}</p>
                         <p className="text-xs text-gray-400 mt-0.5">{item.format} • Downloaded {new Date(item.createdAt).toLocaleDateString('en-GB')}</p>
                       </div>
-                      <span className="font-bold text-gray-900 text-sm">£{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span className="font-bold text-gray-900 text-sm">${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   ))}
                 </div>
@@ -3511,7 +3511,7 @@ export default function TaxationPage() {
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Monthly Gross Salary</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">£</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
                       <input
                         type="number"
                         value={payeGrossSalary}
@@ -3553,7 +3553,7 @@ export default function TaxationPage() {
                           <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
                           <span className="text-gray-700 font-medium">Gross Salary</span>
                         </div>
-                        <span className="text-xl font-black text-gray-900">£{(salary / 12).toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        <span className="text-xl font-black text-gray-900">${(salary / 12).toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                       
                       <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-red-50/50">
@@ -3564,7 +3564,7 @@ export default function TaxationPage() {
                             <span className="ml-2 text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded-full">PAYE</span>
                           </div>
                         </div>
-                        <span className="text-lg font-bold text-red-700">-£{monthlyPAYE.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        <span className="text-lg font-bold text-red-700">-${monthlyPAYE.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                       
                       <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-purple-50/50">
@@ -3575,7 +3575,7 @@ export default function TaxationPage() {
                             <span className="ml-2 text-xs text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full">8%</span>
                           </div>
                         </div>
-                        <span className="text-lg font-bold text-purple-700">-£{monthlyEmployeeNI.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        <span className="text-lg font-bold text-purple-700">-${monthlyEmployeeNI.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                       
                       <div className="p-5 bg-linear-to-r from-emerald-500 to-green-500 flex items-center justify-between">
@@ -3588,7 +3588,7 @@ export default function TaxationPage() {
                             <p className="text-emerald-100 text-xs">After deductions</p>
                           </div>
                         </div>
-                        <span className="text-3xl font-black text-white">£{monthlyNet.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        <span className="text-3xl font-black text-white">${monthlyNet.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                     </div>
 
@@ -3601,10 +3601,10 @@ export default function TaxationPage() {
                           </div>
                           <div>
                             <p className="text-indigo-900 font-bold">Employer NI Cost</p>
-                            <p className="text-indigo-600 text-xs">15% over £9,100 threshold</p>
+                            <p className="text-indigo-600 text-xs">15% over $9,100 threshold</p>
                           </div>
                         </div>
-                        <span className="text-2xl font-black text-indigo-700">£{monthlyEmployerNI.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        <span className="text-2xl font-black text-indigo-700">${monthlyEmployerNI.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                     </div>
 
@@ -3612,15 +3612,15 @@ export default function TaxationPage() {
                     <div className="grid grid-cols-3 gap-3">
                       <div className="bg-gray-50 rounded-xl p-3 text-center border border-gray-200">
                         <p className="text-xs text-gray-500 font-medium mb-1">Annual Tax</p>
-                        <p className="text-lg font-black text-gray-900">£{(monthlyPAYE * 12).toLocaleString('en-GB', {maximumFractionDigits: 0})}</p>
+                        <p className="text-lg font-black text-gray-900">${(monthlyPAYE * 12).toLocaleString('en-GB', {maximumFractionDigits: 0})}</p>
                       </div>
                       <div className="bg-gray-50 rounded-xl p-3 text-center border border-gray-200">
                         <p className="text-xs text-gray-500 font-medium mb-1">Annual NI</p>
-                        <p className="text-lg font-black text-gray-900">£{(monthlyEmployeeNI * 12).toLocaleString('en-GB', {maximumFractionDigits: 0})}</p>
+                        <p className="text-lg font-black text-gray-900">${(monthlyEmployeeNI * 12).toLocaleString('en-GB', {maximumFractionDigits: 0})}</p>
                       </div>
                       <div className="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-200">
                         <p className="text-xs text-emerald-600 font-medium mb-1">Annual Net</p>
-                        <p className="text-lg font-black text-emerald-700">£{(monthlyNet * 12).toLocaleString('en-GB', {maximumFractionDigits: 0})}</p>
+                        <p className="text-lg font-black text-emerald-700">${(monthlyNet * 12).toLocaleString('en-GB', {maximumFractionDigits: 0})}</p>
                       </div>
                     </div>
                   </div>
@@ -3631,7 +3631,7 @@ export default function TaxationPage() {
               <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
-                  <strong>{currentTaxYear} Rates:</strong> Employee NI reduced to 8%. Employer NI increased to 15% with £9,100 threshold.
+                  <strong>{currentTaxYear} Rates:</strong> Employee NI reduced to 8%. Employer NI increased to 15% with $9,100 threshold.
                 </p>
               </div>
             </div>
@@ -3734,7 +3734,7 @@ export default function TaxationPage() {
                       <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                       <span className="text-red-800 font-medium">PAYE Income Tax</span>
                     </div>
-                    <span className="font-bold text-red-900 text-lg">£{currentMonthlyPAYE.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className="font-bold text-red-900 text-lg">${currentMonthlyPAYE.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-purple-50/50 rounded-xl">
@@ -3742,7 +3742,7 @@ export default function TaxationPage() {
                       <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                       <span className="text-purple-800 font-medium">Employee NI (8%)</span>
                     </div>
-                    <span className="font-bold text-purple-900 text-lg">£{currentMonthlyEmployeeNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className="font-bold text-purple-900 text-lg">${currentMonthlyEmployeeNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-indigo-50/50 rounded-xl">
@@ -3750,7 +3750,7 @@ export default function TaxationPage() {
                       <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>
                       <span className="text-indigo-800 font-medium">Employer NI (15%)</span>
                     </div>
-                    <span className="font-bold text-indigo-900 text-lg">£{currentMonthlyEmployerNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className="font-bold text-indigo-900 text-lg">${currentMonthlyEmployerNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 </div>
 
@@ -3765,7 +3765,7 @@ export default function TaxationPage() {
                       <p className="text-cyan-100 text-xs">Due: {payeDueLabel}</p>
                     </div>
                   </div>
-                  <span className="text-3xl font-black text-white">£{currentMonthlyTotalDue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="text-3xl font-black text-white">${currentMonthlyTotalDue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
 
@@ -3799,10 +3799,10 @@ export default function TaxationPage() {
                   const rtiRows: [string, string][] = [
                     ['Pay Period', payeMonthLabel],
                     ['Employees', String(employeeCount)],
-                    ['PAYE Income Tax', `£${currentMonthlyPAYE.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-                    ['Employee NI', `£${currentMonthlyEmployeeNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-                    ['Employer NI', `£${currentMonthlyEmployerNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-                    ['Total Due to HMRC', `£${currentMonthlyTotalDue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+                    ['PAYE Income Tax', `$${currentMonthlyPAYE.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+                    ['Employee NI', `$${currentMonthlyEmployeeNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+                    ['Employer NI', `$${currentMonthlyEmployerNI.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+                    ['Total Due to HMRC', `$${currentMonthlyTotalDue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
                     ['HMRC Deadline', payeDueLabel],
                   ];
                   setSuccessDownloadFns({
@@ -3883,7 +3883,7 @@ export default function TaxationPage() {
                     <span className="text-[10px] font-bold text-gray-400">Excl. VAT</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">£</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">$</span>
                     <div className="w-full pl-9 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl text-xl font-black text-gray-900">
                       {parseFloat(vatOutputSales || '0').toLocaleString('en-GB', { minimumFractionDigits: 2 })}
                     </div>
@@ -3900,7 +3900,7 @@ export default function TaxationPage() {
                     <span className="text-[10px] font-bold text-gray-400">Excl. VAT</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">£</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">$</span>
                     <div className="w-full pl-9 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-xl text-xl font-black text-gray-900">
                       {parseFloat(vatInputPurchases || '0').toLocaleString('en-GB', { minimumFractionDigits: 2 })}
                     </div>
@@ -3929,7 +3929,7 @@ export default function TaxationPage() {
                       <span className="text-xs font-medium opacity-60">Box 1</span>
                       <span className="text-sm font-bold">VAT due on sales</span>
                     </div>
-                    <span className="text-lg font-black text-white">£{realOutputVAT.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
+                    <span className="text-lg font-black text-white">${realOutputVAT.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
                   </div>
 
                   <div className="flex items-center justify-between text-gray-300">
@@ -3937,7 +3937,7 @@ export default function TaxationPage() {
                       <span className="text-xs font-medium opacity-60">Box 4</span>
                       <span className="text-sm font-bold">VAT reclaimed</span>
                     </div>
-                    <span className="text-lg font-black text-white">£{realInputVAT.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
+                    <span className="text-lg font-black text-white">${realInputVAT.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
                   </div>
 
                   <div className="pt-4 border-t border-white/10 flex items-center justify-between">
@@ -3947,7 +3947,7 @@ export default function TaxationPage() {
                     </div>
                     <div className="text-right">
                       <span className="text-3xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-blue-400">
-                        £{Math.max(0, realOutputVAT - realInputVAT).toLocaleString('en-GB', {minimumFractionDigits: 2})}
+                        ${Math.max(0, realOutputVAT - realInputVAT).toLocaleString('en-GB', {minimumFractionDigits: 2})}
                       </span>
                       <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Due to HMRC</p>
                     </div>
@@ -3970,13 +3970,13 @@ export default function TaxationPage() {
                   const net = Math.max(0, realOutputVAT - realInputVAT);
                   const vatRows: [string, string][] = [
                     ['VAT Period', vatQuarterFullLabel],
-                    ['Box 1 — VAT due on sales', `£${realOutputVAT.toFixed(2)}`],
+                    ['Box 1 — VAT due on sales', `$${realOutputVAT.toFixed(2)}`],
                     ['Box 2 — VAT due on EU acquisitions', 'Not tracked'],
-                    ['Box 3 — Total VAT due', `£${realOutputVAT.toFixed(2)}`],
-                    ['Box 4 — VAT reclaimed on purchases', `£${realInputVAT.toFixed(2)}`],
-                    ['Box 5 — Net VAT Payable', `£${net.toFixed(2)}`],
-                    ['Box 6 — Total sales excl. VAT', `£${parseFloat(vatOutputSales || '0').toLocaleString()}`],
-                    ['Box 7 — Total purchases excl. VAT', `£${parseFloat(vatInputPurchases || '0').toLocaleString()}`],
+                    ['Box 3 — Total VAT due', `$${realOutputVAT.toFixed(2)}`],
+                    ['Box 4 — VAT reclaimed on purchases', `$${realInputVAT.toFixed(2)}`],
+                    ['Box 5 — Net VAT Payable', `$${net.toFixed(2)}`],
+                    ['Box 6 — Total sales excl. VAT', `$${parseFloat(vatOutputSales || '0').toLocaleString()}`],
+                    ['Box 7 — Total purchases excl. VAT', `$${parseFloat(vatInputPurchases || '0').toLocaleString()}`],
                     ['Box 8 — EU supplies excl. VAT', 'Not tracked'],
                     ['Box 9 — EU acquisitions excl. VAT', 'Not tracked'],
                     ['HMRC Deadline', vatQuarterDueLabel],
@@ -3988,7 +3988,7 @@ export default function TaxationPage() {
                   setPendingReportLog({ reportType: 'VAT', period: vatQuarter.label, amount: net });
                   setSuccessContent({
                     title: 'VAT Report Ready',
-                    message: `Net VAT Payable: £${net.toFixed(2)}\nHMRC Deadline: ${vatQuarterDueLabel}\n\nDownload as PDF or Excel and share with your accountant for HMRC filing.`,
+                    message: `Net VAT Payable: $${net.toFixed(2)}\nHMRC Deadline: ${vatQuarterDueLabel}\n\nDownload as PDF or Excel and share with your accountant for HMRC filing.`,
                   });
                   setShowSuccessModal(true);
                 }}
@@ -4058,7 +4058,7 @@ export default function TaxationPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-black text-gray-900 tracking-tight">£{item.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                        <p className="text-2xl font-black text-gray-900 tracking-tight">${item.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
                         <div className="flex items-center justify-end gap-1.5 mt-1">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
                           <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">{item.format}</span>
@@ -4156,7 +4156,7 @@ export default function TaxationPage() {
                 <div className="bg-orange-50/50 rounded-2xl p-4 border border-orange-200/50">
                   <label className="block text-sm font-bold text-orange-900 mb-2">Disposal Value</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-400 font-bold">£</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-400 font-bold">$</span>
                     <input 
                       type="number" 
                       value={cgtDisposalValue}
@@ -4168,7 +4168,7 @@ export default function TaxationPage() {
                 <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-200/50">
                   <label className="block text-sm font-bold text-blue-900 mb-2">Acquisition Cost</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 font-bold">£</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 font-bold">$</span>
                     <input 
                       type="number" 
                       value={cgtAcquisitionCost}
@@ -4180,7 +4180,7 @@ export default function TaxationPage() {
                 <div className="col-span-full bg-gray-50 rounded-2xl p-4 border border-gray-200">
                   <label className="block text-sm font-bold text-gray-700 mb-2">Allowable Expenses (Legal, etc.)</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">£</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
                     <input 
                       type="number" 
                       value={cgtAllowableExpenses}
@@ -4213,15 +4213,15 @@ export default function TaxationPage() {
                     <div className="p-4 space-y-3">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Total Gain</span>
-                        <span className="font-bold text-gray-900">£{totalGain.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
+                        <span className="font-bold text-gray-900">${totalGain.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-orange-600">Annual Exempt Amount ({currentTaxYear})</span>
-                        <span className="font-bold text-orange-600">-£{aeAmount.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
+                        <span className="font-bold text-orange-600">-${aeAmount.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
                       </div>
                       <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
                         <span className="font-bold text-gray-900">Taxable Gain</span>
-                        <span className="text-xl font-black text-gray-900">£{taxableGain.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
+                        <span className="text-xl font-black text-gray-900">${taxableGain.toLocaleString('en-GB', {minimumFractionDigits: 2})}</span>
                       </div>
                       <div className={`p-4 rounded-xl border mt-2 ${cgtAssetType === 'badr' ? 'bg-purple-50 border-purple-100' : 'bg-orange-50 border-orange-100'}`}>
                         <div className="flex justify-between items-center mb-1">
@@ -4229,11 +4229,11 @@ export default function TaxationPage() {
                             Estimated Tax ({rate * 100}%)
                           </span>
                           <span className={`text-lg font-black ${cgtAssetType === 'badr' ? 'text-purple-900' : 'text-orange-900'}`}>
-                            £{taxDue.toLocaleString('en-GB', {minimumFractionDigits: 2})}
+                            ${taxDue.toLocaleString('en-GB', {minimumFractionDigits: 2})}
                           </span>
                         </div>
                         <p className={`text-[10px] italic ${cgtAssetType === 'badr' ? 'text-purple-700' : 'text-orange-700'}`}>
-                          * {cgtAssetType === 'badr' ? 'BADR relief applied (Lifetime limit £1m).' : `Based on ${currentTaxYear} ${cgtIncomeBand} rate (${(rate * 100).toFixed(0)}%), as selected above.`}
+                          * {cgtAssetType === 'badr' ? 'BADR relief applied (Lifetime limit $1m).' : `Based on ${currentTaxYear} ${cgtIncomeBand} rate (${(rate * 100).toFixed(0)}%), as selected above.`}
                         </p>
                       </div>
                     </div>

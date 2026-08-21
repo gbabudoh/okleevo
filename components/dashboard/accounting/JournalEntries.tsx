@@ -84,7 +84,7 @@ export const JournalEntries: React.FC<JournalEntriesProps> = ({
             </div>
             <div className="text-right">
               <p className="text-lg font-bold text-gray-900">
-                {accounting.formatMoney(totalDebit, "£")}
+                {accounting.formatMoney(totalDebit, "$")}
               </p>
             </div>
           </div>

@@ -18,8 +18,8 @@ export interface CorporationTaxResult {
 /**
  * UK Corporation Tax (post-April 2023 rules), assuming no associated
  * companies and no exempt distributions:
- * - profit <= £50,000: 19% (small profits rate)
- * - profit >= £250,000: 25% (main rate)
+ * - profit <= $50,000: 19% (small profits rate)
+ * - profit >= $250,000: 25% (main rate)
  * - in between: 25% less Marginal Relief = (250,000 - profit) x 3/200
  */
 export function calculateCorporationTax(profit: number): CorporationTaxResult {
@@ -35,8 +35,8 @@ export function calculateCorporationTax(profit: number): CorporationTaxResult {
 // UK 2025/26 Income Tax & National Insurance rates and thresholds.
 export const UK_TAX_RATES = {
   personalAllowance: 12570,
-  // Personal Allowance tapers by £1 for every £2 of income over £100,000,
-  // reaching £0 at £125,140.
+  // Personal Allowance tapers by $1 for every $2 of income over $100,000,
+  // reaching $0 at $125,140.
   personalAllowanceTaperStart: 100000,
   personalAllowanceTaperEnd: 125140,
   basicRateLimit: 37700,
@@ -58,7 +58,7 @@ export const UK_TAX_RATES = {
   niClass4Rate: 0.09,
 };
 
-/** Personal Allowance after the >£100k taper (reaches £0 at £125,140). */
+/** Personal Allowance after the >$100k taper (reaches $0 at $125,140). */
 export function taperedPersonalAllowance(annualIncome: number): number {
   const { personalAllowance, personalAllowanceTaperStart } = UK_TAX_RATES;
   if (annualIncome <= personalAllowanceTaperStart) return personalAllowance;
@@ -66,7 +66,7 @@ export function taperedPersonalAllowance(annualIncome: number): number {
   return Math.max(0, personalAllowance - reduction);
 }
 
-/** Monthly PAYE income tax for a given annual salary, with the >£100k allowance taper applied. */
+/** Monthly PAYE income tax for a given annual salary, with the >$100k allowance taper applied. */
 export function calculateMonthlyPAYE(annualSalary: number): number {
   const allowance = taperedPersonalAllowance(annualSalary);
   const taxable = Math.max(0, annualSalary - allowance);
@@ -135,7 +135,7 @@ export interface InvoiceLineItemRow { description?: string; quantity?: number; r
  * Sums real per-line VAT off an invoice's stored items — items created before
  * vatRate existed default to 20% (the same assumption the whole app made
  * everywhere before this field existed), so old invoices don't silently drop
- * to £0 VAT. Some older/seeded rows have items double-JSON-encoded (a string
+ * to $0 VAT. Some older/seeded rows have items double-JSON-encoded (a string
  * containing JSON, not a native array) — parse defensively rather than
  * silently treating them as having no items at all.
  */

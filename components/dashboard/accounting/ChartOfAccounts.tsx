@@ -196,7 +196,7 @@ export const ChartOfAccounts: React.FC<ChartOfAccountsProps> = ({
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right font-extrabold text-sm text-gray-900 dark:text-white tracking-tight">
-                      {accounting.formatMoney(account.balance, "£")}
+                      {accounting.formatMoney(account.balance, "$")}
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-1">

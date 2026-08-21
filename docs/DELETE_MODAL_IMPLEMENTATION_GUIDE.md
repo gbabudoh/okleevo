@@ -63,7 +63,7 @@ onClick={() => {
 1. **app/dashboard/expenses/page.tsx**
    - Line 108: `handleDeleteExpense` function
    - Item: Expense
-   - Details: `${expense.title} - £${expense.amount}`
+   - Details: `${expense.title} - $${expense.amount}`
 
 2. **app/dashboard/tasks/page.tsx**
    - Line 81: `handleDeleteTask` function
@@ -73,7 +73,7 @@ onClick={() => {
 3. **app/dashboard/invoicing/page.tsx**
    - Line 641: Invoice deletion in menu
    - Item: Invoice
-   - Details: `${invoice.id} - £${invoice.amount}`
+   - Details: `${invoice.id} - $${invoice.amount}`
 
 4. **app/dashboard/forms/page.tsx**
    - Line 64: `handleDeleteForm` function
@@ -113,7 +113,7 @@ onClick={() => {
 11. **app/dashboard/cashflow/page.tsx**
     - Line 425: Transaction deletion
     - Item: Transaction
-    - Details: `${transaction.description} - £${transaction.amount}`
+    - Details: `${transaction.description} - $${transaction.amount}`
 
 ## Benefits
 

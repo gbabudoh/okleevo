@@ -15,7 +15,7 @@ That performance score is built from on-time delivery, quality, response time, a
 
 It increases that supplier's order count, but it doesn't add anything to Total Spent — there's no field in the Place Order form for the order value.
 
-## Why is Minimum Order always shown as £0, or the City/Country always blank?
+## Why is Minimum Order always shown as $0, or the City/Country always blank?
 
 Those fields are displayed in the supplier detail view but there's currently no input anywhere to set them, so they'll always show as empty or zero.
 

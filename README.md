@@ -6,7 +6,7 @@ A comprehensive, all-in-one business platform designed specifically for UK SMEs.
 
 **Okleevo** eliminates complexity, cost, and clutter by providing everything your SME needs in a single platform. Built with modern technologies, beautiful UI design, and UK compliance in mind.
 
-- **Subscription Model**: £19.99/month (All 20 modules included)
+- **Subscription Model**: $19.99/month (All 20 modules included)
 - **Target Market**: UK SMEs (Micro to Small businesses)
 - **Core USP**: One unified workspace with modern, fluid UI
 - **Design Philosophy**: Beautiful, intuitive, and powerful

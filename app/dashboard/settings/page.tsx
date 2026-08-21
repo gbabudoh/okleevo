@@ -1032,7 +1032,7 @@ function SettingsPageInner() {
                   </div>
                   <div className="flex items-center justify-between text-xs font-bold">
                     <span className="text-slate-400">Plan</span>
-                    <span className="font-mono font-extrabold text-slate-900 dark:text-white">£9.99/mo</span>
+                    <span className="font-mono font-extrabold text-slate-900 dark:text-white">$9.99/mo</span>
                   </div>
                   <div className="flex items-center justify-between text-xs font-bold">
                     <span className="text-slate-400">Verified</span>
@@ -1614,7 +1614,7 @@ function SettingsPageInner() {
                       {subInfo?.plan || 'Starter Plan'}
                     </p>
                     <h2 className="text-4xl font-extrabold font-mono tracking-tight text-slate-900 dark:text-white">
-                      {subInfo?.currency === 'gbp' ? '£9.99' : '$39'}{' '}
+                      {subInfo?.currency === 'gbp' ? '$9.99' : '$39'}{' '}
                       <span className="text-sm font-bold text-slate-400 font-sans">/ month</span>
                     </h2>
                     <p className="text-xs font-bold text-slate-400 mt-1">

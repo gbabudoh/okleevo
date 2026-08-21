@@ -32,7 +32,7 @@ export function TopClients() {
               </div>
               <div>
                 <p className="font-medium text-gray-900">{client.name}</p>
-                <p className="text-sm text-gray-500">£{client.revenue.toLocaleString()} revenue</p>
+                <p className="text-sm text-gray-500">${client.revenue.toLocaleString()} revenue</p>
               </div>
             </div>
             <div className={`flex items-center gap-1 text-sm font-medium ${client.growth >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>

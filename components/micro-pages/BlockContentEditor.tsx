@@ -366,7 +366,7 @@ export default function BlockContentEditor({
                 </div>
                 <div>
                   <label className="text-[10px] font-semibold text-slate-500 mb-1 block">Price</label>
-                  <input className={inputCls} placeholder="e.g. $49 / £29" value={item.price} onChange={e => update({ price: e.target.value })} />
+                  <input className={inputCls} placeholder="e.g. $49 / $29" value={item.price} onChange={e => update({ price: e.target.value })} />
                 </div>
               </div>
               <div>

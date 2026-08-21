@@ -666,7 +666,7 @@ export default function CRMPage() {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 63);
-    doc.text(`Total clients: ${clients.length}  ·  Pipeline value: £${pipelineValue.toLocaleString()}  ·  Win rate: ${winRate}%`, 14, 69);
+    doc.text(`Total clients: ${clients.length}  ·  Pipeline value: $${pipelineValue.toLocaleString()}  ·  Win rate: ${winRate}%`, 14, 69);
 
     doc.setDrawColor(230);
     doc.line(14, 76, 196, 76);
@@ -698,7 +698,7 @@ export default function CRMPage() {
       if (idx % 2 === 0) { doc.setFillColor(252, 252, 252); doc.rect(14, y - 5, 182, 7, 'F'); }
       doc.text(s.label.replace(/^\w/, c => c.toUpperCase()), 16, y);
       doc.text(String(s.count), 120, y);
-      doc.text(`£${s.revenue.toLocaleString()}`, 150, y);
+      doc.text(`$${s.revenue.toLocaleString()}`, 150, y);
       y += 7;
     });
     y += 8;
@@ -723,7 +723,7 @@ export default function CRMPage() {
       if (idx % 2 === 0) { doc.setFillColor(252, 252, 252); doc.rect(14, y - 5, 182, 7, 'F'); }
       doc.text(co.company.substring(0, 40), 16, y);
       doc.text(String(co.count), 120, y);
-      doc.text(`£${co.revenue.toLocaleString()}`, 150, y);
+      doc.text(`$${co.revenue.toLocaleString()}`, 150, y);
       y += 7;
     });
 
@@ -904,7 +904,7 @@ export default function CRMPage() {
                 <PoundSterling className="w-4 h-4 text-orange-500" />
               </div>
               <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">
-                £{client.revenue.toLocaleString()}
+                ${client.revenue.toLocaleString()}
               </p>
             </div>
 
@@ -1055,7 +1055,7 @@ export default function CRMPage() {
                   <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${getStatusColor(client.status)}`}>
                     {client.status.toUpperCase()}
                   </span>
-                  <span className="text-[11px] font-semibold text-gray-700">£{client.revenue.toLocaleString()}</span>
+                  <span className="text-[11px] font-semibold text-gray-700">${client.revenue.toLocaleString()}</span>
                 </div>
               </div>
             ))}
@@ -1142,7 +1142,7 @@ export default function CRMPage() {
                     <td className="px-4 py-3">
                       <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${getStatusColor(client.status)}`}>{client.status}</span>
                     </td>
-                    <td className="px-4 py-3 text-right text-sm font-bold text-gray-900 dark:text-white">£{client.revenue.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-sm font-bold text-gray-900 dark:text-white">${client.revenue.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1355,9 +1355,9 @@ export default function CRMPage() {
             { label: 'All Clients', value: clients.length, sub: 'Total database', icon: Users },
             { label: 'Active', value: activeClients, sub: 'Currently engaged', icon: Star },
             { label: 'New Leads', value: leadClients, sub: 'Opportunities', icon: TrendingUp },
-            { label: 'Pipeline Value', value: `£${(pipelineValue / 1000).toFixed(1)}k`, sub: 'Open deals', icon: Wallet },
+            { label: 'Pipeline Value', value: `$${(pipelineValue / 1000).toFixed(1)}k`, sub: 'Open deals', icon: Wallet },
             { label: 'Win Rate', value: `${winRate}%`, sub: `${wonCount} won · ${lostCount} lost`, icon: Trophy },
-            { label: 'Total Revenue', value: `£${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Lifetime value', icon: PoundSterling },
+            { label: 'Total Revenue', value: `$${(totalRevenue / 1000).toFixed(1)}k`, sub: 'Lifetime value', icon: PoundSterling },
           ].map(({ label, value, sub, icon: Icon }) => (
             <div key={label} className="bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-orange-300 transition-all flex flex-col justify-between space-y-3">
               <div className="flex items-center justify-between">
@@ -1513,7 +1513,7 @@ export default function CRMPage() {
                       <span className="text-xs font-extrabold text-orange-500 group-hover:translate-x-1 transition-transform">View Contacts →</span>
                     </div>
                     <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white mt-1">
-                      £{co.revenue.toLocaleString()}
+                      ${co.revenue.toLocaleString()}
                     </p>
                   </div>
                 </button>
@@ -1566,7 +1566,7 @@ export default function CRMPage() {
                       <ReportBar
                         key={s.stage}
                         label={s.label}
-                        valueLabel={`£${s.revenue.toLocaleString()}`}
+                        valueLabel={`$${s.revenue.toLocaleString()}`}
                         subLabel={`${s.count} deal${s.count === 1 ? '' : 's'}`}
                         pct={(s.revenue / maxStageRevenue) * 100}
                         colorClass={gradientMap[s.stage] || 'bg-gradient-to-r from-orange-500 to-amber-600'}
@@ -1601,7 +1601,7 @@ export default function CRMPage() {
                 ) : (
                   <div className="space-y-4">
                     {topCompanies.map((co) => (
-                      <ReportBar key={co.company} label={co.company} valueLabel={`£${co.revenue.toLocaleString()}`} subLabel={`${co.count} contact${co.count === 1 ? '' : 's'}`}
+                      <ReportBar key={co.company} label={co.company} valueLabel={`$${co.revenue.toLocaleString()}`} subLabel={`${co.count} contact${co.count === 1 ? '' : 's'}`}
                         pct={(co.revenue / maxCompanyRevenue) * 100} colorClass="bg-gradient-to-r from-orange-500 to-amber-600" />
                     ))}
                   </div>
@@ -1862,7 +1862,7 @@ export default function CRMPage() {
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Revenue (£)</label>
+                <label className={labelCls}>Revenue ($)</label>
                 <input type="number" value={editingClient.revenue} onChange={(e) => setEditingClient({...editingClient, revenue: parseFloat(e.target.value) || 0})}
                   className={inputCls} />
               </div>

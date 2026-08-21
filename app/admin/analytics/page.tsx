@@ -122,7 +122,7 @@ export default function AnalyticsPage() {
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-600 mb-1">Monthly Revenue</p>
               <p className="text-4xl font-bold text-gray-900">
-                £{((stats?.totalRevenue || 0) / 100).toLocaleString('en-GB', {
+                ${((stats?.totalRevenue || 0) / 100).toLocaleString('en-GB', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}

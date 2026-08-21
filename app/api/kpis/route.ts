@@ -74,7 +74,7 @@ export const GET = withMultiTenancy(async (_req, { dataFilter }) => {
 
     const rawCurrency = (business?.subscription?.currency || (business?.country === 'UK' ? 'gbp' : 'usd')).toUpperCase();
     const currencySymbols: Record<string, string> = {
-      GBP: '£',
+      GBP: '$',
       USD: '$',
       EUR: '€',
       NGN: '₦',

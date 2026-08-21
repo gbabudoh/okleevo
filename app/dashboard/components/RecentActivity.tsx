@@ -35,7 +35,7 @@ export function RecentActivity() {
     {
       id: '4',
       type: 'payment',
-      description: 'Payment received: £1,250',
+      description: 'Payment received: $1,250',
       timestamp: '1 day ago',
       icon: '💳',
     },

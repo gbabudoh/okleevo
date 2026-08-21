@@ -84,7 +84,7 @@ export const AccountingSummary: React.FC<FinancialSummaryProps> = ({ data }) => 
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
       {cards.map((item, idx) => {
         const Icon = item.icon;
-        const formattedValue = accounting.formatMoney(item.value, "£");
+        const formattedValue = accounting.formatMoney(item.value, "$");
 
         return (
           <div

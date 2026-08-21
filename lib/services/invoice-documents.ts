@@ -46,14 +46,14 @@ export function generateInvoicePdf(invoice: InvoiceDocumentData): Buffer {
   invoice.items.forEach((item, i) => {
     if (i % 2 === 0) { doc.setFillColor(249, 250, 251); doc.rect(20, yPos - 5, 170, 8, 'F'); }
     doc.text(item.description, 25, yPos); doc.text(item.quantity.toString(), 125, yPos);
-    doc.text(`£${item.rate}`, 145, yPos); doc.text(`£${(item.quantity * item.rate).toLocaleString()}`, 170, yPos);
+    doc.text(`$${item.rate}`, 145, yPos); doc.text(`$${(item.quantity * item.rate).toLocaleString()}`, 170, yPos);
     yPos += 8;
   });
 
   yPos += 10;
   doc.setFillColor(59, 130, 246); doc.rect(20, yPos - 5, 170, 12, 'F');
   doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(255, 255, 255);
-  doc.text('TOTAL:', 145, yPos + 3); doc.text(`£${invoice.amount.toLocaleString()}`, 170, yPos + 3);
+  doc.text('TOTAL:', 145, yPos + 3); doc.text(`$${invoice.amount.toLocaleString()}`, 170, yPos + 3);
 
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(128, 128, 128);
   doc.text('Thank you for your business!', 105, 280, { align: 'center' });
@@ -66,6 +66,6 @@ export function generateInvoiceCsv(invoice: InvoiceDocumentData): Buffer {
   const rows = invoice.items.map(item => [item.description, item.quantity, item.rate, item.quantity * item.rate]);
   let csv = `Invoice: ${invoice.number}\nClient: ${invoice.clientName}\nEmail: ${invoice.clientEmail || ''}\nIssue: ${fmtDate(invoice.createdAt)}\nDue: ${fmtDate(invoice.dueDate)}\nStatus: ${invoice.status}\n\n`;
   csv += headers.join(',') + '\n' + rows.map(r => r.join(',')).join('\n');
-  csv += `\n\nTotal,,,£${invoice.amount}`;
+  csv += `\n\nTotal,,,$${invoice.amount}`;
   return Buffer.from('﻿' + csv, 'utf-8');
 }

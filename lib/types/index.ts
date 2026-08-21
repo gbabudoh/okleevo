@@ -44,7 +44,7 @@ export interface Subscription {
 }
 
 export interface CompanySettings {
-  currency: 'GBP';
+  currency: 'USD' | 'GBP' | 'EUR' | string;
   timezone: string;
   dateFormat: string;
   vatEnabled: boolean;
