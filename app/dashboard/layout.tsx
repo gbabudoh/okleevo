@@ -580,7 +580,7 @@ export default function DashboardLayout({
               href="/billing"
               className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-colors"
             >
-              Subscribe · $9.99/mo
+              Subscribe · $39/mo
             </Link>
           </div>
         )}
@@ -596,14 +596,14 @@ export default function DashboardLayout({
                 {subInfo.status === 'CANCELED' ? 'Subscription Cancelled' : 'Your Free Trial Has Ended'}
               </h2>
               <p className="text-gray-500 mb-8 leading-relaxed">
-                Subscribe for <span className="font-bold text-gray-900">$9.99/month</span> to keep full access to all 20+ Okleevo modules. Cancel anytime.
+                Subscribe for <span className="font-bold text-gray-900">$39/month</span> to keep full access to all 20+ Okleevo modules. Cancel anytime.
               </p>
               <Link
                 href="/billing"
                 className="inline-flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-[#ff8c42] text-white font-bold text-lg shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
               >
                 <CreditCard className="w-5 h-5" />
-                Subscribe · $9.99/month
+                Subscribe · $39/month
               </Link>
               <p className="text-xs text-gray-400 mt-4">Secured by Stripe · No lock-in · Cancel anytime</p>
             </div>
