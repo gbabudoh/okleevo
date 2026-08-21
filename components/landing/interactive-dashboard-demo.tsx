@@ -56,7 +56,7 @@ export function InteractiveDashboardDemo() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] bg-gradient-to-tr from-orange-300/30 via-amber-200/25 to-orange-400/20 blur-[150px] pointer-events-none rounded-full" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10">
           <span className="text-xs font-bold uppercase tracking-widest text-orange-700 bg-orange-100 border border-orange-200 px-3 py-1 rounded-full shadow-sm">
@@ -87,11 +87,10 @@ export function InteractiveDashboardDemo() {
                   setActiveTab(tab.id as DemoTab);
                   setIsAutoPlaying(false);
                 }}
-                className={`relative flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition-all duration-300 shrink-0 ${
-                  isActive
+                className={`relative flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition-all duration-300 shrink-0 ${isActive
                     ? "text-white shadow-[0_4px_20px_rgba(252,104,19,0.35)]"
                     : "text-slate-700 hover:text-slate-900 bg-white hover:bg-orange-50 border border-slate-200 shadow-sm"
-                }`}
+                  }`}
               >
                 {isActive && (
                   <motion.div
@@ -133,7 +132,7 @@ export function InteractiveDashboardDemo() {
 
           {/* Window Shell */}
           <div className="relative rounded-2xl sm:rounded-3xl bg-white border border-slate-200 shadow-[0_20px_60px_-15px_rgba(252,104,19,0.18)] overflow-hidden min-h-[540px] flex flex-col">
-            
+
             {/* Window Header Bar */}
             <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-slate-100/90 border-b border-slate-200 text-xs text-slate-600">
               <div className="flex items-center gap-2">
@@ -189,7 +188,7 @@ export function InteractiveDashboardDemo() {
   );
 }
 
-{/* Tab View 1: CRM & Revenue Pipeline */}
+{/* Tab View 1: CRM & Revenue Pipeline */ }
 function CRMView({ revenue }: { revenue: number }) {
   const [deals] = useState([
     { id: 1, name: "Acme Corp Enterprise License", value: "$48,000", stage: "Negotiation", client: "Acme Corp", date: "Just now" },
@@ -280,7 +279,7 @@ function CRMView({ revenue }: { revenue: number }) {
   );
 }
 
-{/* Tab View 2: Voice & Video Huddles */}
+{/* Tab View 2: Voice & Video Huddles */ }
 function HuddlesView() {
   const [isMuted, setIsMuted] = useState(false);
 
@@ -313,9 +312,8 @@ function HuddlesView() {
         ].map((user, idx) => (
           <div
             key={idx}
-            className={`relative rounded-xl p-4 bg-white border flex flex-col items-center justify-between min-h-[140px] overflow-hidden transition-all ${
-              user.isSpeaking ? "border-orange-500 shadow-[0_4px_20px_rgba(252,104,19,0.25)]" : "border-slate-200 shadow-sm"
-            }`}
+            className={`relative rounded-xl p-4 bg-white border flex flex-col items-center justify-between min-h-[140px] overflow-hidden transition-all ${user.isSpeaking ? "border-orange-500 shadow-[0_4px_20px_rgba(252,104,19,0.25)]" : "border-slate-200 shadow-sm"
+              }`}
           >
             <div className="w-full flex items-center justify-between text-[10px]">
               <span className={`px-2 py-0.5 rounded font-bold ${user.isSpeaking ? "bg-orange-100 text-orange-700" : "bg-slate-100 text-slate-600"}`}>
@@ -342,9 +340,8 @@ function HuddlesView() {
       <div className="flex items-center justify-center gap-3 py-3 rounded-xl bg-slate-100 border border-slate-200 shadow-inner">
         <button
           onClick={() => setIsMuted(!isMuted)}
-          className={`p-3 rounded-full transition shadow-sm ${
-            isMuted ? "bg-red-100 text-red-600 border border-red-300" : "bg-white text-slate-900 border border-slate-200 hover:bg-slate-50"
-          }`}
+          className={`p-3 rounded-full transition shadow-sm ${isMuted ? "bg-red-100 text-red-600 border border-red-300" : "bg-white text-slate-900 border border-slate-200 hover:bg-slate-50"
+            }`}
         >
           {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
         </button>
@@ -359,7 +356,7 @@ function HuddlesView() {
   );
 }
 
-{/* Tab View 3: AI Meeting Intelligence */}
+{/* Tab View 3: AI Meeting Intelligence */ }
 function AIView() {
   return (
     <motion.div
@@ -408,7 +405,7 @@ function AIView() {
   );
 }
 
-{/* Tab View 4: Zero-Trust Client Vault */}
+{/* Tab View 4: Zero-Trust Client Vault */ }
 function VaultView() {
   return (
     <motion.div
