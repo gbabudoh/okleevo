@@ -620,7 +620,7 @@ export default function InvoicingPage() {
     return (
       <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 pb-24 font-sans text-slate-900 dark:text-slate-100">
         <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+          <div className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6 py-3.5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-500/20 shrink-0">
                 <FileText className="w-5 h-5 stroke-[2.2]" />
@@ -636,7 +636,7 @@ export default function InvoicingPage() {
             </div>
           </div>
         </header>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center gap-3">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6 pt-20 flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
           <p className="text-xs font-bold text-slate-400">Loading Invoice Engine workspace…</p>
         </div>
@@ -668,77 +668,82 @@ export default function InvoicingPage() {
       </AnimatePresence>
 
       {/* ── COMMAND HEADER (Glassmorphic Strip) ────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-500/20 shrink-0">
-              <FileText className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none">
-                  Invoice Engine
-                </h1>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Dispatch Engine Online
-                </span>
+      <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          {/* Top Row / Left Info */}
+          <div className="flex items-center justify-between sm:justify-start gap-3 min-w-0">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-500/20 shrink-0">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
-                Client pricing, itemized invoice generation, PDF exports, and 1-click email dispatch
-              </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                    Invoice Engine
+                  </h1>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Online
+                  </span>
+                </div>
+                <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                  Client pricing, itemized invoice generation, PDF exports, and 1-click email dispatch
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Action Hub */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <ModuleGuideBanner
-              moduleId="invoicing"
-              moduleName="Invoice Engine"
-              summary="Price SME deliverables, generate itemized VAT invoices, and dispatch PDF invoices directly to client email."
-              tips={[
-                "1-Click 'Send Email' dispatches formatted HTML invoices with PDF & CSV attachments",
-                "Supports multi-currency billing ($ USD, £ GBP, € EUR, ₦ NGN, etc.)",
-                "Automatic synchronization with accounting ledgers and team audit stream",
-              ]}
-            />
+          {/* Action Hub - nicely structured on mobile */}
+          <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+            <div className="flex items-center gap-2">
+              <ModuleGuideBanner
+                moduleId="invoicing"
+                moduleName="Invoice Engine"
+                summary="Price SME deliverables, generate itemized VAT invoices, and dispatch PDF invoices directly to client email."
+                tips={[
+                  "1-Click 'Send Email' dispatches formatted HTML invoices with PDF & CSV attachments",
+                  "Supports multi-currency billing ($ USD, £ GBP, € EUR, ₦ NGN, etc.)",
+                  "Automatic synchronization with accounting ledgers and team audit stream",
+                ]}
+              />
 
-            {/* Export Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setExportMenuOpen((v) => !v)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5 text-slate-500" />
-                <span className="hidden sm:inline">Export</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
+              {/* Export Dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setExportMenuOpen((v) => !v)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="hidden sm:inline">Export</span>
+                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                </button>
 
-              {exportMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setExportMenuOpen(false)} />
-                  <div className="absolute right-0 mt-1.5 w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <button
-                      onClick={handleExportAllCSV}
-                      className="w-full px-4 py-2 text-left text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-950/50 flex items-center gap-2.5 cursor-pointer"
-                    >
-                      <FileText className="w-4 h-4 text-emerald-500" />
-                      <span>Export Full CSV Ledger</span>
-                    </button>
-                  </div>
-                </>
-              )}
+                {exportMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setExportMenuOpen(false)} />
+                    <div className="absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      <button
+                        onClick={handleExportAllCSV}
+                        className="w-full px-4 py-2 text-left text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-950/50 flex items-center gap-2.5 cursor-pointer"
+                      >
+                        <FileText className="w-4 h-4 text-emerald-500" />
+                        <span>Export Full CSV Ledger</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Primary Action Button — Okleevo Brand Gradient */}
             <button
               type="button"
               onClick={() => setShowNewInvoiceModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-md shadow-orange-500/25 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-md shadow-orange-500/25 active:scale-95 transition-all cursor-pointer"
             >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>+ New Invoice</span>
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>New Invoice</span>
               <kbd className="hidden lg:inline-flex px-1.5 py-0.5 rounded-md bg-white/20 text-[9px] font-mono font-bold">
                 ⌘N
               </kbd>
@@ -747,37 +752,37 @@ export default function InvoicingPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6 pt-4 sm:pt-6 space-y-4 sm:space-y-6">
         {/* ── HORIZON KPI TELEMETRY RIBBON (Linear / Mercury Aesthetic) ── */}
-        <section className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xs relative overflow-hidden">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 lg:gap-0 lg:divide-x divide-slate-100 dark:divide-slate-800">
+        <section className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3 sm:p-5 lg:p-6 shadow-xs relative overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-0 lg:divide-x divide-slate-100 dark:divide-slate-800">
             {/* Total Billed Volume */}
-            <div className="lg:px-5 first:pl-0 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <div className="lg:px-5 first:pl-0 p-3 sm:p-0 rounded-2xl bg-slate-50/60 dark:bg-slate-800/40 sm:bg-transparent sm:dark:bg-transparent space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                   Total Billed Volume
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
-                  {invoices.length} invoices
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 shrink-0">
+                  {invoices.length} inv
                 </span>
               </div>
-              <p className="text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white tracking-tight">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-slate-900 dark:text-white tracking-tight">
                 ${stats.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className="text-[10px] text-slate-400 font-bold">Gross invoice creation balance</p>
+              <p className="text-[10px] text-slate-400 font-bold truncate">Gross invoice volume</p>
             </div>
 
             {/* Collected Inflow */}
-            <div className="lg:px-5 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <div className="lg:px-5 p-3 sm:p-0 rounded-2xl bg-slate-50/60 dark:bg-slate-800/40 sm:bg-transparent sm:dark:bg-transparent space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                   Settled Inflow
                 </span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
                   <TrendingUp className="w-3 h-3" /> {stats.rate}% Rate
                 </span>
               </div>
-              <p className="text-2xl sm:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
                 ${stats.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
@@ -786,48 +791,48 @@ export default function InvoicingPage() {
             </div>
 
             {/* Pending Escrow */}
-            <div className="lg:px-5 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <div className="lg:px-5 p-3 sm:p-0 rounded-2xl bg-slate-50/60 dark:bg-slate-800/40 sm:bg-transparent sm:dark:bg-transparent space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                   Pending Escrow
                 </span>
-                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 shrink-0">
                   {invoices.filter((i) => i.status === 'sent').length} awaiting
                 </span>
               </div>
-              <p className="text-2xl sm:text-3xl font-black font-mono text-blue-600 dark:text-blue-400 tracking-tight">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-blue-600 dark:text-blue-400 tracking-tight">
                 ${stats.pending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className="text-[10px] text-slate-400 font-bold">Awaiting client authorization</p>
+              <p className="text-[10px] text-slate-400 font-bold truncate">Awaiting client payment</p>
             </div>
 
             {/* Overdue SLA */}
-            <div className="lg:px-5 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <div className="lg:px-5 p-3 sm:p-0 rounded-2xl bg-slate-50/60 dark:bg-slate-800/40 sm:bg-transparent sm:dark:bg-transparent space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                   Overdue SLA
                 </span>
                 {stats.overdue > 0 && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-rose-600 animate-pulse">
-                    <AlertTriangle className="w-3 h-3" /> SLA Breach
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-rose-600 animate-pulse shrink-0">
+                    <AlertTriangle className="w-3 h-3" /> SLA
                   </span>
                 )}
               </div>
-              <p className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${stats.overdue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+              <p className={`text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight ${stats.overdue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
                 ${stats.overdue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className="text-[10px] text-slate-400 font-bold">
-                {invoices.filter((i) => i.status === 'overdue').length} requiring reminder follow-up
+              <p className="text-[10px] text-slate-400 font-bold truncate">
+                {invoices.filter((i) => i.status === 'overdue').length} requiring follow-up
               </p>
             </div>
 
             {/* Global Multi-Currency Support */}
-            <div className="col-span-2 md:col-span-4 lg:col-span-1 lg:pl-5 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-800 space-y-1">
+            <div className="col-span-1 sm:col-span-2 md:col-span-4 lg:col-span-1 lg:pl-5 p-3 sm:p-0 rounded-2xl bg-slate-50/60 dark:bg-slate-800/40 sm:bg-transparent sm:dark:bg-transparent space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                   Location Engine
                 </span>
-                <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                <Globe className="w-3.5 h-3.5 text-orange-500" />
               </div>
               <div className="flex flex-wrap gap-1 pt-1">
                 {['USD', 'GBP', 'EUR', 'NGN', 'GHS'].map((cur) => (
@@ -836,32 +841,32 @@ export default function InvoicingPage() {
                     onClick={() => setFilterCurrency(filterCurrency === cur ? 'all' : cur)}
                     className={`px-2 py-0.5 rounded-md text-[9px] font-black cursor-pointer transition-all ${
                       filterCurrency === cur
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-orange-950/50 border border-slate-200/60 dark:border-slate-700/60'
                     }`}
                   >
                     {cur}
                   </span>
                 ))}
               </div>
-              <p className="text-[9px] text-slate-400 font-medium">Click to filter by currency</p>
+              <p className="text-[9px] text-slate-400 font-medium">Click currency to filter</p>
             </div>
           </div>
         </section>
 
         {/* ── SMART CONTROL & FILTER STRIP ───────────────────────────────── */}
         <section className="space-y-3">
-          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-3xl p-3 sm:p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 shadow-xs flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-stretch sm:items-center justify-between">
             {/* Search Box */}
             <div className="flex-1 relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <input
                 id="invoice-search-input"
                 type="text"
-                placeholder="Search by client, invoice #, amount, or recipient..."
+                placeholder="Search client, invoice #, or amount..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-20 py-2.5 bg-slate-50 dark:bg-slate-800/80 rounded-2xl text-xs font-semibold outline-none border border-slate-200/70 dark:border-slate-700/70 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white transition-all placeholder:text-slate-400"
+                className="w-full pl-10 pr-12 sm:pr-20 py-2.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl sm:rounded-2xl text-xs font-semibold outline-none border border-slate-200/70 dark:border-slate-700/70 focus:border-orange-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white transition-all placeholder:text-slate-400"
               />
               <kbd className="hidden sm:inline-flex absolute right-3 top-1/2 -translate-y-1/2 items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xs">
                 ⌘K
@@ -873,7 +878,7 @@ export default function InvoicingPage() {
               <select
                 value={filterCurrency}
                 onChange={(e) => setFilterCurrency(e.target.value)}
-                className="px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 border border-slate-200/70 dark:border-slate-700/70 outline-none cursor-pointer"
+                className="w-full sm:w-auto px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl sm:rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 border border-slate-200/70 dark:border-slate-700/70 outline-none cursor-pointer"
               >
                 <option value="all">🌍 All Currencies</option>
                 {SUPPORTED_CURRENCIES.map((c) => (
@@ -884,8 +889,8 @@ export default function InvoicingPage() {
               </select>
 
               {selectedIds.length > 0 && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 rounded-2xl animate-in fade-in">
-                  <span className="text-xs font-black text-indigo-700 dark:text-indigo-300">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-800 rounded-2xl animate-in fade-in">
+                  <span className="text-xs font-black text-orange-700 dark:text-orange-300">
                     {selectedIds.length} Selected
                   </span>
                   <button
@@ -894,7 +899,7 @@ export default function InvoicingPage() {
                       selected.forEach(downloadAsPDF);
                       showToast(`Exported ${selected.length} PDFs!`);
                     }}
-                    className="px-2.5 py-1 rounded-xl bg-indigo-600 text-white text-[10px] font-black hover:bg-indigo-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-xl bg-orange-500 text-white text-[10px] font-black hover:bg-orange-600 transition-colors cursor-pointer"
                   >
                     Batch PDF
                   </button>
@@ -913,7 +918,7 @@ export default function InvoicingPage() {
           <div className="w-full overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <div className="inline-flex items-center gap-1.5 p-1 bg-slate-100/90 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800 min-w-full sm:min-w-0">
               {[
-                { id: 'all', label: 'All Invoices', count: invoices.length },
+                { id: 'all', label: 'All', count: invoices.length },
                 { id: 'paid', label: 'Settled', count: invoices.filter((i) => i.status === 'paid').length },
                 { id: 'sent', label: 'Dispatched', count: invoices.filter((i) => i.status === 'sent').length },
                 { id: 'overdue', label: 'Overdue SLA', count: invoices.filter((i) => i.status === 'overdue').length },
@@ -925,7 +930,7 @@ export default function InvoicingPage() {
                   <button
                     key={tab.id}
                     onClick={() => setFilterStatus(tab.id)}
-                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
                       active
                         ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs border border-slate-200/60 dark:border-slate-700'
                         : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
@@ -935,7 +940,7 @@ export default function InvoicingPage() {
                     <span
                       className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
                         active
-                          ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 font-black'
+                          ? 'bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-300 font-black'
                           : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                       }`}
                     >
@@ -949,10 +954,10 @@ export default function InvoicingPage() {
         </section>
 
         {/* ── HIGH-DENSITY ENTERPRISE LEDGER TABLE ───────────────────────── */}
-        <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+        <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 gap-3">
-              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+              <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
               <p className="text-xs font-bold text-slate-400">Synchronizing invoice ledger…</p>
             </div>
           ) : filteredInvoices.length === 0 ? (
@@ -1121,16 +1126,16 @@ export default function InvoicingPage() {
                   return (
                     <div key={inv.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           <div className={`w-9 h-9 rounded-xl bg-gradient-to-tr ${avatarGrad(inv.client)} text-white font-black text-xs flex items-center justify-center shrink-0`}>
                             {inv.client?.charAt(0).toUpperCase() || 'C'}
                           </div>
-                          <div>
-                            <p className="text-xs font-black text-slate-900 dark:text-white leading-tight">{inv.client}</p>
-                            <p className="text-[10px] font-mono font-bold text-slate-400">{inv.id}</p>
+                          <div className="min-w-0">
+                            <p className="text-xs font-black text-slate-900 dark:text-white leading-tight truncate">{inv.client}</p>
+                            <p className="text-[10px] font-mono font-bold text-slate-400 truncate">{inv.id}</p>
                           </div>
                         </div>
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black border uppercase ${sc.badge}`}>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black border uppercase shrink-0 ${sc.badge}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
                           {sc.label}
                         </span>
@@ -1150,28 +1155,50 @@ export default function InvoicingPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <button
-                          onClick={() => {
-                            setSelectedInvoice(inv);
-                            setShowInvoiceModal(true);
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold"
-                        >
-                          View
-                        </button>
-                        <button
-                          onClick={() => handleSendEmail(inv)}
-                          className="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold flex items-center gap-1"
-                        >
-                          <Send className="w-3 h-3" /> Email
-                        </button>
-                        <button
-                          onClick={() => downloadAsPDF(inv)}
-                          className="px-3 py-1.5 rounded-xl bg-slate-800 text-white text-xs font-bold"
-                        >
-                          PDF
-                        </button>
+                      <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              setSelectedInvoice(inv);
+                              setShowInvoiceModal(true);
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => downloadAsPDF(inv)}
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                          >
+                            PDF
+                          </button>
+                          {canModify(inv) && (
+                            <button
+                              onClick={() => handleEditInvoice(inv)}
+                              className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors"
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleSendEmail(inv)}
+                            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white text-xs font-extrabold flex items-center gap-1 shadow-sm shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
+                          >
+                            <Send className="w-3 h-3" /> Email
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeletingInvoice(inv);
+                              setShowDeleteModal(true);
+                            }}
+                            className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -1223,7 +1250,7 @@ export default function InvoicingPage() {
                     <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                       Client &amp; Currency Settings
                     </p>
-                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">Step 1 of 2</span>
+                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400">Step 1 of 2</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -1237,7 +1264,7 @@ export default function InvoicingPage() {
                         placeholder="e.g. Egobas Services"
                         value={newInvoice.client}
                         onChange={(e) => setNewInvoice({ ...newInvoice, client: e.target.value })}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-orange-500"
                       />
                     </div>
 
@@ -1250,7 +1277,7 @@ export default function InvoicingPage() {
                         placeholder="client@company.com"
                         value={newInvoice.clientEmail}
                         onChange={(e) => setNewInvoice({ ...newInvoice, clientEmail: e.target.value })}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-orange-500"
                       />
                     </div>
 
@@ -1262,7 +1289,7 @@ export default function InvoicingPage() {
                         type="date"
                         value={newInvoice.date}
                         onChange={(e) => setNewInvoice({ ...newInvoice, date: e.target.value })}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-orange-500"
                       />
                     </div>
 
@@ -1274,7 +1301,7 @@ export default function InvoicingPage() {
                         type="date"
                         value={newInvoice.dueDate}
                         onChange={(e) => setNewInvoice({ ...newInvoice, dueDate: e.target.value })}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-orange-500"
                       />
                     </div>
 
@@ -1286,7 +1313,7 @@ export default function InvoicingPage() {
                       <select
                         value={newInvoice.currency}
                         onChange={(e) => setNewInvoice({ ...newInvoice, currency: e.target.value })}
-                        className="w-full px-3.5 py-2.5 bg-indigo-50/50 dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900 rounded-xl text-xs font-black text-indigo-900 dark:text-indigo-200 outline-none focus:border-indigo-500 cursor-pointer"
+                        className="w-full px-3.5 py-2.5 bg-orange-50/50 dark:bg-slate-800 border border-orange-200 dark:border-orange-900/60 rounded-xl text-xs font-black text-orange-900 dark:text-orange-200 outline-none focus:border-orange-500 cursor-pointer"
                       >
                         {SUPPORTED_CURRENCIES.map((c) => (
                           <option key={c.code} value={c.code}>
@@ -1312,7 +1339,7 @@ export default function InvoicingPage() {
                           items: [...newInvoice.items, { description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
                         })
                       }
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-xl hover:bg-indigo-100 cursor-pointer transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 text-xs font-bold rounded-xl hover:bg-orange-100 cursor-pointer transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" /> Add Item
                     </button>
