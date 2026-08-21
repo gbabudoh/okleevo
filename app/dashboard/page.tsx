@@ -9,7 +9,8 @@ import {
   FileEdit, Plus, BarChart3, Activity, Target,
   Zap, Award, Bell, Mail, PenTool,
   Briefcase, AlertCircle, X,
-  UsersRound, Circle, LineChart, Settings
+  UsersRound, Circle, LineChart, Settings,
+  Building2, ShieldCheck
 } from 'lucide-react';
 import { usePresence } from '@/components/hooks/use-presence';
 
@@ -353,60 +354,111 @@ export default function DashboardPage() {
     }
   ];
 
-  // Helper to render company info in executive style
+  // Helper to render company info in sleek executive style
   const renderCompanyInfo = (
     companyName: string,
     industry: string,
     seatCount: number,
     maxSeats: number,
     email: string
-  ) => (
-    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-      {/* Company Name with Icon */}
-      <div className="flex items-center gap-4 min-w-0">
-        <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center text-slate-800 dark:text-white bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-800 font-extrabold text-xl shadow-2xs shrink-0">
-          {companyName.charAt(0).toUpperCase()}
-        </div>
-        <div className="min-w-0">
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">{companyName}</h2>
-          <div className="flex items-center gap-2 mt-1 text-xs font-bold text-slate-400">
-            <span className="capitalize truncate text-slate-600 dark:text-slate-300">{industry}</span>
-            <span className="text-slate-300 dark:text-slate-700">·</span>
-            <span className="shrink-0 px-2.5 py-0.5 rounded-full bg-orange-50 dark:bg-orange-950/60 border border-orange-200/60 text-orange-600 dark:text-orange-400 font-mono font-extrabold uppercase text-[10px]">
-              {seatCount} / {maxSeats} seats
+  ) => {
+    const seatPercentage = maxSeats > 0 ? Math.min(100, Math.round((seatCount / maxSeats) * 100)) : 0;
+    const onlineCount = presence?.onlineCount || 1;
+
+    return (
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        {/* Company Identity & Metadata */}
+        <div className="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
+          {/* Refined Geometric Brand Monogram */}
+          <div className="relative shrink-0">
+            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 dark:from-slate-800 dark:via-slate-850 dark:to-slate-900 text-white font-black text-2xl shadow-sm border border-slate-700/60 dark:border-slate-700 select-none">
+              {companyName.charAt(0).toUpperCase()}
+            </div>
+            {/* Live Workspace Status Ring */}
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white dark:border-slate-900 shadow-xs" />
             </span>
-            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
-            <span className="hidden sm:inline truncate font-mono text-slate-400">{email}</span>
+          </div>
+
+          <div className="min-w-0 space-y-1.5">
+            {/* Title & Verified Badge */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
+                {companyName}
+              </h2>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                <span>Verified Workspace</span>
+              </span>
+            </div>
+
+            {/* Structured Minimalist Metadata */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap text-xs text-slate-500 dark:text-slate-400 font-medium">
+              {/* Industry Tag */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900/90 border border-slate-200/70 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+                <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                <span className="capitalize font-semibold">{industry || 'Enterprise'}</span>
+              </div>
+
+              {/* Seat Capacity with micro meter */}
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900/90 border border-slate-200/70 dark:border-slate-800">
+                <Users className="w-3.5 h-3.5 text-slate-400" />
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {seatCount} / {maxSeats} <span className="text-slate-400 font-normal">Seats</span>
+                </span>
+                <div className="w-10 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shrink-0">
+                  <div
+                    className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full transition-all duration-500"
+                    style={{ width: `${seatPercentage}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Workspace Contact / Domain */}
+              {email && (
+                <div className="hidden md:inline-flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-mono text-[11px] truncate">
+                  <span>·</span>
+                  <span className="truncate">{email}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Action Triggers */}
-      <div className="flex items-center gap-3 shrink-0">
-        <button
-          onClick={() => router.push('/dashboard/collaboration')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold transition-all shadow-sm shadow-orange-500/20 active:scale-95 cursor-pointer"
-        >
-          <UsersRound className="w-4 h-4" />
-          <span>Team Hub</span>
-        </button>
-        <button
-          onClick={() => router.push('/dashboard/settings')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl text-xs font-extrabold border border-slate-200/80 dark:border-slate-800 transition-all cursor-pointer shadow-2xs"
-        >
-          <Settings className="w-4 h-4 text-slate-400" />
-          <span>Settings</span>
-        </button>
+        {/* Sleek Enterprise Action Bar */}
+        <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-center">
+          <button
+            onClick={() => router.push('/dashboard/collaboration')}
+            className="group relative inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 rounded-xl text-xs font-bold transition-all duration-200 shadow-sm active:scale-95 cursor-pointer"
+          >
+            <UsersRound className="w-3.5 h-3.5 text-orange-400 dark:text-orange-600 transition-transform group-hover:scale-110" />
+            <span>Team Hub</span>
+            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-white/20 dark:bg-slate-900/15 text-[10px] font-mono font-extrabold text-orange-300 dark:text-orange-700">
+              {onlineCount} Live
+            </span>
+          </button>
+
+          <button
+            onClick={() => router.push('/dashboard/settings')}
+            className="group inline-flex items-center gap-2 px-3.5 py-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold border border-slate-200/80 dark:border-slate-800 transition-all duration-200 cursor-pointer shadow-xs active:scale-95"
+            title="Workspace Settings"
+          >
+            <Settings className="w-3.5 h-3.5 text-slate-400 group-hover:rotate-45 transition-transform" />
+            <span>Settings</span>
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-8">
       {/* Company Header */}
-      <div className="rounded-3xl p-6 sm:p-7 md:p-8 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 shadow-2xs relative overflow-hidden">
-        {/* Decorative background glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="rounded-3xl p-6 sm:p-7 md:p-8 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs relative overflow-hidden transition-all">
+        {/* Subtle ambient gradient flare */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-orange-500/8 via-amber-500/4 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-slate-900/3 dark:bg-white/2 rounded-full blur-2xl pointer-events-none" />
         
         <div className="relative z-10">
           {loading ? (
