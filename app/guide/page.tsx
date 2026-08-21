@@ -92,7 +92,7 @@ export default function PublicUserGuidePage() {
           {/* Print-only Logo Header */}
           <div className="hidden print:flex items-center justify-between pb-4 border-b border-slate-200">
             <Image src="/logo.png" alt="Okleevo" width={130} height={32} className="h-7 w-auto" />
-            <span className="text-xs font-mono font-bold text-slate-400">Enterprise Module Catalogue · 2026 Edition</span>
+            <span className="text-xs font-mono font-bold text-slate-400">Enterprise Tools Catalogue · 2026 Edition</span>
           </div>
 
           {/* Hero Header Text & Compact Action Buttons */}
@@ -106,7 +106,7 @@ export default function PublicUserGuidePage() {
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
                 The Okleevo{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-amber-600 to-orange-500 dark:from-orange-400 dark:to-amber-300">
-                  Module Catalogue
+                  Tools Catalogue
                 </span>
               </h1>
 
