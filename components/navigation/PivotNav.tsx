@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   UsersRound, CheckSquare, FolderKanban, FileEdit, BarChart3,
-  Users, Calendar, Mail, MessageSquare, PenTool, ChevronDown, Archive, FileText,
+  Users, Calendar, Mail, MessageSquare, PenTool, ChevronDown, Archive, FileText, CheckCircle2
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { PIVOT_NAV_GROUPS, LEGACY_ONLY_MODULE_IDS, getModuleById } from '@/lib/module-catalogue';
@@ -23,6 +23,7 @@ interface ModuleUiMeta {
 // owns how each one is drawn.
 const MODULE_UI: Record<string, ModuleUiMeta> = {
   collaboration: { href: '/dashboard/collaboration', icon: UsersRound, label: 'Collaboration Hub', sublabel: 'video / messaging' },
+  dtc: { href: '/dashboard/dtc', icon: CheckCircle2, label: '[DTC]-Box', sublabel: 'daily deliverables' },
   tasks: { href: '/dashboard/tasks', icon: CheckSquare, label: 'Tasks' },
   projects: { href: '/dashboard/projects', icon: FolderKanban, label: 'Projects' },
   'ai-notes': { href: '/dashboard/ai-notes', icon: FileEdit, label: 'Notes' },
@@ -106,7 +107,7 @@ export default function PivotNav({ finalModules, pathname, unreadMailCount }: Pi
         // HQ tab silently vanish, since collaboration was never in its array.
         const ids = group.id === 'async-productivity'
           ? [...group.moduleIds.filter((id) => finalModules.includes(id)), ...ASYNC_PRODUCTIVITY_ALWAYS_ON]
-          : group.moduleIds.filter((id) => id === 'mailbox' || id === 'collaboration' || finalModules.includes(id));
+          : group.moduleIds.filter((id) => id === 'mailbox' || id === 'collaboration' || id === 'dtc' || finalModules.includes(id));
 
         if (ids.length === 0) return null;
 

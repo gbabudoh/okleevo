@@ -13,7 +13,6 @@ import {
   Building2, ShieldCheck, FileText
 } from 'lucide-react';
 import { usePresence } from '@/components/hooks/use-presence';
-import { DailyTaskCompletionBox } from '@/components/tasks/DailyTaskCompletionBox';
 
 interface UserData {
   firstName: string;
@@ -600,9 +599,6 @@ export default function DashboardPage() {
           );
         })}
       </div>
-
-      {/* Daily Task Completion [DTC]-Box */}
-      <DailyTaskCompletionBox />
 
       {/* Quick Actions Hub */}
       <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xs">

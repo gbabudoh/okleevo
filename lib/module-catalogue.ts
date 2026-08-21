@@ -159,7 +159,7 @@ export interface PivotNavGroup {
 }
 
 export const PIVOT_NAV_GROUPS: PivotNavGroup[] = [
-  { id: 'virtual-hq', label: 'Virtual HQ', moduleIds: ['collaboration'] },
+  { id: 'virtual-hq', label: 'Virtual HQ', moduleIds: ['collaboration', 'dtc'] },
   { id: 'async-productivity', label: 'Async Productivity', moduleIds: ['tasks', 'ai-notes', 'kpi-dashboard'] },
   { id: 'client-engagement', label: 'Client Engagement', moduleIds: ['crm', 'invoicing', 'booking', 'mailbox', 'e-signature', 'campaigns'] },
 ];

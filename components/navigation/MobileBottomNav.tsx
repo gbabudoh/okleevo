@@ -29,6 +29,7 @@ const ALL_SECTIONS = [
     label: 'Team & Collaboration',
     items: [
       { name: 'Collaboration Hub', badge: 'video / messaging', desc: 'video / messaging', icon: UsersRound, href: '/dashboard/collaboration' },
+      { name: '[DTC]-Box', badge: 'daily deliverables', desc: 'Daily Task Completion', icon: CheckSquare, href: '/dashboard/dtc' },
     ],
   },
   {
