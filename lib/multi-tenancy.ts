@@ -88,23 +88,32 @@ export async function getAuthenticatedUserId(): Promise<string | null> {
  * Get current user with business context
  */
 export async function getCurrentUser() {
-  const userId = await getAuthenticatedUserId();
-  
-  if (!userId) {
-    return null;
-  }
+  try {
+    const userId = await getAuthenticatedUserId();
+    
+    if (!userId) {
+      return null;
+    }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      business: {
-        include: {
-          subscription: true,
+    if (!prisma?.user) {
+      return null;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        business: {
+          include: {
+            subscription: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  return user;
+    return user;
+  } catch (error) {
+    console.error('Error fetching current user with multi-tenancy:', error);
+    return null;
+  }
 }
 

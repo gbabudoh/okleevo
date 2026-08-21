@@ -33,6 +33,11 @@ const prismaClientSingleton = () => {
 
   // Create Prisma Client
   const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: databaseUrl,
+      },
+    },
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
 
