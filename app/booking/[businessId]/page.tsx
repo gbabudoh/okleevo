@@ -60,6 +60,8 @@ export default function PublicBookingPage() {
     fetchBusiness();
   }, [businessId]);
 
+  const [confirmedDetails, setConfirmedDetails] = useState<{ id?: string; pin?: string } | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -72,6 +74,7 @@ export default function PublicBookingPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to submit booking request');
+      setConfirmedDetails({ id: data.id, pin: data.pin });
       setSubmitted(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to submit booking request');
@@ -126,7 +129,7 @@ export default function PublicBookingPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="max-w-lg w-full bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 text-center space-y-7"
+          className="max-w-lg w-full bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 text-center space-y-6"
         >
           {/* Brand Logo Header */}
           <div className="flex justify-center">
@@ -140,62 +143,86 @@ export default function PublicBookingPage() {
             />
           </div>
 
-          <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-900/60 shadow-2xs ring-8 ring-emerald-500/10">
-            <CheckCircle2 className="w-10 h-10" />
+          <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-900/60 shadow-2xs ring-8 ring-emerald-500/10">
+            <CheckCircle2 className="w-8 h-8" />
           </div>
 
-          <div className="space-y-2">
-            <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-mono font-extrabold uppercase tracking-widest border border-emerald-200 dark:border-emerald-900/60">
-              Appointment Request Confirmed
+          <div className="space-y-1.5">
+            <span className="px-3 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-mono font-extrabold uppercase tracking-widest border border-emerald-200 dark:border-emerald-900/60">
+              Booking Confirmed
             </span>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">
               Thank you, {form.client}!
             </h1>
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
-              Your appointment request with <strong className="text-slate-800 dark:text-slate-200">{business.name}</strong> has been received. A calendar invitation has been sent to <strong className="text-slate-800 dark:text-slate-200">{form.email}</strong>.
+              Your appointment with <strong className="text-slate-800 dark:text-slate-200">{business.name}</strong> is scheduled. Details have been emailed to <strong className="text-slate-800 dark:text-slate-200">{form.email}</strong>.
             </p>
           </div>
 
+          {/* 6-Digit PIN Banner (if video call) */}
+          {form.type === 'video' && confirmedDetails?.pin && (
+            <div className="bg-orange-50 dark:bg-orange-950/40 border-2 border-orange-200 dark:border-orange-800/60 rounded-2xl p-4 text-center space-y-1">
+              <p className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-orange-600 dark:text-orange-400">
+                Your 6-Digit Meeting PIN
+              </p>
+              <span className="text-3xl font-mono font-black tracking-[0.3em] text-orange-600 dark:text-orange-400 block">
+                {confirmedDetails.pin}
+              </span>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Enter this code when joining the video call.
+              </p>
+            </div>
+          )}
+
           {/* Appointment Recap Card */}
-          <div className="bg-slate-50 dark:bg-slate-950/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 text-left space-y-2.5">
-            <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60 dark:border-slate-800">
+          <div className="bg-slate-50 dark:bg-slate-950/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 text-left space-y-2.5 text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800">
               <span className="font-bold text-slate-500">Service</span>
               <span className="font-extrabold text-slate-900 dark:text-white">{form.service}</span>
             </div>
-            <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800">
               <span className="font-bold text-slate-500">Date &amp; Time</span>
               <span className="font-mono font-extrabold text-slate-900 dark:text-white">{form.date} at {form.time}</span>
             </div>
-            <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60 dark:border-slate-800">
+            <div className="flex items-center justify-between">
               <span className="font-bold text-slate-500">Format</span>
               <span className="font-bold capitalize text-slate-900 dark:text-white flex items-center gap-1.5">
                 {form.type === 'video' ? <Video className="w-3.5 h-3.5 text-orange-500" /> : form.type === 'phone' ? <Phone className="w-3.5 h-3.5 text-orange-500" /> : <MapPin className="w-3.5 h-3.5 text-orange-500" />}
                 {form.type} ({form.duration} min)
               </span>
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-500">Meeting Room</span>
-              <span className="font-mono font-extrabold text-orange-500">Secure Video Meeting Room</span>
-            </div>
           </div>
 
-          <div className="pt-2">
+          {/* Direct Meeting Room Action Button */}
+          {form.type === 'video' && confirmedDetails?.id && (
+            <a
+              href={`/room/${confirmedDetails.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4 px-6 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-2xl text-sm font-extrabold shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
+              <Video className="w-4 h-4" /> Open Video Room Now
+            </a>
+          )}
+
+          <div className="pt-1">
             <button
               onClick={() => {
                 setSubmitted(false);
+                setConfirmedDetails(null);
                 setForm({
                   client: '', email: '', phone: '', service: initialService,
                   date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
                   time: '10:00', duration: 30, type: 'video', notes: ''
                 });
               }}
-              className="w-full py-3.5 px-5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+              className="w-full py-3 px-5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" /> Book Another Session
             </button>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-2 text-[11px] font-medium text-slate-400">
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-2 text-[11px] font-medium text-slate-400">
             <Lock className="w-3.5 h-3.5 text-emerald-500" />
             <span>256-Bit Encrypted &amp; Protected by Okleevo</span>
           </div>

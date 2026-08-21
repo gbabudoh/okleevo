@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AppointmentStatus, AppointmentType } from '@/lib/prisma-client';
-import { findConflictingAppointment, notifyAppointmentStatus } from '@/lib/services/appointments';
+import { findConflictingAppointment, notifyAppointmentStatus, notifyHostNewAppointment } from '@/lib/services/appointments';
 
 export async function GET(
   _req: Request,
@@ -68,7 +68,7 @@ export async function POST(
     const owner = await prisma.user.findFirst({
       where: { businessId },
       orderBy: { createdAt: 'asc' },
-      select: { id: true },
+      select: { id: true, email: true, firstName: true, lastName: true },
     });
     if (!owner) {
       return NextResponse.json({ error: 'This business cannot accept bookings right now' }, { status: 400 });
@@ -76,6 +76,15 @@ export async function POST(
 
     const validTypes: AppointmentType[] = ['VIDEO', 'PHONE', 'IN_PERSON'];
     const normalizedType = typeof type === 'string' ? (type.toUpperCase().replace('-', '_') as AppointmentType) : 'VIDEO';
+    const isVideo = (validTypes.includes(normalizedType) ? normalizedType : AppointmentType.VIDEO) === AppointmentType.VIDEO;
+
+    let rawPin: string | undefined = undefined;
+    let securePinHash: string | null = null;
+    if (isVideo) {
+      const bcrypt = (await import('bcryptjs')).default;
+      rawPin = Math.floor(100000 + Math.random() * 900000).toString();
+      securePinHash = await bcrypt.hash(rawPin, 10);
+    }
 
     const appointment = await prisma.appointment.create({
       data: {
@@ -90,6 +99,8 @@ export async function POST(
         type: validTypes.includes(normalizedType) ? normalizedType : AppointmentType.VIDEO,
         status: AppointmentStatus.CONFIRMED,
         description: notes?.trim() || null,
+        securePinHash,
+        meetingRoomStatus: isVideo ? 'SCHEDULED' : 'NOT_APPLICABLE',
       },
     });
 
@@ -98,9 +109,18 @@ export async function POST(
       data: { lastContact: new Date() },
     }).catch((err) => console.error('Failed to update contact lastContact for public booking:', err));
 
-    notifyAppointmentStatus(appointment, business.name, 'confirmed').catch(() => {});
+    notifyAppointmentStatus(appointment, business.name, 'confirmed', rawPin).catch(() => {});
 
-    return NextResponse.json({ success: true, id: appointment.id });
+    if (owner?.email) {
+      notifyHostNewAppointment({
+        appointment,
+        businessName: business.name,
+        hostEmail: owner.email,
+        hostName: `${owner.firstName || ''} ${owner.lastName || ''}`.trim() || 'Host',
+      }).catch((err) => console.error('Failed to notify host of new booking:', err));
+    }
+
+    return NextResponse.json({ success: true, id: appointment.id, pin: rawPin });
   } catch (error) {
     console.error('Error submitting public booking:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

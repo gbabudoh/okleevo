@@ -1,9 +1,17 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { send2FAEmail } from "@/lib/services/email";
+
+class TwoFactorRequiredError extends CredentialsSignin {
+  code = "2FA_REQUIRED";
+}
+
+class InvalidTwoFactorCodeError extends CredentialsSignin {
+  code = "INVALID_2FA_CODE";
+}
 
 const config = {
   providers: [
@@ -13,6 +21,7 @@ const config = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         code: { label: "2FA Code", type: "text" },
+        rememberMe: { label: "Remember Me", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -22,9 +31,10 @@ const config = {
 
         const email = (credentials.email as string).toLowerCase();
         const password = credentials.password as string;
+        const rememberMe = credentials?.rememberMe === 'true' || credentials?.rememberMe === true;
         
         console.log('[AUTH] ========================================');
-        console.log('[AUTH] 🔐 Starting authentication for:', email);
+        console.log('[AUTH] 🔐 Starting authentication for:', email, '(Remember Me:', rememberMe, ')');
         console.log('[AUTH] ========================================');
 
         try {
@@ -90,7 +100,7 @@ const config = {
               });
 
               console.log('[AUTH] ⚠️ 2FA Required for user:', email);
-              throw new Error('2FA_REQUIRED');
+              throw new TwoFactorRequiredError();
             }
 
             // Verify submitted 6-digit code
@@ -101,7 +111,7 @@ const config = {
 
             if (!isCodeValid) {
               console.log('[AUTH] ❌ Invalid or expired 2FA code');
-              throw new Error('INVALID_2FA_CODE');
+              throw new InvalidTwoFactorCodeError();
             }
 
             // Clear one-time code upon successful verification
@@ -133,6 +143,7 @@ const config = {
             name: `${user.firstName} ${user.lastName}`,
             image: (user as any).image || (user as any).avatar || null,
             role: user.role,
+            rememberMe,
           };
 
           console.log('[AUTH] ✅✅✅ LOGIN SUCCESSFUL! ✅✅✅');
@@ -141,6 +152,9 @@ const config = {
 
           return userObject;
         } catch (error: any) {
+          if (error instanceof CredentialsSignin) {
+            throw error;
+          }
           console.error('[AUTH] ❌❌❌ ERROR DURING AUTHORIZATION ❌❌❌');
           console.error('[AUTH] Error type:', error?.constructor?.name);
           console.error('[AUTH] Error message:', error?.message);
@@ -157,7 +171,7 @@ const config = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days - session persists for 30 days
+    maxAge: 30 * 24 * 60 * 60, // 30 days default maxAge
     updateAge: 24 * 60 * 60, // 24 hours - update session every 24 hours
   },
   callbacks: {
@@ -166,6 +180,14 @@ const config = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role; // Store role in token
+        const rememberMe = (user as any).rememberMe ?? true;
+        token.rememberMe = rememberMe;
+
+        // Set dynamic token expiration: 30 days if rememberMe, 24 hours if unchecked
+        const now = Math.floor(Date.now() / 1000);
+        const lifespan = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
+        token.exp = now + lifespan;
+
         // Get businessId from user - fetch from database
         try {
           const dbUser = await prisma.user.findUnique({
@@ -204,6 +226,7 @@ const config = {
         session.user.id = token.id as string;
         (session.user as any).businessId = token.businessId as string;
         (session.user as any).role = token.role as string; // Include role in session
+        (session.user as any).rememberMe = token.rememberMe;
       }
       return session;
     },

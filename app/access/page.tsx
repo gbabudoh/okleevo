@@ -37,11 +37,38 @@ function AccessContent() {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
+  useEffect(() => {
+    try {
+      const savedEmail = localStorage.getItem('okleevo_remembered_email');
+      if (savedEmail) {
+        setFormData(prev => ({
+          ...prev,
+          email: savedEmail,
+          rememberMe: true,
+        }));
+      }
+    } catch {
+      // Ignore localStorage access errors if blocked
+    }
+  }, []);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
+
+  const syncRememberMeStorage = (email: string, rememberMe: boolean) => {
+    try {
+      if (rememberMe && email) {
+        localStorage.setItem('okleevo_remembered_email', email);
+      } else {
+        localStorage.removeItem('okleevo_remembered_email');
+      }
+    } catch {
+      // Ignore localStorage access errors
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -57,23 +84,30 @@ function AccessContent() {
     setIsLoading(true);
     setError(null);
 
+    syncRememberMeStorage(formData.email, formData.rememberMe);
+
     try {
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
         code: "",
+        rememberMe: String(formData.rememberMe),
         redirect: false,
       });
 
-      if (result?.error) {
-        if (result.error.includes('2FA_REQUIRED')) {
-          setStep('2fa');
-          setError(null);
-          setSuccessBanner(`A 6-digit security code was dispatched to ${formData.email}`);
-          setResendCooldown(30);
-        } else {
-          setError('Invalid email or password');
-        }
+      const is2FaRequired =
+        (result as any)?.code === '2FA_REQUIRED' ||
+        result?.error === '2FA_REQUIRED' ||
+        result?.error?.includes('2FA_REQUIRED') ||
+        Boolean(result?.url && result.url.includes('code=2FA_REQUIRED'));
+
+      if (is2FaRequired) {
+        setStep('2fa');
+        setError(null);
+        setSuccessBanner(`A 6-digit security code was dispatched to ${formData.email}`);
+        setResendCooldown(30);
+      } else if (result?.error) {
+        setError('Invalid email or password');
       } else {
         proceedToDashboard();
       }
@@ -101,20 +135,27 @@ function AccessContent() {
     setIsLoading(true);
     setError(null);
 
+    syncRememberMeStorage(formData.email, formData.rememberMe);
+
     try {
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
         code: otpCode.trim(),
+        rememberMe: String(formData.rememberMe),
         redirect: false,
       });
 
-      if (result?.error) {
-        if (result.error.includes('INVALID_2FA_CODE')) {
-          setError('Invalid or expired 6-digit code. Please check your email or request a new code.');
-        } else {
-          setError('Verification failed. Please try again.');
-        }
+      const isInvalid2Fa =
+        (result as any)?.code === 'INVALID_2FA_CODE' ||
+        result?.error === 'INVALID_2FA_CODE' ||
+        result?.error?.includes('INVALID_2FA_CODE') ||
+        Boolean(result?.url && result.url.includes('code=INVALID_2FA_CODE'));
+
+      if (isInvalid2Fa) {
+        setError('Invalid or expired 6-digit code. Please check your email or request a new code.');
+      } else if (result?.error) {
+        setError('Verification failed. Please try again.');
       } else {
         proceedToDashboard();
       }
@@ -131,14 +172,29 @@ function AccessContent() {
     setError(null);
     try {
       // Re-trigger credentials check without code to regenerate and dispatch email
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
         code: "",
+        rememberMe: String(formData.rememberMe),
         redirect: false,
       });
-      setSuccessBanner(`A new verification code was sent to ${formData.email}`);
-      setResendCooldown(45);
+
+      const is2FaRequired =
+        (result as any)?.code === '2FA_REQUIRED' ||
+        result?.error === '2FA_REQUIRED' ||
+        result?.error?.includes('2FA_REQUIRED') ||
+        Boolean(result?.url && result.url.includes('code=2FA_REQUIRED'));
+
+      if (is2FaRequired) {
+        setSuccessBanner(`A new verification code was sent to ${formData.email}`);
+        setResendCooldown(45);
+      } else if (result?.error) {
+        setError('Could not resend verification code. Please check your credentials.');
+      } else {
+        setSuccessBanner(`A new verification code was sent to ${formData.email}`);
+        setResendCooldown(45);
+      }
     } catch {
       setError('Could not resend verification code. Please try again.');
     } finally {

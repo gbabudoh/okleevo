@@ -19,6 +19,34 @@ export default function AdminAccessPage() {
     rememberMe: false,
   });
 
+  // Prefill email if previously remembered
+  useEffect(() => {
+    try {
+      const savedEmail = localStorage.getItem('okleevo_admin_remembered_email');
+      if (savedEmail) {
+        setFormData(prev => ({
+          ...prev,
+          email: savedEmail,
+          rememberMe: true,
+        }));
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  const syncRememberMeStorage = (email: string, rememberMe: boolean) => {
+    try {
+      if (rememberMe && email) {
+        localStorage.setItem('okleevo_admin_remembered_email', email);
+      } else {
+        localStorage.removeItem('okleevo_admin_remembered_email');
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  };
+
   // Redirect if already logged in as super admin
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
@@ -69,10 +97,13 @@ export default function AdminAccessPage() {
     setIsLoading(true);
     setError(null);
 
+    syncRememberMeStorage(formData.email, formData.rememberMe);
+
     try {
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
+        rememberMe: String(formData.rememberMe),
         redirect: false,
       });
 

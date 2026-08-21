@@ -56,6 +56,17 @@ export const POST = withMultiTenancy(async (req, { user, business }) => {
       }, { status: 409 });
     }
 
+    const appointmentType = type.toUpperCase().replace('-', '_') as AppointmentType;
+    const isVideo = appointmentType === AppointmentType.VIDEO;
+
+    let rawPin: string | undefined = undefined;
+    let securePinHash: string | null = null;
+    if (isVideo) {
+      const bcrypt = (await import('bcryptjs')).default;
+      rawPin = Math.floor(100000 + Math.random() * 900000).toString();
+      securePinHash = await bcrypt.hash(rawPin, 10);
+    }
+
     const appointment = await prisma.appointment.create({
       data: {
         businessId: user.businessId,
@@ -66,10 +77,12 @@ export const POST = withMultiTenancy(async (req, { user, business }) => {
         title: service,
         startTime: startDateTime,
         endTime: endDateTime,
-        type: type.toUpperCase().replace('-', '_') as AppointmentType,
+        type: appointmentType,
         status: AppointmentStatus.PENDING,
         location: location || null,
         description: notes || null,
+        securePinHash,
+        meetingRoomStatus: isVideo ? 'SCHEDULED' : 'NOT_APPLICABLE',
       },
     });
 
@@ -81,7 +94,7 @@ export const POST = withMultiTenancy(async (req, { user, business }) => {
       data: { lastContact: new Date() },
     }).catch((err) => console.error('Failed to update contact lastContact for booking:', err));
 
-    notifyAppointmentStatus(appointment, business.name, 'received').catch(() => {});
+    notifyAppointmentStatus(appointment, business.name, 'received', rawPin).catch(() => {});
 
     return NextResponse.json({
       ...appointment,

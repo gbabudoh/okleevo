@@ -106,12 +106,26 @@ export async function POST(req: Request) {
 
     const assetToken = signGuestAssetToken({ appointmentId: appointment.id, scope: 'shared-assets' });
 
+    const durationMinutes = Math.round(
+      (appointment.endTime.getTime() - appointment.startTime.getTime()) / 60000
+    );
+
     return NextResponse.json({
       access_granted: true,
+      is_host: false,
       webrtc_room_id: roomId,
       webrtc_token: await at.toJwt(),
       ws_url: wsUrl,
       expires_in_seconds: GUEST_TOKEN_TTL_SECONDS,
+      appointment: {
+        id: appointment.id,
+        title: appointment.title,
+        clientName: appointment.clientName,
+        businessName: appointment.business?.name || 'SME Meeting',
+        startTime: appointment.startTime.toISOString(),
+        endTime: appointment.endTime.toISOString(),
+        durationMinutes: durationMinutes > 0 ? durationMinutes : 30,
+      },
       shared_assets: appointment.guestUploads.map((u) => ({
         id: u.id,
         file_name: u.fileName,

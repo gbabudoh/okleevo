@@ -54,6 +54,18 @@ export const PATCH = withMultiTenancy(async (req, { user, business, params }) =>
       }
     }
 
+    let rawPin: string | undefined = undefined;
+    let securePinHashUpdate: { securePinHash?: string; meetingRoomStatus?: 'SCHEDULED' } = {};
+    const targetType = type ? (type.toUpperCase().replace('-', '_') as AppointmentType) : existing.type;
+    if (newStatus === 'CONFIRMED' && targetType === AppointmentType.VIDEO) {
+      if (!existing.securePinHash) {
+        const bcrypt = (await import('bcryptjs')).default;
+        rawPin = Math.floor(100000 + Math.random() * 900000).toString();
+        const hash = await bcrypt.hash(rawPin, 10);
+        securePinHashUpdate = { securePinHash: hash, meetingRoomStatus: 'SCHEDULED' };
+      }
+    }
+
     const updated = await prisma.appointment.update({
       where: { id },
       data: {
@@ -66,11 +78,12 @@ export const PATCH = withMultiTenancy(async (req, { user, business, params }) =>
         ...(status && { status: newStatus }),
         ...(location !== undefined && { location }),
         ...(notes !== undefined && { description: notes }),
+        ...securePinHashUpdate,
       },
     });
 
     if (status && newStatus !== existing.status && (newStatus === 'CONFIRMED' || newStatus === 'CANCELLED')) {
-      notifyAppointmentStatus(updated, business.name, newStatus === 'CONFIRMED' ? 'confirmed' : 'cancelled').catch(() => {});
+      notifyAppointmentStatus(updated, business.name, newStatus === 'CONFIRMED' ? 'confirmed' : 'cancelled', rawPin).catch(() => {});
     }
 
     return NextResponse.json({

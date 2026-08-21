@@ -856,10 +856,13 @@ export default function BookingPage() {
                         )}
                         {booking.type === 'video' && (
                           <Link
-                            href={`/dashboard/collaboration?meeting=${encodeURIComponent(booking.id)}`}
+                            href={`/room/${encodeURIComponent(booking.id)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="py-2 px-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs active:scale-95"
+                            title="Open dedicated meeting room as Host"
                           >
-                            <VideoIcon className="w-3.5 h-3.5" /> Join Room
+                            <VideoIcon className="w-3.5 h-3.5" /> Host Call
                           </Link>
                         )}
                         <button
