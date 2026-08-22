@@ -421,6 +421,21 @@ export default function InvoicingPage() {
   };
 
   /* ── Action Handlers ────────────────────────────────────────────── */
+  const openNewModal = () => {
+    setEditingInvoiceId(null);
+    setNewInvoice({
+      clientType: 'business',
+      client: '',
+      clientEmail: '',
+      currency: defaultCurrency || 'GBP',
+      date: new Date().toISOString().split('T')[0],
+      dueDate: '',
+      items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
+      projectId: '',
+    });
+    setShowNewInvoiceModal(true);
+  };
+
   const closeNewModal = () => {
     setShowNewInvoiceModal(false);
     setEditingInvoiceId(null);
@@ -428,7 +443,7 @@ export default function InvoicingPage() {
       clientType: 'business',
       client: '',
       clientEmail: '',
-      currency: defaultCurrency || '',
+      currency: defaultCurrency || 'GBP',
       date: new Date().toISOString().split('T')[0],
       dueDate: '',
       items: [{ description: '', quantity: 1, rate: 0, vatRate: DEFAULT_VAT_RATE }],
@@ -463,7 +478,7 @@ export default function InvoicingPage() {
       clientType: 'business',
       client: invoice.client,
       clientEmail: invoice.clientEmail,
-      currency: invoice.currency || 'USD',
+      currency: invoice.currency || defaultCurrency || 'GBP',
       date: invoice.date,
       dueDate: invoice.dueDate,
       items:
@@ -477,12 +492,13 @@ export default function InvoicingPage() {
   };
 
   const handleSendEmail = (invoice: Invoice) => {
-    const sym = getCurrencySymbol(invoice.currency);
-    setEmailInvoice(invoice);
+    const invCurrency = (invoice.currency && invoice.currency.trim()) || defaultCurrency || 'GBP';
+    const sym = getCurrencySymbol(invCurrency);
+    setEmailInvoice({ ...invoice, currency: invCurrency });
     setEmailData({
       to: invoice.clientEmail,
       subject: `Invoice ${invoice.id} from ${businessName}`,
-      message: `Dear ${invoice.client},\n\nPlease find attached invoice ${invoice.id} for ${sym}${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${invoice.currency || 'USD'}).\n\nPayment Due Date: ${invoice.dueDate}\n\nThank you for your valued business!\n\nBest regards,\n${businessName}`,
+      message: `Dear ${invoice.client},\n\nPlease find attached invoice ${invoice.id} for ${sym}${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${invCurrency}).\n\nPayment Due Date: ${invoice.dueDate}\n\nThank you for your valued business!\n\nBest regards,\n${businessName}`,
     });
     setShowEmailModal(true);
     setActiveMenu(null);
@@ -515,7 +531,7 @@ export default function InvoicingPage() {
         clientName: newInvoice.client,
         clientEmail: newInvoice.clientEmail,
         amount: newInvoiceTotal,
-        currency: newInvoice.currency || 'USD',
+        currency: newInvoice.currency || defaultCurrency || 'GBP',
         items: newInvoice.items,
         dueDate: newInvoice.dueDate || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
         projectId: newInvoice.projectId || undefined,
@@ -816,7 +832,7 @@ export default function InvoicingPage() {
             {/* Primary Action Button — Okleevo Brand Gradient */}
             <button
               type="button"
-              onClick={() => setShowNewInvoiceModal(true)}
+              onClick={openNewModal}
               className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-md shadow-orange-500/25 active:scale-95 transition-all cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />

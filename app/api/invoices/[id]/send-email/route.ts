@@ -20,7 +20,13 @@ export const POST = withMultiTenancy(async (req, { params, dataFilter, business,
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
     }
 
-    const formattedAmount = `$${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const invCurrency = (invoice.currency && invoice.currency.trim()) || (business as any)?.currency || 'GBP';
+    const currencySymbols: Record<string, string> = {
+      GBP: '£', USD: '$', EUR: '€', NGN: '₦', GHS: 'GH₵', KES: 'KSh', ZAR: 'R', CAD: 'C$', AUD: 'A$'
+    };
+    const sym = currencySymbols[invCurrency.toUpperCase()] || '$';
+
+    const formattedAmount = `${sym}${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${invCurrency.toUpperCase()}`;
     const formattedDueDate = new Date(invoice.dueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
     const userMessageHtml = message
@@ -82,6 +88,7 @@ export const POST = withMultiTenancy(async (req, { params, dataFilter, business,
       clientName: invoice.clientName,
       clientEmail: invoice.clientEmail,
       amount: invoice.amount,
+      currency: invCurrency,
       status: invoice.status,
       createdAt: invoice.createdAt,
       dueDate: invoice.dueDate,
