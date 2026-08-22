@@ -320,45 +320,46 @@ export default function InvoicingPage() {
     doc.text(`Due Date: ${invoice.dueDate}`, 115, 70);
     doc.text(`Currency: ${invCurrency}`, 160, 64);
 
-    // Line Items Header (Deep Grey)
-    doc.setFillColor(30, 41, 59); // Deep Grey (#1e293b)
+    // Line Items Header (Very Light Grey / Gainsboro)
+    doc.setFillColor(241, 245, 249); // Gainsboro / slate-100 (#f1f5f9)
     doc.rect(20, 84, 170, 8, 'F');
-    doc.setTextColor(255, 255, 255);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(51, 65, 85); // Slate 700
     doc.text('ITEM DELIVERABLE', 24, 89);
-    doc.text('QTY', 120, 89);
+    doc.text('QTY', 115, 89);
     doc.text(`UNIT RATE (${sym})`, 140, 89);
-    doc.text(`SUBTOTAL (${sym})`, 168, 89);
+    doc.text(`SUBTOTAL (${sym})`, 188, 89, { align: 'right' });
 
     // Table Content
-    let yPos = 99;
+    let yPos = 98;
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(30, 41, 59);
+    doc.setTextColor(15, 23, 42);
 
     invoice.items.forEach((item, idx) => {
       if (idx % 2 === 0) {
-        doc.setFillColor(248, 250, 252);
+        doc.setFillColor(250, 250, 250);
         doc.rect(20, yPos - 5, 170, 8, 'F');
       }
       doc.text(item.description, 24, yPos);
-      doc.text(item.quantity.toString(), 120, yPos);
+      doc.text(item.quantity.toString(), 115, yPos);
       doc.text(`${sym}${item.rate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 140, yPos);
-      doc.text(`${sym}${(item.quantity * item.rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 168, yPos);
+      doc.text(`${sym}${(item.quantity * item.rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 188, yPos, { align: 'right' });
       yPos += 8;
     });
 
-    // Summary Box
+    // Summary Card (Light Grey / Gainsboro with right alignment)
     yPos += 8;
     doc.setFillColor(248, 250, 252);
-    doc.roundedRect(120, yPos, 70, 24, 2, 2, 'F');
-    doc.setFontSize(9);
+    doc.roundedRect(110, yPos, 80, 24, 3, 3, 'F');
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(71, 85, 105);
-    doc.text('TOTAL BILLED:', 125, yPos + 8);
-    doc.setFontSize(14);
+    doc.setTextColor(100, 116, 139);
+    doc.text('TOTAL BILLED:', 116, yPos + 8);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(234, 88, 12); // Okleevo Orange
-    doc.text(`${sym}${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${invCurrency}`, 125, yPos + 18);
+    doc.text(`${sym}${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${invCurrency}`, 184, yPos + 18, { align: 'right' });
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
