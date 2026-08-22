@@ -37,8 +37,8 @@ export const PATCH = withMultiTenancy(async (req, { dataFilter, user }) => {
     }
 
     if (currency !== undefined) {
-      if (user.role !== 'OWNER' && user.role !== 'ADMIN') {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      if (user.role !== 'OWNER' && user.role !== 'SUPER_ADMIN') {
+        return NextResponse.json({ error: 'Only the Account Holder can change the operating currency.' }, { status: 403 });
       }
       if (typeof currency === 'string' && currency.trim()) {
         data.currency = currency.trim().toUpperCase();

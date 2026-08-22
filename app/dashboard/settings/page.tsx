@@ -1136,35 +1136,36 @@ function SettingsPageInner() {
                     );
                   })}
 
-                  {/* Workspace Default Operating Currency Selector */}
-                  <div>
-                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Platform Operating Currency
-                    </label>
-                    <div className="relative">
-                      <Banknote className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
-                      <select
-                        value={profile.currency || ''}
-                        onChange={e => setProfile({ ...profile, currency: e.target.value })}
-                        disabled={userRole === 'MANAGER' || userRole === 'MEMBER'}
-                        className="w-full rounded-2xl border border-orange-200 dark:border-orange-900/60 bg-orange-50/50 dark:bg-slate-900 pl-10 pr-4 py-2.5 text-xs font-black text-orange-900 dark:text-orange-200 outline-none focus:border-orange-500 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        <option value="">Select your operating currency...</option>
-                        <option value="GBP">GBP (£) — British Pound</option>
-                        <option value="USD">USD ($) — US Dollar</option>
-                        <option value="EUR">EUR (€) — Euro</option>
-                        <option value="NGN">NGN (₦) — Nigerian Naira</option>
-                        <option value="GHS">GHS (GH₵) — Ghanaian Cedi</option>
-                        <option value="KES">KES (KSh) — Kenyan Shilling</option>
-                        <option value="ZAR">ZAR (R) — South African Rand</option>
-                        <option value="CAD">CAD (C$) — Canadian Dollar</option>
-                        <option value="AUD">AUD (A$) — Australian Dollar</option>
-                      </select>
+                  {/* Workspace Default Operating Currency Selector - Restricted exclusively to Account Holder */}
+                  {(userRole === 'OWNER' || userRole === 'SUPER_ADMIN') && (
+                    <div>
+                      <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Platform Operating Currency
+                      </label>
+                      <div className="relative">
+                        <Banknote className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
+                        <select
+                          value={profile.currency || ''}
+                          onChange={e => setProfile({ ...profile, currency: e.target.value })}
+                          className="w-full rounded-2xl border border-orange-200 dark:border-orange-900/60 bg-orange-50/50 dark:bg-slate-900 pl-10 pr-4 py-2.5 text-xs font-black text-orange-900 dark:text-orange-200 outline-none focus:border-orange-500 transition cursor-pointer"
+                        >
+                          <option value="">Select your operating currency...</option>
+                          <option value="GBP">GBP (£) — British Pound</option>
+                          <option value="USD">USD ($) — US Dollar</option>
+                          <option value="EUR">EUR (€) — Euro</option>
+                          <option value="NGN">NGN (₦) — Nigerian Naira</option>
+                          <option value="GHS">GHS (GH₵) — Ghanaian Cedi</option>
+                          <option value="KES">KES (KSh) — Kenyan Shilling</option>
+                          <option value="ZAR">ZAR (R) — South African Rand</option>
+                          <option value="CAD">CAD (C$) — Canadian Dollar</option>
+                          <option value="AUD">AUD (A$) — Australian Dollar</option>
+                        </select>
+                      </div>
+                      <p className="mt-1.5 text-[11px] text-slate-400 font-semibold">
+                        SME-selected workspace currency for invoices, estimates, and financial ledgers.
+                      </p>
                     </div>
-                    <p className="mt-1.5 text-[11px] text-slate-400 font-semibold">
-                      SME-selected workspace currency for invoices, estimates, and financial ledgers.
-                    </p>
-                  </div>
+                  )}
                 </div>
 
                 {(userRole === 'MANAGER' || userRole === 'MEMBER') && (
@@ -1302,7 +1303,7 @@ function SettingsPageInner() {
                   return (
                     <div key={member.id} className="bg-white dark:bg-slate-950 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-orange-300 transition-all group relative">
                       <div className="absolute top-4 right-4 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        {member.role !== 'OWNER' && (
+                        {(userRole === 'OWNER' || userRole === 'SUPER_ADMIN') && member.role !== 'OWNER' && (
                           <>
                             <button
                               onClick={() => {
