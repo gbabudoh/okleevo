@@ -163,7 +163,7 @@ model Business {
 
   // Seat Management (for per-seat billing)
   seatCount Int @default(1)
-  maxSeats  Int @default(10) // Based on tier
+  maxSeats  Int @default(5) // Standard plan includes 5 seats
 
   // Global pivot: opts this workspace into the new 3-tab nav (Virtual HQ /
   // Async Productivity / Client Engagement) in app/dashboard/layout.tsx.

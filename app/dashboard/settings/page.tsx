@@ -100,7 +100,7 @@ function SettingsPageInner() {
   
   // Team management state
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [seatInfo, setSeatInfo] = useState({ used: 1, max: 10, available: 9 });
+  const [seatInfo, setSeatInfo] = useState({ used: 1, max: 5, available: 4 });
   const [loadingTeam, setLoadingTeam] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -501,8 +501,8 @@ function SettingsPageInner() {
         } else {
           setSeatInfo({
             used: data.users?.length || 1,
-            max: 10,
-            available: 10 - (data.users?.length || 1)
+            max: 5,
+            available: Math.max(0, 5 - (data.users?.length || 1))
           });
         }
       } else {

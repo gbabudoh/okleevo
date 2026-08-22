@@ -74,7 +74,7 @@ export function getTierFromBusinessSize(size: string): 1 | 2 | 3 {
  */
 export function getMaxSeatsFromBusinessSize(size: string): number {
   const config = getBusinessSizeConfig(size);
-  return config?.maxSeats || 10;
+  return config?.maxSeats || 5;
 }
 
 /**
