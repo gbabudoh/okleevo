@@ -432,7 +432,7 @@ export default function KPIDashboardPage() {
               <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 truncate text-right">{stat.sub}</span>
             </div>
             <div className="min-w-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-slate-900 dark:text-white tracking-tight leading-none mb-1">{stat.value}</p>
+              <p className="text-lg sm:text-xl font-black font-mono text-slate-900 dark:text-white tracking-tight leading-none mb-1">{stat.value}</p>
               <p className="text-[10px] sm:text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-snug truncate">{stat.label}</p>
             </div>
           </div>

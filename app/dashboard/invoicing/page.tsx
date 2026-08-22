@@ -781,7 +781,7 @@ export default function InvoicingPage() {
                   {invoices.length} inv
                 </span>
               </div>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-slate-900 dark:text-white tracking-tight">
+              <p className="text-lg sm:text-xl font-black font-mono text-slate-900 dark:text-white tracking-tight">
                 {getCurrencySymbol(defaultCurrency)}{stats.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-[10px] text-slate-400 font-bold truncate">Gross invoice volume</p>
@@ -797,7 +797,7 @@ export default function InvoicingPage() {
                   <TrendingUp className="w-3 h-3" /> {stats.rate}% Rate
                 </span>
               </div>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
+              <p className="text-lg sm:text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
                 {getCurrencySymbol(defaultCurrency)}{stats.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
@@ -815,7 +815,7 @@ export default function InvoicingPage() {
                   {invoices.filter((i) => i.status === 'sent').length} awaiting
                 </span>
               </div>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-blue-600 dark:text-blue-400 tracking-tight">
+              <p className="text-lg sm:text-xl font-black font-mono text-blue-600 dark:text-blue-400 tracking-tight">
                 {getCurrencySymbol(defaultCurrency)}{stats.pending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-[10px] text-slate-400 font-bold truncate">Awaiting client payment</p>
@@ -833,7 +833,7 @@ export default function InvoicingPage() {
                   </span>
                 )}
               </div>
-              <p className={`text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight ${stats.overdue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+              <p className={`text-lg sm:text-xl font-black font-mono tracking-tight ${stats.overdue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
                 {getCurrencySymbol(defaultCurrency)}{stats.overdue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-[10px] text-slate-400 font-bold truncate">

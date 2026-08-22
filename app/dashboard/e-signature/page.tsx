@@ -318,7 +318,7 @@ export default function ESignaturePage() {
                   </span>
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-slate-900 dark:text-white tracking-tight leading-none mb-1">{item.value}</h3>
+                  <h3 className="text-lg sm:text-xl font-black font-mono text-slate-900 dark:text-white tracking-tight leading-none mb-1">{item.value}</h3>
                   <p className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 leading-snug truncate">{item.label}</p>
                 </div>
               </button>
