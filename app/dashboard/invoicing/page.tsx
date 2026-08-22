@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Plus, Search, Download, Eye, Edit, Send, Trash2,
-  Clock, CheckCircle2, AlertCircle, MoreVertical, X,
+  Clock, CheckCircle2, CheckCheck, AlertCircle, MoreVertical, X,
   Calendar, Mail, FileText, Banknote, Ban, RotateCcw,
   ChevronDown, Loader2, ArrowUpRight, Check,
   Sparkles, Filter, ShieldCheck, Globe, DollarSign,
@@ -561,6 +561,68 @@ export default function InvoicingPage() {
     }
   };
 
+  const handleDirectSettle = async (inv: Invoice) => {
+    try {
+      const res = await fetch(`/api/invoices/${inv.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'PAID', paidAt: new Date().toISOString() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to mark invoice as paid');
+      await fetchInvoices();
+      if (showInvoiceModal && selectedInvoice?.id === inv.id) {
+        setSelectedInvoice({ ...selectedInvoice, status: 'paid' });
+      }
+      showToast(`${inv.id} marked as settled (paid)!`);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to update invoice status', 'error');
+    }
+  };
+
+  const handleDirectReopen = async (inv: Invoice) => {
+    try {
+      const newStatus = new Date(inv.dueDate) < new Date() ? 'OVERDUE' : 'SENT';
+      const res = await fetch(`/api/invoices/${inv.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to reopen invoice');
+      await fetchInvoices();
+      if (showInvoiceModal && selectedInvoice?.id === inv.id) {
+        setSelectedInvoice({ ...selectedInvoice, status: newStatus.toLowerCase() as Invoice['status'] });
+      }
+      showToast(`${inv.id} reopened.`);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to reopen invoice', 'error');
+    }
+  };
+
+  const handleUpdateStatus = async (inv: Invoice, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/invoices/${inv.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: newStatus.toUpperCase(),
+          ...(newStatus.toUpperCase() === 'PAID' ? { paidAt: new Date().toISOString() } : {})
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to update status');
+      await fetchInvoices();
+      setActiveMenu(null);
+      if (showInvoiceModal && selectedInvoice?.id === inv.id) {
+        setSelectedInvoice({ ...selectedInvoice, status: newStatus.toLowerCase() as Invoice['status'] });
+      }
+      showToast(`${inv.id} status updated to ${newStatus}!`);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to update status', 'error');
+    }
+  };
+
   const handleCancelInvoice = async () => {
     if (!cancelTarget) return;
     setCancelling(true);
@@ -1066,15 +1128,77 @@ export default function InvoicingPage() {
                             </span>
                           </td>
                           <td className="px-4 py-4">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-black border uppercase tracking-wider ${sc.badge}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
-                              {sc.label}
-                            </span>
+                            <div className="relative inline-block">
+                              <button
+                                type="button"
+                                onClick={() => setActiveMenu(activeMenu === `status-${inv.id}` ? null : `status-${inv.id}`)}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-black border uppercase tracking-wider transition-all hover:scale-105 cursor-pointer ${sc.badge}`}
+                                title="Click to change invoice status"
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                                {sc.label}
+                                <ChevronDown className="w-3 h-3 opacity-60 ml-0.5" />
+                              </button>
+
+                              {activeMenu === `status-${inv.id}` && (
+                                <div className="absolute left-0 mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl z-50 p-1.5 space-y-1 animate-in fade-in zoom-in-95">
+                                  <button
+                                    onClick={() => handleUpdateStatus(inv, 'PAID')}
+                                    className="w-full px-3 py-1.5 text-left text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Settled (Paid)
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateStatus(inv, 'SENT')}
+                                    className="w-full px-3 py-1.5 text-left text-[11px] font-extrabold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
+                                  >
+                                    <Send className="w-3.5 h-3.5 text-blue-500" /> Dispatched
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateStatus(inv, 'DRAFT')}
+                                    className="w-full px-3 py-1.5 text-left text-[11px] font-extrabold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
+                                  >
+                                    <FileText className="w-3.5 h-3.5 text-slate-400" /> Draft
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateStatus(inv, 'OVERDUE')}
+                                    className="w-full px-3 py-1.5 text-left text-[11px] font-extrabold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
+                                  >
+                                    <AlertTriangle className="w-3.5 h-3.5 text-rose-500" /> Overdue
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateStatus(inv, 'CANCELED')}
+                                    className="w-full px-3 py-1.5 text-left text-[11px] font-extrabold text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
+                                  >
+                                    <Ban className="w-3.5 h-3.5 text-slate-400" /> Void / Cancel
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">{inv.date}</td>
                           <td className="px-4 py-4 text-xs font-mono font-bold text-slate-700 dark:text-slate-300">{inv.dueDate}</td>
                           <td className="px-5 py-4 text-right">
                             <div className="inline-flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                              {inv.status !== 'paid' ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDirectSettle(inv)}
+                                  title="Mark as Settled (Paid)"
+                                  className="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-400 hover:text-emerald-600 rounded-xl transition-colors cursor-pointer"
+                                >
+                                  <CheckCircle2 className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDirectReopen(inv)}
+                                  title="Settled (Paid) — Click to Reopen"
+                                  className="p-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 hover:bg-amber-50 hover:text-amber-600 rounded-xl transition-colors cursor-pointer"
+                                >
+                                  <CheckCheck className="w-4 h-4" />
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => {
@@ -1172,6 +1296,23 @@ export default function InvoicingPage() {
 
                       <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-1">
+                          {inv.status !== 'paid' ? (
+                            <button
+                              onClick={() => handleDirectSettle(inv)}
+                              className="px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs font-black hover:bg-emerald-100 transition-colors flex items-center gap-1"
+                              title="Mark as Settled"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Settle
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleDirectReopen(inv)}
+                              className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 transition-colors flex items-center gap-1"
+                              title="Reopen"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" /> Reopen
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               setSelectedInvoice(inv);
@@ -1594,13 +1735,30 @@ export default function InvoicingPage() {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between gap-3">
-              <button
-                onClick={() => downloadAsPDF(selectedInvoice)}
-                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5"
-              >
-                <Download className="w-4 h-4" /> Download PDF
-              </button>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => downloadAsPDF(selectedInvoice)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Download className="w-4 h-4" /> Download PDF
+                </button>
+                {selectedInvoice.status !== 'paid' ? (
+                  <button
+                    onClick={() => handleDirectSettle(selectedInvoice)}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer active:scale-95 transition-all"
+                  >
+                    <CheckCircle2 className="w-4 h-4" /> Mark as Settled (Paid)
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleDirectReopen(selectedInvoice)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Reopen Invoice
+                  </button>
+                )}
+              </div>
               <button
                 onClick={() => {
                   setShowInvoiceModal(false);
