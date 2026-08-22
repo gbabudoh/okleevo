@@ -592,7 +592,7 @@ export default function DashboardPage() {
                 </div>
                 
                 <p className="text-xs text-slate-400 font-extrabold uppercase tracking-wider font-mono mb-1">{stat.title}</p>
-                <p className="text-3xl sm:text-4xl font-extrabold font-mono text-slate-900 dark:text-white mb-1 tracking-tight">{stat.value}</p>
+                <p className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white mb-1 tracking-tight">{stat.value}</p>
                 <p className="text-[10px] text-slate-400 font-mono font-bold uppercase">{stat.period}</p>
               </div>
             </div>
