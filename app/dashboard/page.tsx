@@ -297,10 +297,10 @@ export default function DashboardPage() {
 
   const quickActions = [
     {
-      name: 'Team Huddle',
+      name: 'Collaboration Hub',
       icon: UsersRound,
       gradient: 'from-blue-500 to-cyan-500',
-      description: 'Start a voice huddle',
+      description: 'video / messaging',
       href: '/dashboard/collaboration'
     },
     { 
@@ -325,10 +325,10 @@ export default function DashboardPage() {
       href: '/dashboard/tasks'
     },
     {
-      name: 'AI Notes',
+      name: 'Note',
       icon: FileEdit,
       gradient: 'from-orange-500 to-red-500',
-      description: 'Summarize a meeting',
+      description: 'Quick notes & memos',
       href: '/dashboard/ai-notes'
     },
     { 
@@ -346,7 +346,7 @@ export default function DashboardPage() {
       href: '/dashboard/kpi-dashboard'
     },
     { 
-      name: 'Book Meeting', 
+      name: 'Appointment Manager', 
       icon: Calendar, 
       gradient: 'from-rose-500 to-pink-500',
       description: 'Schedule appointment',

@@ -54,7 +54,7 @@ export const modules: ModuleCatalogueEntry[] = [
   },
   {
     id: 'ai-notes',
-    label: 'AI Notes',
+    label: 'Note',
     icon: FileEdit,
     group: 'Async Productivity',
     color: 'from-orange-500 to-amber-600',

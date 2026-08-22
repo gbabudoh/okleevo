@@ -463,7 +463,7 @@ export default function AINotesPage() {
               <Icon className={`w-6 h-6 ${color}`} />
             </div>
             <div>
-              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{value}</p>
+              <p className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">{value}</p>
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1.5">{label}</p>
             </div>
           </div>

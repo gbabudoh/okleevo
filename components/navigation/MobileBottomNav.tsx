@@ -37,7 +37,7 @@ const ALL_SECTIONS = [
     items: [
       { name: 'Projects',      desc: 'Deliverables & Milestones', icon: FolderKanban, href: '/dashboard/projects' },
       { name: 'Tasks',         desc: 'Kanban Boards',     icon: CheckSquare, href: '/dashboard/tasks' },
-      { name: 'AI Notes',      desc: 'Meeting Transcripts', icon: FileEdit,    href: '/dashboard/ai-notes' },
+      { name: 'Note',          desc: 'Memos & Transcripts', icon: FileEdit,   href: '/dashboard/ai-notes' },
       { name: 'KPI Dashboard', desc: 'Realtime Metrics',  icon: BarChart3,   href: '/dashboard/kpi-dashboard' },
     ],
   },

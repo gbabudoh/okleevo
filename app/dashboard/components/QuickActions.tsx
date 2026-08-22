@@ -10,7 +10,7 @@ export function QuickActions() {
     { name: 'New Task', icon: CheckSquare, color: '#8b5cf6', href: '#' },
     { name: 'AI Content', icon: Sparkles, color: '#10b981', href: '#' },
     { name: 'Send Email', icon: Mail, color: '#ec4899', href: '#' },
-    { name: 'Book Meeting', icon: Calendar, color: '#f59e0b', href: '#' },
+    { name: 'Appointment Manager', icon: Calendar, color: '#f59e0b', href: '/dashboard/booking' },
   ];
 
   return (
