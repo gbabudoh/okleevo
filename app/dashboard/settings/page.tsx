@@ -1245,26 +1245,38 @@ function SettingsPageInner() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 flex flex-col justify-center items-center text-center gap-3 shadow-2xs">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
-                <UserPlus className="w-5 h-5" />
+            {(userRole === 'OWNER' || userRole === 'SUPER_ADMIN') ? (
+              <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 flex flex-col justify-center items-center text-center gap-3 shadow-2xs">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-center shadow-2xs">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Invite New Member</h3>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5 max-w-[200px]">Expand your team and collaborate in real-time.</p>
+                </div>
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  disabled={seatInfo.available === 0}
+                  className={`w-full py-2.5 rounded-2xl text-xs font-extrabold transition-all shadow-xs cursor-pointer active:scale-95 ${
+                    seatInfo.available === 0
+                      ? 'bg-slate-100 dark:bg-slate-900 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-800'
+                      : 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-orange-500/20'
+                  }`}
+                >
+                  {seatInfo.available === 0 ? 'Capacity Full' : '+ Add Member'}
+                </button>
               </div>
-              <div>
-                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Invite New Member</h3>
-                <p className="text-xs font-bold text-slate-400 mt-0.5 max-w-[200px]">Expand your team and collaborate in real-time.</p>
+            ) : (
+              <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 flex flex-col justify-center items-center text-center gap-3 shadow-2xs">
+                <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center shadow-2xs">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Team Directory</h3>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5 max-w-[200px]">Account Holder manages team memberships & access.</p>
+                </div>
               </div>
-              <button
-                onClick={() => setShowAddModal(true)}
-                disabled={seatInfo.available === 0}
-                className={`w-full py-2.5 rounded-2xl text-xs font-extrabold transition-all shadow-xs cursor-pointer active:scale-95 ${
-                  seatInfo.available === 0
-                    ? 'bg-slate-100 dark:bg-slate-900 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-800'
-                    : 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-orange-500/20'
-                }`}
-              >
-                {seatInfo.available === 0 ? 'Capacity Full' : '+ Add Member'}
-              </button>
-            </div>
+            )}
           </div>
 
           {/* Members Grid */}
