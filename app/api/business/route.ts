@@ -58,8 +58,17 @@ export const PATCH = withMultiTenancy(async (req, { dataFilter, user }) => {
       data.fiscalYearEndDay = day;
     }
 
-    if (name !== undefined || address !== undefined || city !== undefined || country !== undefined) {
-      if (user.role !== 'OWNER' && user.role !== 'ADMIN') {
+    if (country !== undefined) {
+      if (user.role !== 'OWNER' && user.role !== 'SUPER_ADMIN') {
+        return NextResponse.json({ error: 'Only the Account Holder can change the workspace country.' }, { status: 403 });
+      }
+      if (typeof country === 'string' && country.trim()) {
+        data.country = country.trim();
+      }
+    }
+
+    if (name !== undefined || address !== undefined || city !== undefined) {
+      if (user.role !== 'OWNER' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
       if (name !== undefined) {
@@ -70,7 +79,6 @@ export const PATCH = withMultiTenancy(async (req, { dataFilter, user }) => {
       }
       if (address !== undefined) data.address = address;
       if (city !== undefined) data.city = city;
-      if (country !== undefined) data.country = country;
     }
 
     if (Object.keys(data).length === 0) {

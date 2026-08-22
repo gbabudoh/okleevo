@@ -1434,7 +1434,7 @@ export default function InvoicingPage() {
                       <input
                         type="text"
                         required
-                        placeholder="e.g. Egobas Services"
+                        placeholder="Company / Business Name"
                         value={newInvoice.client}
                         onChange={(e) => setNewInvoice({ ...newInvoice, client: e.target.value })}
                         className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-orange-500"

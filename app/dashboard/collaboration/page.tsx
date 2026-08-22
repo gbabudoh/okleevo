@@ -16,7 +16,6 @@ import { startOutgoingRingtone, stopOutgoingRingtone } from '@/lib/audio/rington
 import TourProvider from '@/components/tours/TourProvider';
 import { ModuleGuideBanner } from '@/components/tours/ModuleGuideBanner';
 import { collaborationTourSteps } from './tour-steps';
-import { DailyTaskCompletionBox } from '@/components/tasks/DailyTaskCompletionBox';
 
 interface TeamMember {
   userId: string;
@@ -598,9 +597,6 @@ function CollaborationHubInner() {
             })}
           </div>
         )}
-
-        {/* ── Daily Task Completion [DTC]-Box (Virtual HQ Daily Sprint Feed) ── */}
-        <DailyTaskCompletionBox className="mt-8" />
       </div>
 
       {/* ── Chat Drawer ── */}

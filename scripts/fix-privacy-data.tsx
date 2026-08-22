@@ -32,7 +32,7 @@ async function main() {
   if (zenliv) {
     await prisma.business.update({
       where: { id: zenliv.id },
-      data: { seatCount: 1, maxSeats: 10, size: '1-10' }
+      data: { seatCount: 5, maxSeats: 5, size: '1-5' }
     });
     console.log('Updated ZenLiv Limited:', zenliv.id);
   } else {
@@ -40,9 +40,9 @@ async function main() {
       data: {
         name: 'ZenLiv Limited',
         industry: 'technology',
-        size: '1-10',
-        seatCount: 1,
-        maxSeats: 10,
+        size: '1-5',
+        seatCount: 5,
+        maxSeats: 5,
       }
     });
     console.log('Created ZenLiv Limited:', zenliv.id);

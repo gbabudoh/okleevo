@@ -20,6 +20,7 @@ import { TeamActivityFeed } from '@/components/team-activity-feed';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertCircle as AlertCircleIcon } from 'lucide-react';
 import { PAYSTACK_PRICING, PaystackCurrency } from '@/lib/paystack/types';
+import { COUNTRIES, getCountryDisplayName } from '@/lib/constants/countries';
 
 // Global pivot pricing tiers — display copy only. The actual charge amount
 // always comes from Stripe (see lib/stripe/global-billing.ts, which reads
@@ -818,7 +819,8 @@ function SettingsPageInner() {
         }),
       ];
 
-      if (userRole === 'OWNER' || userRole === 'ADMIN') {
+      const isAccountHolder = userRole === 'OWNER' || userRole === 'SUPER_ADMIN';
+      if (isAccountHolder) {
         requests.push(
           fetch('/api/business', {
             method: 'PATCH',
@@ -829,6 +831,18 @@ function SettingsPageInner() {
               city: profile.city,
               country: profile.country,
               currency: profile.currency || 'GBP',
+            }),
+          })
+        );
+      } else if (userRole === 'ADMIN') {
+        requests.push(
+          fetch('/api/business', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: profile.company,
+              address: profile.address,
+              city: profile.city,
             }),
           })
         );
@@ -1113,7 +1127,6 @@ function SettingsPageInner() {
                     { label: 'Job Title', value: profile.position, key: 'position', icon: Briefcase, alwaysDisabled: true, hint: 'Reflects your account role' },
                     { label: 'Address', value: profile.address, key: 'address', icon: MapPin, full: true },
                     { label: 'City', value: profile.city, key: 'city', icon: Building2 },
-                    { label: 'Country', value: profile.country, key: 'country', icon: Globe },
                   ].map(field => {
                     const isDisabled = field.alwaysDisabled || userRole === 'MANAGER' || userRole === 'MEMBER';
                     return (
@@ -1135,6 +1148,56 @@ function SettingsPageInner() {
                     </div>
                     );
                   })}
+
+                  {/* Workspace Country Location Dropdown - Restricted exclusively to Account Holder */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300">
+                        Country
+                      </label>
+                      {(userRole === 'OWNER' || userRole === 'SUPER_ADMIN') && (
+                        <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded-full border border-orange-200/60 dark:border-orange-900/40">
+                          Account Holder Only
+                        </span>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <Globe className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 ${
+                        (userRole === 'OWNER' || userRole === 'SUPER_ADMIN') ? 'text-orange-500' : 'text-slate-400'
+                      }`} />
+                      <select
+                        value={
+                          COUNTRIES.find(
+                            c => c.code.toLowerCase() === (profile.country || '').toLowerCase() || 
+                                 c.name.toLowerCase() === (profile.country || '').toLowerCase()
+                          )?.code || profile.country || 'UK'
+                        }
+                        onChange={e => setProfile({ ...profile, country: e.target.value })}
+                        disabled={userRole !== 'OWNER' && userRole !== 'SUPER_ADMIN'}
+                        className={`w-full rounded-2xl border ${
+                          (userRole === 'OWNER' || userRole === 'SUPER_ADMIN')
+                            ? 'border-orange-200 dark:border-orange-900/60 bg-orange-50/50 dark:bg-slate-900 text-orange-950 dark:text-orange-200 focus:border-orange-500 cursor-pointer font-bold'
+                            : 'border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white opacity-60 cursor-not-allowed font-medium'
+                        } pl-10 pr-4 py-2.5 text-xs outline-none transition`}
+                      >
+                        <option value="">Select country location...</option>
+                        {COUNTRIES.map(c => (
+                          <option key={c.code} value={c.code}>
+                            {c.flag} {c.name} ({c.code})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {userRole !== 'OWNER' && userRole !== 'SUPER_ADMIN' ? (
+                      <p className="mt-1.5 text-xs text-gray-400">
+                        Restricted to Account Holder
+                      </p>
+                    ) : (
+                      <p className="mt-1.5 text-[11px] text-slate-400 font-semibold">
+                        SME registered operating jurisdiction for legal, tax, and regional compliance.
+                      </p>
+                    )}
+                  </div>
 
                   {/* Workspace Default Operating Currency Selector - Restricted exclusively to Account Holder */}
                   {(userRole === 'OWNER' || userRole === 'SUPER_ADMIN') && (
