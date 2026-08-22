@@ -281,8 +281,8 @@ export default function InvoicingPage() {
     const sym = getCurrencySymbol(invCurrency);
     const doc = new jsPDF();
 
-    // Modern Branded Header
-    doc.setFillColor(15, 23, 42); // slate-900
+    // Modern Branded Header (Okleevo Orange)
+    doc.setFillColor(234, 88, 12); // Okleevo Orange (#ea580c)
     doc.rect(0, 0, 210, 42, 'F');
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
@@ -320,8 +320,8 @@ export default function InvoicingPage() {
     doc.text(`Due Date: ${invoice.dueDate}`, 115, 70);
     doc.text(`Currency: ${invCurrency}`, 160, 64);
 
-    // Line Items Header
-    doc.setFillColor(79, 70, 229); // Indigo 600
+    // Line Items Header (Deep Grey)
+    doc.setFillColor(30, 41, 59); // Deep Grey (#1e293b)
     doc.rect(20, 84, 170, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(8);
@@ -350,14 +350,14 @@ export default function InvoicingPage() {
 
     // Summary Box
     yPos += 8;
-    doc.setFillColor(241, 245, 249);
+    doc.setFillColor(248, 250, 252);
     doc.roundedRect(120, yPos, 70, 24, 2, 2, 'F');
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(71, 85, 105);
     doc.text('TOTAL BILLED:', 125, yPos + 8);
     doc.setFontSize(14);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(234, 88, 12); // Okleevo Orange
     doc.text(`${sym}${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${invCurrency}`, 125, yPos + 18);
 
     doc.setFontSize(8);

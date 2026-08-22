@@ -26,7 +26,8 @@ export function generateInvoicePdf(invoice: InvoiceDocumentData): Buffer {
   const doc = new jsPDF();
   const sym = getCurrencySymbol(invoice.currency);
 
-  doc.setFillColor(59, 130, 246); doc.rect(0, 0, 210, 40, 'F');
+  // Header: Okleevo Orange
+  doc.setFillColor(234, 88, 12); doc.rect(0, 0, 210, 40, 'F');
   doc.setFontSize(24); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
   doc.text('INVOICE', 105, 20, { align: 'center' });
   doc.setFontSize(14); doc.text(invoice.number, 105, 30, { align: 'center' });
@@ -44,8 +45,9 @@ export function generateInvoicePdf(invoice: InvoiceDocumentData): Buffer {
   doc.text(`Issue Date: ${fmtDate(invoice.createdAt)}`, 115, 65);
   doc.text(`Due Date: ${fmtDate(invoice.dueDate)}`, 115, 71);
 
+  // Line items header: Deep Grey
   doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-  doc.setFillColor(59, 130, 246); doc.setTextColor(255, 255, 255);
+  doc.setFillColor(30, 41, 59); doc.setTextColor(255, 255, 255);
   doc.rect(20, 85, 170, 8, 'F');
   doc.text('Description', 25, 90); doc.text('Qty', 125, 90);
   doc.text('Rate', 145, 90); doc.text('Amount', 170, 90);
@@ -60,7 +62,8 @@ export function generateInvoicePdf(invoice: InvoiceDocumentData): Buffer {
   });
 
   yPos += 10;
-  doc.setFillColor(59, 130, 246); doc.rect(20, yPos - 5, 170, 12, 'F');
+  // Total banner: Deep Grey with Okleevo Orange text
+  doc.setFillColor(30, 41, 59); doc.rect(20, yPos - 5, 170, 12, 'F');
   doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(255, 255, 255);
   doc.text('TOTAL:', 145, yPos + 3); doc.text(`${sym}${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${invoice.currency || 'USD'}`, 170, yPos + 3);
 
