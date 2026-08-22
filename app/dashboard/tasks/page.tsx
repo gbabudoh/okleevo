@@ -521,7 +521,7 @@ export default function TasksPage() {
                 <s.icon className={`w-4 h-4 ${s.ic}`} />
               </div>
             </div>
-            <p className={`text-3xl font-extrabold font-mono ${s.val}`}>{s.value}</p>
+            <p className={`text-xl sm:text-2xl font-black font-mono ${s.val}`}>{s.value}</p>
           </div>
         ))}
       </div>

@@ -371,7 +371,7 @@ export default function ProjectsPage() {
               <Layers className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.totalProjects}</p>
+              <p className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">{summary.totalProjects}</p>
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">Total Projects</p>
             </div>
           </div>
@@ -381,7 +381,7 @@ export default function ProjectsPage() {
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.activeCount}</p>
+              <p className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">{summary.activeCount}</p>
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">Active</p>
             </div>
           </div>
@@ -391,7 +391,7 @@ export default function ProjectsPage() {
               <Clock3 className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.onHoldCount}</p>
+              <p className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">{summary.onHoldCount}</p>
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">On Hold</p>
             </div>
           </div>
@@ -401,7 +401,7 @@ export default function ProjectsPage() {
               <CheckCheck className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.completedCount}</p>
+              <p className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">{summary.completedCount}</p>
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">Completed</p>
             </div>
           </div>
@@ -411,7 +411,7 @@ export default function ProjectsPage() {
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white leading-none">{summary.overdueCount}</p>
+              <p className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white leading-none">{summary.overdueCount}</p>
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1 truncate">Overdue</p>
             </div>
           </div>

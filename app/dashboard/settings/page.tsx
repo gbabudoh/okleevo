@@ -1196,7 +1196,7 @@ function SettingsPageInner() {
                   Plan Limit: {seatInfo.max}
                 </span>
               </div>
-              <h3 className="text-3xl font-extrabold font-mono tracking-tight text-slate-900 dark:text-white">
+              <h3 className="text-xl sm:text-2xl font-black font-mono tracking-tight text-slate-900 dark:text-white">
                 {seatInfo.used} / {seatInfo.max}
               </h3>
               <p className="text-xs font-bold text-slate-400 mt-0.5">Active seats used</p>
@@ -1219,7 +1219,7 @@ function SettingsPageInner() {
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-2xs mb-4">
                 <UserCheck className="w-5 h-5" />
               </div>
-              <h3 className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">
+              <h3 className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white tracking-tight">
                 {teamMembers.filter(m => presence?.presence?.find(p => p.userId === m.id)?.isOnline).length}
               </h3>
               <p className="text-xs font-bold text-slate-400 mt-0.5">Team members online now</p>

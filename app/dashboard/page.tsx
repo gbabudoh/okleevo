@@ -777,7 +777,7 @@ export default function DashboardPage() {
                 <Icon className="w-4 h-4" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white mb-3">{value}</p>
+            <p className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white mb-3">{value}</p>
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 uppercase">
                 <TrendingUp className="w-3 h-3" />

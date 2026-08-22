@@ -340,7 +340,7 @@ export default function HelpdeskPage() {
                 </div>
               </div>
               <p className="text-[10px] font-mono font-extrabold text-slate-400 uppercase tracking-widest mb-1">{s.label}</p>
-              <p className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">{s.value}</p>
+              <p className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white tracking-tight">{s.value}</p>
             </div>
           ))}
         </div>

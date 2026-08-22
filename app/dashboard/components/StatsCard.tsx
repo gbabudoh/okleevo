@@ -22,7 +22,7 @@ export function StatsCard({ title, value, change, changeType = 'neutral', icon: 
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-xl sm:text-2xl font-black text-gray-900">{value}</p>
           {change && (
             <p className={`text-sm mt-2 ${changeColors[changeType]}`}>
               {change}
